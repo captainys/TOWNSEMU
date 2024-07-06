@@ -137,6 +137,36 @@ bool cpputil::WriteBinaryFile(const std::string &fName,unsigned long long int st
 	return false;
 }
 
+std::vector <std::string> cpputil::ReadTextFile(std::string fName)
+{
+	std::vector <std::string> text;
+	std::ifstream fp(fName);
+	if(true==fp.is_open())
+	{
+		while(true!=fp.eof())
+		{
+			std::string str;
+			std::getline(fp,str);
+			text.push_back(str);
+		}
+	}
+	return text;
+}
+
+bool cpputil::WriteTextFile(std::string fName,const std::vector <std::string> &text)
+{
+	std::ofstream fp(fName);
+	if(true==fp.is_open())
+	{
+		for(auto str : text)
+		{
+			fp << str << "\n";
+		}
+		return true;
+	}
+	return false;
+}
+
 std::vector <std::string> cpputil::Parser(const char str[])
 {
 	const int STATE_OUTSIDE=0,STATE_WORD=1,STATE_DOUBLEQUOTE=2;

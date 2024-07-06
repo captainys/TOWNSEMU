@@ -215,6 +215,7 @@ private:
 	void File_ReloadDefaultProfile(FsGuiPopUpMenuItem *);
 	YsWString GetDefaultProfileFileName(void) const;
 	YsWString GetTsugaruProfileDir(void) const;
+	YsWString GetOptionFileName(void) const;
 
 	void SaveProfile(YsWString fName) const;
 	void LoadProfile(YsWString fName);
@@ -238,7 +239,9 @@ private:
 	void File_ClearCMOS(FsGuiPopUpMenuItem *);
 
 
+	class View_ShowTipsDialog;
 	void View_OpenProfileDialog(FsGuiPopUpMenuItem *);
+	void View_ShowTip(FsGuiPopUpMenuItem *);
 
 
 	YsWString lastStateFName;

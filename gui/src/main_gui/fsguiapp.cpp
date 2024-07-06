@@ -27,6 +27,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //////////////////////////////////////////////////////////// */
 
+#include <time.h>
+#include <stdlib.h>
 #include <iostream>
 
 #include <ysclass.h>
@@ -38,7 +40,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "cpputil.h"
 #include "d77.h"
 #include "diskimg.h"
-
+#include "townsoptions.h"
+#include "townstips.h"
 
 
 // If you want to use fixed-function pipeline of OpenGL 1.x,
@@ -222,6 +225,8 @@ FsGuiMainCanvas::~FsGuiMainCanvas()
 
 void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 {
+	srand(time(nullptr));
+
 	MakeMainMenu();
 	profileDlg->Make();
 	LoadProfile(GetDefaultProfileFileName());
@@ -231,6 +236,15 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 
 	// Pause/Resume key is made a variable.  Need to be checked in OnInterval.
 	// BindKeyCallBack(FSKEY_SCROLLLOCK,YSFALSE,YSFALSE,YSFALSE,&FsGuiMainCanvas::VM_Resume,this);
+
+	TownsOptions opt;
+	YsString optionFile;
+	YsUnicodeToSystemEncoding(optionFile,GetOptionFileName());
+	opt.Deserialize(cpputil::ReadTextFile(optionFile.c_str()));
+	if(true==opt.showTips)
+	{
+		View_ShowTip(nullptr);
+	}
 
 	YsDisregardVariable(argc);
 	YsDisregardVariable(argv);
@@ -276,6 +290,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_V,L"View")->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_P,L"Profile Dialog")->BindCallBack(&THISCLASS::View_OpenProfileDialog,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,L"Show Tip")->BindCallBack(&THISCLASS::View_ShowTip,this);
 	}
 
 	{
@@ -1279,7 +1294,12 @@ YsWString FsGuiMainCanvas::GetTsugaruProfileDir(void) const
 	return path;
 }
 
-
+YsWString FsGuiMainCanvas::GetOptionFileName(void) const
+{
+	YsWString ful;
+	ful.MakeFullPathName(GetTsugaruProfileDir(),L"TsugaruOptions.txt");
+	return ful;
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -1621,6 +1641,76 @@ void FsGuiMainCanvas::View_OpenProfileDialog(FsGuiPopUpMenuItem *)
 	else
 	{
 		VM_Already_Running_Error();
+	}
+}
+
+class FsGuiMainCanvas::View_ShowTipsDialog : public FsGuiDialog
+{
+public:
+	int i=0;
+
+	FsGuiMainCanvas *owner;
+	FsGuiButton *closeBtn,*showOnStartUpBtn;
+	void Make(void)
+	{
+		SetTopLeftCorner(16,16);
+
+		auto tips=TownsTips::GetTips();
+		if(tips.size()<=i)
+		{
+			i=0;
+		}
+		if(i<tips.size())
+		{
+			AddStaticText(0,FSKEY_NULL,tips[i].c_str(),YSTRUE);
+		}
+		closeBtn=AddTextButton(0,FSKEY_ENTER,FSGUI_PUSHBUTTON,"Close",YSTRUE);
+		showOnStartUpBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Show a Tip on Start Up.",YSTRUE);
+
+		TownsOptions opt;
+		YsString optionFile;
+		YsUnicodeToSystemEncoding(optionFile,owner->GetOptionFileName());
+		opt.Deserialize(cpputil::ReadTextFile(optionFile.c_str()));
+		if(true==opt.showTips)
+		{
+			showOnStartUpBtn->SetCheck(YSTRUE);
+		}
+
+		Fit();
+		SetArrangeType(FSDIALOG_ARRANGE_TOP_RIGHT);
+	}
+	void OnButtonClick(FsGuiButton *btn) override
+	{
+		if(btn==closeBtn)
+		{
+			CloseModalDialog(0);
+
+			auto showTipNextTime=(YSTRUE==showOnStartUpBtn->GetCheck());
+
+			TownsOptions opt;
+			YsString optionFile;
+			YsUnicodeToSystemEncoding(optionFile,owner->GetOptionFileName());
+			opt.Deserialize(cpputil::ReadTextFile(optionFile.c_str()));
+			if(showTipNextTime!=opt.showTips)
+			{
+				opt.showTips=showTipNextTime;
+				auto text=opt.Serialize();
+				cpputil::WriteTextFile(optionFile.c_str(),text);
+			}
+		}
+	}
+};
+
+void FsGuiMainCanvas::View_ShowTip(FsGuiPopUpMenuItem *)
+{
+	auto tips=TownsTips::GetTips();
+	if(0<tips.size())
+	{
+		auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <View_ShowTipsDialog>();
+		dlg->owner=this;
+		dlg->i=rand()%tips.size();
+		dlg->Make();
+		AttachModalDialog(dlg);
 	}
 }
 

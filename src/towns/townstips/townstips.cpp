@@ -11,6 +11,8 @@ std::vector <std::string> TownsTips::GetTips(void)
 		"unplug a mouse from the game ports ixn real FM TOWNS or Tsugaru.\n"
 		"Make sure to unplug a mouse from the game ports when you run\n"
 		"these game titles.\n"
+		"In Tsugaru, go to Game-Port option, and make sure no mouse is\n"
+		"selected.\n"
 	);
 
 	tips.push_back(
@@ -19,13 +21,22 @@ std::vector <std::string> TownsTips::GetTips(void)
 		"assumes the CPU is 80386SX.  If the cpu is 80486SX or newer,\n"
 		"Brandish wrongfully identifies the cpu as 80386SX and subsequently\n"
 		"messes up.\n"
-		"In Tsugaru, use 'Pretend 80386DX' option, or choose BRANDISh from\n"
+		"In Tsugaru, use 'Pretend 80386DX' option, or choose BRANDISH from\n"
 		"application-specific augmentation.\n"
 	);
 
 	tips.push_back(
 		"RUN386.EXE in Towns OS V2.1 L10 does not run with 80486 or newer CPU.\n"
 		"Use 'Pretend 80386DX' option to run Towns OS V2.1 L10 on Tsugaru.\n"
+		"Freeward Collection 4 Disc B boots up in this version Towns OS.\n"
+	);
+
+	tips.push_back(
+		"Sherlock Holmes's Consulting Detective crashes if the CD speed is\n"
+		"faster than 1X speed.  Please select 1X speed in the option if you\n"
+		"want to run it.  (In real TOWNS, use the compatible mode.)\n"
+		"If the CD is too fast, the read-ahead buffer fills up too fast\n"
+		"and overflows.\n"
 	);
 
 	tips.push_back(
@@ -37,6 +48,22 @@ std::vector <std::string> TownsTips::GetTips(void)
 		"monitor.  However, it was a signature of a high-quality monitor in 1989.\n"
 		"So, Tsugaru emulates it by default.  If you don't like to see the damper-\n"
 		"wire line, please turn off 'Damper-Wire Line' option.\n"
+	);
+
+	tips.push_back(
+		"Tsugaru supports Windows 3.1, Windows 95, Linux, and OSASK.  To use those\n"
+		"operating systems, please check 'High-Fidelity Mode' option.  Many of the\n"
+		"80386's protection features are unnecessary for running majority of\n"
+		"Towns-OS games, so Tsugaru runs faster with this option turned off.\n"
+		"However, other operating systems, namely pre-emptive multi-tasking\n"
+		"operating systems, require those CPU features, which will be enabled\n"
+		"with 'High-Fidelity Mode' option.\n"
+	);
+
+	tips.push_back(
+		"When mouse cursor does not move, or mouse goes crazy, you can stabilize\n"
+		"it by controlling mouse by keyboard arrow keys, or a USB game pad.\n"
+		"Go to Game-Port options, and select appropriate mouse mode.\n"
 	);
 
 	return tips;
