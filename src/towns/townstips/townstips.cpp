@@ -8,7 +8,7 @@ std::vector <std::string> TownsTips::GetTips(void)
 
 	tips.push_back(
 		"Asuka 120% Burning Fest and Mad Stalker will freeze unless you\n"
-		"unplug a mouse from the game ports ixn real FM TOWNS or Tsugaru.\n"
+		"unplug a mouse from the game ports in real FM TOWNS or Tsugaru.\n"
 		"Make sure to unplug a mouse from the game ports when you run\n"
 		"these game titles.\n"
 		"In Tsugaru, go to Game-Port option, and make sure no mouse is\n"
