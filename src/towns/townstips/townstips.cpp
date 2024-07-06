@@ -12,7 +12,8 @@ std::vector <std::string> TownsTips::GetTips(void)
 		"Make sure to unplug a mouse from the game ports when you run\n"
 		"these game titles.\n"
 		"In Tsugaru, go to Game-Port option, and make sure no mouse is\n"
-		"selected.\n"
+		"selected, or you can select ASUKA120 from application-specific\n"
+		"augmentation.\n"
 	);
 
 	tips.push_back(
