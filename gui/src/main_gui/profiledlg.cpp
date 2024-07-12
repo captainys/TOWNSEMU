@@ -181,6 +181,7 @@ void ProfileDialog::Make(void)
 		scrnModeDrp->AddString("NORMAL WINDOW",YSTRUE);
 		scrnModeDrp->AddString("MAXIMIZE",YSFALSE);
 		scrnModeDrp->AddString("FULL SCREEN",YSFALSE);
+		scrnMaintainAspectBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Maintain Aspect Ratio",YSFALSE);
 
 		AddStaticText(0,FSKEY_NULL,"Model:",YSTRUE);
 
@@ -982,6 +983,15 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 		std::vector <const wchar_t *> extList={L".txt"};
 		BrowseSaveAs(L"Select A Key-Mapping File",keyMapFileTxt,extList);
 	}
+	if(YSTRUE==scrnAutoScaleBtn->GetCheck())
+	{
+		scrnMaintainAspectBtn->Enable();
+	}
+	else
+	{
+		scrnMaintainAspectBtn->Disable();
+	}
+
 }
 
 YsString ProfileDialog::GetDefaultCDImageFileName(void)  const
@@ -1246,6 +1256,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.scaling=scrnScaleTxt->GetInteger();
 	profile.autoScaling=(YSTRUE==scrnAutoScaleBtn->GetCheck());
+	profile.maintainAspect=(YSTRUE==scrnMaintainAspectBtn->GetCheck());
 	switch(scrnModeDrp->GetSelection())
 	{
 	case 0:
@@ -1476,6 +1487,15 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	}
 
 	scrnAutoScaleBtn->SetCheck(true==profile.autoScaling ? YSTRUE : YSFALSE);
+	scrnMaintainAspectBtn->SetCheck(true==profile.maintainAspect ? YSTRUE : YSFALSE);
+	if(true!=profile.autoScaling)
+	{
+		scrnMaintainAspectBtn->Disable();
+	}
+	else
+	{
+		scrnMaintainAspectBtn->Enable();
+	}
 	switch(profile.windowModeOnStartUp)
 	{
 	case TownsStartParameters::WINDOW_NORMAL:

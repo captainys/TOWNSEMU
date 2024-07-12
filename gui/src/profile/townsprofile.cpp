@@ -184,6 +184,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	sstream << "AUTOSCAL " << (true==autoScaling ? 1 : 0);
 	text.push_back(sstream.str());
 
+	sstream.str("");
+	sstream << "MTNASPCT " << (true==maintainAspect ? 1 : 0);
+	text.push_back(sstream.str());
+
 	// sstream.str("");
 	// sstream << "MAXIMIZE " << (true==maximizeOnStartUp ? 1 : 0);
 	// text.push_back(sstream.str());
@@ -506,6 +510,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			if(2<=argv.size())
 			{
 				autoScaling=(0!=argv[1].Atoi());
+			}
+		}
+		else if(0==argv[0].STRCMP("MTNASPCT"))
+		{
+			if(2<=argv.size())
+			{
+				maintainAspect=(0!=argv[1].Atoi());
 			}
 		}
 		else if(0==argv[0].STRCMP("MAXIMIZE"))
@@ -935,6 +946,14 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	if(true==autoScaling)
 	{
 		argv.push_back("-AUTOSCALE");
+	}
+	if(true==maintainAspect)
+	{
+		argv.push_back("-MAINTAINASPECT");
+	}
+	else
+	{
+		argv.push_back("-FREEASPECT");
 	}
 	switch(windowModeOnStartUp)
 	{

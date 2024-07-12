@@ -42,7 +42,7 @@ public:
 
 	FsGuiButton *bootKeyBtn[17];
 	FsGuiTextBox *scrnScaleTxt;
-	FsGuiButton *scrnAutoScaleBtn;
+	FsGuiButton *scrnAutoScaleBtn,*scrnMaintainAspectBtn;
 	FsGuiDropList *scrnModeDrp;
 	FsGuiButton *autoStartBtn;
 	FsGuiTextBox *CPUFreqTxt,*RAMSizeTxt;
