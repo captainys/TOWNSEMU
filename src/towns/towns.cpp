@@ -333,9 +333,12 @@ void FMTownsCommon::State::PowerOn(void)
 	outside_world->throttlePhysicalId=argv.throttlePhysicalId;
 	outside_world->throttleAxis=argv.throttleAxis;
 
-	outside_world->scaling=argv.scaling;
-	windowInterface->shared.scaling=argv.scaling;
+	outside_world->scalingX=argv.scaling;
+	outside_world->scalingY=argv.scaling;
+	windowInterface->shared.scalingX=argv.scaling;
+	windowInterface->shared.scalingY=argv.scaling;
 	windowInterface->autoScaling=argv.autoScaling;
+	windowInterface->maintainAspect=argv.maintainAspect;
 	windowInterface->windowShift=argv.windowShift;
 	windowInterface->windowModeOnStartUp=argv.windowModeOnStartUp;
 

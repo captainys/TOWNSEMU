@@ -35,6 +35,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Screen scaling X percent." << std::endl;
 	std::cout << "-AUTOSCALE" << std::endl;
 	std::cout << "  Auto scaleing screen to match the window size." << std::endl;
+	std::cout << "-MAINTAINASPECT" << std::endl;
+	std::cout << "  Maintain aspect ratio when auto-scaling." << std::endl;
+	std::cout << "-FREEASPECT" << std::endl;
+	std::cout << "  Do not maintain aspect ratio when auto-scaling." << std::endl;
 	std::cout << "-MAXIMIZE" << std::endl;
 	std::cout << "  Maximize the window on start up" << std::endl;
 	std::cout << "-FULLSCREEN" << std::endl;
@@ -367,6 +371,14 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-AUTOSCALE"==ARG)
 		{
 			autoScaling=true;
+		}
+		else if("-MAINTAINASPECT"==ARG)
+		{
+			maintainAspect=true;
+		}
+		else if("-FREEASPECT"==ARG)
+		{
+			maintainAspect=false;
 		}
 		else if("-MAXIMIZE"==ARG)
 		{

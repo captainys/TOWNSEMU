@@ -149,7 +149,8 @@ public:
 	};
 	StatusBarInfo statusBarInfo;
 	unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
-	unsigned int scaling=100; // In Percent
+	unsigned int scalingX=100; // In Percent
+	unsigned int scalingY=100; // In Percent
 	bool pauseKey=false;
 
 	unsigned int lowerRightIcon=LOWER_RIGHT_NONE;
@@ -238,7 +239,8 @@ public:
 
 			// Managed by renderingLock
 			unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
-			unsigned int scaling=100; // In Percent
+			unsigned int scalingX=100; // In Percent
+			unsigned int scalingY=100; // In Percent
 			unsigned int lowerRightIcon=LOWER_RIGHT_NONE;
 
 			// Managed by newImageLock
@@ -277,6 +279,7 @@ public:
 
 		bool windowShift=false;
 		bool autoScaling=false;
+		bool maintainAspect=true;
 
 		unsigned int windowModeOnStartUp=TownsStartParameters::WINDOW_NORMAL;
 

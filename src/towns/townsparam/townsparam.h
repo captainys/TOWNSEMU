@@ -180,7 +180,7 @@ public:
 		SCALING_MAX=1000,
 	};
 	unsigned int scaling=100;
-	bool autoScaling=false;
+	bool autoScaling=false,maintainAspect=true;
 	unsigned int windowModeOnStartUp=WINDOW_NORMAL;
 
 	std::string quickScrnShotDir;
