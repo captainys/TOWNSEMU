@@ -74,6 +74,15 @@ public:
 		uint8_t page;
 		unsigned int transferTime=SPRITE_ONE_TRANSFER_TIME_FASTMODE;
 
+		unsigned int firstSpriteIndexCapture=0;
+		// Samurai Spirit changes CONTROL0 and CONTROL1 before Tsugaru renders sprites.
+		// In the real FM TOWNS, sprites are incremetally drawn (obviously), but Tsugaru
+		// draws sprites all together.
+		// The change of CONTROL0 and CONTROL1 when the does not affect the real hardware,
+		// but it affects Tsugaru.
+		// To prevent break down in Tsugaru, CONTROL0 and CONTROL1 needs to be captured
+		// when the sprite hardware becomes busy.
+
 		void PowerOn(void);
 		void Reset(void);
 	};

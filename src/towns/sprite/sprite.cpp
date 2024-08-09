@@ -185,7 +185,7 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 	}
 
 	auto xOffset=HOffset(),yOffset=VOffset();
-	for(unsigned int spriteIndex=FirstSpriteIndex(); spriteIndex<MAX_NUM_SPRITE_INDEX; ++spriteIndex)
+	for(unsigned int spriteIndex=state.firstSpriteIndexCapture; spriteIndex<MAX_NUM_SPRITE_INDEX; ++spriteIndex)
 	{
 		auto indexPtr=spriteRAM+SPRITERAM_INDEX_OFFSET+(spriteIndex<<3);
 
@@ -328,6 +328,9 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 		if (SPEN()) {
 			state.page = 1 - state.page;
 			state.spriteBusy = true;
+			state.firstSpriteIndexCapture=FirstSpriteIndex();
+			// To correctly render Samurai Spirits.  See sprite.h
+
 			auto finishTime = townsTime + SPRITE_SCREEN_CLEAR_TIME + (uint64_t)state.transferTime * NumSpritesToDraw();
 
 			townsPtr->ScheduleDeviceCallBack(*this, finishTime);
