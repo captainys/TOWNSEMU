@@ -566,7 +566,8 @@ std::vector <std::string> TownsSprite::GetPattern16BitText(unsigned int ptnIdx,c
 /* virtual */ uint32_t TownsSprite::SerializeVersion(void) const
 {
 	// Version 2: Sprite Transfer Time
-	return 2;
+	// Version 3: firstSpriteIndexCapture
+	return 3;
 }
 /* virtual */ void TownsSprite::SpecificSerialize(std::vector <unsigned char> &data,std::string) const
 {
@@ -584,6 +585,9 @@ std::vector <std::string> TownsSprite::GetPattern16BitText(unsigned int ptnIdx,c
 
 	// Vesion 2 and later >>
 	PushUint32(data,state.transferTime);
+
+	// Version 3 and later >>
+	PushUint16(data,state.firstSpriteIndexCapture);
 }
 /* virtual */ bool TownsSprite::SpecificDeserialize(const unsigned char *&data,std::string,uint32_t version)
 {
@@ -608,14 +612,22 @@ std::vector <std::string> TownsSprite::GetPattern16BitText(unsigned int ptnIdx,c
 		}
 		state.page=0; // Should catch up in the next.
 	}
-	else if(1<=version)
+	if(1<=version)
 	{
 		state.callbackType = ReadUint16(data);
 		state.page = ReadUint16(data);
 	}
-	else if(2<=version)
+	if(2<=version)
 	{
 		state.transferTime=ReadUint32(data);
+	}
+	if(3<=version)
+	{
+		state.firstSpriteIndexCapture=ReadUint16(data);
+	}
+	else
+	{
+		state.firstSpriteIndexCapture=FirstSpriteIndex();
 	}
 	return true;
 }
