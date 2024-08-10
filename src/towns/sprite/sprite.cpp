@@ -342,6 +342,11 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 		state.spriteBusy = false;
 
 		if (SPEN()) {
+			state.firstSpriteIndexCapture=FirstSpriteIndex();
+			// Re-capture to prevent sprite-flicker in Death Blade.
+			// Pre-captured firstSpriteIndex is needed only if SPEN is cleared in the middle of
+			// sprite-busy cycle.
+
 			Render(physMemPtr->state.VRAM + 0x40000,
 				physMemPtr->state.spriteRAM);
 
