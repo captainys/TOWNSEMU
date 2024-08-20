@@ -22,6 +22,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 void TownsSprite::State::PowerOn(void)
 {
+	Reset();
+}
+void TownsSprite::State::Reset(void)
+{
 	addressLatch=0;
 	for(auto &r : reg)
 	{
@@ -31,9 +35,6 @@ void TownsSprite::State::PowerOn(void)
 	screenModeAcceptsSprite=false;
 	callbackType = CALLBACK_NONE;
 	page = 0;
-}
-void TownsSprite::State::Reset(void)
-{
 }
 
 TownsSprite::TownsSprite(class FMTownsCommon *townsPtr,TownsPhysicalMemory *physMemPtr) : Device(townsPtr)
