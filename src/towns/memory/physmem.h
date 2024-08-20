@@ -529,7 +529,9 @@ public:
 	void EnableOrDisableNativeVRAMMask(void);
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
+	virtual void IOWriteWord(unsigned int ioport, unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);
+	virtual unsigned int IOReadWord(unsigned int ioport);
 	void Reset(void);
 
 
