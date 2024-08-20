@@ -180,6 +180,29 @@ void TownsPhysicalMemory::State::Reset(void)
 		break;
 	}
 }
+/* virtual */ void TownsPhysicalMemory::IOWriteWord(unsigned int ioport, unsigned int data)
+{
+	switch (ioport)
+	{
+	case TOWNSIO_VRAMACCESSCTRL_DATA_LOW: //  0x45A, // [2] pp.17,pp.112
+		{
+			auto prevMask=cpputil::GetDword(state.nativeVRAMMask);
+			state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)]=data&255;
+			state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)+1]=(data>>8)&255;
+			state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)+4]=data& 255;
+			state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)+5]=(data>>8)&255;
+			auto newMask=cpputil::GetDword(state.nativeVRAMMask);
+			if (prevMask!=newMask && (0xffffffff==prevMask||0xffffffff==newMask))
+			{
+				EnableOrDisableNativeVRAMMask();
+			}
+		}
+		break;
+	case TOWNSIO_KANJI_PTN_HIGH://      0xFF96,
+		// Write access enabled? [2] pp.95
+		break;
+	}
+}
 /* virtual */ unsigned int TownsPhysicalMemory::IOReadByte(unsigned int ioport)
 {
 	if(TOWNSIO_CMOS_BASE<=ioport && ioport<TOWNSIO_CMOS_END)
@@ -278,6 +301,35 @@ void TownsPhysicalMemory::State::Reset(void)
 		break;
 	}
 	return data;
+}
+/* virtual */ unsigned int TownsPhysicalMemory::IOReadWord(unsigned int ioport)
+{
+	switch (ioport)
+	{
+	case TOWNSIO_VRAMACCESSCTRL_DATA_LOW: //  0x45A, // [2] pp.17,pp.112
+	{
+		auto lowData=state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)];
+		auto highData=state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)+1];
+		return (lowData<<8)|highData;
+		break;
+	}
+	case TOWNSIO_KANJI_PTN_HIGH://      0xFF96,
+		if (true==takeJISCodeLog &&0==state.kanjiROMAccess.row)
+		{
+			JISCodeLog.push_back(state.kanjiROMAccess.JISCodeHigh);
+			JISCodeLog.push_back(state.kanjiROMAccess.JISCodeLow);
+		}
+		{
+			auto ROMCode=state.kanjiROMAccess.FontROMCode() & 8191;
+			auto highData=fontRom[32*ROMCode+state.kanjiROMAccess.row*2];
+			auto lowData=fontRom[32*ROMCode+state.kanjiROMAccess.row*2+1];
+			state.kanjiROMAccess.row=(state.kanjiROMAccess.row+1)&0x0F;
+			return (lowData<<8)|highData;
+		}
+		break;
+	}
+
+	return Device::IOReadWord(ioport);
 }
 
 TownsPhysicalMemory::TownsPhysicalMemory(class FMTownsCommon *townsPtr,class Memory *memPtr,class RF5C68 *pcmPtr) :

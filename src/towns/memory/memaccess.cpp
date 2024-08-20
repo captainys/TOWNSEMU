@@ -285,6 +285,30 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 }
 /* virtual */ unsigned int TownsFMRVRAMAccess::FetchWord(unsigned int physAddr) const
 {
+	if ((TOWNS_MEMIO_1_LOW<=physAddr&&physAddr<=TOWNS_MEMIO_1_HIGH) ||
+		(TOWNS_MEMIO_2_LOW<=physAddr&&physAddr<=TOWNS_MEMIO_2_HIGH))
+	{
+		switch (physAddr)
+		{
+		case TOWNSMEMIO_KANJI_PTN_HIGH://     0x000CFF96,
+		{
+			if (true == physMemPtr->takeJISCodeLog && 0 == physMemPtr->state.kanjiROMAccess.row)
+			{
+				physMemPtr->JISCodeLog.push_back(physMemPtr->state.kanjiROMAccess.JISCodeHigh);
+				physMemPtr->JISCodeLog.push_back(physMemPtr->state.kanjiROMAccess.JISCodeLow);
+			}
+			{
+				auto ROMCode=physMemPtr->state.kanjiROMAccess.FontROMCode()&8191;
+				auto highData=physMemPtr->fontRom[32*ROMCode+physMemPtr->state.kanjiROMAccess.row*2];
+				auto lowData=physMemPtr->fontRom[32*ROMCode+physMemPtr->state.kanjiROMAccess.row*2+1];
+				physMemPtr->state.kanjiROMAccess.row=(physMemPtr->state.kanjiROMAccess.row+1)&0x0F;
+				return (lowData<<8)|highData;
+			}
+			break;
+		}
+		}
+	}
+
 	return TownsMemAccess::FetchWord(physAddr);
 }
 /* virtual */ unsigned int TownsFMRVRAMAccess::FetchDword(unsigned int physAddr) const
