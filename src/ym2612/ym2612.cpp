@@ -268,10 +268,11 @@ void YM2612::MakeTLtoDB100(void)
 }
 void YM2612::MakeSLtoDB100(void)
 {
-	for(unsigned int SL=0; SL<16; ++SL)
+	for(unsigned int SL=0; SL<15; ++SL)
 	{
 		SLtoDB100[SL]=SL*300;
 	}
+	SLtoDB100[15]=9300;
 }
 void YM2612::MakeDB100to4095Scale(void)
 {
