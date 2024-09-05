@@ -476,6 +476,7 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 		state.IRQEnabled=(0!=(data&1));
 		if(true==state.IRQEnabled && 0<nFifoFilled)
 		{
+			state.KBINT=true;
 			picPtr->SetInterruptRequestBit(TOWNSIRQ_KEYBOARD,true);
 		}
 		break;
