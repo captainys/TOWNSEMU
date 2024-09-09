@@ -250,6 +250,10 @@ void TownsFDC::MakeReady(void)
 				MakeReady();
 			}
 		}
+		else
+		{
+			MakeReady(); // Drive Not Ready.
+		}
 		break;
 	case 0xA0: // Write Data (Write Sector)
 	case 0xB0: // Write Data (Write Sector)
