@@ -203,6 +203,7 @@ public:
 			uint64_t pretendDriveNotReadyUntil=0;  // Not saved in the state.  Zero-ed when state-loaded.
 
 			void DiskChanged(uint64_t vmTime);
+			void CancelDiskChanged(void);
 		};
 
 		Drive drive[NUM_DRIVES];
@@ -254,6 +255,12 @@ public:
 	    diskIdx is for pointing a disk in the multiple-disk D77 image.
 	*/
 	void LinkDiskImageToDrive(int imgIndex,int diskIdx,int driveNum,uint64_t vmTime);
+
+	/*! Compatible ROM tries to boot from FD if F0 is pressed, but it runs too fast and
+	    reaches FREADY check within DISK_CHANGE_TIME.
+	    If the disk is inserted on start up, make it ready as soon as power on.
+	*/
+	void CancelDiskChanged(int driveNum);
 private:
 	void SaveIfModifiedAndUnlinkDiskImage(unsigned int imgIndex);
 

@@ -86,6 +86,11 @@ void FMTownsCommon::State::PowerOn(void)
 				towns.fdc.SetWriteProtect(drv,true);
 			}
 		}
+		/*! Compatible ROM tries to boot from FD if F0 is pressed, but it runs too fast and
+		    reaches FREADY check within DISK_CHANGE_TIME.
+		    If the disk is inserted on start up, make it ready as soon as power on.
+		*/
+		towns.fdc.CancelDiskChanged(drv);
 	}
 
 	if(TOWNSTYPE_UNKNOWN!=argv.townsType)

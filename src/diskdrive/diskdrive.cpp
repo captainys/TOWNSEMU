@@ -800,6 +800,13 @@ void DiskDrive::State::Drive::DiskChanged(uint64_t vmTime)
 	pretendDriveNotReadyUntil=vmTime+DISK_CHANGE_TIME;
 }
 
+void DiskDrive::State::Drive::CancelDiskChanged(void)
+{
+	diskChange=false;
+	pretendDriveNotReadyCount=0;
+	pretendDriveNotReadyUntil=0;
+}
+
 ////////////////////////////////////////////////////////////
 
 /* static */ bool DiskDrive::IsD77Extension(std::string ext)
@@ -899,6 +906,11 @@ void DiskDrive::LinkDiskImageToDrive(int imgIdx,int diskIdx,int driveNum,uint64_
 	state.drive[driveNum].diskIndex=diskIdx;
 	state.drive[driveNum].mediaType=imgFile[imgIdx].img.IdentifyDiskMediaType(diskIdx);
 	state.drive[driveNum].DiskChanged(vmTime);
+}
+
+void DiskDrive::CancelDiskChanged(int driveNum)
+{
+	state.drive[driveNum].CancelDiskChanged();
 }
 
 void DiskDrive::SaveIfModifiedAndUnlinkDiskImage(unsigned int imgIndex)
