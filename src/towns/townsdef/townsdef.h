@@ -587,6 +587,9 @@ enum
 	TOWNSIO_VNDRV_ENABLE=         0x2F12,
 	TOWNSIO_VNDRV_COMMAND=        0x2F14,
 	TOWNSIO_VNDRV_AUXCOMMAND=     0x2F18,
+
+	TOWNS_QUICK_DEBUG_BREAK=      0xEA,  // Writing to this I/O port will break the VM.
+	TOWNS_QUICK_DEBUG_STATE=      0xEB,  // Writing to this I/O port will show the VM state, not break.
 };
 
 enum

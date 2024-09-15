@@ -626,6 +626,8 @@ FMTownsCommon::FMTownsCommon() :
 
 	io.AddDevice(this,TOWNSIO_POWER_CONTROL);   //        0x22
 	io.AddDevice(this,TOWNSIO_SERIAL_ROM_CTRL); //        0x32,
+	io.AddDevice(this,TOWNS_QUICK_DEBUG_BREAK); //        0xEA,  // Writing to this I/O port will break the VM.
+	io.AddDevice(this,TOWNS_QUICK_DEBUG_STATE); //        0xEB,  // Writing to this I/O port will show the VM state, not break.
 	io.AddDevice(this,TOWNSIO_FMR_RESOLUTION); // 0x400
 	io.AddDevice(this,TOWNSIO_VM_HOST_IF_CMD_STATUS);
 	io.AddDevice(this,TOWNSIO_VM_HOST_IF_DATA);

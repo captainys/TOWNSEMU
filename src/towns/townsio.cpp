@@ -60,6 +60,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		state.lastSerialROMCommand=data;
 		break;
 
+	case TOWNS_QUICK_DEBUG_BREAK: //        0xEA,  // Writing to this I/O port will break the VM.
+		debugger.ExternalBreak("Break Request from VM");
+		break;
+	case TOWNS_QUICK_DEBUG_STATE: //        0xEB,  // Writing to this I/O port will show the VM state, not break.
+		PrintStatus();
+		break;
+
 	case TOWNSIO_VM_HOST_IF_CMD_STATUS:
 		ProcessVMToHostCommand(data,var.nVM2HostParam,var.VM2HostParam);
 		var.nVM2HostParam=0;
