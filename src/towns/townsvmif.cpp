@@ -29,6 +29,7 @@ void FMTownsCommon::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int param
 	switch(vmCmd)
 	{
 	case TOWNS_VMIF_CMD_CAPTURE_CRTC:
+		std::cout << "\n";
 		std::cout << "0x" << cpputil::Ubtox(param[0]) << ",0x" << cpputil::Ubtox(param[1]) << "," << std::endl;
 		{
 			const int nReg=sizeof(crtc.state.crtcReg)/sizeof(crtc.state.crtcReg[0]);
@@ -40,6 +41,11 @@ void FMTownsCommon::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int param
 					std::cout << std::endl;
 				}
 			}
+			for(int i=0; i<3; ++i)
+			{
+				std::cout << "0x" << cpputil::Ubtox(crtc.state.sifter[i]) << ",";
+			}
+			std::cout << "\n";
 		}
 		break;
 	case TOWNS_VMIF_CMD_PAUSE:
