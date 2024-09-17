@@ -41,7 +41,7 @@ void FMTownsCommon::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int param
 					std::cout << std::endl;
 				}
 			}
-			for(int i=0; i<3; ++i)
+			for(int i=0; i<4; ++i)
 			{
 				std::cout << "0x" << cpputil::Ubtox(crtc.state.sifter[i]) << ",";
 			}
