@@ -921,6 +921,8 @@ enum
 	TOWNS_VMIF_CMD_NOTIFY_MOUSE = 0x0A, // Notify Mouse Position
 
 	TOWNS_VMIF_CMD_BYTE_VM_TO_HOST=0x0B,// Send byte to the host.  Write to data register then write this command.
+
+	TOWNS_VMIF_CMD_CAPTURE_FM_FNUM=0x0C, // Capture F-Number of YM2612 Ch0.
 };
 
 enum

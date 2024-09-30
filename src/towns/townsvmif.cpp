@@ -101,6 +101,12 @@ void FMTownsCommon::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int param
 			var.vmToHost.push_back(param[i]);
 		}
 		break;
+
+	case TOWNS_VMIF_CMD_CAPTURE_FM_FNUM:
+		std::cout << "\n";
+		std::cout << "\t0x" << cpputil::Ustox(sound.state.ym2612.state.channels[0].F_NUM) << ",";
+		std::cout << cpputil::Ustox(sound.state.ym2612.state.channels[0].BLOCK) << ",\n";
+		break;
 	}
 }
 void FMTownsCommon::VMHostFileTransfer(void)
