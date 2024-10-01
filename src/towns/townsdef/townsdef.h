@@ -903,7 +903,7 @@ TOWNS_GAMEPORTEMU_ERROR,
 	std::string TownsGamePortEmuToStr(unsigned int emu);
 #endif
 
-enum
+enum	// Commands written to I/O TOWNSIO_VM_HOST_IF_CMD_STATUS=0x2386
 {
 	TOWNS_VMIF_CMD_NOP=           0x00, 
 	TOWNS_VMIF_CMD_CAPTURE_CRTC=  0x01, // Capture CRTC. Followed by two bytes mode0, and mode1.
@@ -923,6 +923,7 @@ enum
 	TOWNS_VMIF_CMD_BYTE_VM_TO_HOST=0x0B,// Send byte to the host.  Write to data register then write this command.
 
 	TOWNS_VMIF_CMD_CAPTURE_FM_FNUM=0x0C, // Capture F-Number of YM2612 Ch0.
+	TOWNS_VMIF_CMD_CAPTURE_FM_TL  =0x0D, // Capture TL of YM2612 Ch0 Slot 4
 };
 
 enum

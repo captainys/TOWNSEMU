@@ -105,7 +105,11 @@ void FMTownsCommon::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int param
 	case TOWNS_VMIF_CMD_CAPTURE_FM_FNUM:
 		std::cout << "\n";
 		std::cout << "\t0x" << cpputil::Ustox(sound.state.ym2612.state.channels[0].F_NUM) << ",";
-		std::cout << cpputil::Ustox(sound.state.ym2612.state.channels[0].BLOCK) << ",\n";
+		std::cout << "0x" << cpputil::Ustox(sound.state.ym2612.state.channels[0].BLOCK) << ",\n";
+		break;
+	case TOWNS_VMIF_CMD_CAPTURE_FM_TL:
+		std::cout << "\n";
+		std::cout << "\t0x" << cpputil::Ubtox(sound.state.ym2612.state.channels[0].slots[3].TL) << ",\n";
 		break;
 	}
 }
