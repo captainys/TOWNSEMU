@@ -26,10 +26,10 @@ class RF5C68
 public:
 	enum
 	{
-		SAMPLING_RATE=20725,  // Supposed to be 19200.  Where is this 20725 come from?
+		SAMPLING_RATE=20833,  // Supposed to be 19200.  Where is this 20833 come from? The master clock of the RF5C68 in FM TOWNS is 8 MHz, and dividing it by 384 gives 20.833 Hz.
 		WAVERAM_SIZE=65536,
 		NUM_CHANNELS=8,
-		FREQ=20725,
+		FREQ=20833,
 		FD_BIT_SHIFT=11,
 		BANK_SHIFT=12, // 2^12 bytes per bank.
 		LOOP_STOP_CODE=0xFF,
@@ -78,19 +78,23 @@ public:
 		std::vector <unsigned char> waveRAM;
 		Channel ch[NUM_CHANNELS];
 
+		int timeBalance;       // For WAV generation.
+		int volume=WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT;
+
+		// For Linear interpolation
+		int Lout_prev;
+		int Rout_prev;
+
 		bool playing;          // Bit 7 of I/O 04F7H
 		unsigned short Bank;   // Bank x000H
 		unsigned char CB;      // Channel
 		unsigned char chOnOff; // I/O 04F8H
-		int timeBalance;       // For WAV generation.
 
 		inline bool IRQ() const
 		{
 			return 0!=IRQBank;
 		}
 		unsigned char IRQBank,IRQBankMask;
-
-		int volume=WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT;
 	};
 	State state;
 	bool chMute[NUM_CHANNELS]={false,false,false,false,false,false,false,false};
