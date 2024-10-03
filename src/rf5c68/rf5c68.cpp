@@ -50,7 +50,7 @@ static inline int Gain(int a,int b)
 // Linear interpolation
 static inline int lerp_int(int start, int end, float t)
 {
-	if (t <= 1.0)
+	if (t >= 1.0)
 	{
 		return end;
 	}
