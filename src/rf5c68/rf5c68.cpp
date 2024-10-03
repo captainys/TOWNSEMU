@@ -54,7 +54,12 @@ static inline int lerp_int(int start, int end, float t)
 	{
 		return end;
 	}
-	return (int)(1 - t) * start + t * end;
+	else if(t <= 0.0)
+	{
+		return start;
+	}
+	float ret = (1.0 - t) * start + t * end;
+	return (int)ret;
 }
 
 
