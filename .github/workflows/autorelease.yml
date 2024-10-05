@@ -40,7 +40,7 @@ jobs:
           cmake -E tar cvf windows_binary_latest.zip --format=zip Tsugaru_CUI.exe Tsugaru_GUI.exe TsugaruUtil.D77 readme.md command.md
       working-directory: ./ci_windows
     - name: upload_to_artifact
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
           name: Windows-Binary
           path: ci_windows/windows_binary_latest.zip
@@ -90,7 +90,7 @@ jobs:
           cmake -E tar cvf ubuntu_binary_latest.zip --format=zip Tsugaru_CUI Tsugaru_GUI TsugaruUtil.D77 readme.md command.md
       working-directory: ./ci_ubuntu
     - name: upload_to_artifact
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
           name: Ubuntu-Binary
           path: ci_ubuntu/ubuntu_binary_latest.zip
@@ -134,7 +134,7 @@ jobs:
           cmake -E tar cvf macos_binary_latest.zip --format=zip Tsugaru_GUI.app TsugaruUtil.D77 readme.md command.md
       working-directory: ./ci_macos
     - name: upload_to_artifact
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
           name: Macos-Binary
           path: ci_macos/macos_binary_latest.zip
