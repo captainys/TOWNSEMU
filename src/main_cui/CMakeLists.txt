@@ -922,6 +922,25 @@ add_test(
 		-DAMPERWIRELINE
 )
 
+# Shadow of the Beast 2 does not run with too much memory.
+# Confirmed 4MB is ok.
+add_test(
+	NAME SHADOW_OF_THE_BEAST_2_OPENING_DEMO
+	COMMAND
+		${TARGET_NAME}
+		"${TOWNSEMU_TEST}/ROM_MX"
+		-CD
+		"${DISC_IMAGE_DIR}/SHADOWOFTHEBEAST2.cue"
+		-DEBUG
+		-UNITTEST
+		-POWEROFFAT
+		000C:0006927D
+		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
+		-MEMSIZE
+		4
+)
+
 add_test(
 	NAME BRANDISH_OPENING_DEMO
 	COMMAND
