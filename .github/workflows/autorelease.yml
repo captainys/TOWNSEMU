@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*' # Run if tagged as v*.
 
+permissions: read-all
+permissions: write-all
+
 jobs:
   build-windows:
 
