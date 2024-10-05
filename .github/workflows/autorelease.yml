@@ -11,7 +11,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@latest
     - name: mkdir
       run: mkdir ci_windows
     - name: build
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@latest
     - name: mkdir
       run: mkdir ci_ubuntu
     - name: install-OpenGL
@@ -102,7 +102,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@latest
     - name: mkdir
       run: mkdir ci_macos
     - name: cmake
@@ -164,7 +164,8 @@ jobs:
     # https://github.com/actions/upload-release-asset
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
+      # uses: actions/create-release@v1   Is it deprecated and not maintained?
+      uses: "marvinpinto/action-automatic-releases@latest"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
