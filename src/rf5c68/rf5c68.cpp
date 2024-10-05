@@ -47,6 +47,20 @@ static inline int Gain(int a,int b)
 	}
 }
 
+// Linear interpolation
+static inline int lerp_int(int start, int end, float t)
+{
+	if (t >= 1.0)
+	{
+		return end;
+	}
+	else if(t <= 0.0)
+	{
+		return start;
+	}
+	float ret = (1.0 - t) * start + t * end;
+	return (int)ret;
+}
 
 
 RF5C68::RF5C68()
@@ -82,6 +96,8 @@ void RF5C68::Clear(void)
 	state.IRQBank=0;
 	state.IRQBankMask=0;
 	state.timeBalance=0;
+	state.Lout_prev=0;
+	state.Rout_prev=0;
 }
 
 RF5C68::StartAndStopChannelBits RF5C68::WriteControl(unsigned char value)
@@ -455,10 +471,16 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 			;
 		}
 
+		float time = 0;
+		float time_add = static_cast<float>(SAMPLING_RATE) / state.timeBalance;
+
 		while(0<=state.timeBalance && nFilled<numSamples)
 		{
-			WordOp_Add(wavePtr  ,Lout);
-			WordOp_Add(wavePtr+2,Rout);
+			//WordOp_Add(wavePtr  ,Lout);
+			//WordOp_Add(wavePtr+2,Rout);
+			WordOp_Add(wavePtr  ,lerp_int(state.Lout_prev,Lout,time));
+			WordOp_Add(wavePtr+2,lerp_int(state.Rout_prev,Rout,time));
+			time+=time_add;
 			state.timeBalance-=SAMPLING_RATE;
 			wavePtr+=4;
 			++nFilled;
@@ -469,6 +491,9 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 			}
 		}
 		state.timeBalance+=outSamplingRate;
+
+		state.Lout_prev=Lout;
+		state.Rout_prev=Rout;
 	}
 
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
