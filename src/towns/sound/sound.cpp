@@ -143,6 +143,10 @@ void TownsSound::SetCDROMPointer(class TownsCDROM *cdrom)
 	case TOWNSIO_SOUND_SAMPLING_DATA: //    0x4E7, // [2] pp.179,
 		break;
 	case TOWNSIO_SOUND_SAMPLING_FLAGS: //    0x4E8, // [2] pp.179,
+		// Write to clear FIFO
+		// Shadow of the Beast 2 somehow expects it.
+		// Does it use voice?  Or does it have some tricks using microphone?
+		var.nextPCMSampleReadyTime=townsPtr->state.townsTime+(PER_SECOND/100)/var.PCMSamplingRate;
 		break;
 	}
 }
@@ -243,7 +247,10 @@ void TownsSound::ProcessRecordPCMWrite(unsigned int reg,unsigned char data)
 		break;
 
 	case TOWNSIO_SOUND_SAMPLING_DATA: //    0x4E7, // [2] pp.179,
-		data=0x80; // Means zero.
+		// data=0x80; // Means zero.
+		// Shadow of the Beast 2 expects the sampling value to be positive at one point.
+		// Really wonder why?
+		data=1;
 		if(var.PCMSamplePointer<var.waveToBeSentToVM.GetNumSamplePerChannel() &&
 		   0<var.waveToBeSentToVM.GetNumChannel())
 		{
