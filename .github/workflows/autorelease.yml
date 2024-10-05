@@ -172,12 +172,14 @@ jobs:
       #  release_name: Auto Release ${{ github.ref }}
       #  draft: false
       #  prerelease: true
+      # Apparently github.ref gives /refs/tags/v99999999
+      # Hopefully github.ref_name givew v99999999 only.
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: ${{ github.ref }}
+        automatic_release_tag: ${{ github.ref_name }}
         prerelease: true
-        title: Auto Release ${{ github.ref }}
+        title: Auto Release ${{ github.ref_name }}
 
     - name: Upload Windows Binary
       id: upload-windows-binary
