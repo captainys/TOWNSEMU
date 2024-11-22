@@ -139,7 +139,19 @@ void Memory::RemoveAccess(unsigned int physAddrLow,unsigned int physAddrHigh)
 	auto high=physAddrHigh>>GRANURALITY_SHIFT;
 	for(auto i=low; i<=high; ++i)
 	{
-		memAccessPtr[i]=&nullAccess;
+		if(nullptr==memAccessPtr[i]->memAccessChain)
+		{
+			memAccessPtr[i]=&nullAccess;
+		}
+		else
+		{
+			auto ptr=memAccessPtr[i];
+			while(nullptr!=ptr->memAccessChain->memAccessChain)
+			{
+				ptr=ptr->memAccessChain;
+			}
+			ptr->memAccessChain=&nullAccess;
+		}
 	}
 }
 void Memory::SetAccessObject(MemoryAccess *memAccess,unsigned int physAddr)
