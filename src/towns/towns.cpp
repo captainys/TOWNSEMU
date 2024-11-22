@@ -1373,8 +1373,23 @@ std::vector <std::string> FMTownsCommon::GetCallStackText(void) const
 void FMTownsCommon::PrintCallStack(void) const
 {
 	auto &cpu=CPU();
-	for(auto str : GetCallStackText())
+	auto callStack=GetCallStackText();
+	size_t i0;
+	if(200<callStack.size())
 	{
+		i0=callStack.size()-200;
+		std::cout << "Call Stack depth exceeds 200." << std::endl;
+		std::cout << "Showing last 200." << std::endl;
+		if(nullptr!=cpu.debuggerPtr)
+		{
+			cpu.debuggerPtr->WriteLogFile("Call Stack depth exceeds 200.");
+			cpu.debuggerPtr->WriteLogFile("Showing last 200.");
+		}
+	}
+
+	for(auto i=i0; i<callStack.size(); ++i)
+	{
+		auto str=callStack[i];
 		std::cout << str << std::endl;
 		if(nullptr!=cpu.debuggerPtr)
 		{
