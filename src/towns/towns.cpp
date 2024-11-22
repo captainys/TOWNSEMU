@@ -1374,7 +1374,7 @@ void FMTownsCommon::PrintCallStack(void) const
 {
 	auto &cpu=CPU();
 	auto callStack=GetCallStackText();
-	size_t i0;
+	size_t i0=0;
 	if(200<callStack.size())
 	{
 		i0=callStack.size()-200;
