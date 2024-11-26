@@ -11,6 +11,7 @@ public:
 	MIDI_Actual();
 	~MIDI_Actual();
 	void SendCommand(const unsigned char cmdBuf[]) override;
+	void SendExclusiveCommand(const unsigned char cmdBuf[],int len) override;
 };
 
 MIDI_Actual::MIDI_Actual()
@@ -44,6 +45,30 @@ void MIDI_Actual::SendCommand(const unsigned char cmdBuf[])
 	{
 		DWORD msg=DWORD(cmdBuf[0])|(DWORD(cmdBuf[1])<<8)|(DWORD(cmdBuf[2])<<16);
 		midiOutShortMsg(hMidi,msg);
+	}
+}
+
+void MIDI_Actual::SendExclusiveCommand(const unsigned char cmdBuf[],int len)
+{
+	if (NULL != hMidi)
+	{
+		MIDIHDR mhMidi;
+		unsigned char SendBuf[14]{};
+
+		SendBuf[0]=0xf0;
+		memcpy(&SendBuf[1],cmdBuf,len);
+		SendBuf[len+1]=0xf7;
+
+		ZeroMemory(&mhMidi, sizeof(mhMidi));
+
+		mhMidi.lpData=(LPSTR)SendBuf;
+		mhMidi.dwBufferLength=len+2;
+		mhMidi.dwBytesRecorded=len+2;
+
+		midiOutPrepareHeader(hMidi,&mhMidi,sizeof(mhMidi));
+		midiOutLongMsg(hMidi,&mhMidi,sizeof(mhMidi));
+		while ((mhMidi.dwFlags&MHDR_DONE) == 0);
+		midiOutUnprepareHeader(hMidi,&mhMidi,sizeof(mhMidi));
 	}
 }
 

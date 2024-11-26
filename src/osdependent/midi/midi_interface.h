@@ -8,6 +8,7 @@ public:
 	static MIDI_Interface *Create(void);
 	static void Delete(MIDI_Interface *);
 	virtual void SendCommand(const unsigned char cmdBuf[])=0;
+	virtual void SendExclusiveCommand(const unsigned char cmdBuf[],int len)=0;
 };
 
 /* } */
