@@ -27,64 +27,111 @@ void TownsMIDI::MIDICard::ByteSentFromVM(int port,unsigned char data)
 
 	auto &p=ports[port];
 
-	if(0!=(0x80&data))
+	if(p.midiSysExflag==false)
 	{
-		int data_check;
-
-		data_check = data & 0xf0;
-		p.midiMessage[0] = data;
-		p.midiMessage[1] = 0;
-		p.midiMessage[2] = 0;
-
-		p.midiMessageLen=0;
-		p.midiMessageFilled=0;
-
-		if (data_check == 0xf0)
+		if (0 != (0x80 & data))
 		{
-			switch (data)
+			int data_check;
+
+			data_check = data & 0xf0;
+			p.midiMessage[0] = data;
+			p.midiMessage[1] = 0;
+			p.midiMessage[2] = 0;
+
+			p.midiMessageFilled = 0;
+
+			if (data_check == 0xf0)
 			{
-			case 0xf0:
-			case 0xf1:
-			case 0xf3:
-				p.midiMessageLen = 2;
-				break;
-			case 0xf2:
-				p.midiMessageLen = 3;
-				break;
-			default:
-				p.midiMessageLen = 1;
-				break;
-			}
-		}
-		else
-		{
-			if (data_check == 0xc0 || data_check == 0xd0)
-			{
-				p.midiMessageLen = 2;
+				switch (data)
+				{
+				case 0xf0:
+					p.midiSysExflag=true;
+					p.midiMessageLen=0;
+					break;
+				case 0xf1:
+				case 0xf3:
+					p.midiMessageLen = 2;
+					break;
+				case 0xf2:
+					p.midiMessageLen = 3;
+					break;
+				default:
+					p.midiMessageLen = 1;
+					break;
+				}
 			}
 			else
 			{
-				p.midiMessageLen = 3;
+				if (data_check == 0xc0 || data_check == 0xd0)
+				{
+					p.midiMessageLen = 2;
+				}
+				else
+				{
+					p.midiMessageLen = 3;
+				}
 			}
+		}
+
+		p.midiMessage[p.midiMessageFilled++] = data;
+		if (0 != p.midiMessageLen && p.midiMessageLen <= p.midiMessageFilled)
+		{
+			if (true == owner->midiMonitor)
+			{
+				std::string s = "MIDI Message ";
+				for (int i = 0; i < p.midiMessageFilled; ++i)
+				{
+					s += cpputil::Ubtox(p.midiMessage[i]);
+					s += " ";
+				}
+				std::cout << s << std::endl;
+				owner->townsPtr->debugger.WriteLogFile(s);
+			}
+			p.midiItfc->SendCommand(p.midiMessage);
+			p.midiMessageFilled = 1; // May re-use the status byte.
 		}
 	}
-
-	p.midiMessage[p.midiMessageFilled++] = data;
-	if (0!=p.midiMessageLen && p.midiMessageLen<=p.midiMessageFilled)
+	else
 	{
-		if(true==owner->midiMonitor)
+		if(data==0xf7)
 		{
-			std::string s="MIDI Message ";
-			for(int i=0; i<p.midiMessageFilled; ++i)
+			if (true==owner->midiMonitor)
 			{
-				s+=cpputil::Ubtox(p.midiMessage[i]);
-				s+=" ";
+				std::string s = "MIDI Exclusive Message ";
+				s+="F0";
+				for (int i=0;i<p.midiMessageLen;++i)
+				{
+					s += cpputil::Ubtox(p.midiMessage[i]);
+					s += " ";
+				}
+				s+="F7";
+				std::cout<<s<<std::endl;
+				owner->townsPtr->debugger.WriteLogFile(s);
 			}
-			std::cout << s << std::endl;
-			owner->townsPtr->debugger.WriteLogFile(s);
+			p.midiItfc->SendExclusiveCommand(p.midiMessage,p.midiMessageLen);
+			p.midiSysExflag=false;
 		}
-		p.midiItfc->SendCommand(p.midiMessage);
-		p.midiMessageFilled=1; // May re-use the status byte.
+
+		p.midiMessage[p.midiMessageLen++]=data;
+
+		if (p.midiMessageLen >= 12)
+		{
+			if (true == owner->midiMonitor)
+			{
+				std::string s = "MIDI Exclusive Message ";
+				s += "F0";
+				for (int i = 0; i < 12; ++i)
+				{
+					s += cpputil::Ubtox(p.midiMessage[i]);
+					s += " ";
+				}
+				s += "F7";
+				std::cout << s << std::endl;
+				owner->townsPtr->debugger.WriteLogFile(s);
+			}
+			p.midiItfc->SendExclusiveCommand(p.midiMessage,12);
+			p.midiSysExflag=false;
+		}
 	}
 }
 

@@ -72,7 +72,8 @@ public:
 
 			MIDI_Interface *midiItfc=nullptr;
 			unsigned char midiMessageFilled=0,midiMessageLen=0;
-			unsigned char midiMessage[3];
+			bool midiSysExflag=false;
+			unsigned char midiMessage[12];
 			i8251Client interface;  // Fixed in the constructor.  Not saved in the state.
 		};
 
