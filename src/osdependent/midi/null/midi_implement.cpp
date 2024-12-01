@@ -6,6 +6,9 @@ public:
 	void SendCommand(const unsigned char cmdBuf[]) override
 	{
 	}
+	void SendExclusiveCommand(const unsigned char cmdBuf[],int len) override
+	{
+	}
 };
 
 MIDI_Interface *MIDI_Interface::Create(void)
