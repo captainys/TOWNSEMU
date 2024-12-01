@@ -136,15 +136,16 @@ void ProfileDialog::Make(void)
 		CPUFreqTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"CPU Speed (MHz)",4,YSTRUE);
 		CPUFreqTxt->SetInteger(25);
 		AddStaticText(0,FSKEY_NULL,"(Too-fast frequency rather slows down VM)",YSFALSE);
-		FPUBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Enable 80387 FPU",YSFALSE);
 		RAMSizeTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"RAM (MB)",4,YSFALSE);
 		RAMSizeTxt->SetInteger(4);
+		FPUBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Enable 80387 FPU",YSFALSE);
 
 		AddStaticText(0,FSKEY_NULL,"CPU Fidelity:",YSTRUE);
 		CPUFidelityDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,20,20,YSFALSE);
 		CPUFidelityDrp->AddString(i486DXCommon::FidelityLevelToStr(i486DXCommon::MID_FIDELITY).c_str(),YSTRUE);
 		CPUFidelityDrp->AddString(i486DXCommon::FidelityLevelToStr(i486DXCommon::HIGH_FIDELITY).c_str(),YSFALSE);
 		CPUFidelityHelpBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"What's this?",YSFALSE);
+		pretend386DXBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Pretend 80386DX (Need TownsOS V2.1 L10 etc.)",YSFALSE);
 
 		CDImgBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"CD Image:",YSTRUE);
 		CDImgTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
@@ -203,9 +204,7 @@ void ProfileDialog::Make(void)
 		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_HC).c_str(),YSFALSE);
 		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_MARTY).c_str(),YSFALSE);
 
-
-		pretend386DXBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Pretend 80386DX",YSFALSE);
-
+		scanLineEffectIn15KHzBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Scanline Effect(Only 15khz Screen)",YSFALSE);
 		damperWireLineBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Render Damper-Wire Line (to make you nostalgic)",YSFALSE);
 
 		startUpStateFNameBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Load VM State",YSTRUE);
@@ -1294,6 +1293,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	}
 
 
+	profile.scanLineEffectIn15KHz=(YSTRUE==scanLineEffectIn15KHzBtn->GetCheck());
 	profile.damperWireLine=(YSTRUE==damperWireLineBtn->GetCheck());
 	profile.separateProcess=(YSTRUE==separateProcBtn->GetCheck());
 
@@ -1534,6 +1534,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		strikeCommanderThrottlePhysIdDrp->Disable();
 		strikeCommanderThrottleAxisDrp->Disable();
 	}
+
+	scanLineEffectIn15KHzBtn->SetCheck(profile.damperWireLine ? YSTRUE : YSFALSE);
 
 	damperWireLineBtn->SetCheck(profile.damperWireLine ? YSTRUE : YSFALSE);
 
