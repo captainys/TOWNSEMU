@@ -145,7 +145,7 @@ void ProfileDialog::Make(void)
 		CPUFidelityDrp->AddString(i486DXCommon::FidelityLevelToStr(i486DXCommon::MID_FIDELITY).c_str(),YSTRUE);
 		CPUFidelityDrp->AddString(i486DXCommon::FidelityLevelToStr(i486DXCommon::HIGH_FIDELITY).c_str(),YSFALSE);
 		CPUFidelityHelpBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"What's this?",YSFALSE);
-		pretend386DXBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Pretend 80386DX (Need TownsOS V2.1 L10 etc.)",YSFALSE);
+		pretend386DXBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Pretend 80386DX (for TownsOS V2.1 L10 etc.)",YSFALSE);
 
 		CDImgBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"CD Image:",YSTRUE);
 		CDImgTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
@@ -1678,7 +1678,7 @@ void ProfileDialog::ExplainCPUFidelity(void)
 		L"Since High-Fidelity CPU needs to check and handle more exceptions, it is slower than Medium-Fidelity\n"
 		L"CPU core.\n"
 		L"\n"
-		L"Windows 3.1 requires High-Fidelity CPU core.\n",
+		L"Windows 3.1, Windows 95, Linux, and OSASK requires High-Fidelity CPU core.\n",
 		L"OK",nullptr);
 	AttachModalDialog(dlg);
 }
