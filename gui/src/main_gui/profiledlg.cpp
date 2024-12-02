@@ -1535,7 +1535,7 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		strikeCommanderThrottleAxisDrp->Disable();
 	}
 
-	scanLineEffectIn15KHzBtn->SetCheck(profile.damperWireLine ? YSTRUE : YSFALSE);
+	scanLineEffectIn15KHzBtn->SetCheck(profile.scanLineEffectIn15KHz ? YSTRUE : YSFALSE);
 
 	damperWireLineBtn->SetCheck(profile.damperWireLine ? YSTRUE : YSFALSE);
 
