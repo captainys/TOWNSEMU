@@ -1159,8 +1159,8 @@ void FMTownsCommon::SetMainRAMSize(long long int size)
 	uint64_t RAMEnd=0x7FFFFFFF;
 	if(TOWNSTYPE_MARTY==townsType)
 	{
-		size=std::min<uint64_t>(size,TOWNSADDR_MARTY_ROM0_BASE);
-		RAMEnd=TOWNSADDR_MARTY_ROM0_BASE-1;
+		size=std::min<uint64_t>(size,TOWNSADDR_MARTY_OSROM_BASE);
+		RAMEnd=TOWNSADDR_MARTY_OSROM_BASE-1;
 	}
 	else if(TOWNSCPU_80386SX==TownsTypeToCPUType(townsType))
 	{
