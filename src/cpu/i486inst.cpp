@@ -354,6 +354,8 @@ void i486DXCommon::MakeOpCodeRenumberTable(void)
 	opCodeRenumberTable[I486_OPCODE_BSWAP_EDI]=I486_RENUMBER_BSWAP_EDI;
 	opCodeRenumberTable[I486_OPCODE_CMPXCHG_RM8_R8]=I486_RENUMBER_CMPXCHG_RM8_R8;
 	opCodeRenumberTable[I486_OPCODE_CMPXCHG_RM_R]=I486_RENUMBER_CMPXCHG_RM_R;
+	opCodeRenumberTable[I486_OPCODE_XADD_RM8_R8]=I486_RENUMBER_XADD_RM8_R8;
+	opCodeRenumberTable[I486_OPCODE_XADD_RM_R]=I486_RENUMBER_XADD_RM_R;
 
 
 
@@ -491,6 +493,7 @@ void i486DXCommon::MakeOpCodeRenumberTable(void)
 	opCodeNeedOperandTable[I486_OPCODE_XOR_RM8_FROM_R8]=I486_NEEDOPERAND_RM8;
 	opCodeNeedOperandTable[I486_OPCODE_XCHG_RM8_R8]=I486_NEEDOPERAND_RM8;
 	opCodeNeedOperandTable[I486_OPCODE_CMPXCHG_RM8_R8]=I486_NEEDOPERAND_RM8;
+	opCodeNeedOperandTable[I486_OPCODE_XADD_RM8_R8]=I486_NEEDOPERAND_RM8;
 
 	// RM_X
 	opCodeNeedOperandTable[I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1]=I486_NEEDOPERAND_RM_X;
@@ -509,6 +512,7 @@ void i486DXCommon::MakeOpCodeRenumberTable(void)
 	opCodeNeedOperandTable[I486_OPCODE_XOR_RM_FROM_R]=I486_NEEDOPERAND_RM_X;
 	opCodeNeedOperandTable[I486_OPCODE_XCHG_RM_R]=I486_NEEDOPERAND_RM_X;
 	opCodeNeedOperandTable[I486_OPCODE_CMPXCHG_RM_R]=I486_NEEDOPERAND_RM_X;
+	opCodeNeedOperandTable[I486_OPCODE_XADD_RM_R]=I486_NEEDOPERAND_RM_X;
 
 	// RM_R
 	opCodeNeedOperandTable[I486_OPCODE_BT_R_RM]=I486_NEEDOPERAND_BT_R_RM;
@@ -3364,6 +3368,15 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 	case I486_OPCODE_CMPXCHG_RM_R:
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
 		disasm=DisassembleTypicalTwoOperands("CMPXCHG",op1,op2,cs.value,eip,symTable);
+		break;
+
+	case I486_OPCODE_XADD_RM8_R8:
+		op2.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("XADD",op1,op2,cs.value,eip,symTable);
+		break;
+	case I486_OPCODE_XADD_RM_R:
+		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("XADD",op1,op2,cs.value,eip,symTable);
 		break;
 	}
 

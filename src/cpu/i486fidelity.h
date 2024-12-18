@@ -519,6 +519,10 @@ public:
 				case I486_OPCODE_XCHG_RM_R: //        0x87,
 				case I486_OPCODE_XOR_RM8_FROM_R8: //  0x30,
 				case I486_OPCODE_XOR_RM_FROM_R: //    0x31,
+				case I486_OPCODE_CMPXCHG_RM8_R8:
+				case I486_OPCODE_CMPXCHG_RM_R:
+				case I486_OPCODE_XADD_RM8_R8:  // 0x0FC0
+				case I486_OPCODE_XADD_RM_R:    // 0x0FC1
 					return false;
 				case I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH: // =0xFF, // INC(REG=0),DEC(REG=1),CALL(REG=2),CALLF(REG=3),JMP(REG=4),JMPF(REG=5),PUSH(REG=6)
 					if(0==inst.GetREG() || 1==inst.GetREG())
