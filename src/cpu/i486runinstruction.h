@@ -8581,6 +8581,19 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		break;
 
+	case I486_RENUMBER_CPUID:
+		switch(GetEAX())
+		{
+		case 0:
+			state.NULL_and_reg32[REG_EAX]=0;
+			state.NULL_and_reg32[REG_EBX]=0x4C465359; // 'YSFL'
+			state.NULL_and_reg32[REG_EDX]=0x54484749; // 'IGHT'
+			state.NULL_and_reg32[REG_ECX]=0x4D4F432E; // '.COM'
+			break;
+		}
+		clocksPassed=1;
+		break;
+
 	case I486_RENUMBER_REALLY_UNDEFINED:
 		clocksPassed=0;
 		break;
