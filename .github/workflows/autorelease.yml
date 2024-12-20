@@ -60,7 +60,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install libglu1-mesa-dev mesa-common-dev
     - name: install-ALSA
-      run: sudo apt-get install libasound2 libasound2-dev
+      run: sudo apt-get install libasound2-dev
     - name: cmake
       run: cmake ../src -DCMAKE_BUILD_TYPE=Release
       working-directory: ./ci_ubuntu

@@ -8520,6 +8520,79 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 		}
 		break;
+	case I486_RENUMBER_XADD_RM8_R8:
+		clocksPassed=3;
+		{
+			// Based on the description in http://asm.inightmare.org/opcodelst/index.php?op=XADD
+			// op2 is a register.
+			uint32_t dst=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
+
+			HANDLE_EXCEPTION_IF_ANY;
+
+			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+			uint8_t src=cpputil::LowByte(state.reg32()[regNum&3]>>reg8Shift[regNum]);
+
+			auto temporary=dst;
+			AddByte(dst,src);
+			src=temporary;
+
+			SetRegisterValue8(regNum,src);
+			StoreOperandValueRegOrMem8(op1,mem,inst.addressSize,inst.segOverride,dst);
+			HANDLE_EXCEPTION_IF_ANY;
+		}
+		break;
+	case I486_RENUMBER_XADD_RM_R:
+		clocksPassed=3;
+		if(16==inst.operandSize)
+		{
+			// op2 is a register.
+			uint32_t dst=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
+
+			HANDLE_EXCEPTION_IF_ANY;
+
+			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+			uint32_t src=cpputil::LowWord(state.reg32()[regNum]);
+
+			auto temporary=dst;
+			AddWord(dst,src);
+			src=temporary;
+
+			SET_INT_LOW_WORD(state.reg32()[regNum],src);
+			StoreOperandValueRegOrMem16(op1,mem,inst.addressSize,inst.segOverride,dst);
+			HANDLE_EXCEPTION_IF_ANY;
+		}
+		else
+		{
+			// op2 is a register.
+			uint32_t dst=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+
+			HANDLE_EXCEPTION_IF_ANY;
+
+			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+			uint32_t src=state.reg32()[regNum];
+
+			auto temporary=dst;
+			AddDword(dst,src);
+			src=temporary;
+
+			state.reg32()[regNum]=src;
+			StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,dst);
+			HANDLE_EXCEPTION_IF_ANY;
+		}
+		break;
+
+	case I486_RENUMBER_CPUID:
+		switch(GetEAX())
+		{
+		case 0:
+			state.NULL_and_reg32[REG_EAX]=0;
+			state.NULL_and_reg32[REG_EBX]=0x4C465359; // 'YSFL'
+			state.NULL_and_reg32[REG_EDX]=0x54484749; // 'IGHT'
+			state.NULL_and_reg32[REG_ECX]=0x4D4F432E; // '.COM'
+			break;
+		}
+		clocksPassed=1;
+		break;
 
 	case I486_RENUMBER_REALLY_UNDEFINED:
 		clocksPassed=0;

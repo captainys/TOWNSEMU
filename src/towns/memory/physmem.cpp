@@ -616,6 +616,11 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	mappedSysROMAccess.SetCPUPointer(&cpu);
 	ResetSysROMDicROMMappingFlag(true,false);   // This will set up memory access for 0xF8000 to 0xFFFFF and 0xD0000 to 0xDFFFF
 
+	if(TOWNSCPU_80386SX==cpuType && 0xA00000<state.RAM.size())
+	{
+		state.RAM.resize(0xA00000);
+	}
+
 	if(0x00100000<state.RAM.size())
 	{
 		mem.AddAccess(&mainRAMAccess,0x00100000,(unsigned int)state.RAM.size()-1);
@@ -682,23 +687,30 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	martyROMAccess.SetPhysicalMemoryPointer(this);
 	martyROMAccess.SetCPUPointer(&cpu);
 
-	mem.AddAccess(&nativeDicROMAccess,TOWNSADDR_NATIVE_DICROM_BASE,TOWNSADDR_NATIVE_DICROM_END-1);
-	mem.AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_NATIVE_CMOSRAM_BASE,TOWNSADDR_NATIVE_CMOSRAM_END-1);
+	mem.AddAccess(&sysROMAccess,TOWNSADDR_SYSROM_BASE,0xFFFFFFFF); // Even when machine ID is 386SX, the CPU core is actually 486.  The reset instruction pointer needs to be at the end of 32-bit address space.
+
+	// Unless CMOS is cleared, Towns OS will try to put R drive from 81000000H regardless of the CPU type.
+	// To let 386SX run with the same CMOS setting, leave mapping of 81000000H.
 	mem.AddAccess(&spriteRAMAccess,TOWNSADDR_SPRITERAM_BASE,TOWNSADDR_SPRITERAM_END-1);
-	mem.AddAccess(&oldMemCardAccess,TOWNSADDR_MEMCARD_OLD_BASE,TOWNSADDR_MEMCARD_OLD_END-1);
-	mem.AddAccess(&JEIDA4MemCardAccess,TOWNSADDR_MEMCARD_JEIDA4_BASE,TOWNSADDR_MEMCARD_JEIDA4_END-1);
-	mem.AddAccess(&osROMAccess,TOWNSADDR_OSROM_BASE,TOWNSADDR_OSROM_END-1);
-	mem.AddAccess(&fontROMAccess,TOWNSADDR_FONT_BASE,TOWNSADDR_FONT_END-1);
-	mem.AddAccess(&font20ROMAccess,TOWNSADDR_FONT20_BASE,TOWNSADDR_FONT20_END-1);
-	mem.AddAccess(&waveRAMAccess,TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1);
-	mem.AddAccess(&sysROMAccess,TOWNSADDR_SYSROM_BASE,0xFFFFFFFF);
 
 	if(TOWNSTYPE_MARTY==townsType)
 	{
+		mem.AddAccess(&osROMAccess,TOWNSADDR_MARTY_OSROM_BASE,TOWNSADDR_MARTY_OSROM_END-1);
 		mem.AddAccess(&martyROMAccess,TOWNSADDR_MARTY_ROM0_BASE,TOWNSADDR_MARTY_ROM3_END-1);
 	}
 
-	if(TOWNSCPU_80386SX==cpuType)
+	if(TOWNSCPU_80386SX!=cpuType)
+	{
+		mem.AddAccess(&nativeDicROMAccess,TOWNSADDR_NATIVE_DICROM_BASE,TOWNSADDR_NATIVE_DICROM_END-1);
+		mem.AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_NATIVE_CMOSRAM_BASE,TOWNSADDR_NATIVE_CMOSRAM_END-1);
+		mem.AddAccess(&oldMemCardAccess,TOWNSADDR_MEMCARD_OLD_BASE,TOWNSADDR_MEMCARD_OLD_END-1);
+		mem.AddAccess(&JEIDA4MemCardAccess,TOWNSADDR_MEMCARD_JEIDA4_BASE,TOWNSADDR_MEMCARD_JEIDA4_END-1);
+		mem.AddAccess(&osROMAccess,TOWNSADDR_OSROM_BASE,TOWNSADDR_OSROM_END-1);
+		mem.AddAccess(&fontROMAccess,TOWNSADDR_FONT_BASE,TOWNSADDR_FONT_END-1);
+		mem.AddAccess(&font20ROMAccess,TOWNSADDR_FONT20_BASE,TOWNSADDR_FONT20_END-1);
+		mem.AddAccess(&waveRAMAccess,TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1);
+	}
+	else
 	{
 		// Memory access for higher than 16MB address space is still neeeded in 80386SX mode since
 		// high address may be given to DMA, and DMA will translate address to low address.
@@ -710,7 +722,10 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 		mem.AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_386SX_NATIVE_CMOSRAM_BASE,TOWNSADDR_386SX_NATIVE_CMOSRAM_END-1);
 		mem.AddAccess(&spriteRAMAccess,TOWNSADDR_386SX_SPRITERAM_BASE,TOWNSADDR_386SX_SPRITERAM_END-1);
 		mem.AddAccess(&oldMemCardAccess,TOWNSADDR_386SX_MEMCARD_BASE,TOWNSADDR_386SX_MEMCARD_END-1);
-		mem.AddAccess(&osROMAccess,TOWNSADDR_386SX_OSROM_BASE,TOWNSADDR_386SX_OSROM_END-1);
+		if(TOWNSTYPE_MARTY!=townsType)
+		{
+			mem.AddAccess(&osROMAccess,TOWNSADDR_386SX_OSROM_BASE,TOWNSADDR_386SX_OSROM_END-1);
+		}
 		mem.AddAccess(&fontROMAccess,TOWNSADDR_386SX_FONT_BASE,TOWNSADDR_386SX_FONT_END-1);
 		mem.AddAccess(&waveRAMAccess,TOWNSADDR_386SX_WAVERAM_WINDOW_BASE,TOWNSADDR_386SX_WAVERAM_WINDOW_END-1);
 		mem.AddAccess(&sysROMAccess,TOWNSADDR_386SX_SYSROM_BASE,TOWNSADDR_386SX_SYSROM_END-1);
@@ -722,12 +737,15 @@ void TownsPhysicalMemory::SetUpVRAMAccess(unsigned int cpuType,bool breakOnRead,
 	auto &mem=*memPtr;
 	if(true!=breakOnRead && true!=breakOnWrite)
 	{
-		mem.AddAccess(&VRAMAccess0,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
-		mem.AddAccess(&VRAMAccess1,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
-		mem.AddAccess(&VRAMAccessHighRes0,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
-		mem.AddAccess(&VRAMAccessHighRes1,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
-		mem.AddAccess(&VRAMAccessHighRes2,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
-		if(TOWNSCPU_80386SX==cpuType)
+		if(TOWNSCPU_80386SX!=cpuType)
+		{
+			mem.AddAccess(&VRAMAccess0,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
+			mem.AddAccess(&VRAMAccess1,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
+			mem.AddAccess(&VRAMAccessHighRes0,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
+			mem.AddAccess(&VRAMAccessHighRes1,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
+			mem.AddAccess(&VRAMAccessHighRes2,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
+		}
+		else
 		{
 			mem.AddAccess(&VRAMAccess0,TOWNSADDR_386SX_VRAM0_BASE,TOWNSADDR_386SX_VRAM0_END-1);
 			mem.AddAccess(&VRAMAccess1,TOWNSADDR_386SX_VRAM1_BASE,TOWNSADDR_386SX_VRAM1_END-1);
@@ -745,12 +763,15 @@ void TownsPhysicalMemory::SetUpVRAMAccess(unsigned int cpuType,bool breakOnRead,
 		VRAMAccessHighRes1Debug.breakOnWrite=breakOnWrite;
 		VRAMAccessHighRes2Debug.breakOnRead=breakOnRead;
 		VRAMAccessHighRes2Debug.breakOnWrite=breakOnWrite;
-		mem.AddAccess(&VRAMAccess0Debug,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
-		mem.AddAccess(&VRAMAccess1Debug,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
-		mem.AddAccess(&VRAMAccessHighRes0Debug,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
-		mem.AddAccess(&VRAMAccessHighRes1Debug,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
-		mem.AddAccess(&VRAMAccessHighRes2Debug,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
-		if(TOWNSCPU_80386SX==cpuType)
+		if(TOWNSCPU_80386SX!=cpuType)
+		{
+			mem.AddAccess(&VRAMAccess0Debug,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
+			mem.AddAccess(&VRAMAccess1Debug,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
+			mem.AddAccess(&VRAMAccessHighRes0Debug,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
+			mem.AddAccess(&VRAMAccessHighRes1Debug,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
+			mem.AddAccess(&VRAMAccessHighRes2Debug,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
+		}
+		else
 		{
 			mem.AddAccess(&VRAMAccess0Debug,TOWNSADDR_386SX_VRAM0_BASE,TOWNSADDR_386SX_VRAM0_END-1);
 			mem.AddAccess(&VRAMAccess1Debug,TOWNSADDR_386SX_VRAM1_BASE,TOWNSADDR_386SX_VRAM1_END-1);

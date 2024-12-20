@@ -205,6 +205,9 @@ enum
 #define TOWNSADDR_SYSROM_AND           0x0003FFFF
 
 
+// Marty has OSROM from 0x600000.  Thanks aochan for checking!
+#define TOWNSADDR_MARTY_OSROM_BASE           0x600000 // If something else is found before 0x600000, update also FMTowns::SetRAMSize function.
+#define TOWNSADDR_MARTY_OSROM_END            0x680000
 
 #define TOWNSADDR_MARTY_ROM0_BASE            0x680000
 #define TOWNSADDR_MARTY_ROM0_END             0x700000

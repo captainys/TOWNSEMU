@@ -585,7 +585,14 @@ void TownsFDC::MakeReady(void)
 		state.IRQMSK=(0!=(data&1));
 		state.DDEN=(0!=(data&2));
 		state.side=(0!=(data&4) ? 1 : 0);  // Is it really bit=ON for side 0?  Counter intuitive.
-		drv.motor=(0!=(data&0x10));
+
+		// Apparently, it controls drives 0 and 1.
+		// drv.motor=(0!=(data&0x10));
+		state.drive[0].motor=(0!=(data&0x10));
+		state.drive[1].motor=(0!=(data&0x10));
+		state.drive[2].motor=(0!=(data&0x10)); // Drives 2 and 3 seems to be controlled by bit 6, but not sure.
+		state.drive[3].motor=(0!=(data&0x10)); // Drives 2 and 3 seems to be controlled by bit 6, but not sure.
+
 		state.CLKSEL=(0!=(data&0x20));
 		break;
 	case TOWNSIO_FDC_DRIVE_SELECT://         0x20C, // [2] pp.253

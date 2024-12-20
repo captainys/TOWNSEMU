@@ -457,7 +457,7 @@ void TownsSCSI::EnterStatusPhaseWithoutFollowingMessageIn(void)
 
 /* virtual */ void TownsSCSI::IOWriteByte(unsigned int ioport,unsigned int data)
 {
-	if(true!=state.deviceConnected)
+	if(true!=state.deviceConnected || TOWNSTYPE_MARTY==townsPtr->townsType) // Marty did not have a SCSI I/F.
 	{
 		return;
 	}
@@ -539,6 +539,12 @@ void TownsSCSI::EnterStatusPhaseWithoutFollowingMessageIn(void)
 		return 0xff;
 	}
 	*/
+
+	if(TOWNSTYPE_MARTY==townsPtr->townsType) // Marty did not have a SCSI interface.
+	{
+		return 0xFF;
+	}
+
 
 	switch(ioport)
 	{
