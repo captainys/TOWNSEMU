@@ -8586,9 +8586,9 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		{
 		case 0:
 			state.NULL_and_reg32[REG_EAX]=0;
-			state.NULL_and_reg32[REG_EBX]=0x4C465359; // 'YSFL'
-			state.NULL_and_reg32[REG_EDX]=0x54484749; // 'IGHT'
-			state.NULL_and_reg32[REG_ECX]=0x4D4F432E; // '.COM'
+			state.NULL_and_reg32[REG_EBX]=0x67756F52; // "Roug"
+			state.NULL_and_reg32[REG_EDX]=0x38796C68; // "hly8"
+			state.NULL_and_reg32[REG_ECX]=0x36383430; // "0486"
 			break;
 		}
 		clocksPassed=1;
