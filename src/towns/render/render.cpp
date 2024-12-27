@@ -187,9 +187,9 @@ void TownsRender::BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogP
 			auto linePtr=rgba.data()+y*wid*4;
 			for(int x=0; x<wid; ++x)
 			{
-				linePtr[0]=(unsigned char)((unsigned int)linePtr[0]*7/12);
-				linePtr[1]=(unsigned char)((unsigned int)linePtr[1]*7/12);
-				linePtr[2]=(unsigned char)((unsigned int)linePtr[2]*7/12);
+				linePtr[0]=(unsigned char)((unsigned int)(linePtr[0]>>3)*4.7);
+				linePtr[1]=(unsigned char)((unsigned int)(linePtr[1]>>3)*4.7);
+				linePtr[2]=(unsigned char)((unsigned int)(linePtr[2]>>3)*4.7);
 				linePtr+=4;
 			}
 		}
