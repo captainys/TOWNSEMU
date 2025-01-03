@@ -31,6 +31,7 @@ public:
 
 	FsGuiButton *ROMDirBtn,*CDImgBtn,*FDImgBtn[TownsProfile::NUM_FDDRIVES],*HDImgBtn[TownsProfile::MAX_NUM_SCSI_DEVICES];
 	FsGuiButton *FDWriteProtBtn[TownsProfile::NUM_FDDRIVES];
+	FsGuiButton *scanLineEffectIn15KHzBtn;
 	FsGuiButton *damperWireLineBtn;
 	FsGuiTextBox *ROMDirTxt,*CDImgTxt,*FDImgTxt[TownsProfile::NUM_FDDRIVES],*HDImgTxt[TownsProfile::MAX_NUM_SCSI_DEVICES];
 	FsGuiDropList *CDSpeedDrp;

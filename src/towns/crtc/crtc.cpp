@@ -334,7 +334,7 @@ bool TownsCRTC::InHSYNC(const unsigned long long int townsTime) const
 bool TownsCRTC::First1msOfVerticalPeriod(const unsigned long long int townsTime) const
 {
 	unsigned int intoFrame=((unsigned long long)townsTime)%VSYNC_CYCLE;
-	return  intoFrame<1000000;
+	return  1000000<intoFrame;
 }
 
 bool TownsCRTC::InSinglePageMode(void) const

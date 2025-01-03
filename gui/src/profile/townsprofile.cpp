@@ -266,6 +266,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	sstream << "DAMPWIRE " << (damperWireLine ? 1 : 0);
 	text.push_back(sstream.str());
 
+	sstream.str("");
+	sstream << "SCANLINE15K " << (scanLineEffectIn15KHz ? 1 : 0);
+	text.push_back(sstream.str());
+
 	for(auto vk : virtualKeys)
 	{
 		if(""!=vk.townsKey && 0<=vk.physicalId)
@@ -706,6 +710,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				damperWireLine=(0!=argv[1].Atoi());
 			}
 		}
+		else if (0 == argv[0].STRCMP("SCANLINE15K"))
+		{
+			if(2<=argv.size())
+			{
+				scanLineEffectIn15KHz=(0!=argv[1].Atoi());
+			}
+		}
 		else if(0==argv[0].STRCMP("FMVOLUME"))
 		{
 			if(2<=argv.size())
@@ -1081,6 +1092,11 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	if(true==damperWireLine)
 	{
 		argv.push_back("-DAMPERWIRELINE");
+	}
+
+	if(true==scanLineEffectIn15KHz)
+	{
+		argv.push_back("-SCANLINE15K");
 	}
 
 	for(auto vk : virtualKeys)

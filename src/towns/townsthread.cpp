@@ -192,12 +192,12 @@ void TownsThread::VMMainLoopTemplate(
 						}
 						break;
 					}
+
+					CheckRenderingTimer(*townsPtr,*window,outside_world->ImageNeedsFlip());
 				}
 			}
 			townsPtr->ProcessSound(outside_world);
 			townsPtr->cdrom.UpdateCDDAState(townsPtr->state.townsTime);
-
-			CheckRenderingTimer(*townsPtr,*window,outside_world->ImageNeedsFlip());
 
 			outside_world->ProcessAppSpecific(*townsPtr);
 			if(townsPtr->state.nextDevicePollingTime<townsPtr->state.townsTime)
