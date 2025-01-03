@@ -42,7 +42,7 @@ void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,c
 		townsPtr->state.pretend386DX=true;
 		break;
 	case TOWNS_APPSPECIFIC_LEMMINGS2:
-		renderTiming=RENDER_TIMING_FIRST1MS_OF_VERTICAL;
+		renderTiming=RENDER_TIMING_AVOID_FIRST1MS_OF_VERTICAL;
 		break;
 	}
 }
@@ -335,8 +335,8 @@ void TownsThread::CheckRenderingTimer(FMTownsCommon &towns,class Outside_World::
 		case RENDER_TIMING_OUTSIDE_VSYNC:
 			isTiming=(true!=towns.crtc.InVSYNC(towns.state.townsTime));
 			break;
-		case RENDER_TIMING_FIRST1MS_OF_VERTICAL:
-			isTiming=towns.crtc.First1msOfVerticalPeriod(towns.state.townsTime);
+		case RENDER_TIMING_AVOID_FIRST1MS_OF_VERTICAL:
+			isTiming=towns.crtc.AvoidFirst1msOfVerticalPeriod(towns.state.townsTime);
 			break;
 		default:
 			std_unreachable;

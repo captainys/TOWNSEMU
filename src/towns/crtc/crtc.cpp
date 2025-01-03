@@ -331,10 +331,10 @@ bool TownsCRTC::InHSYNC(const unsigned long long int townsTime) const
 	}
 	return false;
 }
-bool TownsCRTC::First1msOfVerticalPeriod(const unsigned long long int townsTime) const
+bool TownsCRTC::AvoidFirst1msOfVerticalPeriod(const unsigned long long int townsTime) const
 {
 	unsigned int intoFrame=((unsigned long long)townsTime)%VSYNC_CYCLE;
-	return  1000000<intoFrame;
+	return  1000000<intoFrame && intoFrame<CRT_VERTICAL_DURATION;
 }
 
 bool TownsCRTC::InSinglePageMode(void) const

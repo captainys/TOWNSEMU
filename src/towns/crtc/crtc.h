@@ -352,7 +352,7 @@ public:
 
 	bool InVSYNC(const unsigned long long int townsTime) const;
 	bool InHSYNC(const unsigned long long int townsTime) const;
-	bool First1msOfVerticalPeriod(const unsigned long long int townsTime) const;
+	bool AvoidFirst1msOfVerticalPeriod(const unsigned long long int townsTime) const;
 
 	/*
 	VSYNC Cycle        |<----------------->|
