@@ -35,6 +35,7 @@ void TownsSound::State::Reset(void)
 void TownsSound::State::ResetVariables(void)
 {
 	muteFlag=0;
+	audioFlag=0;
 	addrLatch[0]=0;
 	addrLatch[1]=0;
 }
@@ -103,6 +104,9 @@ void TownsSound::SetCDROMPointer(class TownsCDROM *cdrom)
 		state.rf5c68.WriteIRQBankMask(data);
 		break;
 	case TOWNSIO_SOUND_PCM_INT://           0x4EB, // [2] pp.19,
+		break;
+	case TOWNSIO_SOUND_AUDIO://             0x4EC, // [2] pp.18,
+		state.audioFlag=data&0xff;
 		break;
 	case TOWNSIO_SOUND_PCM_ENV://           0x4F0, // [2] pp.19,
 		state.rf5c68.WriteRegister(RF5C68::REG_ENV,data,townsPtr->state.townsTime);
@@ -227,6 +231,9 @@ void TownsSound::ProcessRecordPCMWrite(unsigned int reg,unsigned char data)
 		data=state.rf5c68.state.IRQBank;
 		state.rf5c68.state.IRQBank=0;
 		break;
+	case TOWNSIO_SOUND_AUDIO://             0x4EC, // [2] pp.18,
+		data=state.audioFlag;
+		break;
 	case TOWNSIO_SOUND_PCM_ENV://           0x4F0, // [2] pp.19,
 		break;
 	case TOWNSIO_SOUND_PCM_PAN://           0x4F1, // [2] pp.19,
@@ -320,6 +327,8 @@ std::vector <std::string> TownsSound::GetStatusText(void) const
 
 	text.push_back("MUTE_FLAG=0x");
 	text.back()+=cpputil::Ubtox(state.muteFlag);
+	text.push_back("AUDIO_FLAG=0x");
+	text.back()+=cpputil::Ubtox(state.audioFlag);
 	text.insert(text.end(),pcmText.begin(),pcmText.end());
 	text.insert(text.end(),fmText.begin(),fmText.end());
 
@@ -350,7 +359,7 @@ void TownsSound::ProcessSound(void)
 			memset(nextFMPCMWave.data(),0,nextFMPCMWave.size());
 
 			bool wavGenerated=false;
-			if(true==IsFMPlaying() && 0!=(state.muteFlag&2))
+			if(true==IsFMPlaying() && 0!=(state.muteFlag&2) && 0!=(state.audioFlag&64))
 			{
 				state.ym2612.MakeWaveForNSamples(nextFMPCMWave.data(),numSamplesPerWave,lastFMPCMWaveGenTime);
 				wavGenerated=true;
@@ -361,7 +370,7 @@ void TownsSound::ProcessSound(void)
 
 				// Brandish expects PCM interrupt even when muted.
 				// Therefore, PCM wave must be generated and played for making IRQ.
-				if(0!=(state.muteFlag&1))
+				if(0!=(state.muteFlag&1) && 0!=(state.audioFlag&64))
 				{
 					state.rf5c68.AddWaveForNumSamples(nextFMPCMWave.data(),numSamplesPerWave,WAVE_OUT_SAMPLING_RATE,lastFMPCMWaveGenTime);
 				}
@@ -387,7 +396,7 @@ void TownsSound::ProcessSound(void)
 			if(true==IsHighResPCMPlaying())
 			{
 				auto &highResPCM=townsPtr->highResPCM;
-				if(true==highResPCM.var.mute)
+				if(true==highResPCM.var.mute || 0==(state.audioFlag&64))
 				{
 					highResPCM.DropWaveForNumSamples(numSamplesPerWave,WAVE_OUT_SAMPLING_RATE);
 				}
@@ -397,7 +406,7 @@ void TownsSound::ProcessSound(void)
 				}
 				wavGenerated=true;
 			}
-			if(true==cdrom->CDDAIsPlaying())
+			if(true==cdrom->CDDAIsPlaying() && 0!=(state.audioFlag&64))
 			{
 				cdrom->AddWaveForNumSamples(nextFMPCMWave.data(),numSamplesPerWave,WAVE_OUT_SAMPLING_RATE);
 				wavGenerated=true;
@@ -796,6 +805,7 @@ void TownsSound::DeserializeRF5C68(const unsigned char *&data)
 /* virtual */ void TownsSound::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
 	PushUint32(data,state.muteFlag);
+	PushUint32(data,state.audioFlag);
 	PushUint32(data,state.addrLatch[0]);
 	PushUint32(data,state.addrLatch[1]);
 	SerializeYM2612(data);
@@ -804,6 +814,7 @@ void TownsSound::DeserializeRF5C68(const unsigned char *&data)
 /* virtual */ bool TownsSound::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
 	state.muteFlag=ReadUint32(data);
+	state.audioFlag=ReadUint32(data);
 	state.addrLatch[0]=ReadUint32(data);
 	state.addrLatch[1]=ReadUint32(data);
 	DeserializeYM2612(data,version);
