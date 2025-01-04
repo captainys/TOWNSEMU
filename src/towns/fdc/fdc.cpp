@@ -664,7 +664,14 @@ void TownsFDC::MakeReady(void)
 		// 0421:00000BE6 C3                        RET
 		// Therefore, the timing to clear DSKCHG flag is not status-read.
 		// Maybe when a command is written?
-		data|=(DriveReady(townsPtr->state.townsTime) ? 2 : 0);
+
+		// Looks like FREADY flag should be zero when the motor is off.
+		// Based on the observation of real FM TOWNS 2MX.
+		if(true==state.drive[DriveSelect()].motor &&
+		   true==DriveReady(townsPtr->state.townsTime))
+		{
+			data|=2;
+		}
 		data|=0b01100; // 3-mode drive.      [2] pp.809
 		data|=0x80;    // 2 internal drives. [2] pp.773
 		break;

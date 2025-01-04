@@ -25,7 +25,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 		// Push(mem,16,state.EIP+numInstBytesForReturn);
 
 		auto intVecAddr=(INTNum&0xFF)*4;
-		uint32_t CSIP=mem.FetchDword(intVecAddr);
+		uint32_t CSIP=mem.FetchDword(state.IDTR.linearBaseAddr+intVecAddr); // Experiment on real FM TOWNS 2MX confirmed that IDTR is valid even in the real mode.
 		auto destIP=cpputil::LowWord(CSIP);
 		auto destCS=cpputil::HighWord(CSIP);
 		if(true==enableCallStack)
