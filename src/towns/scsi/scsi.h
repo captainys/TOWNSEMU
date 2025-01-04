@@ -102,7 +102,7 @@ public:
 		STATUS_DELAY=500000,
 		IOTHREAD_WAIT_INTERVAL=100000,
 
-		FAST_SCSI_INTERVAL=1000,  // 1us.
+		FAST_SCSI_INTERVAL=5000,  // 5us.  Changed 1us to 5us on request from BCC.  1us is too fast for Linux, but 5us looks ok.
 	};
 
 	bool fastMode=false;

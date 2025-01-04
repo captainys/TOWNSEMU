@@ -800,12 +800,13 @@ void TownsSound::DeserializeRF5C68(const unsigned char *&data)
 
 /* virtual */ uint32_t TownsSound::SerializeVersion(void) const
 {
-	return 1;
+	// Version 2: Added audioFlag
+	return 2;
 }
 /* virtual */ void TownsSound::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
 	PushUint32(data,state.muteFlag);
-	PushUint32(data,state.audioFlag);
+	PushUint32(data,state.audioFlag);  // Version 2
 	PushUint32(data,state.addrLatch[0]);
 	PushUint32(data,state.addrLatch[1]);
 	SerializeYM2612(data);
@@ -814,7 +815,14 @@ void TownsSound::DeserializeRF5C68(const unsigned char *&data)
 /* virtual */ bool TownsSound::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
 	state.muteFlag=ReadUint32(data);
-	state.audioFlag=ReadUint32(data);
+	if(2<=version)
+	{
+		state.audioFlag=ReadUint32(data);
+	}
+	else
+	{
+		state.audioFlag=0x40;
+	}
 	state.addrLatch[0]=ReadUint32(data);
 	state.addrLatch[1]=ReadUint32(data);
 	DeserializeYM2612(data,version);
