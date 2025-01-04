@@ -7983,6 +7983,13 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	// I486_OPCODE_SETZ://             0x0F94,
 
 	case I486_RENUMBER_SLDT_STR_LLDT_LTR_VERR_VERW://             0x0F00,
+		if(true==fidelity.SLDT_STR_LLDT_LTR_VERR_VERW_Cause_INT6_InRealModeVM86Mode(*this))
+		{
+			RaiseException(i486DXCommon::EXCEPTION_UD,0);
+			HandleException(false,mem,inst.numBytes);
+			EIPIncrement=0;
+			break;
+		}
 		switch(inst.GetREG())
 		{
 		case 0: // "SLDT"

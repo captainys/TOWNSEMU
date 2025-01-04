@@ -106,6 +106,8 @@ public:
 	inline static void OnHandleException(const i486DXCommon &,i486Debugger *debuggerPtr){};
 
 	inline constexpr bool IsTaskReturn(i486DXCommon &cpu){return false;}
+
+	inline static bool SLDT_STR_LLDT_LTR_VERR_VERW_Cause_INT6_InRealModeVM86Mode(i486DXCommon &){return false;}
 };
 
 class i486DXDefaultFidelityOperation : public i486DXLowFidelityOperation
@@ -921,6 +923,15 @@ public:
 		return (
 		    true!=cpu.IsInRealMode() &&
 		   (cpu.state.EFLAGS&(i486DXCommon::EFLAGS_VIRTUAL86|i486DXCommon::EFLAGS_NESTED))==i486DXCommon::EFLAGS_NESTED);
+	}
+
+	inline static bool SLDT_STR_LLDT_LTR_VERR_VERW_Cause_INT6_InRealModeVM86Mode(i486DXCommon &cpu)
+	{
+		if(true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86)))
+		{
+			return true;
+		}
+		return false;
 	}
 };
 
