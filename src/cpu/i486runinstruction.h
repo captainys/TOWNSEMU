@@ -8582,6 +8582,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		break;
 
 	case I486_RENUMBER_CPUID:
+		clocksPassed=9;
 		switch(GetEAX())
 		{
 		case 0:
@@ -8590,8 +8591,27 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			state.NULL_and_reg32[REG_EDX]=0x38796C68; // "hly8"
 			state.NULL_and_reg32[REG_ECX]=0x36383430; // "0486"
 			break;
+		case 1:
+			state.NULL_and_reg32[REG_EAX]=1024;
+			state.NULL_and_reg32[REG_EBX]=0;
+			if(true==state.fpuState.enabled)
+			{
+				state.NULL_and_reg32[REG_EDX]=1;
+			}
+			else
+			{
+				state.NULL_and_reg32[REG_EDX]=0;
+			}
+			state.NULL_and_reg32[REG_ECX]=0
+			clocksPassed=14;
+			break;
+		default:
+			state.NULL_and_reg32[REG_EAX]=0;
+			state.NULL_and_reg32[REG_EBX]=0;
+			state.NULL_and_reg32[REG_EDX]=0;
+			state.NULL_and_reg32[REG_ECX]=0;
+			break;
 		}
-		clocksPassed=1;
 		break;
 
 	case I486_RENUMBER_REALLY_UNDEFINED:
