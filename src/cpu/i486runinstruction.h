@@ -8602,7 +8602,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			{
 				state.NULL_and_reg32[REG_EDX]=0;
 			}
-			state.NULL_and_reg32[REG_ECX]=0
+			state.NULL_and_reg32[REG_ECX]=0;
 			clocksPassed=14;
 			break;
 		default:
