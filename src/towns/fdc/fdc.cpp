@@ -68,7 +68,7 @@ void TownsFDC::MakeReady(void)
 		townsPtr->UnscheduleDeviceCallBack(*this);
 		MakeReady();
 		drv.trackPos=0;
-		drv.trackReg=0;
+		SetTrackReg(0);
 		break;
 	case 0x10: // Seek
 		townsPtr->UnscheduleDeviceCallBack(*this);
@@ -85,7 +85,7 @@ void TownsFDC::MakeReady(void)
 		drv.trackPos=drv.dataReg;
 		if(state.lastCmd&0x10)
 		{
-			drv.trackReg=drv.trackPos;
+			SetTrackReg(drv.trackPos);
 		}
 		break;
 	case 0x20: // Step?
@@ -103,7 +103,7 @@ void TownsFDC::MakeReady(void)
 		}
 		if(state.lastCmd&0x10)
 		{
-			drv.trackReg=drv.trackPos;
+			SetTrackReg(drv.trackPos);
 		}
 		break;
 	case 0x40: // Step In
@@ -117,7 +117,7 @@ void TownsFDC::MakeReady(void)
 		}
 		if(state.lastCmd&0x10)
 		{
-			drv.trackReg=drv.trackPos;
+			SetTrackReg(drv.trackPos);
 		}
 		break;
 	case 0x60: // Step Out
@@ -130,7 +130,7 @@ void TownsFDC::MakeReady(void)
 		}
 		if(state.lastCmd&0x10)
 		{
-			drv.trackReg=drv.trackPos;
+			SetTrackReg(drv.trackPos);
 		}
 		break;
 
@@ -573,13 +573,13 @@ void TownsFDC::MakeReady(void)
 		}
 		break;
 	case TOWNSIO_FDC_TRACK://                0x202, // [2] pp.253
-		state.drive[DriveSelect()].trackReg=data;
+		SetTrackReg(data);
 		break;
 	case TOWNSIO_FDC_SECTOR://               0x204, // [2] pp.253
 		SetSectorReg(data);
 		break;
 	case TOWNSIO_FDC_DATA://                 0x205, // [2] pp.253
-		state.drive[DriveSelect()].dataReg=data;
+		SetDataReg(data);
 		break;
 	case TOWNSIO_FDC_DRIVE_STATUS_CONTROL:// 0x208, // [2] pp.253
 		state.IRQMSK=(0!=(data&1));

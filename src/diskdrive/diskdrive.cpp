@@ -1831,3 +1831,17 @@ void DiskDrive::SetSectorReg(int num)
 	state.drive[2]._sectorReg=num;
 	state.drive[3]._sectorReg=num;
 }
+void DiskDrive::SetTrackReg(int num)
+{
+	state.drive[0].trackReg=num;
+	state.drive[1].trackReg=num;
+	state.drive[2].trackReg=num;
+	state.drive[3].trackReg=num;
+}
+void DiskDrive::SetDataReg(int num)
+{
+	state.drive[0].dataReg=num;
+	state.drive[1].dataReg=num;
+	state.drive[2].dataReg=num;
+	state.drive[3].dataReg=num;
+}

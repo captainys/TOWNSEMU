@@ -364,6 +364,8 @@ public:
 	int GetTrackReg(void) const;
 	int GetSectorReg(void) const;
 	int GetSectorReg(unsigned int drvSel) const;
+	void SetTrackReg(int num);
+	void SetDataReg(int num);
 	void SetSectorReg(int num);
 
 
