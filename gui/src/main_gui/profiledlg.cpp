@@ -204,7 +204,7 @@ void ProfileDialog::Make(void)
 		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_HC).c_str(),YSFALSE);
 		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_MARTY).c_str(),YSFALSE);
 
-		scanLineEffectIn15KHzBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Scanline Effect(Only 15khz Screen)",YSFALSE);
+		scanLineEffectIn15KHzBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Scanline Effect (Only 15khz Screen)",YSFALSE);
 		damperWireLineBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Render Damper-Wire Line (to make you nostalgic)",YSFALSE);
 
 		startUpStateFNameBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Load VM State",YSTRUE);
@@ -259,6 +259,8 @@ void ProfileDialog::Make(void)
 		HDImgBtn[6]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"HD6:",YSTRUE);
 		HDImgTxt[6]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
 		HDImgTxt[6]->SetLengthLimit(PATH_LENGTH);
+
+		fastSCSIBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Fast SCSI (Faster HDD access but may less compatibility)",YSTRUE);
 
 		EndAddTabItem();
 	}
@@ -1207,6 +1209,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 			profile.scsiImg[i].imageType=TownsProfile::SCSIIMAGE_NONE;
 		}
 	}
+	profile.fastSCSI=(YSTRUE==fastSCSIBtn->GetCheck());
 
 	for(int gameport=0; gameport<2; ++gameport)
 	{
@@ -1412,6 +1415,7 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 			HDImgTxt[i]->SetText(str);
 		}
 	}
+	fastSCSIBtn->SetCheck(profile.fastSCSI ? YSTRUE : YSFALSE);
 
 	for(int gameport=0; gameport<2; ++gameport)
 	{
