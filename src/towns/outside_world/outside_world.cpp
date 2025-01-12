@@ -339,11 +339,8 @@ void Outside_World::WindowInterface::Put16x16(int x0,int y0,const unsigned char 
 	auto srcPtr=icon16x16;
 	for(auto y=0; y<16; ++y)
 	{
-		for(auto x=0; x<16*4; ++x)
-		{
-			dstPtr[x]=*srcPtr;
-			++srcPtr;
-		}
+		std::memcpy(dstPtr,srcPtr,16*4);
+		srcPtr+=16*4;
 		dstPtr+=STATUS_WID*4;
 	}
 }
@@ -353,11 +350,8 @@ void Outside_World::WindowInterface::Put16x16Invert(int x0,int y0,const unsigned
 	auto srcPtr=icon16x16;
 	for(auto y=0; y<16; ++y)
 	{
-		for(auto x=0; x<16*4; ++x)
-		{
-			dstPtr[x]=*srcPtr;
-			++srcPtr;
-		}
+		std::memcpy(dstPtr,srcPtr,16*4);
+		srcPtr+=16*4;
 		dstPtr-=STATUS_WID*4;
 	}
 }
