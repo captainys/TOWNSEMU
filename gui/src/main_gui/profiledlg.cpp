@@ -1187,19 +1187,31 @@ void ProfileDialog::OnSelectDir(FsGuiDialog *dlg,int returnCode)
 TownsProfile ProfileDialog::GetProfile(void) const
 {
 	TownsProfile profile;
+	YsString utf8;
 
-	profile.ROMPath=ROMDirTxt->GetString().data();
+	YsUnicodeToSystemEncoding(utf8,ROMDirTxt->GetWString());
+	profile.ROMPath=utf8;
+
 	profile.freq=CPUFreqTxt->GetInteger();
 	profile.useFPU=(YSTRUE==FPUBtn->GetCheck());
 	profile.memSizeInMB=RAMSizeTxt->GetInteger();
-	profile.cdImgFName=CDImgTxt->GetString().data();
-	profile.fdImgFName[0]=FDImgTxt[0]->GetString().data();
+
+	YsUnicodeToSystemEncoding(utf8,CDImgTxt->GetWString());
+	profile.cdImgFName=utf8;
+
+	YsUnicodeToSystemEncoding(utf8,FDImgTxt[0]->GetWString());
+	profile.fdImgFName[0]=utf8;
+
 	profile.fdImgWriteProtect[0]=(YSTRUE==FDWriteProtBtn[0]->GetCheck());
-	profile.fdImgFName[1]=FDImgTxt[1]->GetString().data();
+
+	YsUnicodeToSystemEncoding(utf8,FDImgTxt[1]->GetWString());
+	profile.fdImgFName[1]=utf8;
+
 	profile.fdImgWriteProtect[1]=(YSTRUE==FDWriteProtBtn[1]->GetCheck());
 	for(int i=0; i<TownsProfile::MAX_NUM_SCSI_DEVICES; ++i)
 	{
-		profile.scsiImg[i].imgFName=HDImgTxt[i]->GetString().data();
+		YsUnicodeToSystemEncoding(utf8,HDImgTxt[i]->GetWString());
+		profile.scsiImg[i].imgFName=utf8;
 		if(""!=profile.scsiImg[i].imgFName)
 		{
 			profile.scsiImg[i].imageType=TownsProfile::SCSIIMAGE_HARDDISK;
@@ -1309,7 +1321,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 		profile.virtualKeys[row].button=virtualKeyButtonDrp[row]->GetSelection();
 	}
 
-	profile.keyMapFName=keyMapFileTxt->GetString().data();
+	YsUnicodeToSystemEncoding(utf8,keyMapFileTxt->GetWString());
+	profile.keyMapFName=utf8;
 
 	profile.fmVol=(int)fmVolumeSlider->GetScaledValue();
 	if(YM2612::WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT==profile.fmVol)
@@ -1331,9 +1344,11 @@ TownsProfile ProfileDialog::GetProfile(void) const
 		profile.cdSpeed=0;
 	}
 
-	profile.startUpStateFName=startUpStateFNameTxt->GetString().data();
+	YsUnicodeToSystemEncoding(utf8,startUpStateFNameTxt->GetWString());
+	profile.startUpStateFName=utf8;
 
-	profile.quickScrnShotDir=quickSsDirTxt->GetString().data();
+	YsUnicodeToSystemEncoding(utf8,quickSsDirTxt->GetWString());
+	profile.quickScrnShotDir=utf8;
 	for(int i=0; i<MAX_NUM_HOST_SHORTCUT; ++i)
 	{
 		auto selHostKey=hostShortCutKeyLabelDrp[i]->GetSelection();
@@ -1357,14 +1372,16 @@ TownsProfile ProfileDialog::GetProfile(void) const
 		}
 	}
 
-	profile.quickStateSaveFName=quickStateSaveFNameTxt->GetString().data();
+	YsUnicodeToSystemEncoding(utf8,quickStateSaveFNameTxt->GetWString());
+	profile.quickStateSaveFName=utf8;
 
 	profile.pauseResumeKeyLabel=pauseResumeKeyDrp->GetSelectedString().data();
 
 	profile.sharedDir.clear();
 	for(int i=0; i<MAX_NUM_SHARED_DIR; ++i)
 	{
-		std::string str=shareDirTxt[i]->GetString().data();
+		YsUnicodeToSystemEncoding(utf8,shareDirTxt[i]->GetWString());
+		std::string str=utf8;
 		if(""!=str)
 		{
 			profile.sharedDir.push_back(str);
