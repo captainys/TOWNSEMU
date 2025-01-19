@@ -131,6 +131,9 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 		}
 		text.back().push_back('\"');
 	}
+	sstream.str("");
+	sstream << "FASTSCSI " << (true==fastSCSI ? 1 : 0);
+	text.push_back(sstream.str());
 
 	text.push_back("GAMEPORT 0 ");
 	text.back()+=TownsGamePortEmuToStr(gamePort[0]);
@@ -458,6 +461,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 						scsiImg[scsiId].imageType=TownsProfile::SCSIIMAGE_NONE;
 					}
 				}
+			}
+		}
+		else if (0==argv[0].STRCMP("FASTSCSI"))
+		{
+			if (2<=argv.size())
+			{
+				fastSCSI=(0!=argv[1].Atoi());
 			}
 		}
 		else if(0==argv[0].STRCMP("KEYCOMB_"))
@@ -903,6 +913,11 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 				argv.push_back(scsiImg[scsiId].imgFName);
 			}
 		}
+	}
+
+	if(true==fastSCSI)
+	{
+		argv.push_back("-FASTSCSI");
 	}
 
 	if(BOOT_KEYCOMB_NONE!=bootKeyComb)
