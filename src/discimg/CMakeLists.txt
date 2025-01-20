@@ -15,6 +15,9 @@ target_link_libraries(testcue discimg)
 add_executable(testmds testmds.cpp)
 target_link_libraries(testmds discimg)
 
+add_executable(test_cdimage test.cpp)
+target_link_libraries(test_cdimage discimg)
+
 
 add_executable(bincue2wav bincue2wav.cpp)
 target_link_libraries(bincue2wav discimg yssimplesound cpputil)

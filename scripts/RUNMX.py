@@ -52,6 +52,8 @@ def Run(argv):
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-HD1",
 		os.path.join(DISKDIR,"40MB.h1"),
+		"-FD0",
+		os.path.join(THISDIR,"..","util","TsugaruUtil.D77"),
 		"-JEIDA4",
 		os.path.join(MEMCARDDIR,"4MB.bin"),
 		"-CMOS",
@@ -60,8 +62,8 @@ def Run(argv):
 		"-USEFPU",
 		"-MEMSIZE",
 		"16",
-		#"-HIGHRES",
-		#"-DEBUG",
+		"-HIGHRES",
+		"-DEBUG",
 		#"-PAUSE",
 	]+argv).wait()
 

@@ -140,7 +140,7 @@ ERREND:
 	return err;
 }
 
-unsigned char data[256];
+unsigned char data[4096];
 
 int main(int ac,char *av[])
 {
