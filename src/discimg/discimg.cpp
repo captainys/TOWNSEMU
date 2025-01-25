@@ -458,9 +458,11 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 	}
 	else
 	{
-		if(true!=TryAnalyzeTracksWithAbsurdCUEInterpretation() &&
+		if(true!=TryAnalyzeTracksWithProbablyCorrectInterpretation() &&
+		   true!=TryAnalyzeTracksWithAbsurdCUEInterpretation() &&
 		   true!=TryAnalyzeTracksWithMoreReasonableCUEInterpretation())
 		{
+			// All interpretations failed.
 			return ERROR_BINARY_SIZE_NOT_SECTOR_TIMES_INTEGER;
 		}
 	}
@@ -563,6 +565,30 @@ void DiscImage::MakeLayoutFromTracksAndBinaryFiles(void)
 		}
 		layout.push_back(L);
 	}
+}
+bool DiscImage::TryAnalyzeTracksWithProbablyCorrectInterpretation(void)
+{
+	// Interpretation based on .CUE file written by Alcohol 52% and CD Manipulator.
+	// Other image-ripping program may write different .CUE, but I don't care.
+
+	// Looks like if keyword PREGAP exists it means that pre-gap sectors are not
+	// written in the binary, but insert 2 second of silence when it plays.
+	// POSTGAP is similar, but it is after the track.
+	// Implication is the length of the disc is the length calculated from the binary
+	// plus length specified by PREGAP and POSTGAP.
+	// Regardless of the PREGAP and POSTGAP presence, INDEX 01 points to the location
+	// in the binary.  Therefore, if it says INDEX 01 10:00:00, and if PREGAP 00:02:00
+	// existed before or on that track, it needs to be presented as 10:02:00.
+
+	// Need to set:
+	//   preGapSectorLength
+	//   start
+	//   end
+	//   locationInFile
+
+	// To be implemented.
+
+	return false;
 }
 bool DiscImage::TryAnalyzeTracksWithAbsurdCUEInterpretation(void)
 {

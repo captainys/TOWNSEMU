@@ -316,6 +316,7 @@ public:
 private:
 	unsigned int OpenCUEPostProcess(void);
 	void MakeLayoutFromTracksAndBinaryFiles(void);
+	bool TryAnalyzeTracksWithProbablyCorrectInterpretation(void);
 	bool TryAnalyzeTracksWithAbsurdCUEInterpretation(void);
 	bool TryAnalyzeTracksWithMoreReasonableCUEInterpretation(void);
 
