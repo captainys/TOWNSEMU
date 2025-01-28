@@ -7,6 +7,11 @@ project(TSUGARU)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(UNIX)
+	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -Wno-unused-variable)
+	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -Wno-unused-variable)
+endif()
+
 
 if(APPLE)
     set(DISC_IMAGE_DIR "$ENV{HOME}/TOWNSISO")
