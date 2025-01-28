@@ -258,16 +258,30 @@ void TownsSound::ProcessRecordPCMWrite(unsigned int reg,unsigned char data)
 		// Shadow of the Beast 2 expects the sampling value to be positive at one point.
 		// Really wonder why?
 		data=1;
-		if(var.PCMSamplePointer<var.waveToBeSentToVM.GetNumSamplePerChannel() &&
-		   0<var.waveToBeSentToVM.GetNumChannel())
 		{
 			int sum=0;
-			for(int i=0; i<var.waveToBeSentToVM.GetNumChannel(); ++i)
+			if(var.PCMSamplePointer<var.waveToBeSentToVM.GetNumSamplePerChannel() &&
+			   0<var.waveToBeSentToVM.GetNumChannel())
 			{
-				sum+=var.waveToBeSentToVM.GetSignedValue16(i,var.PCMSamplePointer);
-			}
-			sum/=var.waveToBeSentToVM.GetNumChannel();
+				for(int i=0; i<var.waveToBeSentToVM.GetNumChannel(); ++i)
+				{
+					sum+=var.waveToBeSentToVM.GetSignedValue16(i,var.PCMSamplePointer);
+				}
+				sum/=var.waveToBeSentToVM.GetNumChannel();
+				sum+=state.lastAudioOut;
 
+				// Wave pointer must be moved by wave sampling rate / PCM sampling rate.
+				var.PCMSamplePointerLeftOver+=var.waveToBeSentToVM.PlayBackRate();
+				while(var.PCMSamplingRate<=var.PCMSamplePointerLeftOver)
+				{
+					++var.PCMSamplePointer;
+					var.PCMSamplePointerLeftOver-=var.PCMSamplingRate;
+				}
+			}
+			else
+			{
+				sum=state.lastAudioOut;
+			}
 			sum*=126*var.PCMSamplingScale;
 			sum/=32768;
 			if(sum<-126)
@@ -280,19 +294,11 @@ void TownsSound::ProcessRecordPCMWrite(unsigned int reg,unsigned char data)
 			}
 			sum+=128;
 			data=sum;
-
-			// Wave pointer must be moved by wave sampling rate / PCM sampling rate.
-			var.PCMSamplePointerLeftOver+=var.waveToBeSentToVM.PlayBackRate();
-			while(var.PCMSamplingRate<=var.PCMSamplePointerLeftOver)
-			{
-				++var.PCMSamplePointer;
-				var.PCMSamplePointerLeftOver-=var.PCMSamplingRate;
-			}
 		}
 		var.nextPCMSampleReadyTime+=PER_SECOND/var.PCMSamplingRate;
 		if(var.nextPCMSampleReadyTime<townsPtr->state.townsTime)
 		{
-			// Maybe not used long time.
+			// Maybe this I/O was not used long time.
 			var.nextPCMSampleReadyTime=townsPtr->state.townsTime+PER_SECOND/var.PCMSamplingRate;
 		}
 		break;
@@ -458,6 +464,10 @@ void TownsSound::ProcessSound(void)
 
 	if(true!=outside_world->FMPCMChannelPlaying() && true!=nextFMPCMWave.empty())
 	{
+		int leftOut=cpputil::GetSignedWord(nextFMPCMWave.data());
+		int rightOut=cpputil::GetSignedWord(nextFMPCMWave.data()+2);
+		state.lastAudioOut=(leftOut+rightOut)/2;
+
 		// Hopefully FMPCM channel finishes play back previous wave piece before nextFMPCMWaveGenTime.
 		if(true==recordFMandPCM)
 		{
