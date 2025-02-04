@@ -181,6 +181,9 @@ private:
 	YsWString GetDefaultNewHardDiskImageFileName(void) const;
 	YsWString GetDefaultNewEventLogFileName(void) const;
 
+	void FitWindowToGUI(void);
+	YsVec2i GetGUIDimension(void) const;
+
 public:
 	static std::string GamePortEmulationTypeToHumanReadable(unsigned int emuType);
 	static unsigned int HumanReadableToGamePortEmulationType(std::string);

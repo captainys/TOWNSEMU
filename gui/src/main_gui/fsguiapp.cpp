@@ -246,6 +246,8 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 		View_ShowTip(nullptr);
 	}
 
+	FitWindowToGUI();
+
 	YsDisregardVariable(argc);
 	YsDisregardVariable(argv);
 	YsGLSLCreateSharedRenderer();
@@ -692,6 +694,7 @@ void FsGuiMainCanvas::ReallyRunWithinSameProcess(VMClass &VM)
 	{
 		AddDialog(profileDlg);
 		RemoveDialog(resumeVMDlg);
+		FitWindowToGUI();
 	}
 	SetNeedRedraw(YSTRUE);
 }
@@ -836,6 +839,7 @@ bool FsGuiMainCanvas::ResumeVMIfSameProc(VMClass &VM)
 		{
 			AddDialog(profileDlg);
 			RemoveDialog(resumeVMDlg);
+			FitWindowToGUI();
 		}
 		SetNeedRedraw(YSTRUE);
 		return true;
@@ -987,6 +991,24 @@ YsWString FsGuiMainCanvas::GetDefaultNewEventLogFileName(void) const
 	YsWString ful;
 	ful.MakeFullPathName(path,L"newevent.evt");
 	return ful;
+}
+
+void FsGuiMainCanvas::FitWindowToGUI(void)
+{
+	auto dim=GetGUIDimension();
+	FsResizeWindow(dim.x(),dim.y());
+}
+
+YsVec2i FsGuiMainCanvas::GetGUIDimension(void) const
+{
+	YsVec2i dim(1,1);
+	if(nullptr!=profileDlg)
+	{
+		int xLim=profileDlg->GetLeftX()+profileDlg->GetWidth();
+		int yLim=profileDlg->GetTopY()+profileDlg->GetHeight();
+		dim.Set(xLim,yLim);
+	}
+	return dim;
 }
 
 std::vector <YsWString> FsGuiMainCanvas::CheckMissingROMFiles(void) const
