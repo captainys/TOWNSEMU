@@ -246,6 +246,7 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 		View_ShowTip(nullptr);
 	}
 
+	ArrangeDialog();
 	FitWindowToGUI();
 
 	YsDisregardVariable(argc);
