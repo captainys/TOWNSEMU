@@ -559,6 +559,8 @@ enum
 	I486_OPCODE_XADD_RM_R=   0x0FC1,
 
 	I486_OPCODE_CPUID=       0x0FA2,
+
+	I486_OPCODE_EMMS=        0x0F77,  // EMMS.  Not supported.  Shoots INT 6
 };
 
 enum
@@ -1217,6 +1219,8 @@ enum
 	I486_RENUMBER_CPUID,
 
 	I486_RENUMBER_REALLY_UNDEFINED,
+
+	I486_RENUMBER_EMMS,  // EMMS.  Not supported.  Shoot INT 6
 
 I486_NUM_SUPPORTED_INSTRUCTIONS,
 };

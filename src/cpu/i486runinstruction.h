@@ -2167,6 +2167,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	{
 	case I486_RENUMBER_UNDEFINED_SHOOT_INT6:
 	case I486_RENUMBER_UNDEFINED_SHOOT_INT6_WIN31:
+	case I486_RENUMBER_EMMS: // 0x0F77 MMX instruction.  Used in the Win95 Media-Player Installer.
 		Interrupt(INT_INVALID_OPCODE,mem,0,0,false);
 		EIPIncrement=0;
 		clocksPassed=ClocksForHandlingException();

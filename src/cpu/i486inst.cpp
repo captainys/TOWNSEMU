@@ -357,6 +357,7 @@ void i486DXCommon::MakeOpCodeRenumberTable(void)
 	opCodeRenumberTable[I486_OPCODE_XADD_RM8_R8]=I486_RENUMBER_XADD_RM8_R8;
 	opCodeRenumberTable[I486_OPCODE_XADD_RM_R]=I486_RENUMBER_XADD_RM_R;
 	opCodeRenumberTable[I486_OPCODE_CPUID]=I486_RENUMBER_CPUID;
+	opCodeRenumberTable[I486_OPCODE_EMMS]=I486_RENUMBER_EMMS;
 
 
 
@@ -464,7 +465,7 @@ void i486DXCommon::MakeOpCodeRenumberTable(void)
 	opCodeNeedOperandTable[I486_OPCODE_XCHG_EAX_EDI]=I486_NEEDOPERAND_NONE;
 	opCodeNeedOperandTable[I486_OPCODE_XLAT]=I486_NEEDOPERAND_NONE;
 	opCodeNeedOperandTable[I486_OPCODE_CPUID]=I486_NEEDOPERAND_NONE;
-
+	opCodeNeedOperandTable[I486_OPCODE_EMMS]=I486_NEEDOPERAND_NONE;
 
 	// RM_IMM8
 	opCodeNeedOperandTable[I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8]=I486_NEEDOPERAND_RM_IMM8;
@@ -3383,6 +3384,10 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 
 	case I486_OPCODE_CPUID:
 		disasm="CPUID";
+		break;
+
+	case I486_OPCODE_EMMS:
+		disasm="EMMS(INT 6)";
 		break;
 	}
 
