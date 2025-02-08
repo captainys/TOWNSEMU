@@ -60,6 +60,8 @@ public:
 		unsigned int audioFlag;
 		unsigned int addrLatch[2];
 
+		int lastAudioOut=0; // This will not be state-saved.  Updated in ProcessSound.
+
 		RF5C68 rf5c68;
 
 		void PowerOn(void);

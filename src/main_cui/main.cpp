@@ -189,6 +189,11 @@ int Run(FMTownsTemplate <CPUCLASS> &towns,const TownsARGV &argv,Outside_World &o
 	}
 
 	VMThread.join();
+
+	exit(towns.var.returnCode);
+	// CUI will wait for a command forever.  Is there any way I can programmatically send CR to the terminal?
+	// I have already tried freopen(stdin).
+
 	UIThread.join();
 
 	return towns.var.returnCode;

@@ -1381,7 +1381,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	for(int i=0; i<MAX_NUM_SHARED_DIR; ++i)
 	{
 		YsUnicodeToSystemEncoding(utf8,shareDirTxt[i]->GetWString());
-		std::string str=utf8;
+		std::string str=utf8.c_str();
 		if(""!=str)
 		{
 			profile.sharedDir.push_back(str);
