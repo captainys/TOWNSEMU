@@ -2173,6 +2173,16 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		clocksPassed=ClocksForHandlingException();
 		break;
 
+
+	case I486_RENUMBER_REALLY_UNDEFINED:
+		std::cout << "Undefined instruction (" << cpputil::Ustox(inst.opCode) << ") at " << cpputil::Ustox(state.CS().value) << ":" << cpputil::Uitox(state.EIP) << "\n";
+		Interrupt(INT_INVALID_OPCODE,mem,0,0,false);
+		EIPIncrement=0;
+		clocksPassed=ClocksForHandlingException();
+		// clocksPassed=0; // Uncomment this line to abort on undefined instruction.
+		break;
+
+
 	case I486_RENUMBER_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://0xC0,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8(inst.EvalUimm8()&31); // [1] pp.26-243 Only bottom 5 bits are used.
 		break;
@@ -8432,9 +8442,16 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				offset+=GetBX();
 			}
 			auto nextAL=FetchByte(inst.addressSize,seg,offset,mem);
+
 			if(true!=state.exception)
 			{
 				SetAL(nextAL);
+			}
+
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
 			}
 		}
 		break;
@@ -8620,10 +8637,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			state.NULL_and_reg32[REG_ECX]=0;
 			break;
 		}
-		break;
-
-	case I486_RENUMBER_REALLY_UNDEFINED:
-		clocksPassed=0;
 		break;
 
 	default:
