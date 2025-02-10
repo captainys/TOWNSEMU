@@ -4354,6 +4354,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						OperandValue value;
 						state.fpuState.GetSTAsDouble(*this,value);
 						StoreOperandValue64(op1,mem,inst.addressSize,inst.segOverride,value);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=8;
 					}
 					break;
@@ -4364,6 +4365,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						state.fpuState.GetSTAsDouble(*this,value);
 						state.fpuState.Pop(*this);
 						StoreOperandValue64(op1,mem,inst.addressSize,inst.segOverride,value);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=8;
 					}
 					break;
@@ -4379,7 +4381,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						for(unsigned int i=0; i<size; ++i)
 						{
 							data[i]=FetchByte(inst.addressSize,*segPtr,offset+i,mem);
+							if(state.exception)
+							{
+								break;
+							}
 						}
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FRSTOR(*this,inst.operandSize,data.data());
 					}
 					break;
@@ -4394,7 +4401,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						for(auto c : state.fpuState.FSAVE(*this,inst.operandSize))
 						{
 							StoreByte(mem,inst.addressSize,*segPtr,offset++,c);
+							if(state.exception)
+							{
+								break;
+							}
 						}
+						HANDLE_EXCEPTION_IF_ANY;
 					}
 					break;
 				case 7: // FNSTSW m2byte
@@ -4407,6 +4419,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						OperandValue value;
 						value.MakeWord(state.fpuState.GetStatusWord());
 						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+						HANDLE_EXCEPTION_IF_ANY;
 					}
 					break;
 				}
