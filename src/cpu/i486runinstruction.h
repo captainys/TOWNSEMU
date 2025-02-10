@@ -3906,6 +3906,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				FPU_TRAP;
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+					HANDLE_EXCEPTION_IF_ANY;
 					clocksPassed=state.fpuState.FLD32(*this,value.byteData);
 				}
 				break;
@@ -3915,6 +3916,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					OperandValue value;
 					state.fpuState.GetSTAsFloat(*this,value);
 					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+					HANDLE_EXCEPTION_IF_ANY;
 					clocksPassed=7;
 				}
 				break;
@@ -3924,6 +3926,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					OperandValue value;
 					state.fpuState.GetSTAsFloat(*this,value);
 					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+					HANDLE_EXCEPTION_IF_ANY;
 					state.fpuState.Pop(*this);
 					clocksPassed=7;
 				}
@@ -3946,7 +3949,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					for(unsigned int i=0; i<dataLen; ++i)
 					{
 						data[i]=FetchByte(inst.addressSize,*segPtr,offset+i,mem);
+						if(state.exception)
+						{
+							break;
+						}
 					}
+					HANDLE_EXCEPTION_IF_ANY;
 					clocksPassed=state.fpuState.FLDENV(*this,inst.operandSize,data);
 				}
 				break;
