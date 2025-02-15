@@ -6,6 +6,12 @@ by CaptainYS
 
 PEB01130@nifty.com
 
+
+# Link to the Releases
+
+https://github.com/captainys/TOWNSEMU/releases/latest
+
+
 # Introduction
 It is an emulator of legendary Fujitsu FM TOWNS computer including Marty.  The goal is to emulate model II MX, which was the last computer I pledged allegiance.  Also I am trying to find and document undocumented features of FM TOWNS system as much as possible while writing the emulator.
 
