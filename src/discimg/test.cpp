@@ -51,7 +51,7 @@ void CommandParameterInfo::PrintHelp(void) const
 	std::cout << "-cd filename.cue/mds\n";
 	std::cout << "  Specify a cd image.\n";
 	std::cout << "-sample filename.bin\n";
-	std::cout << "  TOC Sample from real FM TOWNS.\n";
+	std::cout << "  TOC Sample from real FM TOWNS. (testc/cdtocio.c)\n";
 }
 
 int main(int ac,char *av[])
@@ -94,7 +94,7 @@ int main(int ac,char *av[])
 
 		if(discs[0].GetNumSectors()!=discs[i].GetNumSectors())
 		{
-			std::cout << "Number of sectors of do not match.\n";
+			std::cout << "Number of sectors do not match.\n";
 			std::cout << discs[0].GetNumSectors() << "!=" << discs[i].GetNumSectors() << "\n";
 			return 1;
 		}
@@ -104,7 +104,7 @@ int main(int ac,char *av[])
 
 		if(tracks0.size()!=tracks1.size())
 		{
-			std::cout << "Number of tracks of do not match.\n";
+			std::cout << "Number of tracks do not match.\n";
 			return 1;
 		}
 
@@ -120,6 +120,44 @@ int main(int ac,char *av[])
 				std::cout << "  " << tracks1[j].start.sec << ":";
 				std::cout << "  " << tracks1[j].start.frm << "\n";
 				return 1;
+			}
+		}
+
+		for(int j=0; j<tracks0.size(); ++j)
+		{
+			if(DiscImage::TRACK_AUDIO==tracks0[j].trackType)
+			{
+				std::cout << "Compare wave from track " << j+1 << "\n";
+
+				auto sta=tracks0[j].start;
+				auto end=sta;
+				end.Increment();
+				auto wave0=discs[0].GetWave(sta,end);
+				auto wave1=discs[i].GetWave(sta,end);
+				if(0==wave0.size())
+				{
+					std::cout << "Cannot get wave from disc 0 track " << j+1 << "\n";
+					return 1;
+				}
+				if(0==wave1.size())
+				{
+					std::cout << "Cannot get wave from disc " << i << " track " << j+1 << "\n";
+					return 1;
+				}
+				if(wave0.size()!=wave1.size())
+				{
+					std::cout << "Wave size do not match\n";
+					return 1;
+				}
+
+				for(size_t i=0; i<wave0.size(); ++i)
+				{
+					if(wave0[i]!=wave1[i])
+					{
+						std::cout << "Wave from disc 0 and disc " << i << " track " << j+1 << " do not match\n";
+						return 1;
+					}
+				}
 			}
 		}
 	}

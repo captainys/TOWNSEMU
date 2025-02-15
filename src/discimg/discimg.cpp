@@ -576,8 +576,10 @@ bool DiscImage::TryAnalyzeTracksWithProbablyCorrectInterpretation(void)
 	// POSTGAP is similar, but it is after the track.
 	// Implication is the length of the disc is the length calculated from the binary
 	// plus length specified by PREGAP and POSTGAP.
-	// Regardless of the PREGAP and POSTGAP presence, INDEX 01 points to the location
-	// in the binary.  Therefore, if it says INDEX 01 10:00:00, and if PREGAP 00:02:00
+
+	// Looks like if the track has PREGAP, from the CD-player point of view, 
+	// PREGAP+INDEX 01 is the starting time of the track.
+	// Therefore, if it says INDEX 01 10:00:00, and if PREGAP 00:02:00
 	// existed before or on that track, it needs to be presented as 10:02:00.
 
 	// Need to set:
@@ -586,9 +588,54 @@ bool DiscImage::TryAnalyzeTracksWithProbablyCorrectInterpretation(void)
 	//   end
 	//   locationInFile
 
-	// To be implemented.
 
-	return false;
+	// If no PREGAP, same as TryAnalyzeTracksWithAbsurdCUEInterpretation.
+
+
+	// If this interpretation works, sectors of PREGAP are not stored in the binary.
+	// Therefore, pre-gap sector length does not matter.
+	// But, the total sector count of PREGAP needs to be added to the number of sectors
+	// calculated from the binary size.
+	MinSecFrm totalPREGAP;
+	totalPREGAP.Set(0,0,0);
+	size_t pointerInBinary=0;
+	for(size_t i=0; i<tracks.size(); ++i)
+	{
+		tracks[i].preGapSectorLength=0;
+		totalPREGAP+=tracks[i].preGap;
+
+		tracks[i].start+=tracks[i].preGap;  // Displace the track-start MSF.
+		tracks[i].preGap.FromHSG(0); // Then forget about this cursed PREGAP.
+
+		tracks[i].locationInFile=pointerInBinary;
+		if(i+1<tracks.size())
+		{
+			auto trackLen=tracks[i+1].start-tracks[i].start;
+			pointerInBinary+=(tracks[i].sectorLength*trackLen.ToHSG());
+		}
+	}
+
+
+	// pointerInBinary should be pointing to the pointer for the last track here.
+	// Then, the number of sectors of the last track must be:
+	auto lastTrackNumBytes=totalBinLength-pointerInBinary;
+	if(lastTrackNumBytes%tracks.back().sectorLength || 0==lastTrackNumBytes)
+	{
+		// Inconsistency.  Remaining bytes must be integer times last track's sector length.
+		return false;
+	}
+	auto lastTrackNumSec=lastTrackNumBytes/tracks.back().sectorLength;
+
+	tracks.back().end.FromHSG(lastTrackNumSec-1);
+	tracks.back().end+=tracks.back().start;
+
+	for(size_t i=0; i+1<tracks.size(); ++i)
+	{
+		tracks[i].end=tracks[i+1].start;
+		tracks[i].end.Decrement();
+	}
+
+	return true;
 }
 bool DiscImage::TryAnalyzeTracksWithAbsurdCUEInterpretation(void)
 {
@@ -1195,7 +1242,6 @@ int DiscImage::GetTrackFromMSF(MinSecFrm MSF) const
 std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endMSF) const
 {
 	std::vector <unsigned char> wave;
-
 	if(0<tracks.size() && startMSF<endMSF)
 	{
 		auto startHSG=startMSF.ToHSG();
