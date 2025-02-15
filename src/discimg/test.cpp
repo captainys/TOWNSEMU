@@ -85,6 +85,18 @@ int main(int ac,char *av[])
 	}
 
 
+
+	for(auto &d : discs)
+	{
+		std::cout << "Disc\n";
+		for(auto &t : d.tracks)
+		{
+			std::cout << "Start:" << t.start.ToHSG() << " End:" << t.end.ToHSG() << " PosInBin:" << t.locationInFile << "\n";
+		}
+	}
+
+
+
 	for(int i=1; i<discs.size(); ++i)
 	{
 		std::cout << "Comparing:\n";
@@ -150,9 +162,9 @@ int main(int ac,char *av[])
 					return 1;
 				}
 
-				for(size_t i=0; i<wave0.size(); ++i)
+				for(size_t k=0; k<wave0.size(); ++k)
 				{
-					if(wave0[i]!=wave1[i])
+					if(wave0[k]!=wave1[k])
 					{
 						std::cout << "Wave from disc 0 and disc " << i << " track " << j+1 << " do not match\n";
 						return 1;
