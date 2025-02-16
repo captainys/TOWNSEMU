@@ -604,15 +604,15 @@ bool DiscImage::TryAnalyzeTracksWithProbablyCorrectInterpretation(void)
 		tracks[i].preGapSectorLength=0;
 		totalPREGAP+=tracks[i].preGap;
 
-		tracks[i].start+=tracks[i].preGap;  // Displace the track-start MSF.
-		tracks[i].preGap.FromHSG(0); // Then forget about this cursed PREGAP.
-
 		tracks[i].locationInFile=pointerInBinary;
 		if(i+1<tracks.size())
 		{
 			auto trackLen=tracks[i+1].start-tracks[i].start;
 			pointerInBinary+=(tracks[i].sectorLength*trackLen.ToHSG());
 		}
+
+		tracks[i].start+=totalPREGAP;  // Displace the track-start MSF.
+		tracks[i].preGap.FromHSG(0); // Then forget about this cursed PREGAP.
 	}
 
 
