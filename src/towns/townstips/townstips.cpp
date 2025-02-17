@@ -67,6 +67,17 @@ std::vector <std::string> TownsTips::GetTips(void)
 		"Go to Game-Port options, and select appropriate mouse mode.\n"
 	);
 
+	tips.push_back(
+		"Does your CD audio sound 2 to 4 seconds lagged?  Check your .CUE file.\n"
+		"There seems to be a disagreement in interpretation of the PREGAP keyword in\n"
+		".CUE file between the ripping programs.  I confirmed with ImgBurn and\n"
+		"Alcohol 52%.  Tsugaru aligns with ImgBurn, which apparently is consistent\n"
+		"with CDRWIN.  If your .CUE file has a PREGAP keyword, the program \n"
+		"used for generating your .CUE file may be using a different interpretation\n"
+		"from Tsugaru.  Consider using .MDS or .CCD.  If your .CUE file does not\n"
+		"have a PREGAP keyword, your .CUE file should be ok.\n"
+	);
+
 	return tips;
 }
 
