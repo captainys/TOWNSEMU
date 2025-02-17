@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <unordered_map>
 #include <string.h>
 #include <stdint.h>
+#include <ctype.h>
 
 #include "discimg.h"
 #include "cpputil.h"
@@ -190,6 +191,10 @@ unsigned int DiscImage::Open(const std::string &fName)
 		{
 			return OpenMDS(Mds);
 		}
+	}
+	if(".CCD"==ext)
+	{
+		return OpenCCD(fName);
 	}
 	return ERROR_UNSUPPORTED;
 }
@@ -968,6 +973,189 @@ unsigned int DiscImage::OpenMDS(const std::string &fName)
 		binaries.push_back(bin);
 
 
+
+		MakeLayoutFromTracksAndBinaryFiles();
+
+		return ERROR_NOERROR;
+	}
+	return ERROR_CANNOT_OPEN;
+}
+
+unsigned int DiscImage::OpenCCD(const std::string &fName)
+{
+	std::ifstream ifp(fName,std::ios::binary);
+	if(true==ifp.is_open())
+	{
+		uint64_t binSize=0;
+		std::string binFName;
+		std::string fNameBase=cpputil::RemoveExtension(fName.c_str());
+		const std::string binCandidate[]=
+		{
+			fNameBase+".img",
+			fNameBase+".bin",
+		};
+		for(auto fn : binCandidate)
+		{
+			auto s=cpputil::FileSize(fn);
+			if(0!=s)
+			{
+				binSize=s;
+				binFName=fn;
+				break;
+			}
+		}
+		if(0==binSize)
+		{
+			return ERROR_BINARY_FILE_NOT_FOUND;
+		}
+
+		CleanUp();
+		this->fName=fName;
+		fileType=FILETYPE_CCD;
+
+		totalBinLength=binSize;
+		num_sectors=binSize/DEFAULT_SECTOR_SIZE;
+
+		int state=0;
+		while(true!=ifp.eof())
+		{
+			std::string str;
+			std::getline(ifp,str);
+
+			for(auto &c : str)
+			{
+				c=toupper(c);
+			}
+
+			size_t i;
+			bool squareBracket=false;
+			for(i=0; i<str.size(); ++i)
+			{
+				if('['==str[i])
+				{
+					squareBracket=true;
+					break;
+				}
+			}
+
+			if(true==squareBracket) // Found '['
+			{
+				state=0; // Tentatively change to not in [TRACK]
+				for(; i<str.size(); ++i)
+				{
+					if(true==cpputil::StrStartsWith(str.data()+i,"TRACK"))
+					{
+						Track trk;
+						trk.trackType=TRACK_AUDIO; // Tentative.
+						trk.sectorLength=DEFAULT_SECTOR_SIZE; // Fixed?
+						trk.preGapSectorLength=0; // Doesn't matter.
+						trk.locationInFile=0; // Tentative
+						trk.start.FromHSG(0); // Tentative.
+						tracks.push_back(trk);
+						state=1;
+					}
+				}
+			}
+			else
+			{
+				switch(state)
+				{
+				case 0:
+					break;
+				case 1:  // Reading [TRACK ?]
+					{
+						size_t i=0;
+						int cmd=0;
+						for(; i<str.size(); ++i)
+						{
+							if(true==cpputil::StrStartsWith(str.data()+i,"MODE"))
+							{
+								cmd=1;
+								i+=4;
+								break;
+							}
+							else if(true==cpputil::StrStartsWith(str.data()+i,"INDEX"))
+							{
+								cmd=2;
+								i+=5;
+								break;
+							}
+						}
+						if(1==cmd)
+						{
+							for(; i<str.size(); ++i)
+							{
+								if('0'<=str[i] && str[i]<='9')
+								{
+									switch(str[i])
+									{
+									case '0':
+										tracks.back().trackType=TRACK_AUDIO;
+										break;
+									case '1':
+										tracks.back().trackType=TRACK_MODE1_DATA;
+										break;
+									case '2':
+										tracks.back().trackType=TRACK_MODE2_DATA;
+										break;
+									}
+									break;
+								}
+							}
+						}
+						else if(2==cmd)
+						{
+							int indexType=-1;
+							for(; i<str.size(); ++i)
+							{
+								if('0'<=str[i] && str[i]<='9')
+								{
+									indexType=cpputil::Atoi(str.c_str()+i);
+									break;
+								}
+							}
+							if(1==indexType) // Index Type 1 is all I care about.
+							{
+								bool passedEqual=false;
+								for(; i<str.size(); ++i)
+								{
+									if('='==str[i])
+									{
+										passedEqual=true;
+										break;
+									}
+								}
+								if(true==passedEqual)
+								{
+									for(; i<str.size(); ++i)
+									{
+										if('0'<=str[i] && str[i]<='9')
+										{
+											size_t hsg=cpputil::Atoi(str.c_str()+i);
+											tracks.back().start.FromHSG(hsg);
+											tracks.back().locationInFile=DEFAULT_SECTOR_SIZE*hsg;
+											break;
+										}
+									}
+								}
+							}
+						}
+					}
+					break;
+				}
+			}
+		}
+
+		for(size_t i=0; i+1<tracks.size(); ++i)
+		{
+			tracks[i].end=tracks[i+1].start;
+			tracks[i].end.Decrement();
+		}
+		tracks.back().end.FromHSG(num_sectors-1);
+
+		Binary bin;
+		bin.fName=binFName;
+		binaries.push_back(bin);
 
 		MakeLayoutFromTracksAndBinaryFiles();
 

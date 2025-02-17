@@ -60,13 +60,15 @@ public:
 		RAW_BYTES_PER_SECTOR=2340,
 		AUDIO_SECTOR_SIZE=2352,
 		AUDIO_SAMPLING_RATE=44100,
+		DEFAULT_SECTOR_SIZE=2352,
 	};
 	enum
 	{
 		FILETYPE_NONE,
 		FILETYPE_ISO,
 		FILETYPE_CUE,
-		FILETYPE_MDS
+		FILETYPE_MDS,
+		FILETYPE_CCD,
 	};
 	enum
 	{
@@ -327,6 +329,9 @@ public:
 public:
 	unsigned int OpenMDS(const std::string &fName);
 
+
+public:
+	unsigned int OpenCCD(const std::string &fName);
 
 	/*! Cache binary file.  It may take large memory.
 	    If it is the multi-binary image, it only reads the first binary.
