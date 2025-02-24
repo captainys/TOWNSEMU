@@ -1437,6 +1437,7 @@ void FsSimpleWindowConnection::WindowConnection::Start(void)
 	if(0==FsCheckWindowOpen())
 	{
 		FsOpenWindow(0,winY0,wid,hei+STATUS_HEI,1,WINDOW_TITLE);
+		FsRegisterCloseWindowCallBack(FsSimpleWindowConnection::WindowConnection::CloseWindowCallBack,this);
 	}
 	else
 	{
@@ -1793,6 +1794,8 @@ void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 
 		shared.gamePadsNeedUpdate=outside_world->gamePadsNeedUpdate;
 		shared.showMouseCursor=outside_world->showMouseCursor;
+
+		outside_world->closeWindow=closeWindow;
 	}
 	{
 		std::lock_guard<std::mutex> lock(renderingLock);

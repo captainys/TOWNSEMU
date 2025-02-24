@@ -111,7 +111,6 @@ public:
 	// For mouse emulation by pad digital axes.
 	int mouseDX=0,mouseDY=0;
 
-
 	virtual std::vector <std::string> MakeDefaultKeyMappingText(void) const override;
 	virtual std::vector <std::string> MakeKeyMappingText(void) const override;
 	virtual void LoadKeyMappingFromText(const std::vector <std::string> &text) override;
@@ -180,6 +179,16 @@ public:
 		void Communicate(Outside_World *) override;
 
 		void PollGamePads(void);
+
+		// Called when window-close button is clicked.
+		static bool CloseWindowCallBack(void *thisPtr)
+		{
+			auto self=(FsSimpleWindowConnection::WindowConnection *)thisPtr;
+			self->deviceStateLock.lock();
+			self->closeWindow=true;
+			self->deviceStateLock.unlock();
+			return false; // Do not close window right away.
+		}
 	};
 	WindowInterface *CreateWindowInterface(void) const override;
 	void DeleteWindowInterface(WindowInterface *) const override;

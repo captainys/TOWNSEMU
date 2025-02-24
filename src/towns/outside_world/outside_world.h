@@ -155,6 +155,8 @@ public:
 
 	unsigned int lowerRightIcon=LOWER_RIGHT_NONE;
 
+	bool closeWindow=false; // Must be copied from WindowInterface::closeWindow in Communicate.
+
 	Outside_World();
 	virtual ~Outside_World();
 
@@ -283,7 +285,7 @@ public:
 
 		unsigned int windowModeOnStartUp=TownsStartParameters::WINDOW_NORMAL;
 
-
+		bool closeWindow=false;  // Windows is closed from outside.
 
 		WindowInterface();
 		~WindowInterface();

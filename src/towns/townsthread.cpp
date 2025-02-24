@@ -97,6 +97,8 @@ void TownsThread::VMMainLoopTemplate(
 		switch(runMode)
 		{
 		case RUNMODE_PAUSE:
+			outside_world->UpdateStatusBarInfo(*townsPtr);
+			window->Communicate(outside_world);
 			townsPtr->ForceRender(render,*outside_world,*window);
 			outside_world->DevicePolling(*townsPtr);
 			if(true==outside_world->PauseKeyPressed())
@@ -244,6 +246,11 @@ void TownsThread::VMMainLoopTemplate(
 			terminate=true;
 			std::cout << "Undefined VM RunMode!" << std::endl;
 			break;
+		}
+		if(true==outside_world->closeWindow && RUNMODE_EXIT!=runMode)
+		{
+			std::cout << "Window closed.\n";
+			runMode=RUNMODE_EXIT;
 		}
 		if(true==townsPtr->var.powerOff)
 		{
