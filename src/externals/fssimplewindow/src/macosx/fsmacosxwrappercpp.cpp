@@ -61,6 +61,7 @@ extern "C" int FsCheckExposureC(void);
 extern "C" void FsPushKeyC(int fsKeyCode);
 extern "C" void FsEnableIMEC(void);
 extern "C" void FsDisableIMEC(void);
+extern "C" int FsOnCloseButton(void);
 
 
 static int doubleBuffer=1;
@@ -317,5 +318,13 @@ void FsShowMouseCursor(int showFlag)
 }
 int FsIsMouseCursorVisible(void)
 {
+	return 1;
+}
+int FsOnCloseButton(void)
+{
+	if(nullptr!=fsCloseWindowCallBack)
+	{
+		return (int)fsCloseWindowCallBack(fsCloseWindowCallBackParam);
+	}
 	return 1;
 }

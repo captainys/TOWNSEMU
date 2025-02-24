@@ -64,7 +64,7 @@ void FsPollDeviceC(void);
 void FsMakeCurrentC(void);
 extern void FsOnPaintCallBackCpp(void);
 extern void FsOnInitializeOpenGLC(void);
-
+extern int FsOnCloseButton(void);
 
 static bool openGLprepared=false;
 static int mouseLb=0,mouseMb=0,mouseRb=0;
@@ -748,7 +748,10 @@ static YsMacDelegate *ysDelegate=nil;
 
 - (void) windowWillClose: (NSNotification *)notification
 {
-	[NSApp terminate:nil];	// This can also be exit(0);
+	if(0!=FsOnCloseButton())
+	{
+		[NSApp terminate:nil];	// This can also be exit(0);
+	}
 }
 @end
 
