@@ -98,7 +98,7 @@ void TownsThread::VMMainLoopTemplate(
 		{
 		case RUNMODE_PAUSE:
 			outside_world->UpdateStatusBarInfo(*townsPtr);
-			window->Communicate(outside_world);
+			// Do not call window->Communicate(outwide_world); here because townsPtr->ForceRender will call it inside.
 			townsPtr->ForceRender(render,*outside_world,*window);
 			outside_world->DevicePolling(*townsPtr);
 			if(true==outside_world->PauseKeyPressed())
