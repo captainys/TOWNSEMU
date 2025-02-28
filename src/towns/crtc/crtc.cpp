@@ -1154,7 +1154,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			state.highResCrtcMouse.unknownValueReg8=data;
 			break;
 		case HIGHRES_REG_MOUSE_PATTERN:
-			std::cout << "Word writing to the hardware-mouse pattern?" << std::endl;
+			if(true==monitorCRTC2)
+			{
+				std::cout << "Word writing to the hardware-mouse pattern?" << std::endl;
+			}
 			break;
 		}
 		break;
