@@ -49,6 +49,7 @@ public:
 	const uint16_t DRIVELETTER_BUFFER=0x0109; // CS:0109H 8-byte drive-letter buffer
 	const uint16_t DUMMYDPB_BUFFER=0x211;
 
+	bool monitor=false;
 	bool useSlashSlash=false; // Keep it false for compatible ROM.
 	FileSys sharedDir[TOWNS_TGDRV_MAX_NUM_DRIVES];
 

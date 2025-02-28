@@ -51,7 +51,10 @@ TownsTgDrv::TownsTgDrv(class FMTownsCommon *townsPtr) : Device(townsPtr)
 			//   CS:0109H(DRIVELETTER_BUFFER) is 8-byte drive-letter buffer to be filled. (Initial all FFh)
 			//   CS:0111H(ERRMSG_BUFFER) is 256-byte buffer for sending error messages to the client.
 
-			std::cout << "Installing Tsugaru Drive." << std::endl;
+			if(true==monitor)
+			{
+				std::cout << "Installing Tsugaru Drive." << std::endl;
+			}
 			if(true==Install())
 			{
 				townsPtr->CPU().SetCF(false);
@@ -67,7 +70,10 @@ TownsTgDrv::TownsTgDrv(class FMTownsCommon *townsPtr) : Device(townsPtr)
 			if(0x1600!=(townsPtr->CPU().GetBX()&0xFF00))
 			{
 				// 0x16?? is used for DPMI.  Not TGDRV's business.
-				std::cout << "INT 2FH Intercept. Req=" << cpputil::Ustox(townsPtr->CPU().GetBX()) << std::endl;
+				if(true==monitor)
+				{
+					std::cout << "INT 2FH Intercept. Req=" << cpputil::Ustox(townsPtr->CPU().GetBX()) << std::endl;
+				}
 			}
 			// Set PF if not my drive.
 			// Clear PF if my drive.
@@ -165,8 +171,11 @@ bool TownsTgDrv::Int2F_1101_Rmdir(void)
 	if(0<=sharedDirIdx)
 	{
 		auto subPath=DropDriveLetter(fName);
-		std::cout << fName << std::endl;
-		std::cout << subPath << std::endl;
+		if(true==monitor)
+		{
+			std::cout << fName << std::endl;
+			std::cout << subPath << std::endl;
+		}
 
 		auto invalidErr=CheckFileName(subPath);
 		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
@@ -198,8 +207,11 @@ bool TownsTgDrv::Int2F_1103_Mkdir(void)
 	if(0<=sharedDirIdx)
 	{
 		auto subPath=DropDriveLetter(fName);
-		std::cout << fName << std::endl;
-		std::cout << subPath << std::endl;
+		if(true==monitor)
+		{
+			std::cout << fName << std::endl;
+			std::cout << subPath << std::endl;
+		}
 
 		auto invalidErr=CheckFileName(subPath);
 		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
@@ -233,8 +245,11 @@ bool TownsTgDrv::Int2F_1105_Chdir(void)
 		auto CDSAddr=GetCDSAddress(DriveLetterToDriveIndex(driveLetter));
 
 		auto subPath=DropDriveLetter(fName);
-		std::cout << fName << std::endl;
-		std::cout << subPath << std::endl;
+		if(true==monitor)
+		{
+			std::cout << fName << std::endl;
+			std::cout << subPath << std::endl;
+		}
 
 		auto invalidErr=CheckFileName(subPath);
 		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
@@ -379,7 +394,10 @@ bool TownsTgDrv::Int2F_1109_WriteToRemoteFile(void)
 	auto sharedDirIdx=DriveLetterToSharedDirIndex(drvLetter);
 	if(0<=sharedDirIdx)
 	{
-		std::cout << cpputil::Ustox(townsPtr->CPU().GetCX()) << std::endl;
+		if(true==monitor)
+		{
+			std::cout << cpputil::Ustox(townsPtr->CPU().GetCX()) << std::endl;
+		}
 
 		auto hostSFTIdx=townsPtr->CPU().RedirectFetchWord(
 		    townsPtr->CPU().state.CS().addressSize,
@@ -437,11 +455,17 @@ bool TownsTgDrv::Int2F_1109_WriteToRemoteFile(void)
 
 				auto position=FetchFilePositionFromSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
 				auto fsize=sharedDir[sharedDirIdx].Fsize(hostSFTIdx);
-				std::cout << "Current Position :" << position << std::endl;
-				std::cout << "Current File Size:" << fsize << std::endl;
+				if(true==monitor)
+				{
+					std::cout << "Current Position :" << position << std::endl;
+					std::cout << "Current File Size:" << fsize << std::endl;
+				}
 				if(fsize<position)
 				{
-					std::cout << "TGDRV Warning: Fwrite with CX=0, but TGDRV does not extend file." << std::endl;
+					if(true==monitor)
+					{
+						std::cout << "TGDRV Warning: Fwrite with CX=0, but TGDRV does not extend file." << std::endl;
+					}
 				}
 				else if(position<fsize)
 				{
@@ -469,7 +493,10 @@ bool TownsTgDrv::Int2F_110C_GetDiskInformation(void)
 		return false;
 	}
 
-	std::cout << CDS << std::endl;
+	if(true==monitor)
+	{
+		std::cout << CDS << std::endl;
+	}
 	unsigned char drvLetter=0;
 	if(('/'==CDS[0] && '/'==CDS[1]) || ('\\'==CDS[0] && '\\'==CDS[1]))
 	{
@@ -511,8 +538,11 @@ bool TownsTgDrv::Int2F_110E_SetFileAttrib(void)
 
 		auto attr=FetchStackParam0();
 		auto subPath=DropDriveLetter(fName);
-		std::cout << subPath << std::endl;
-		std::cout << cpputil::Ustox(attr) << std::endl;
+		if(true==monitor)
+		{
+			std::cout << subPath << std::endl;
+			std::cout << cpputil::Ustox(attr) << std::endl;
+		}
 
 		townsPtr->CPU().SetCF(false);
 		return true; // Yes, it's my drive.
@@ -566,8 +596,11 @@ bool TownsTgDrv::Int2F_1111_Rename(void)
 	{
 		townsPtr->CPU().SetCF(true); // Tentative
 
-		std::cout << fn1 << std::endl;
-		std::cout << fn2 << std::endl;
+		if(true==monitor)
+		{
+			std::cout << fn1 << std::endl;
+			std::cout << fn2 << std::endl;
+		}
 
 		auto fn2DriveLetter=FullyQualifiedFileNameToDriveLetter(fn2);
 		if(fn2DriveLetter!=driveLetter)
@@ -612,7 +645,10 @@ bool TownsTgDrv::Int2F_1113_Delete(void)
 
 		auto subPath=DropDriveLetter(fName);
 
-		std::cout << subPath << std::endl;
+		if(true==monitor)
+		{
+			std::cout << subPath << std::endl;
+		}
 
 		bool wildCard=false;
 		for(auto c : subPath)
@@ -641,7 +677,10 @@ bool TownsTgDrv::Int2F_1113_Delete(void)
 			// Delete by wildcard.
 			auto wildCard=GetLastOfFilename(subPath);
 			auto templ11=FilenameTo11Bytes(wildCard);
-			std::cout << templ11 << std::endl;
+			if(true==monitor)
+			{
+				std::cout << templ11 << std::endl;
+			}
 
 			auto subDir=FullPathToSubDir(subPath);
 
@@ -678,7 +717,10 @@ bool TownsTgDrv::Int2F_1113_Delete(void)
 			for(auto fn : toDel)
 			{
 				auto subPath=cpputil::MakeFullPathName(subDir,fn);
-				std::cout << subPath << std::endl;
+				if(true==monitor)
+				{
+					std::cout << subPath << std::endl;
+				}
 				if(true!=sharedDir[sharedDirIdx].DeleteSubPathFile(subPath))
 				{
 					townsPtr->CPU().SetCF(true);
@@ -700,7 +742,10 @@ bool TownsTgDrv::Int2F_1116_OpenExistingFile(void)
 	{
 		auto subPath=DropDriveLetter(fName);
 		auto mode=FetchStackParam0();
-		std::cout << cpputil::Ustox(mode) << std::endl;
+		if(true==monitor)
+		{
+			std::cout << cpputil::Ustox(mode) << std::endl;
+		}
 
 		auto invalidErr=CheckFileName(fName);
 		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
@@ -756,7 +801,10 @@ bool TownsTgDrv::Int2F_1117_CreateOrTruncate(void)
 			return true; // Yes it's my drive.
 		}
 
-		std::cout << cpputil::Ustox(mode) << std::endl;
+		if(true==monitor)
+		{
+			std::cout << cpputil::Ustox(mode) << std::endl;
+		}
 
 		// Cannot figure the meaning of high-byte of mode.
 		//   0000=Normal Create and 0100=Truncate?  What's the difference?
@@ -782,22 +830,31 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 		return false;
 	}
 
-	std::cout << fn << std::endl;
-	std::cout << "ATTR " << cpputil::Ustox(sAttr) << std::endl;
-	std::cout << "DTA Addr " << cpputil::Uitox(GetDTAAddress()) << std::endl;
+	if(true==monitor)
+	{
+		std::cout << fn << std::endl;
+		std::cout << "ATTR " << cpputil::Ustox(sAttr) << std::endl;
+		std::cout << "DTA Addr " << cpputil::Uitox(GetDTAAddress()) << std::endl;
+	}
 
 	unsigned char drvLetter=FullyQualifiedFileNameToDriveLetter(fn);
 	auto sharedDirIndex=DriveLetterToSharedDirIndex(drvLetter);
 
-	std::cout << sharedDirIndex << std::endl;
+	if(true==monitor)
+	{
+		std::cout << sharedDirIndex << std::endl;
+	}
 
 	if(0<=sharedDirIndex)
 	{
 		StoreByte(DTABuffer,0x80|(drvLetter-'A'+1));  // (drv&0x7F) is FCB drive index.
 		auto last=GetLastOfFilename(fn);
-		std::cout << last << std::endl;
 		auto eleven=FilenameTo11Bytes(last);
-		std::cout << eleven << std::endl;
+		if(true==monitor)
+		{
+			std::cout << last << std::endl;
+			std::cout << eleven << std::endl;
+		}
 
 		for(int i=0; i<11; ++i)
 		{
@@ -953,7 +1010,10 @@ bool TownsTgDrv::Int2F_111D_CloseAll(void)
 bool TownsTgDrv::Int2F_1123_QualifyRemoteFileName(void)
 {
 	auto fn=FetchCString(townsPtr->CPU().state.DS(),townsPtr->CPU().state.SI());
-	std::cout << fn << std::endl;
+	if(true==monitor)
+	{
+		std::cout << fn << std::endl;
+	}
 	auto sharedDirIndex=FullyQualifiedFileNameToSharedDirIndex(fn);
 	if(0<=sharedDirIndex)
 	{
@@ -1011,10 +1071,13 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 		uint16_t openMode=FetchWord(addr+0x2E1-0x9E);
 		uint16_t openAction=FetchWord(addr+0x2DD-0x9E);
 
-		std::cout << fName << std::endl;
-		std::cout << cpputil::Ustox(openMode) << std::endl;
-		std::cout << cpputil::Ustox(openAction) << std::endl;
-		std::cout << cpputil::Ustox(attr) << std::endl;
+		if(true==monitor)
+		{
+			std::cout << fName << std::endl;
+			std::cout << cpputil::Ustox(openMode) << std::endl;
+			std::cout << cpputil::Ustox(openAction) << std::endl;
+			std::cout << cpputil::Ustox(attr) << std::endl;
+		}
 
 		// openMode&7: 0 Read  1 Write  2 RW  Same as mode in SFT.
 		// openAction:
@@ -1540,12 +1603,15 @@ bool TownsTgDrv::Install(void)
 	auto &cpu=townsPtr->CPU();
 	auto &mem=townsPtr->mem;
 
-	std::cout << "AX=" << cpputil::Ustox(cpu.GetAX()) << std::endl;
-	std::cout << "BX=" << cpputil::Ustox(cpu.GetBX()) << std::endl;
-	std::cout << "CX=" << cpputil::Ustox(cpu.GetCX()) << std::endl;
-	std::cout << "DX=" << cpputil::Ustox(cpu.GetDX()) << std::endl;
-	std::cout << "SI=" << cpputil::Ustox(cpu.state.SI()) << std::endl;
-	std::cout << "DI=" << cpputil::Ustox(cpu.state.DI()) << std::endl;
+	if(true==monitor)
+	{
+		std::cout << "AX=" << cpputil::Ustox(cpu.GetAX()) << std::endl;
+		std::cout << "BX=" << cpputil::Ustox(cpu.GetBX()) << std::endl;
+		std::cout << "CX=" << cpputil::Ustox(cpu.GetCX()) << std::endl;
+		std::cout << "DX=" << cpputil::Ustox(cpu.GetDX()) << std::endl;
+		std::cout << "SI=" << cpputil::Ustox(cpu.state.SI()) << std::endl;
+		std::cout << "DI=" << cpputil::Ustox(cpu.state.DI()) << std::endl;
+	}
 
 	// DS:SI  Length of command parameter
 	std::string param;
@@ -1557,16 +1623,25 @@ bool TownsTgDrv::Install(void)
 			param.push_back(cpu.RedirectFetchByte(cpu.state.CS().addressSize,cpu.state.ES(),offset+1+i,mem));
 		}
 	}
-	std::cout << "{" << param << "}" << std::endl;
+	if(true==monitor)
+	{
+		std::cout << "{" << param << "}" << std::endl;
+	}
 
 
 	auto CDSCount=GetCDSCount();
-	std::cout << "CDS Count=" << CDSCount << std::endl;
+	if(true==monitor)
+	{
+		std::cout << "CDS Count=" << CDSCount << std::endl;
+	}
 
 	for(int i=0; i<CDSCount; ++i)
 	{
-		std::cout << 'A'+i << " ";
-		std::cout << cpputil::Ustox(GetCDSType(i)) << "h " << std::endl;
+		if(true==monitor)
+		{
+			std::cout << 'A'+i << " ";
+			std::cout << cpputil::Ustox(GetCDSType(i)) << "h " << std::endl;
+		}
 	}
 
 	std::vector <char> drives;
@@ -1623,7 +1698,10 @@ bool TownsTgDrv::Install(void)
 			    letter);
 
 			char str[2]={letter,0};
-			std::cout << "Assign Drive " << str << std::endl;
+			if(true==monitor)
+			{
+				std::cout << "Assign Drive " << str << std::endl;
+			}
 
 			auto CDSAddr=GetCDSAddress(DriveLetterToDriveIndex(letter));
 			for(int i=0; i<GetCDSLength(); ++i)
@@ -1703,11 +1781,14 @@ bool TownsTgDrv::Install(void)
 					DPBSEG=dpb.NEXT_DPB_SEG;
 				}
 
-				for(int i : DPBDrives)
+				if(true==monitor)
 				{
-					std::cout << i;
+					for(int i : DPBDrives)
+					{
+						std::cout << i;
+					}
+					std::cout << std::endl;
 				}
-				std::cout << std::endl;
 
 				unsigned int newDPBOFF=DUMMYDPB_BUFFER;
 				unsigned int newDPBSEG=townsPtr->CPU().state.CS().value;
