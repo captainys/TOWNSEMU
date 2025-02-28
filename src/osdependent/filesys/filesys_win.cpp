@@ -108,11 +108,6 @@ void FileSys::FindContext::Close(void)
 	std::vector <wchar_t> utf16;
 	utf16.resize(len+1); // Hope it's long enough.
 	MultiByteToWideChar(CP_SJIS,MB_PRECOMPOSED,shiftJISString.data(),shiftJISString.size(),utf16.data(),len+1);
-for(auto c : utf16)
-{
-std::cout << cpputil::Ustox(c) << " ";
-}
-std::cout << std::endl;
 
 	BOOL usedDefChar;
 	auto outLen=WideCharToMultiByte(CP_ACP,0,utf16.data(),len,nullptr,0,nullptr,&usedDefChar);
@@ -174,7 +169,7 @@ std::cout << std::endl;
 			}
 		}
 	}
-std::cout << dotPos << " " << dotCount << " " << sjis.size() << std::endl;
+
 	if(0==dotCount) // No extension
 	{
 		return sjis.size()<=8;
