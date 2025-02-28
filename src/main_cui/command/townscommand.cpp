@@ -275,6 +275,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["MIDIMON"]=ENABLE_MIDIMONITOR;
 	featureMap["DOSSTDOUTCAP"]=ENABLE_CAPTURE_DOS_STDOUT;
 	featureMap["CAPDOSSTDOUT"]=ENABLE_CAPTURE_DOS_STDOUT;
+	featureMap["TGDRVMON"]=ENABLE_TGDRV_MONITOR;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -2050,6 +2051,10 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd)
 			towns.debugger.StartCaptureDOSStdout();
 			std::cout << "Start DOS-Stdout Capture." << std::endl;
 			break;
+		case ENABLE_TGDRV_MONITOR:
+			towns.tgdrv.monitor=true;
+			std::cout << "Enabled TGDRV monitor.\n";
+			break;
 		}
 	}
 }
@@ -2169,6 +2174,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd)
 		case ENABLE_CAPTURE_DOS_STDOUT:
 			towns.debugger.EndCaptureDOSStdout();
 			std::cout << "Stop DOS-Stdout Capture." << std::endl;
+			break;
+		case ENABLE_TGDRV_MONITOR:
+			towns.tgdrv.monitor=true;
+			std::cout << "Disabled TGDRV monitor.\n";
 			break;
 		}
 	}
