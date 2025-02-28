@@ -180,6 +180,8 @@ public:
 	uint32_t GetSAttrAddress(void) const;
 	uint32_t GetDPBSize(void) const;
 
+	std::vector <std::string> GetStatusText(void) const;
+
 	/*! Version used for serialization.
 	*/
 	virtual uint32_t SerializeVersion(void) const;

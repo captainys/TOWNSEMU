@@ -594,6 +594,8 @@ enum
 
 	TOWNS_QUICK_DEBUG_BREAK=      0xEA,  // Writing to this I/O port will break the VM.
 	TOWNS_QUICK_DEBUG_STATE=      0xEB,  // Writing to this I/O port will show the VM state, not break.
+
+	TOWNSIO_HOST_CONSOLE=         0xE9,  // Direct console input/output to the host.  Apparently DOS emulators use this I/O for this purpose.
 };
 
 enum

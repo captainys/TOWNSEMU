@@ -332,6 +332,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["HIGHRESPCM"]=DUMP_HIGHRES_PCM;
 	dumpableMap["HIRESPCM"]=DUMP_HIGHRES_PCM;
 	dumpableMap["SAVESTATEM"]=DUMP_SAVESTATEM;
+	dumpableMap["TGDRV"]=DUMP_TGDRV;
 
 
 	breakEventMap["ICW1"]=   BREAK_ON_PIC_IWC1;
@@ -866,6 +867,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  CPU TEST registers." << std::endl;
 	std::cout << "SAVESTATEM" << std::endl;
 	std::cout << "  List of memory-saved states." << std::endl;
+	std::cout << "TGDRV\n";
+	std::cout << "  TG drive shared directories\n";
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Event that can break >>" << std::endl;
@@ -2754,6 +2757,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			for(auto str : towns.highResPCM.GetStatusText())
 			{
 				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_TGDRV:
+			for(auto str : towns.tgdrv.GetStatusText())
+			{
+				std::cout << str << "\n";
 			}
 			break;
 		}

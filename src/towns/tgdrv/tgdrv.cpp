@@ -2079,6 +2079,18 @@ uint32_t TownsTgDrv::GetSAttrAddress(void) const
 }
 
 
+std::vector <std::string> TownsTgDrv::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+	for(auto &s : sharedDir)
+	{
+		if(true==s.linked)
+		{
+			text.push_back(s.hostPath);
+		}
+	}
+	return text;
+}
 
 /* virtual */ uint32_t TownsTgDrv::SerializeVersion(void) const
 {

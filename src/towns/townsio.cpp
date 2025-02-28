@@ -66,6 +66,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	case TOWNS_QUICK_DEBUG_STATE: //        0xEB,  // Writing to this I/O port will show the VM state, not break.
 		PrintStatus();
 		break;
+	case TOWNSIO_HOST_CONSOLE:
+		break;
 
 	case TOWNSIO_VM_HOST_IF_CMD_STATUS:
 		ProcessVMToHostCommand(data,var.nVM2HostParam,var.VM2HostParam);

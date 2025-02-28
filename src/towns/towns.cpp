@@ -639,7 +639,7 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(this,TOWNSIO_MAINRAM_WAIT); //            0x5E2,
 	io.AddDevice(this,TOWNSIO_VRAMWAIT); //                0x5E6,
 	io.AddDevice(this,TOWNSIO_FASTMODE); //                0x5EC, // [2] pp.794
-
+	io.AddDevice(this,TOWNSIO_HOST_CONSOLE);  // 0xE9
 
 
 
