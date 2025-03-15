@@ -491,6 +491,20 @@ unsigned int TownsStrToGamePortEmu(std::string str)
 		return TOWNS_GAMEPORTEMU_CYBERSTICK;
 	}
 
+	for(int i=0; i<8; ++i)
+	{
+		std::string keyword="PHYS";
+		keyword.push_back('0'+i);
+		if(keyword+"PAD6"==str || keyword+"6BTN"==str)
+		{
+			return TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL0+i;
+		}
+	}
+	if("KEY6BTN"==str || "KEYPAD6"==str)
+	{
+		return TOWNS_GAMEPORTEMU_6BTNPAD_BY_KEY;
+	}
+
 	return TOWNS_GAMEPORTEMU_ERROR;
 }
 
@@ -610,6 +624,25 @@ std::string TownsGamePortEmuToStr(unsigned int emu)
 		return "PHYS6CPSF";
 	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL7:
 		return "PHYS7CPSF";
+
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL0:
+		return "PHYS0PAD6";
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL1:
+		return "PHYS1PAD6";
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL2:
+		return "PHYS2PAD6";
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL3:
+		return "PHYS3PAD6";
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL4:
+		return "PHYS4PAD6";
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL5:
+		return "PHYS5PAD6";
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL6:
+		return "PHYS6PAD6";
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL7:
+		return "PHYS7PAD6";
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_KEY: 
+		return "KEYPAD6";
 	}
 	return "NONE";
 }

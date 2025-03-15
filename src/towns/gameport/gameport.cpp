@@ -64,6 +64,18 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL6:
 	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL7:
 		return CAPCOMCPSF;
+
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL0:
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL1:
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL2:
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL3:
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL4:
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL5:
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL6:
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL7:
+	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_KEY: 
+		return GAMEPAD_6BTN;
+
 	default:
 		return GAMEPAD;
 	}
@@ -430,6 +442,70 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		}
 		data|=((~flags)&0x3F);
 		data&=(0xCF|(TRIG<<4));
+	}
+	else if(GAMEPAD_6BTN==device)
+	{
+		unsigned int trig=this->trig;
+
+		// Auto Shot
+		for(int i=0; i<MAX_NUM_BUTTONS; ++i)
+		{
+			if(0!=autoShotInterval[i])
+			{
+				auto dt=townsTime%autoShotInterval[i];
+				if((autoShotInterval[i]/2)<=dt)
+				{
+					trig&=~(1<<i);
+				}
+			}
+		}
+
+		// COM0==clear -> Same as 2-button pad
+		// COM0==set -> Z|Y|X|C
+
+		bool A=(0!=(trig & 1));       //B1 Fall -> Correct
+		bool B=(0!=(trig & 2));       //B2 Jump -> Correct
+		bool C=(0!=(trig & 4));       //B3
+		bool X=(0!=(trig & 8));       //B4 Attack -> Correct
+		bool Y=(0!=(trig & 16));      //B5
+		bool Z=(0!=(trig & 32));      //B6
+		bool start=(0!=(trig & 64));  //B7 PAUSE -> Correct
+		bool select=(0!=(trig & 128));//B8
+		unsigned int flags;
+		if(true!=COM)
+		{
+			flags=(up ?      1 : 0)|
+			      (down ?    2 : 0)|
+			      (left ?    4 : 0)|
+			      (right ?   8 : 0)|
+			      (A ?      16 : 0)|
+			      (B ?      32 : 0);
+			if(true==start)
+			{
+				flags|=0x0C;
+			}
+			if(true==select)
+			{
+				flags|=3;
+			}
+		}
+		else
+		{
+			flags=(C ?       1 : 0)|
+			      (X ?       2 : 0)|
+			      (Y ?       4 : 0)|
+			      (Z ?       8 : 0)|
+			      (A ?      16 : 0)|
+			      (B ?      32 : 0);
+		}
+
+		data|=((~flags)&0x3F);
+
+		if(true==COM)
+		{
+			data|=0x40;
+		}
+		data|=0x80;
 	}
 	else // if(NONE==device)
 	{
