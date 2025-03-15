@@ -409,6 +409,10 @@ unsigned int TownsStrToGamePortEmu(std::string str)
 	{
 		return TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL7;
 	}
+	if("KEYCPSF"==str || "KEYCAPCOM"==str)
+	{
+		return TOWNS_GAMEPORTEMU_CAPCOM_BY_KEY;
+	}
 
 	if("KEYMOUSE"==str || "keymouse"==str)
 	{
@@ -624,6 +628,8 @@ std::string TownsGamePortEmuToStr(unsigned int emu)
 		return "PHYS6CPSF";
 	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL7:
 		return "PHYS7CPSF";
+	case TOWNS_GAMEPORTEMU_CAPCOM_BY_KEY:
+		return "KEYCAPCOM";
 
 	case TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL0:
 		return "PHYS0PAD6";
