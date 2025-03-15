@@ -196,6 +196,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	}
 
 	bool gamePadEmulationByKey=false; // Emulate a gamepad with keyboard
+	bool gamePad6EmulationByKey=false; // Emulate CAPCOM CPSF or 6-button Pad with keyboard
 	bool mouseEmulationByNumPad=false; // Emulate mouse with keyboard numpad
 	for(unsigned int portId=0; portId<TOWNS_NUM_GAMEPORTS; ++portId)
 	{
@@ -203,6 +204,11 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		   TOWNS_GAMEPORTEMU_MOUSE_BY_KEY==gamePort[portId])
 		{
 			gamePadEmulationByKey=true;
+		}
+		if(TOWNS_GAMEPORTEMU_CAPCOM_BY_KEY==gamePort[portId] ||
+		   TOWNS_GAMEPORTEMU_6BTNPAD_BY_KEY==gamePort[portId])
+		{
+			gamePad6EmulationByKey=true;
 		}
 		if(TOWNS_GAMEPORTEMU_MOUSE_BY_NUMPAD==gamePort[portId])
 		{
@@ -587,6 +593,22 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			{
 				continue;
 			}
+			if(true==gamePad6EmulationByKey &&
+			   (FSKEY_Z==key ||
+			    FSKEY_X==key ||
+			    FSKEY_C==key ||
+			    FSKEY_A==key ||
+			    FSKEY_S==key ||
+			    FSKEY_D==key ||
+			    FSKEY_Q==key ||
+			    FSKEY_W==key ||
+			    FSKEY_LEFT==key ||
+			    FSKEY_RIGHT==key ||
+			    FSKEY_UP==key ||
+			    FSKEY_DOWN==key))
+			{
+				continue;
+			}
 			if(true==mouseEmulationByNumPad &&
 			   (FSKEY_TEN0==key ||
 			    FSKEY_TEN1==key ||
@@ -652,6 +674,48 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					towns.SetGamePadState(portId,Abutton,Bbutton,left,right,up,down,run,pause);
 				}
 				break;
+			case TOWNS_GAMEPORTEMU_CAPCOM_BY_KEY:
+			case TOWNS_GAMEPORTEMU_6BTNPAD_BY_KEY:
+				{
+					bool Abutton=(0!=windowEvent.keyState[FSKEY_Z]);
+					bool Bbutton=(0!=windowEvent.keyState[FSKEY_X]);
+					bool Cbutton=(0!=windowEvent.keyState[FSKEY_C]);
+					bool Dbutton=(0!=windowEvent.keyState[FSKEY_A]);
+					bool Ebutton=(0!=windowEvent.keyState[FSKEY_S]);
+					bool Fbutton=(0!=windowEvent.keyState[FSKEY_D]);
+					bool run=(0!=windowEvent.keyState[FSKEY_Q]);
+					bool pause=(0!=windowEvent.keyState[FSKEY_W]);
+
+					bool lf=(0!=windowEvent.keyState[FSKEY_LEFT]);
+					bool ri=(0!=windowEvent.keyState[FSKEY_RIGHT]);
+					if(true==lf && true==ri)
+					{
+						ri=false;
+					}
+					bool up=(0!=windowEvent.keyState[FSKEY_UP]);
+					bool dn=(0!=windowEvent.keyState[FSKEY_DOWN]);
+					if(true==up && true==dn)
+					{
+						dn=false;
+					}
+
+					towns.SetCAPCOMCPSFState(
+					    portId,
+					    lf,
+					    ri,
+					    up,
+					    dn,
+					    Abutton,
+					    Bbutton,
+					    Cbutton,
+					    Dbutton,
+					    Ebutton,
+					    Fbutton,
+					    run,
+					    pause);
+				}
+				break;
+
 			case TOWNS_GAMEPORTEMU_PHYSICAL0:
 			case TOWNS_GAMEPORTEMU_PHYSICAL1:
 			case TOWNS_GAMEPORTEMU_PHYSICAL2:
@@ -734,30 +798,30 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					if(0<=padId && padId<gamePads.size())
 					{
 						auto &reading=gamePads[padId];
-						bool up=reading.dirs[0].upDownLeftRight[2];
-						bool dn=reading.dirs[0].upDownLeftRight[3];
-						bool lf=reading.dirs[0].upDownLeftRight[0];
-						bool ri=reading.dirs[0].upDownLeftRight[1];
+						bool up=reading.dirs[0].upDownLeftRight[0];
+						bool dn=reading.dirs[0].upDownLeftRight[1];
+						bool lf=reading.dirs[0].upDownLeftRight[2];
+						bool ri=reading.dirs[0].upDownLeftRight[3];
 
 						// Muscle Bomber cannot start without pressing START button.
 						// So, I use physical buttons 8 and 9 for START/SELECT.
 						if(reading.buttons[8])
 						{
-							up=true;
-							dn=true;
+							lf=true;
+							ri=true;
 						}
 						if(reading.buttons[9])
 						{
-							lf=true;
-							ri=true;
+							up=true;
+							dn=true;
 						}
 
 						towns.SetCAPCOMCPSFState(
 						    portId,
-						    up,
-						    dn,
 						    lf,
 						    ri,
+						    up,
+						    dn,
 						    reading.buttons[0],
 						    reading.buttons[1],
 						    reading.buttons[2],
@@ -768,10 +832,6 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 						    reading.buttons[7]);
 					}
 				}
-				break;
-
-			case TOWNS_GAMEPORTEMU_CAPCOM_BY_KEY:
-			case TOWNS_GAMEPORTEMU_6BTNPAD_BY_KEY:
 				break;
 
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_KEY:

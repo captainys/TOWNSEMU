@@ -491,10 +491,10 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		}
 		else
 		{
-			flags=(C ?       1 : 0)|
-			      (X ?       2 : 0)|
-			      (Y ?       4 : 0)|
-			      (Z ?       8 : 0)|
+			flags=(Z ?       1 : 0)|
+			      (Y ?       2 : 0)|
+			      (X ?       4 : 0)|
+			      (C ?       8 : 0)|
 			      (A ?      16 : 0)|
 			      (B ?      32 : 0);
 		}
