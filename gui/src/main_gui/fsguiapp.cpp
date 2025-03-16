@@ -131,6 +131,16 @@ static const FsGuiMainCanvas::HumanReadable gameportEmulationTypes[]
 	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL5,"CAPCOM CPSF by Host Game Controller 5"},
 	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL6,"CAPCOM CPSF by Host Game Controller 6"},
 	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL7,"CAPCOM CPSF by Host Game Controller 7"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_KEY,"CAPCOM CPSF by Host Keyboard"},
+	{TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL0,"6 Buttons Pad by Host Game Controller 0"},
+	{TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL1,"6 Buttons Pad by Host Game Controller 1"},
+	{TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL2,"6 Buttons Pad by Host Game Controller 2"},
+	{TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL3,"6 Buttons Pad by Host Game Controller 3"},
+	{TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL4,"6 Buttons Pad by Host Game Controller 4"},
+	{TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL5,"6 Buttons Pad by Host Game Controller 5"},
+	{TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL6,"6 Buttons Pad by Host Game Controller 6"},
+	{TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL7,"6 Buttons Pad by Host Game Controller 7"},
+	{TOWNS_GAMEPORTEMU_6BTNPAD_BY_KEY,"6 Buttons Pad by Host Keyboard"},
 };
 
 static const unsigned int selectableGameportDevices[]=
@@ -165,6 +175,12 @@ static const unsigned int selectableGameportDevices[]=
 	TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL1,
 	TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL2,
 	TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL3,
+	TOWNS_GAMEPORTEMU_CAPCOM_BY_KEY,
+	TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL0,
+	TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL1,
+	TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL2,
+	TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL3,
+	TOWNS_GAMEPORTEMU_6BTNPAD_BY_KEY,
 };
 
 /* static */ std::string FsGuiMainCanvas::GamePortEmulationTypeToHumanReadable(unsigned int emuType)
