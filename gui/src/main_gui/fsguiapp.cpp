@@ -705,6 +705,7 @@ void FsGuiMainCanvas::ReallyRunWithinSameProcess(VMClass &VM)
 	RemoveDialog(profileDlg);
 	AddDialog(resumeVMDlg);
 
+	ProfileDialog::ToSystemEncoding(VM.profile);
 	VM.Run();
 	FsShowMouseCursor(1);
 	if(true!=VM.IsRunning())
@@ -754,21 +755,15 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 
 	if(true==separateProcess)
 	{
+		ProfileDialog::ToSystemEncoding(profile);
 		auto argv=profile.MakeArgv();
+
 		argv[0]=FindTsugaruCUI();
+		ProfileDialog::ToSystemEncoding(argv[0]);
+
 		argv.push_back("-CMOS");
 		argv.push_back(GetCMOSFileName());
-
-
-		for(auto &arg : argv)
-		{
-			YsWString utf16;
-			utf16.SetUTF8String(arg.c_str());
-			YsString sysEncode;
-			YsUnicodeToSystemEncoding(sysEncode,utf16);
-			arg=sysEncode.c_str();
-		}
-
+		ProfileDialog::ToSystemEncoding(argv.back());
 
 		for(auto arg : argv)
 		{
@@ -887,9 +882,7 @@ std::string FsGuiMainCanvas::FindTsugaruCUI(void) const
 	ful.MakeFullPathName(exePath,exeFile);
 	if(YSTRUE==YsFileIO::CheckFileExist(ful))
 	{
-		YsString utf8;
-		YsUnicodeToSystemEncoding(utf8,ful);
-		return utf8.c_str();
+		return ful.GetUTF8String().c_str();
 	}
 
 	YsWString pth,fil;
@@ -897,9 +890,7 @@ std::string FsGuiMainCanvas::FindTsugaruCUI(void) const
 	ful.MakeFullPathName(pth,exeFile);
 	if(YSTRUE==YsFileIO::CheckFileExist(ful))
 	{
-		YsString utf8;
-		YsUnicodeToSystemEncoding(utf8,ful);
-		return utf8.c_str();
+		return ful.GetUTF8String().c_str();
 	}
 
 	return "";
@@ -909,9 +900,7 @@ std::string FsGuiMainCanvas::GetCMOSFileName(void) const
 {
 	YsWString ful;
 	ful.MakeFullPathName(GetTsugaruProfileDir(),L"CMOS.DAT");
-	YsString utf8;
-	YsUnicodeToSystemEncoding(utf8,ful);
-	return utf8.c_str();
+	return ful.GetUTF8String().c_str();
 }
 
 YsWString FsGuiMainCanvas::GetDefaultNewDiskImageFileName(void) const
@@ -1646,7 +1635,9 @@ void FsGuiMainCanvas::File_ClearCMOSDialog::Make(void)
 	}
 	if(btn==reallyReallyConfirmBtn)
 	{
-		remove(cmosFName.c_str());
+		std::string fn=cmosFName;
+		ProfileDialog::ToSystemEncoding(fn);
+		remove(fn.c_str());
 		CloseModalDialog(0);
 	}
 }

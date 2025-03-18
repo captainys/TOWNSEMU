@@ -140,6 +140,13 @@ public:
 	TownsProfile GetProfile(void) const;
 	void SetProfile(const TownsProfile &profile);
 
+	static void ToSystemEncoding(TownsProfile &profile);
+
+	/*! Input:  UTF8
+	    Output: System Encoding
+	*/
+	static void ToSystemEncoding(std::string &str);
+
 	void SetDefaultFMVolume(void);
 	void SetDefaultPCMVolume(void);
 	void UpdateFMVolumeText(void);
