@@ -276,6 +276,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["DOSSTDOUTCAP"]=ENABLE_CAPTURE_DOS_STDOUT;
 	featureMap["CAPDOSSTDOUT"]=ENABLE_CAPTURE_DOS_STDOUT;
 	featureMap["TGDRVMON"]=ENABLE_TGDRV_MONITOR;
+	featureMap["MOUSEMON"]=ENABLE_MOUSE_MONITOR;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -776,7 +777,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  High-Res CRTC Monitor." << std::endl;
 	std::cout << "DOSSTDOUTCAP" << std::endl;
 	std::cout << "  DOS-Stdout Capture. (Use SAVEDOSSTDOUT to save captured data.)" << std::endl;
-
+	std::cout << "TGDRVMON\n";
+	std::cout << "  Monitor file sharing with TGDRV.\n";
+	std::cout << "MOUSEMON\n";
+	std::cout << "  Monitor mouse integration.\n";
 
 
 	std::cout << "<< Information that can be printed >>" << std::endl;
@@ -2058,6 +2062,11 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd)
 			towns.tgdrv.monitor=true;
 			std::cout << "Enabled TGDRV monitor.\n";
 			break;
+		case ENABLE_MOUSE_MONITOR:
+			towns.gameport.state.ports[0].monitorMouse=true;
+			towns.gameport.state.ports[1].monitorMouse=true;
+			std::cout << "Enabled mouse monitor.\n";
+			break;
 		}
 	}
 }
@@ -2181,6 +2190,11 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd)
 		case ENABLE_TGDRV_MONITOR:
 			towns.tgdrv.monitor=true;
 			std::cout << "Disabled TGDRV monitor.\n";
+			break;
+		case ENABLE_MOUSE_MONITOR:
+			towns.gameport.state.ports[0].monitorMouse=false;
+			towns.gameport.state.ports[1].monitorMouse=false;
+			std::cout << "Disabled mouse monitor.\n";
 			break;
 		}
 	}
@@ -5371,12 +5385,12 @@ void TownsCommandInterpreter::Execute_QuickScreenShot(FMTownsCommon &towns,Comma
 		{
 			if(true==towns.mapXY[0].ready)
 			{
-				sprintf(fmt,"$X=%d",towns.mapXY[0].Evaluate());
+				sprintf(fmt,"$X=%d",(int)towns.mapXY[0].Evaluate());
 				ful+=std::string(fmt);
 			}
 			if(true==towns.mapXY[1].ready)
 			{
-				sprintf(fmt,"$Y=%d",towns.mapXY[1].Evaluate());
+				sprintf(fmt,"$Y=%d",(int)towns.mapXY[1].Evaluate());
 				ful+=std::string(fmt);
 			}
 		}

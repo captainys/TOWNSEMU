@@ -102,6 +102,7 @@ public:
 		Vec2i mouseMotionCopy;
 		int zAxisCopy; // For CyberStick
 		int wAxisCopy; // For CyberStick
+		bool monitorMouse=false;
 
 		long long int lastAccessTime;
 		long long int lastStateChangeTime;

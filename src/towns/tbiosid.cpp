@@ -595,6 +595,7 @@ bool FMTownsCommon::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMo
 		// However, in Lemmings the mouse pointer is distance from top-left corner of the monitor
 		// regardless of the VRAM offset.  Therefore, the transformation needs to be skipped.
 		// Also internally-stored X coordinate looks to be half of the actual coordinate.
+		// Same problem for Drakken.
 		bool considerVRAMOffset=var.considerVRAMOffsetInMouseIntegration;
 		switch(state.appSpecificSetting)
 		{
@@ -609,6 +610,10 @@ bool FMTownsCommon::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMo
 			hostMouseX*=zoom2x.x();
 			hostMouseX/=4;
 			slowDownRange=4;
+			break;
+		case TOWNS_APPSPECIFIC_DRAKKEN:
+			considerVRAMOffset=false;
+			hostMouseY-=20;
 			break;
 		case TOWNS_APPSPECIFIC_LEMMINGS2:
 			hostMouseY-=8;
