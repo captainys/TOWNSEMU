@@ -1412,7 +1412,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	profile.sharedDir.clear();
 	for(int i=0; i<MAX_NUM_SHARED_DIR; ++i)
 	{
-		std::string str=shareDirTxt[i]->GetWString().GetUTF8String();
+		std::string str=shareDirTxt[i]->GetWString().GetUTF8String().c_str();
 		if(""!=str)
 		{
 			profile.sharedDir.push_back(str);
