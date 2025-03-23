@@ -638,10 +638,9 @@ unsigned int YM2612::ReallyWriteRegister(unsigned int channelBase,unsigned int r
 		{
 			unsigned int ch=(reg&3)+channelBase;
 			unsigned int slot=slotTwist[((reg>>2)&3)];
-			// [2] pp.211 Implies that writing to reg A0H to A2H triggers a tone to play.
+			// [2] pp.211
 			//     When setting the note, first write BLOCK and high 3-bits of F-Number (F-Number2),
 			//     and then write lower 8-bits of F-Number (F-Number1).
-			//     Or, is it REG_KEY_ON_OFF?
 			state.channels[ch].F_NUM&=0xFF00;
 			state.channels[ch].F_NUM|=value;
 			UpdatePhase12StepSlot(state.channels[ch]);
@@ -651,8 +650,7 @@ unsigned int YM2612::ReallyWriteRegister(unsigned int channelBase,unsigned int r
 		{
 			unsigned int ch=(reg&3)+channelBase;
 			unsigned int slot=slotTwist[((reg>>2)&3)];
-			state.channels[ch].F_NUM&=0x00FF;
-			state.channels[ch].F_NUM|=((value&7)<<8);
+			state.channels[ch].F_NUM=((value&7)<<8);
 			state.channels[ch].BLOCK=((value>>3)&7);
 		}
 		break;
