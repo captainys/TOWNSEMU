@@ -861,6 +861,11 @@ std::vector <std::string> YM2612::GetStatusText(void) const
 
 	text.push_back("YM2612");
 
+#ifdef YM_PRESCALER_CONFIGURABLE
+	sprintf(str,"PRESCALER=%d",state.preScaler);
+	text.push_back(str);
+#endif
+
 	for(int chNum=0; chNum<6; ++chNum)
 	{
 		auto &ch=state.channels[chNum];
