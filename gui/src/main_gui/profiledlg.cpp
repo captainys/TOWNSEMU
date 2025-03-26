@@ -1188,6 +1188,8 @@ void ProfileDialog::ToSystemEncoding(TownsProfile &profile)
 {
 	ToSystemEncoding(profile.ROMPath);
 
+	ToSystemEncoding(profile.CMOSFName);
+
 	ToSystemEncoding(profile.cdImgFName);
 
 	ToSystemEncoding(profile.fdImgFName[0]);
