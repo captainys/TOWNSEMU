@@ -7394,7 +7394,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			uint32_t incoming=Pop(mem,inst.operandSize);
 			HANDLE_EXCEPTION_PUSH_POP;
 
-			const uint32_t mask=0b1000111111111010101;
+			const uint32_t mask=0b1001000111111111010111;
 
 			incoming&=mask;
 
