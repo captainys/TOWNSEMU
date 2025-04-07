@@ -323,7 +323,7 @@ void TownsRender::Render(
 template <class OFFSETTRANS>
 void TownsRender::Render4Bit(
     const TownsCRTC::Layer &layer,
-    const Vec3ub palette[16],
+    const Vec4ub palette[16],
     const TownsCRTC::ChaseHQPalette &chaseHQPalette,
     const unsigned char VRAM[],
     bool transparent)
@@ -394,19 +394,13 @@ void TownsRender::Render4Bit(
 					unsigned char pix = (vrambyte & 0x0f);
 					for (int i = 0; i < ZH[0]; ++i)
 					{
-						dst[0] = palette[pix][0];
-						dst[1] = palette[pix][1];
-						dst[2] = palette[pix][2];
-						dst[3] = 255;
+						std::memcpy(dst, &palette[pix], 4);
 						dst += 4;
 					}
 					pix = (vrambyte & 0xf0) >> 4;
 					for (int i = 0; i < ZH[1]; ++i)
 					{
-						dst[0] = palette[pix][0];
-						dst[1] = palette[pix][1];
-						dst[2] = palette[pix][2];
-						dst[3] = 255;
+						std::memcpy(dst, &palette[pix], 4);
 						dst += 4;
 					}
 					++src;
@@ -452,10 +446,7 @@ void TownsRender::Render4Bit(
 					{
 						if (0 != pix)
 						{
-							dst[0] = palette[pix][0];
-							dst[1] = palette[pix][1];
-							dst[2] = palette[pix][2];
-							dst[3] = 255;
+							std::memcpy(dst, &palette[pix], 4);
 						}
 						dst += 4;
 					}
@@ -464,10 +455,7 @@ void TownsRender::Render4Bit(
 					{
 						if (0 != pix)
 						{
-							dst[0] = palette[pix][0];
-							dst[1] = palette[pix][1];
-							dst[2] = palette[pix][2];
-							dst[3] = 255;
+							std::memcpy(dst, &palette[pix], 4);
 						}
 						dst += 4;
 					}
@@ -501,11 +489,8 @@ void TownsRender::Render4Bit(
 		// Roughly 98:46:95
 		// std::cout << "ChaseHQ Special" << " " << chaseHQPalette.lastPaletteUpdateCount << std::endl;
 
-		Vec3ub paletteUpdate[16];
-		for (int i = 0; i < 16; ++i)
-		{
-			paletteUpdate[i] = palette[i];
-		}
+		Vec4ub paletteUpdate[16];
+		std::memcpy(paletteUpdate, palette, sizeof(Vec4ub)*16);
 
 		for (int i = 0; i < 16; ++i) // Sky
 		{
@@ -560,19 +545,13 @@ void TownsRender::Render4Bit(
 					unsigned char pix = (vrambyte & 0x0f);
 					for (int i = 0; i < ZH[0]; ++i)
 					{
-						dst[0] = paletteUpdate[pix][0];
-						dst[1] = paletteUpdate[pix][1];
-						dst[2] = paletteUpdate[pix][2];
-						dst[3] = 255;
+						std::memcpy(dst, &paletteUpdate[pix], 4);
 						dst += 4;
 					}
 					pix = (vrambyte & 0xf0) >> 4;
 					for (int i = 0; i < ZH[1]; ++i)
 					{
-						dst[0] = paletteUpdate[pix][0];
-						dst[1] = paletteUpdate[pix][1];
-						dst[2] = paletteUpdate[pix][2];
-						dst[3] = 255;
+						std::memcpy(dst, &paletteUpdate[pix], 4);
 						dst += 4;
 					}
 					++src;
@@ -629,10 +608,7 @@ void TownsRender::Render4Bit(
 					{
 						if (0 != pix)
 						{
-							dst[0] = paletteUpdate[pix][0];
-							dst[1] = paletteUpdate[pix][1];
-							dst[2] = paletteUpdate[pix][2];
-							dst[3] = 255;
+							std::memcpy(dst, &paletteUpdate[pix], 4);
 						}
 						dst += 4;
 					}
@@ -641,10 +617,7 @@ void TownsRender::Render4Bit(
 					{
 						if (0 != pix)
 						{
-							dst[0] = paletteUpdate[pix][0];
-							dst[1] = paletteUpdate[pix][1];
-							dst[2] = paletteUpdate[pix][2];
-							dst[3] = 255;
+							std::memcpy(dst, &paletteUpdate[pix], 4);
 						}
 						dst += 4;
 					}
@@ -664,7 +637,7 @@ void TownsRender::Render4Bit(
 	}
 }
 template <class OFFSETTRANS>
-void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[256],const unsigned char VRAM[],bool transparent)
+void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec4ub palette[256],const unsigned char VRAM[],bool transparent)
 {
 	unsigned int VRAMBase=layer.VRAMAddr;
 	unsigned int VRAMOffsetVertical=(layer.VRAMOffset+layer.FlipVRAMOffset)&~layer.HScrollMask;
@@ -695,10 +668,7 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 				OFFSETTRANS::Trans(VRAMAddr);
 
 				unsigned char col8 = VRAM[VRAMAddr];
-				dst[0] = palette[col8][0];
-				dst[1] = palette[col8][1];
-				dst[2] = palette[col8][2];
-				dst[3] = 255;
+				std::memcpy(dst, &palette[col8], 4);
 				dst += 4;
 				if (0 == (--ZH))
 				{
@@ -739,10 +709,7 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 				unsigned char col8 = VRAM[VRAMAddr];
 				if (0 != col8)
 				{
-					dst[0] = palette[col8][0];
-					dst[1] = palette[col8][1];
-					dst[2] = palette[col8][2];
-					dst[3] = 255;
+					std::memcpy(dst, &palette[col8], 4);
 				}
 				dst += 4;
 				if (0 == (--ZH))
