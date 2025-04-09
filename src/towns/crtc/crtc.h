@@ -177,8 +177,8 @@ public:
 	{
 	public:
 		unsigned int codeLatch;
-		Vec3ub plt16[2][16];
-		Vec3ub plt256[256];
+		Vec4ub plt16[2][16];
+		Vec4ub plt256[256];
 		void Reset(void);
 
 		void Set16(unsigned int page,unsigned int component,unsigned char v);
