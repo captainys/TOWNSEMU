@@ -135,9 +135,9 @@ public:
 	template <class OFFSETTRANS>
 	void Render(unsigned int page,const TownsCRTC::Layer &layer,const TownsCRTC::AnalogPalette &palette,const TownsCRTC::ChaseHQPalette &chaseHQ,const unsigned char VRAM[],bool transparent);
 	template <class OFFSETTRANS>
-	void Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[16],const TownsCRTC::ChaseHQPalette &chaseHQPalette,const unsigned char VRAM[],bool transparent);
+	void Render4Bit(const TownsCRTC::Layer &layer,const Vec4ub palette[16],const TownsCRTC::ChaseHQPalette &chaseHQPalette,const unsigned char VRAM[],bool transparent);
 	template <class OFFSETTRANS>
-	void Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[256],const unsigned char VRAM[],bool transparent);
+	void Render8Bit(const TownsCRTC::Layer &layer,const Vec4ub palette[256],const unsigned char VRAM[],bool transparent);
 	template <class OFFSETTRANS>
 	void Render16Bit(const TownsCRTC::Layer &layer,const unsigned char VRAM[],bool transparent);
 	template <class OFFSETTRANS>
