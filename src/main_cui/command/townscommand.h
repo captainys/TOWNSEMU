@@ -404,7 +404,7 @@ public:
 
 	void Execute_Calculate(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_BreakOn(FMTownsCommon &towns,Command &cmd);
+	void Execute_BreakOn(FMTownsCommon &towns,Command &cmd,bool monitorOnly);
 	void Execute_ClearBreakOn(FMTownsCommon &towns,Command &cmd);
 
 	void Execute_AddressTranslation(FMTownsCommon &towns,Command &cmd);
@@ -479,7 +479,8 @@ public:
 
 	void Execute_AutoShot(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Command &cmd);
+	void Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Command &cmd,bool monitorOnly);
+	void Execute_BreakOnMemoryRead(FMTownsCommon &towns,Command &cmd,bool monitorOnly);
 
 	void Execute_LS(FMTownsCommon &towns,Command &cmd);
 };

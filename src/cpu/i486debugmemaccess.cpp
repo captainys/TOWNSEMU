@@ -30,15 +30,19 @@ i486DebugMemoryAccess::i486DebugMemoryAccess(i486Debugger &debugger,unsigned int
 		onWriteMax[i]=0xFF;
 	}
 }
-void i486DebugMemoryAccess::SetBreakOnRead(unsigned int physAddr)
+void i486DebugMemoryAccess::SetBreakOnRead(unsigned int physAddr,bool monitorOnly)
 {
 	physAddr-=physAddrTop;
 	if(0<=physAddr && physAddr<Memory::MEMORY_ACCESS_SLOT_SIZE)
 	{
 		onRead[physAddr]=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED;
+		if(true==monitorOnly)
+		{
+			onRead[physAddr]|=i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
+		}
 	}
 }
-void i486DebugMemoryAccess::SetBreakOnWrite(unsigned int physAddr)
+void i486DebugMemoryAccess::SetBreakOnWrite(unsigned int physAddr,bool monitorOnly)
 {
 	physAddr-=physAddrTop;
 	if(0<=physAddr && physAddr<Memory::MEMORY_ACCESS_SLOT_SIZE)
@@ -46,9 +50,13 @@ void i486DebugMemoryAccess::SetBreakOnWrite(unsigned int physAddr)
 		onWrite[physAddr]=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED;
 		onWriteMin[physAddr]=0;
 		onWriteMax[physAddr]=0xFF;
+		if(true==monitorOnly)
+		{
+			onWrite[physAddr]|=i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
+		}
 	}
 }
-void i486DebugMemoryAccess::SetBreakOnWrite(unsigned int physAddr,unsigned char minValue,unsigned char maxValue)
+void i486DebugMemoryAccess::SetBreakOnWrite(unsigned int physAddr,unsigned char minValue,unsigned char maxValue,bool monitorOnly)
 {
 	physAddr-=physAddrTop;
 	if(0<=physAddr && physAddr<Memory::MEMORY_ACCESS_SLOT_SIZE)
@@ -56,16 +64,10 @@ void i486DebugMemoryAccess::SetBreakOnWrite(unsigned int physAddr,unsigned char 
 		onWrite[physAddr]=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED;
 		onWriteMin[physAddr]=minValue;
 		onWriteMax[physAddr]=maxValue;
-	}
-}
-void i486DebugMemoryAccess::SetBreakOnWrite(uint32_t physAddr,unsigned char data)
-{
-	physAddr-=physAddrTop;
-	if(0<=physAddr && physAddr<Memory::MEMORY_ACCESS_SLOT_SIZE)
-	{
-		onWrite[physAddr]=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED;
-		onWriteMin[physAddr]=data;
-		onWriteMax[physAddr]=data;
+		if(true==monitorOnly)
+		{
+			onWrite[physAddr]|=i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
+		}
 	}
 }
 void i486DebugMemoryAccess::ClearBreakOnRead(void)
@@ -336,7 +338,7 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 	memAccessChain->StoreByte(physAddr,data);
 }
 
-/* static */ void i486DebugMemoryAccess::SetBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr)
+/* static */ void i486DebugMemoryAccess::SetBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr,bool monitorOnly)
 {
 	auto *curMemAccess=mem.GetAccessObject(physAddr);
 	i486DebugMemoryAccess *debugMemAccess=dynamic_cast <i486DebugMemoryAccess *>(curMemAccess);
@@ -345,7 +347,7 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 		debugMemAccess=new i486DebugMemoryAccess(debugger,physAddr);
 		debugMemAccess->memAccessChain=curMemAccess;
 	}
-	debugMemAccess->SetBreakOnRead(physAddr);
+	debugMemAccess->SetBreakOnRead(physAddr,monitorOnly);
 	mem.SetAccessObject(debugMemAccess,physAddr);
 }
 /* static */ void i486DebugMemoryAccess::ClearBreakOnMemRead(Memory &mem,unsigned int physAddr)
@@ -369,7 +371,7 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 		}
 	}
 }
-/* static */ void i486DebugMemoryAccess::SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr)
+/* static */ void i486DebugMemoryAccess::SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,bool monitorOnly)
 {
 	auto *curMemAccess=mem.GetAccessObject(physAddr);
 	i486DebugMemoryAccess *debugMemAccess=dynamic_cast <i486DebugMemoryAccess *>(curMemAccess);
@@ -378,10 +380,10 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 		debugMemAccess=new i486DebugMemoryAccess(debugger,physAddr);
 		debugMemAccess->memAccessChain=curMemAccess;
 	}
-	debugMemAccess->SetBreakOnWrite(physAddr);
+	debugMemAccess->SetBreakOnWrite(physAddr,monitorOnly);
 	mem.SetAccessObject(debugMemAccess,physAddr);
 }
-/* static */ void i486DebugMemoryAccess::SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,unsigned char data)
+/* static */ void i486DebugMemoryAccess::SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,unsigned char minValue,unsigned char maxValue,bool monitorOnly)
 {
 	auto *curMemAccess=mem.GetAccessObject(physAddr);
 	i486DebugMemoryAccess *debugMemAccess=dynamic_cast <i486DebugMemoryAccess *>(curMemAccess);
@@ -390,19 +392,7 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 		debugMemAccess=new i486DebugMemoryAccess(debugger,physAddr);
 		debugMemAccess->memAccessChain=curMemAccess;
 	}
-	debugMemAccess->SetBreakOnWrite(physAddr,data);
-	mem.SetAccessObject(debugMemAccess,physAddr);
-}
-/* static */ void i486DebugMemoryAccess::SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,unsigned char minValue,unsigned char maxValue)
-{
-	auto *curMemAccess=mem.GetAccessObject(physAddr);
-	i486DebugMemoryAccess *debugMemAccess=dynamic_cast <i486DebugMemoryAccess *>(curMemAccess);
-	if(nullptr==debugMemAccess)
-	{
-		debugMemAccess=new i486DebugMemoryAccess(debugger,physAddr);
-		debugMemAccess->memAccessChain=curMemAccess;
-	}
-	debugMemAccess->SetBreakOnWrite(physAddr,minValue,maxValue);
+	debugMemAccess->SetBreakOnWrite(physAddr,minValue,maxValue,monitorOnly);
 	mem.SetAccessObject(debugMemAccess,physAddr);
 }
 /* static */ void i486DebugMemoryAccess::ClearBreakOnMemWrite(Memory &mem,unsigned int physAddr)

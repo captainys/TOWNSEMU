@@ -1194,7 +1194,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		break;
 
 	case CMD_BREAK_ON:
-		Execute_BreakOn(towns,cmd);
+		Execute_BreakOn(towns,cmd,false); // monitorOnly=false
 		break;
 	case CMD_DONT_BREAK_ON:
 		Execute_ClearBreakOn(towns,cmd);
@@ -3370,7 +3370,7 @@ void TownsCommandInterpreter::Execute_Calculate(FMTownsCommon &towns,Command &cm
 	}
 }
 
-void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd,bool monitorOnly)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -3383,311 +3383,304 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd)
 	if(iter!=breakEventMap.end())
 	{
 		std::string reason=iter->first;
-		switch(iter->second)
+		if(true!=monitorOnly)
 		{
-		case BREAK_ON_PIC_IWC1:
-			towns.pic.debugBreakOnICW1Write=true;
-			break;
-		case BREAK_ON_PIC_IWC4:
-			towns.pic.debugBreakOnICW4Write=true;
-			break;
-		case BREAK_ON_DMAC_REQUEST:
-			towns.dmac.debugBreakOnDMACRequest=true;
-			break;
-		case BREAK_ON_FDC_COMMAND:
-			towns.fdc.debugBreakOnCommandWrite=true;
-			break;
-		case BREAK_ON_FDC_READSECTOR:
-		case BREAK_ON_FDC_READADDRESS:
-			if(5<=cmd.argv.size())
+			switch(iter->second)
 			{
-				uint8_t CHR[3]=
+			case BREAK_ON_PIC_IWC1:
+				towns.pic.debugBreakOnICW1Write=true;
+				break;
+			case BREAK_ON_PIC_IWC4:
+				towns.pic.debugBreakOnICW4Write=true;
+				break;
+			case BREAK_ON_DMAC_REQUEST:
+				towns.dmac.debugBreakOnDMACRequest=true;
+				break;
+			case BREAK_ON_FDC_COMMAND:
+				towns.fdc.debugBreakOnCommandWrite=true;
+				break;
+			case BREAK_ON_FDC_READSECTOR:
+			case BREAK_ON_FDC_READADDRESS:
+				if(5<=cmd.argv.size())
 				{
-					(uint8_t)cpputil::Xtoi(cmd.argv[2].c_str()),
-					(uint8_t)cpputil::Xtoi(cmd.argv[3].c_str()),
-					(uint8_t)cpputil::Xtoi(cmd.argv[4].c_str()),
-				};
-				bool monitorOnly=false;
-				for(int i=5; i<cmd.argv.size(); ++i)
-				{
-					std::string arg=cmd.argv[i];
-					cpputil::Capitalize(arg);
-					if("MON"==arg || "MONITOR"==arg || "MONITORONLY"==arg)
+					uint8_t CHR[3]=
 					{
-						monitorOnly=true;
+						(uint8_t)cpputil::Xtoi(cmd.argv[2].c_str()),
+						(uint8_t)cpputil::Xtoi(cmd.argv[3].c_str()),
+						(uint8_t)cpputil::Xtoi(cmd.argv[4].c_str()),
+					};
+					bool monitorOnly=false;
+					for(int i=5; i<cmd.argv.size(); ++i)
+					{
+						std::string arg=cmd.argv[i];
+						cpputil::Capitalize(arg);
+						if("MON"==arg || "MONITOR"==arg || "MONITORONLY"==arg)
+						{
+							monitorOnly=true;
+						}
 					}
-				}
-				if(iter->second==BREAK_ON_FDC_READADDRESS)
-				{
-					std::cout << "Break on FDC read address ";
-					towns.fdc.SetBreakOnReadAddress(CHR,monitorOnly);
+					if(iter->second==BREAK_ON_FDC_READADDRESS)
+					{
+						std::cout << "Break on FDC read address ";
+						towns.fdc.SetBreakOnReadAddress(CHR,monitorOnly);
+					}
+					else
+					{
+						std::cout << "Break on FDC read sector ";
+						towns.fdc.SetBreakOnReadSector(CHR,monitorOnly);
+					}
+					std::cout << "0x" << cpputil::Ubtox(CHR[0]) << cpputil::Ubtox(CHR[1]) << cpputil::Ubtox(CHR[2]) << std::endl;
 				}
 				else
 				{
-					std::cout << "Break on FDC read sector ";
-					towns.fdc.SetBreakOnReadSector(CHR,monitorOnly);
+					PrintError(ERROR_TOO_FEW_ARGS);
+					return;
 				}
-				std::cout << "0x" << cpputil::Ubtox(CHR[0]) << cpputil::Ubtox(CHR[1]) << cpputil::Ubtox(CHR[2]) << std::endl;
-			}
-			else
-			{
-				PrintError(ERROR_TOO_FEW_ARGS);
-				return;
-			}
-			break;
-		case BREAK_ON_FOPEN:
-			if(3<=cmd.argv.size())
-			{
-				towns.debugger.SetBreakOnFOpen(cmd.argv[2]);
-			}
-			else
-			{
-				PrintError(ERROR_TOO_FEW_ARGS);
-				return;
-			}
-			break;
-		case BREAK_ON_INT:
-			if(3<=cmd.argv.size())
-			{
-				towns.debugger.SetBreakOnINT(cpputil::Xtoi(cmd.argv[2].c_str()));
-				std::vector <i486DXCommon::FarPointer> cseip;
-				std::vector <uint32_t> eip;
-				for(int i=3; i<cmd.argv.size(); ++i)
-				{
-					std::string cond=cmd.argv[i];
-					cpputil::Capitalize(cond);
-					if('A'==cond[0] && 'H'==cond[1] && '='==cond[2])
-					{
-						unsigned int AH=cpputil::Xtoi(cond.c_str()+3);
-						towns.debugger.SetBreakOnINTwithAH(cpputil::Xtoi(cmd.argv[2].c_str()),AH);
-					}
-					else if('A'==cond[0] && 'X'==cond[1] && '='==cond[2])
-					{
-						unsigned int AX=cpputil::Xtoi(cond.c_str()+3);
-						towns.debugger.SetBreakOnINTwithAX(cpputil::Xtoi(cmd.argv[2].c_str()),AX);
-					}
-					else if('E'==cond[0] && 'I'==cond[1] && 'P'==cond[2] && '='==cond[3])
-					{
-						uint32_t EIP=cpputil::Xtoi(cond.c_str()+4);
-						eip.push_back(EIP);
-					}
-					else if('C'==cond[0] && 'S'==cond[1] && 'E'==cond[2] && 'I'==cond[3] && 'P'==cond[4] && '='==cond[5])
-					{
-						auto farPtr=cmdutil::MakeFarPointer(cond.c_str()+6,towns.CPU());
-						farPtr=towns.CPU().TranslateFarPointer(farPtr);
-						cseip.push_back(farPtr);
-					}
-				}
-				for(auto key : cseip)
-				{
-					towns.debugger.AddBreakOnINT_CSEIP(cpputil::Xtoi(cmd.argv[2].c_str()),key.SEG,key.OFFSET);
-				}
-				for(auto key : eip)
-				{
-					towns.debugger.AddBreakOnINT_EIP(cpputil::Xtoi(cmd.argv[2].c_str()),key);
-				}
-			}
-			else
-			{
-				PrintError(ERROR_TOO_FEW_ARGS);
-				return;
-			}
-			break;
-		case BREAK_ON_CVRAM_READ:
-			towns.physMem.FMRVRAMAccess.breakOnCVRAMRead=true;
-			break;
-		case BREAK_ON_CVRAM_WRITE:
-			towns.physMem.FMRVRAMAccess.breakOnCVRAMWrite=true;
-			break;
-		case BREAK_ON_FMRVRAM_READ:
-			towns.physMem.FMRVRAMAccess.breakOnFMRVRAMRead=true;
-			break;
-		case BREAK_ON_FMRVRAM_WRITE:
-			towns.physMem.FMRVRAMAccess.breakOnFMRVRAMWrite=true;
-			break;
-		case BREAK_ON_IOREAD:
-			if(4<=cmd.argv.size())
-			{
-				auto portMin=cpputil::Xtoi(cmd.argv[2].c_str());
-				auto portMax=cpputil::Xtoi(cmd.argv[3].c_str());
-				for(unsigned int ioport=portMin; ioport<=portMax; ++ioport)
-				{
-					towns.debugger.AddBreakOnIORead(ioport);
-				}
-				std::cout << "Range:";
-				std::cout << cpputil::Ustox(portMin);
-				std::cout << " to ";
-				std::cout << cpputil::Ustox(portMax);
-			}
-			else if(3<=cmd.argv.size())
-			{
-				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
-				towns.debugger.AddBreakOnIORead(ioport);
-				std::cout << "Port:" << cpputil::Uitox(ioport) << std::endl;
-			}
-			else
-			{
-				PrintError(ERROR_TOO_FEW_ARGS);
-			}
-			break;
-		case BREAK_ON_IOWRITE:
-			if(4<=cmd.argv.size())
-			{
-				auto portMin=cpputil::Xtoi(cmd.argv[2].c_str());
-				auto portMax=cpputil::Xtoi(cmd.argv[3].c_str());
-				for(unsigned int ioport=portMin; ioport<=portMax; ++ioport)
-				{
-					towns.debugger.AddBreakOnIOWrite(ioport);
-				}
-				std::cout << "Range:";
-				std::cout << cpputil::Ustox(portMin);
-				std::cout << " to ";
-				std::cout << cpputil::Ustox(portMax);
-			}
-			else if(3<=cmd.argv.size())
-			{
-				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
-				towns.debugger.AddBreakOnIOWrite(ioport);
-				std::cout << "Port:" << cpputil::Ustox(ioport) << std::endl;
-			}
-			else
-			{
-				PrintError(ERROR_TOO_FEW_ARGS);
-			}
-			break;
-		case BREAK_ON_VRAMREAD:
-			towns.SetUpVRAMAccess(true,false);
-			break;
-		case BREAK_ON_VRAMWRITE:
-			towns.SetUpVRAMAccess(false,true);
-			break;
-		case BREAK_ON_VRAMREADWRITE:
-			towns.SetUpVRAMAccess(true,true);
-			break;
-		case BREAK_ON_CDC_COMMAND:
-			towns.cdrom.var.debugBreakOnCommandWrite=true;
-			if(3<=cmd.argv.size())
-			{
-				towns.cdrom.var.debugBreakOnSpecificCommand=cpputil::Xtoi(cmd.argv[2].c_str());
-			}
-			else
-			{
-				towns.cdrom.var.debugBreakOnSpecificCommand=0xFFFF;
-			}
-			break;
-		case BREAK_ON_CDC_DEI:
-			towns.cdrom.var.debugBreakOnDEI=true;
-			break;
-		case BREAK_ON_CDC_DATAREADY:
-			towns.cdrom.var.debugBreakOnDataReady=true;
-			break;
-		case BREAK_ON_LBUTTON_UP:
-			towns.var.debugBreakOnLButtonUp=true;
-			break;
-		case BREAK_ON_LBUTTON_DOWN:
-			towns.var.debugBreakOnLButtonDown=true;
-			break;
-		case BREAK_ON_RETURN_KEY:
-			towns.keyboard.debugBreakOnReturnKey=true;
-			break;
-		case BREAK_ON_SCSI_COMMAND:
-			if(cmd.argv.size()<=2)
-			{
-				std::cout << "Break on all SCSI commands." << std::endl;
-				for(int i=0; i<256; ++i)
-				{
-					towns.scsi.breakOnSCSICommand[i]=true;
-				}
-			}
-			else
-			{
-				uint8_t i=cpputil::Xtoi(cmd.argv[2].c_str());
-				std::cout << "Break on SCSI command " << cpputil::Ubtox(i) << std::endl;
-				towns.scsi.breakOnSCSICommand[i]=true;
-			}
-			break;
-		case BREAK_ON_SCSI_DMA_TRANSFER:
-			towns.scsi.breakOnDMATransfer=true;
-			break;
-		case BREAK_ON_MEM_READ:
-			if(4<=cmd.argv.size())
-			{
-				unsigned int addr0=cpputil::Xtoi(cmd.argv[2].c_str());
-				unsigned int addr1=cpputil::Xtoi(cmd.argv[3].c_str());
-				if(addr1<addr0)
-				{
-					std::swap(addr0,addr1);
-				}
-				for(auto addr=addr0; addr<=addr1; ++addr)
-				{
-					i486DebugMemoryAccess::SetBreakOnMemRead(towns.mem,towns.debugger,addr);
-				}
-				std::cout << "Break on Memory Read" << std::endl;
-				std::cout << "  from PHYS:" << cpputil::Uitox(addr0) << std::endl;
-				std::cout << "  to PHYS:  " << cpputil::Uitox(addr1) << std::endl;
-			}
-			else if(3<=cmd.argv.size())
-			{
-				i486DebugMemoryAccess::SetBreakOnMemRead(towns.mem,towns.debugger,cpputil::Xtoi(cmd.argv[2].c_str()));
-				std::cout << "Break on Memory Read PHYS:" << cpputil::Uitox(cpputil::Xtoi(cmd.argv[2].c_str())) << std::endl;
-			}
-			else
-			{
-				PrintError(ERROR_TOO_FEW_ARGS);
-				return;
-			}
-			break;
-		case BREAK_ON_MEM_WRITE:
-			Execute_BreakOnMemoryWrite(towns,cmd);
-			break;
-		case BREAK_ON_BEEP:
-			towns.timer.breakOnBeep=true;
-			break;
-		case BREAK_ON_PROTECTED_MODE:
-			towns.debugger.breakOnProtectedMode=true;
-			std::cout << "Break on entering protected mode." << std::endl;
-			break;
-		case BREAK_ON_REAL_MODE:
-			towns.debugger.breakOnRealMode=true;
-			std::cout << "Break on entering real-address mode." << std::endl;
-			break;
-		case BREAK_ON_VM86_MODE:
-			towns.debugger.breakOnVM86Mode=true;
-			std::cout << "Break on entering VM86 mode." << std::endl;
-			break;
-		case BREAK_ON_VXD_CALL:
-			{
-				uint32_t VxD=~0;
-				uint32_t svc=~0;
-				// BRKON VXDCALL 3 1 for VPICD VirtualizeIRQ
+				break;
+			case BREAK_ON_FOPEN:
 				if(3<=cmd.argv.size())
 				{
-					VxD=cpputil::Xtoi(cmd.argv[2].c_str());
+					towns.debugger.SetBreakOnFOpen(cmd.argv[2]);
 				}
+				else
+				{
+					PrintError(ERROR_TOO_FEW_ARGS);
+					return;
+				}
+				break;
+			case BREAK_ON_INT:
+				if(3<=cmd.argv.size())
+				{
+					towns.debugger.SetBreakOnINT(cpputil::Xtoi(cmd.argv[2].c_str()));
+					std::vector <i486DXCommon::FarPointer> cseip;
+					std::vector <uint32_t> eip;
+					for(int i=3; i<cmd.argv.size(); ++i)
+					{
+						std::string cond=cmd.argv[i];
+						cpputil::Capitalize(cond);
+						if('A'==cond[0] && 'H'==cond[1] && '='==cond[2])
+						{
+							unsigned int AH=cpputil::Xtoi(cond.c_str()+3);
+							towns.debugger.SetBreakOnINTwithAH(cpputil::Xtoi(cmd.argv[2].c_str()),AH);
+						}
+						else if('A'==cond[0] && 'X'==cond[1] && '='==cond[2])
+						{
+							unsigned int AX=cpputil::Xtoi(cond.c_str()+3);
+							towns.debugger.SetBreakOnINTwithAX(cpputil::Xtoi(cmd.argv[2].c_str()),AX);
+						}
+						else if('E'==cond[0] && 'I'==cond[1] && 'P'==cond[2] && '='==cond[3])
+						{
+							uint32_t EIP=cpputil::Xtoi(cond.c_str()+4);
+							eip.push_back(EIP);
+						}
+						else if('C'==cond[0] && 'S'==cond[1] && 'E'==cond[2] && 'I'==cond[3] && 'P'==cond[4] && '='==cond[5])
+						{
+							auto farPtr=cmdutil::MakeFarPointer(cond.c_str()+6,towns.CPU());
+							farPtr=towns.CPU().TranslateFarPointer(farPtr);
+							cseip.push_back(farPtr);
+						}
+					}
+					for(auto key : cseip)
+					{
+						towns.debugger.AddBreakOnINT_CSEIP(cpputil::Xtoi(cmd.argv[2].c_str()),key.SEG,key.OFFSET);
+					}
+					for(auto key : eip)
+					{
+						towns.debugger.AddBreakOnINT_EIP(cpputil::Xtoi(cmd.argv[2].c_str()),key);
+					}
+				}
+				else
+				{
+					PrintError(ERROR_TOO_FEW_ARGS);
+					return;
+				}
+				break;
+			case BREAK_ON_CVRAM_READ:
+				towns.physMem.FMRVRAMAccess.breakOnCVRAMRead=true;
+				break;
+			case BREAK_ON_CVRAM_WRITE:
+				towns.physMem.FMRVRAMAccess.breakOnCVRAMWrite=true;
+				break;
+			case BREAK_ON_FMRVRAM_READ:
+				towns.physMem.FMRVRAMAccess.breakOnFMRVRAMRead=true;
+				break;
+			case BREAK_ON_FMRVRAM_WRITE:
+				towns.physMem.FMRVRAMAccess.breakOnFMRVRAMWrite=true;
+				break;
+			case BREAK_ON_IOREAD:
 				if(4<=cmd.argv.size())
 				{
-					svc=cpputil::Xtoi(cmd.argv[3].c_str());
+					auto portMin=cpputil::Xtoi(cmd.argv[2].c_str());
+					auto portMax=cpputil::Xtoi(cmd.argv[3].c_str());
+					for(unsigned int ioport=portMin; ioport<=portMax; ++ioport)
+					{
+						towns.debugger.AddBreakOnIORead(ioport);
+					}
+					std::cout << "Range:";
+					std::cout << cpputil::Ustox(portMin);
+					std::cout << " to ";
+					std::cout << cpputil::Ustox(portMax);
 				}
-				towns.debugger.breakOrMonitorOnVxDCall=0xFF;
-				towns.debugger.breakOnVxDId=VxD;
-				towns.debugger.breakOnVxDServiceNumber=svc;
+				else if(3<=cmd.argv.size())
+				{
+					auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
+					towns.debugger.AddBreakOnIORead(ioport);
+					std::cout << "Port:" << cpputil::Uitox(ioport) << std::endl;
+				}
+				else
+				{
+					PrintError(ERROR_TOO_FEW_ARGS);
+				}
+				break;
+			case BREAK_ON_IOWRITE:
+				if(4<=cmd.argv.size())
+				{
+					auto portMin=cpputil::Xtoi(cmd.argv[2].c_str());
+					auto portMax=cpputil::Xtoi(cmd.argv[3].c_str());
+					for(unsigned int ioport=portMin; ioport<=portMax; ++ioport)
+					{
+						towns.debugger.AddBreakOnIOWrite(ioport);
+					}
+					std::cout << "Range:";
+					std::cout << cpputil::Ustox(portMin);
+					std::cout << " to ";
+					std::cout << cpputil::Ustox(portMax);
+				}
+				else if(3<=cmd.argv.size())
+				{
+					auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
+					towns.debugger.AddBreakOnIOWrite(ioport);
+					std::cout << "Port:" << cpputil::Ustox(ioport) << std::endl;
+				}
+				else
+				{
+					PrintError(ERROR_TOO_FEW_ARGS);
+				}
+				break;
+			case BREAK_ON_VRAMREAD:
+				towns.SetUpVRAMAccess(true,false);
+				break;
+			case BREAK_ON_VRAMWRITE:
+				towns.SetUpVRAMAccess(false,true);
+				break;
+			case BREAK_ON_VRAMREADWRITE:
+				towns.SetUpVRAMAccess(true,true);
+				break;
+			case BREAK_ON_CDC_COMMAND:
+				towns.cdrom.var.debugBreakOnCommandWrite=true;
+				if(3<=cmd.argv.size())
+				{
+					towns.cdrom.var.debugBreakOnSpecificCommand=cpputil::Xtoi(cmd.argv[2].c_str());
+				}
+				else
+				{
+					towns.cdrom.var.debugBreakOnSpecificCommand=0xFFFF;
+				}
+				break;
+			case BREAK_ON_CDC_DEI:
+				towns.cdrom.var.debugBreakOnDEI=true;
+				break;
+			case BREAK_ON_CDC_DATAREADY:
+				towns.cdrom.var.debugBreakOnDataReady=true;
+				break;
+			case BREAK_ON_LBUTTON_UP:
+				towns.var.debugBreakOnLButtonUp=true;
+				break;
+			case BREAK_ON_LBUTTON_DOWN:
+				towns.var.debugBreakOnLButtonDown=true;
+				break;
+			case BREAK_ON_RETURN_KEY:
+				towns.keyboard.debugBreakOnReturnKey=true;
+				break;
+			case BREAK_ON_SCSI_COMMAND:
+				if(cmd.argv.size()<=2)
+				{
+					std::cout << "Break on all SCSI commands." << std::endl;
+					for(int i=0; i<256; ++i)
+					{
+						towns.scsi.breakOnSCSICommand[i]=true;
+					}
+				}
+				else
+				{
+					uint8_t i=cpputil::Xtoi(cmd.argv[2].c_str());
+					std::cout << "Break on SCSI command " << cpputil::Ubtox(i) << std::endl;
+					towns.scsi.breakOnSCSICommand[i]=true;
+				}
+				break;
+			case BREAK_ON_SCSI_DMA_TRANSFER:
+				towns.scsi.breakOnDMATransfer=true;
+				break;
+			case BREAK_ON_MEM_READ:
+				Execute_BreakOnMemoryRead(towns,cmd,monitorOnly);
+				break;
+			case BREAK_ON_MEM_WRITE:
+				Execute_BreakOnMemoryWrite(towns,cmd,monitorOnly);
+				break;
+			case BREAK_ON_BEEP:
+				towns.timer.breakOnBeep=true;
+				break;
+			case BREAK_ON_PROTECTED_MODE:
+				towns.debugger.breakOnProtectedMode=true;
+				std::cout << "Break on entering protected mode." << std::endl;
+				break;
+			case BREAK_ON_REAL_MODE:
+				towns.debugger.breakOnRealMode=true;
+				std::cout << "Break on entering real-address mode." << std::endl;
+				break;
+			case BREAK_ON_VM86_MODE:
+				towns.debugger.breakOnVM86Mode=true;
+				std::cout << "Break on entering VM86 mode." << std::endl;
+				break;
+			case BREAK_ON_VXD_CALL:
+				{
+					uint32_t VxD=~0;
+					uint32_t svc=~0;
+					// BRKON VXDCALL 3 1 for VPICD VirtualizeIRQ
+					if(3<=cmd.argv.size())
+					{
+						VxD=cpputil::Xtoi(cmd.argv[2].c_str());
+					}
+					if(4<=cmd.argv.size())
+					{
+						svc=cpputil::Xtoi(cmd.argv[3].c_str());
+					}
+					towns.debugger.breakOrMonitorOnVxDCall=0xFF;
+					towns.debugger.breakOnVxDId=VxD;
+					towns.debugger.breakOnVxDServiceNumber=svc;
 
+				}
+				break;
+			case BREAK_ON_CALLSTACK_DEPTH:
+				if(3<=cmd.argv.size())
+				{
+					uint32_t depth=cpputil::Atoi(cmd.argv[2].data());
+					towns.debugger.SetBreakOnCallStackDepth(depth);
+				}
+				else
+				{
+					PrintError(ERROR_TOO_FEW_ARGS);
+					return;
+				}
+				break;
 			}
-			break;
-		case BREAK_ON_CALLSTACK_DEPTH:
-			if(3<=cmd.argv.size())
-			{
-				uint32_t depth=cpputil::Atoi(cmd.argv[2].data());
-				towns.debugger.SetBreakOnCallStackDepth(depth);
-			}
-			else
-			{
-				PrintError(ERROR_TOO_FEW_ARGS);
-				return;
-			}
-			break;
+			std::cout << "Break On " << reason << " is ON." << std::endl;
 		}
-		std::cout << "Break On " << reason << " is ON." << std::endl;
+		else
+		{
+			switch(iter->second)
+			{
+			default:
+				std::cout << "Monitor only is not available for this event.\n";
+				return;
+			case BREAK_ON_MEM_READ:
+				Execute_BreakOnMemoryRead(towns,cmd,monitorOnly);
+				break;
+			case BREAK_ON_MEM_WRITE:
+				Execute_BreakOnMemoryWrite(towns,cmd,monitorOnly);
+				break;
+			}
+		}
 	}
 }
 void TownsCommandInterpreter::Execute_ClearBreakOn(FMTownsCommon &towns,Command &cmd)
@@ -5469,10 +5462,10 @@ void TownsCommandInterpreter::Execute_AutoShot(FMTownsCommon &towns,Command &cmd
 	}
 }
 
-void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Command &cmd,bool monitorOnly)
 {
-	bool useValue=false,useMinMax=false;
-	unsigned char value=0,minValue=0,maxValue=255;
+	bool useMinMax=false;
+	unsigned char minValue=0,maxValue=255;
 	int nAddr=0;
 	uint32_t addr[2];
 
@@ -5497,8 +5490,9 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Co
 			}
 			if(std::string::npos!=pos)
 			{
-				useValue=true;
-				value=cpputil::Xtoi(arg.c_str()+pos+1);
+				useMinMax=true;
+				minValue=cpputil::Xtoi(arg.c_str()+pos+1);
+				maxValue=minValue;
 			}
 		}
 		else if(cpputil::StrStartsWith(arg,"MIN=") ||
@@ -5574,12 +5568,6 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Co
 		}
 	}
 
-	if(useMinMax && useValue)
-	{
-		std::cout << "Min/Max and Data cannot be used simultaneously." << std::endl;
-		PrintError(ERROR_WRONG_PARAMETER);
-	}
-
 	if(2==nAddr)
 	{
 		if(addr[1]<addr[0])
@@ -5588,22 +5576,12 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Co
 		}
 		for(auto a=addr[0]; a<=addr[1]; ++a)
 		{
-			if(true!=useValue)
-			{
-				i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,a,minValue,maxValue);
-			}
-			else
-			{
-				i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,a,value);
-			}
+			i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,a,minValue,maxValue,monitorOnly);
 		}
-		std::cout << "Break on Memory Write" << std::endl;
+		std::cout << (true==monitorOnly ? "Break " : "Monitor ");
+		std::cout << "on Memory Write" << std::endl;
 		std::cout << "  from PHYS:" << cpputil::Uitox(addr[0]) << std::endl;
 		std::cout << "  to PHYS:  " << cpputil::Uitox(addr[1]) << std::endl;
-		if(true==useValue)
-		{
-			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
-		}
 		if(true==useMinMax)
 		{
 			std::cout << "  Min=    " << cpputil::Ubtox(minValue) << std::endl;
@@ -5612,19 +5590,9 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Co
 	}
 	else if(1==nAddr)
 	{
-		if(true!=useValue)
-		{
-			i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,addr[0],minValue,maxValue);
-		}
-		else
-		{
-			i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,addr[0],value);
-		}
-		std::cout << "Break on Memory Write PHYS:" << cpputil::Uitox(addr[0]) << std::endl;
-		if(true==useValue)
-		{
-			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
-		}
+		i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,addr[0],minValue,maxValue,monitorOnly);
+		std::cout << (true==monitorOnly ? "Break " : "Monitor ");
+		std::cout << "on Memory Write PHYS:" << cpputil::Uitox(addr[0]) << std::endl;
 		if(true==useMinMax)
 		{
 			std::cout << "  Min=    " << cpputil::Ubtox(minValue) << std::endl;
@@ -5640,6 +5608,39 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Co
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
+
+void TownsCommandInterpreter::Execute_BreakOnMemoryRead(FMTownsCommon &towns,Command &cmd,bool monitorOnly)
+{
+	if(4<=cmd.argv.size())
+	{
+		unsigned int addr0=cpputil::Xtoi(cmd.argv[2].c_str());
+		unsigned int addr1=cpputil::Xtoi(cmd.argv[3].c_str());
+		if(addr1<addr0)
+		{
+			std::swap(addr0,addr1);
+		}
+		for(auto addr=addr0; addr<=addr1; ++addr)
+		{
+			i486DebugMemoryAccess::SetBreakOnMemRead(towns.mem,towns.debugger,addr,monitorOnly);
+		}
+		std::cout << (true==monitorOnly ? "Break " : "Monitor ");
+		std::cout << "on Memory Read" << std::endl;
+		std::cout << "  from PHYS:" << cpputil::Uitox(addr0) << std::endl;
+		std::cout << "  to PHYS:  " << cpputil::Uitox(addr1) << std::endl;
+	}
+	else if(3<=cmd.argv.size())
+	{
+		i486DebugMemoryAccess::SetBreakOnMemRead(towns.mem,towns.debugger,cpputil::Xtoi(cmd.argv[2].c_str()),monitorOnly);
+		std::cout << (true==monitorOnly ? "Break " : "Monitor ");
+		std::cout << "on Memory Read PHYS:" << cpputil::Uitox(cpputil::Xtoi(cmd.argv[2].c_str())) << std::endl;
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+}
+
 void TownsCommandInterpreter::Execute_LS(FMTownsCommon &towns,Command &cmd)
 {
 	FileSys fileSys;

@@ -37,10 +37,9 @@ public:
 	unsigned char onWriteMax[Memory::MEMORY_ACCESS_SLOT_SIZE];
 
 	i486DebugMemoryAccess(i486Debugger &debugger,unsigned int physAddrTop);
-	void SetBreakOnRead(unsigned int physAddr);
-	void SetBreakOnWrite(unsigned int physAddr);
-	void SetBreakOnWrite(unsigned int physAddr,unsigned char minValue,unsigned char maxValue);
-	void SetBreakOnWrite(uint32_t physAddr,unsigned char data);
+	void SetBreakOnRead(unsigned int physAddr,bool monitorOnly);
+	void SetBreakOnWrite(unsigned int physAddr,bool monitorOnly);
+	void SetBreakOnWrite(unsigned int physAddr,unsigned char minValue,unsigned char maxValue,bool monitorOnly);
 	void ClearBreakOnRead(void);
 	void ClearBreakOnWrite(void);
 	void ClearBreakOnReadWrite(void);
@@ -59,12 +58,11 @@ public:
 
 	inline bool CheckBreakOnWriteCondition(uint32_t physAddr,unsigned int data) const;
 
-	static void SetBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr);
+	static void SetBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr,bool monitorOnly);
 	static void ClearBreakOnMemRead(Memory &mem,unsigned int physAddr);
 	static void ClearBreakOnMemRead(Memory &mem);
-	static void SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr);
-	static void SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,unsigned char data);
-	static void SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,unsigned char minValue,unsigned char maxValue);
+	static void SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,bool monitorOnly);
+	static void SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,unsigned char minValue,unsigned char maxValue,bool monitorOnly);
 	static void ClearBreakOnMemWrite(Memory &mem,unsigned int physAddr);
 	static void ClearBreakOnMemWrite(Memory &mem);
 };
