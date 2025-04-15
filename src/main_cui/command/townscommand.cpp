@@ -81,7 +81,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["U16"]=CMD_DISASM16;
 	primaryCmdMap["U32"]=CMD_DISASM32;
 	primaryCmdMap["BRKON"]=CMD_BREAK_ON;
+	primaryCmdMap["MON"]=CMD_MONITOR_ON;
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
+	primaryCmdMap["CMON"]=CMD_DONT_BREAK_ON;
 	primaryCmdMap["INTERRUPT"]=CMD_INTERRUPT;
 	primaryCmdMap["EXCEPTION"]=CMD_EXCEPTION;
 	primaryCmdMap["MKMEMFILTER"]=CMD_MAKE_MEMORY_FILTER;
@@ -598,8 +600,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  List break points." << std::endl;
 	std::cout << "BRKON" << std::endl;
 	std::cout << "  Break on event." << std::endl;
+	std::cout << "MON" << std::endl;
+	std::cout << "  Monitor event.\n";
 	std::cout << "CBRKON" << std::endl;
-	std::cout << "  Clear break-on event." << std::endl;
+	std::cout << "CMON\n";
+	std::cout << "  Clear break-on/monitor event." << std::endl;
 	std::cout << "TYPE characters" << std::endl;
 	std::cout << "  Send keyboard codes." << std::endl;
 	std::cout << "KEYBOARD keyboardMode" <<std::endl;
@@ -1195,6 +1200,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 
 	case CMD_BREAK_ON:
 		Execute_BreakOn(towns,cmd,false); // monitorOnly=false
+		break;
+	case CMD_MONITOR_ON:
+		Execute_BreakOn(towns,cmd,true); // monitorOnly=true
 		break;
 	case CMD_DONT_BREAK_ON:
 		Execute_ClearBreakOn(towns,cmd);
@@ -3401,41 +3409,7 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd,
 				break;
 			case BREAK_ON_FDC_READSECTOR:
 			case BREAK_ON_FDC_READADDRESS:
-				if(5<=cmd.argv.size())
-				{
-					uint8_t CHR[3]=
-					{
-						(uint8_t)cpputil::Xtoi(cmd.argv[2].c_str()),
-						(uint8_t)cpputil::Xtoi(cmd.argv[3].c_str()),
-						(uint8_t)cpputil::Xtoi(cmd.argv[4].c_str()),
-					};
-					bool monitorOnly=false;
-					for(int i=5; i<cmd.argv.size(); ++i)
-					{
-						std::string arg=cmd.argv[i];
-						cpputil::Capitalize(arg);
-						if("MON"==arg || "MONITOR"==arg || "MONITORONLY"==arg)
-						{
-							monitorOnly=true;
-						}
-					}
-					if(iter->second==BREAK_ON_FDC_READADDRESS)
-					{
-						std::cout << "Break on FDC read address ";
-						towns.fdc.SetBreakOnReadAddress(CHR,monitorOnly);
-					}
-					else
-					{
-						std::cout << "Break on FDC read sector ";
-						towns.fdc.SetBreakOnReadSector(CHR,monitorOnly);
-					}
-					std::cout << "0x" << cpputil::Ubtox(CHR[0]) << cpputil::Ubtox(CHR[1]) << cpputil::Ubtox(CHR[2]) << std::endl;
-				}
-				else
-				{
-					PrintError(ERROR_TOO_FEW_ARGS);
-					return;
-				}
+				Execute_BreakOnFDCRead(towns,cmd,iter->second,monitorOnly);
 				break;
 			case BREAK_ON_FOPEN:
 				if(3<=cmd.argv.size())
@@ -3673,6 +3647,10 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd,
 			default:
 				std::cout << "Monitor only is not available for this event.\n";
 				return;
+			case BREAK_ON_FDC_READSECTOR:
+			case BREAK_ON_FDC_READADDRESS:
+				Execute_BreakOnFDCRead(towns,cmd,iter->second,monitorOnly);
+				break;
 			case BREAK_ON_MEM_READ:
 				Execute_BreakOnMemoryRead(towns,cmd,monitorOnly);
 				break;
@@ -5633,6 +5611,44 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryRead(FMTownsCommon &towns,Com
 		i486DebugMemoryAccess::SetBreakOnMemRead(towns.mem,towns.debugger,cpputil::Xtoi(cmd.argv[2].c_str()),monitorOnly);
 		std::cout << (true==monitorOnly ? "Break " : "Monitor ");
 		std::cout << "on Memory Read PHYS:" << cpputil::Uitox(cpputil::Xtoi(cmd.argv[2].c_str())) << std::endl;
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+}
+
+void TownsCommandInterpreter::Execute_BreakOnFDCRead(FMTownsCommon &towns,Command &cmd,unsigned int readOrReadAddress,bool monitorOnly)
+{
+	if(5<=cmd.argv.size())
+	{
+		uint8_t CHR[3]=
+		{
+			(uint8_t)cpputil::Xtoi(cmd.argv[2].c_str()),
+			(uint8_t)cpputil::Xtoi(cmd.argv[3].c_str()),
+			(uint8_t)cpputil::Xtoi(cmd.argv[4].c_str()),
+		};
+		for(int i=5; i<cmd.argv.size(); ++i)
+		{
+			std::string arg=cmd.argv[i];
+			cpputil::Capitalize(arg);
+			if("MON"==arg || "MONITOR"==arg || "MONITORONLY"==arg)
+			{
+				monitorOnly=true;
+			}
+		}
+		if(readOrReadAddress==BREAK_ON_FDC_READADDRESS)
+		{
+			std::cout << "Break/Monitor on FDC read address ";
+			towns.fdc.SetBreakOnReadAddress(CHR,monitorOnly);
+		}
+		else
+		{
+			std::cout << "Break/Monitor on FDC read sector ";
+			towns.fdc.SetBreakOnReadSector(CHR,monitorOnly);
+		}
+		std::cout << "0x" << cpputil::Ubtox(CHR[0]) << cpputil::Ubtox(CHR[1]) << cpputil::Ubtox(CHR[2]) << std::endl;
 	}
 	else
 	{

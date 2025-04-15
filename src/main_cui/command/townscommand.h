@@ -90,6 +90,7 @@ public:
 		CMD_LIST_BREAKPOINTS,
 
 		CMD_BREAK_ON,
+		CMD_MONITOR_ON,
 		CMD_DONT_BREAK_ON,
 
 		CMD_DISASM,
@@ -481,6 +482,7 @@ public:
 
 	void Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Command &cmd,bool monitorOnly);
 	void Execute_BreakOnMemoryRead(FMTownsCommon &towns,Command &cmd,bool monitorOnly);
+	void Execute_BreakOnFDCRead(FMTownsCommon &towns,Command &cmd,unsigned int readOrReadAddress,bool monitorOnly);
 
 	void Execute_LS(FMTownsCommon &towns,Command &cmd);
 };
