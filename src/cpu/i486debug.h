@@ -66,7 +66,7 @@ public:
 		*/
 		BRKPNT_FLAG_SHORT_FORMAT=4,
 
-		/*
+		/* I forgot the difference between this flag and MONITOR_ONLY, I think this DONT_STOP was for the pass counter?
 		*/
 		BRKPNT_FLAG_DONT_STOP=8,
 
@@ -77,6 +77,11 @@ public:
 		/* If set, it captures Windows 3.1/95 API Entry Point from ES:DI.
 		*/
 		BRKPNT_FLAG_CAPTURE_WIN_APIENTRY=32,
+
+
+		/* For break/monitor on memory read/write.  Invalid if this bit is off.
+		*/
+		BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED=128,
 	};
 	class BreakPointInfo
 	{
@@ -220,6 +225,7 @@ public:
 	};
 	BreakOnINTCondition breakOnINT[BreakOnINTCondition::NUM_INTERRUPTS];
 	mutable bool stop;
+	mutable bool resumeImmediately=false; // This flat is used for monitoring an event but do not want VM to stop.
 	bool monitorIO;
 	bool monitorIOports[65536];
 	bool disassembleEveryStep=false,regDumpEveryStep=false;;
@@ -373,6 +379,10 @@ public:
 	    It also clears lastBreakPointInfo.
 	*/
 	void ExternalBreak(const std::string &reason);
+
+	/*! Print Machine State but do not break.
+	*/
+	void MonitorButDoNotStop(const std::string &reason);
 
 	/*! Clear stop flag and externalBreakReason.
 	    It also clears lastBreakPointInfo.

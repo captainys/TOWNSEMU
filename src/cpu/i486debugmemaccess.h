@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define I486DEBUGMEMACCESS_IS_INCLUDED
 /* { */
 
+#include <stdint.h>
 #include <map>
 
 #include "ramrom.h"
@@ -30,11 +31,10 @@ public:
 	unsigned int physAddrTop;
 	using MemoryAccess::memAccessChain;
 
-	bool breakOnRead[Memory::MEMORY_ACCESS_SLOT_SIZE];
-	bool breakOnWrite[Memory::MEMORY_ACCESS_SLOT_SIZE];
-	unsigned char breakOnWriteMin[Memory::MEMORY_ACCESS_SLOT_SIZE];
-	unsigned char breakOnWriteMax[Memory::MEMORY_ACCESS_SLOT_SIZE];
-	std::map <uint32_t,unsigned char> breakOnWriteData;
+	uint8_t onRead[Memory::MEMORY_ACCESS_SLOT_SIZE];
+	uint8_t onWrite[Memory::MEMORY_ACCESS_SLOT_SIZE];
+	unsigned char onWriteMin[Memory::MEMORY_ACCESS_SLOT_SIZE];
+	unsigned char onWriteMax[Memory::MEMORY_ACCESS_SLOT_SIZE];
 
 	i486DebugMemoryAccess(i486Debugger &debugger,unsigned int physAddrTop);
 	void SetBreakOnRead(unsigned int physAddr);
