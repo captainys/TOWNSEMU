@@ -137,7 +137,6 @@ void i486Debugger::CleanUp(void)
 {
 	breakPoints.clear();
 	stop=false;
-	resumeImmediately=false;
 	ClearBreakOnINT();
 	monitorIO=false;
 	for(auto &b : monitorIOports)
@@ -336,7 +335,6 @@ void i486Debugger::BeforeRunOneInstruction(i486DXCommon &cpu,Memory &mem,InOut &
 				if(BRKPNT_FLAG_MONITOR_ONLY!=breakOrMonitorOnVxDCall)
 				{
 					stop=true;
-					resumeImmediately=false;
 					externalBreakReason=msg;
 				}
 				else
@@ -462,7 +460,6 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DXCommon
 			if(true!=prevVM86Mode && true==cpu.GetVM())
 			{
 				stop=true;
-				resumeImmediately=false;
 				externalBreakReason="Entered VM86 Mode";
 			}
 		}
@@ -472,7 +469,6 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DXCommon
 			if(true!=prevProtectedMode && true==protectedMode)
 			{
 				stop=true;
-				resumeImmediately=false;
 				externalBreakReason="Entered Protected Mode";
 			}
 		}
@@ -481,7 +477,6 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DXCommon
 			if(true!=prevRealMode && true==cpu.IsInRealMode())
 			{
 				stop=true;
-				resumeImmediately=false;
 				externalBreakReason="Entered Real Mode";
 			}
 		}
@@ -536,7 +531,6 @@ void i486Debugger::CheckForBreakPoints(i486DXCommon &cpu)
 		if(found!=breakPoints.end())
 		{
 			stop=(0==(found->second.flags&BRKPNT_FLAG_DONT_STOP));
-			resumeImmediately=(stop && (found->second.flags&BRKPNT_FLAG_MONITOR_ONLY));
 			found->second.SteppedOn();
 			if(0!=(found->second.flags&BRKPNT_FLAG_CAPTURE_WIN_APIENTRY))
 			{
@@ -557,12 +551,10 @@ void i486Debugger::CheckForBreakPoints(i486DXCommon &cpu)
 	if(breakOnCS[cseip.SEG])
 	{
 		stop=true;
-		resumeImmediately=false;
 	}
 	if(oneTimeBreakPoint==cseip)
 	{
 		stop=true;
-		resumeImmediately=false;
 		oneTimeBreakPoint.Nullify();
 	}
 }
@@ -766,7 +758,6 @@ std::vector <std::string> i486Debugger::GetCallStackText(const i486DXCommon &cpu
 void i486Debugger::ExternalBreak(const std::string &reason)
 {
 	stop=true;
-	resumeImmediately=false;
 	externalBreakReason=reason;
 	lastBreakPointInfo.Clear();
 }
@@ -774,15 +765,14 @@ void i486Debugger::ExternalBreak(const std::string &reason)
 void i486Debugger::MonitorButDoNotStop(const std::string &reason)
 {
 	stop=true;
-	resumeImmediately=true;
 	externalBreakReason=reason;
 	lastBreakPointInfo.Clear();
+	lastBreakPointInfo.flags|=BRKPNT_FLAG_MONITOR_ONLY;
 }
 
 void i486Debugger::ClearStopFlag(void)
 {
 	stop=false;
-	resumeImmediately=false;
 	externalBreakReason="";
 	additionalDisasm="";
 	lastBreakPointInfo.Clear();

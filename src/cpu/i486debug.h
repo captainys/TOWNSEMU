@@ -225,7 +225,6 @@ public:
 	};
 	BreakOnINTCondition breakOnINT[BreakOnINTCondition::NUM_INTERRUPTS];
 	mutable bool stop;
-	mutable bool resumeImmediately=false; // This flat is used for monitoring an event but do not want VM to stop.
 	bool monitorIO;
 	bool monitorIOports[65536];
 	bool disassembleEveryStep=false,regDumpEveryStep=false;;
