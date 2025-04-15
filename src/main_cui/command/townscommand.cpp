@@ -5440,6 +5440,40 @@ void TownsCommandInterpreter::Execute_AutoShot(FMTownsCommon &towns,Command &cmd
 	}
 }
 
+uint32_t TownsCommandInterpreter::GetBreakOnMemoryRWAddress(FMTownsCommon &towns,std::string arg) const
+{
+	if(std::string::npos!=arg.find(':'))
+	{
+		auto farPtr=cmdutil::MakeFarPointer(arg,towns.CPU());
+		farPtr=towns.CPU().TranslateFarPointer(farPtr);
+
+		uint32_t physAddr=0;
+		if(i486DXCommon::FarPointer::LINEAR_ADDR==farPtr.SEG)
+		{
+			unsigned int exceptionType,exceptionCode;
+			physAddr=towns.CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,farPtr.OFFSET,towns.mem);
+		}
+		else if(i486DXCommon::FarPointer::PHYS_ADDR==farPtr.SEG)
+		{
+			physAddr=farPtr.OFFSET;
+		}
+		else
+		{
+			i486DXCommon::SegmentRegister seg;
+			towns.CPU().DebugLoadSegmentRegister(seg,farPtr.SEG,towns.mem,towns.CPU().IsInRealMode());
+			auto linear=seg.baseLinearAddr+farPtr.OFFSET;
+
+			unsigned int exceptionType,exceptionCode;
+			physAddr=towns.CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linear,towns.mem);
+		}
+		return physAddr;
+	}
+	else
+	{
+		return cpputil::Xtoi(arg.c_str());
+	}
+}
+
 void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Command &cmd,bool monitorOnly)
 {
 	bool useMinMax=false;
@@ -5509,39 +5543,12 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Co
 				maxValue=cpputil::Xtoi(arg.c_str()+pos+1);
 			}
 		}
-		else if(std::string::npos!=cmd.argv[i].find(':'))
-		{
-			auto farPtr=cmdutil::MakeFarPointer(cmd.argv[i],towns.CPU());
-			farPtr=towns.CPU().TranslateFarPointer(farPtr);
-
-			uint32_t physAddr=0;
-			if(i486DXCommon::FarPointer::LINEAR_ADDR==farPtr.SEG)
-			{
-				unsigned int exceptionType,exceptionCode;
-				physAddr=towns.CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,farPtr.OFFSET,towns.mem);
-			}
-			else if(i486DXCommon::FarPointer::PHYS_ADDR==farPtr.SEG)
-			{
-				physAddr=farPtr.OFFSET;
-			}
-			else
-			{
-				i486DXCommon::SegmentRegister seg;
-				towns.CPU().DebugLoadSegmentRegister(seg,farPtr.SEG,towns.mem,towns.CPU().IsInRealMode());
-				auto linear=seg.baseLinearAddr+farPtr.OFFSET;
-
-				unsigned int exceptionType,exceptionCode;
-				physAddr=towns.CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linear,towns.mem);
-			}
-			if(nAddr<2)
-			{
-				addr[nAddr]=physAddr;
-			}
-			++nAddr;
-		}
 		else
 		{
-			addr[nAddr]=cpputil::Xtoi(arg.c_str());
+			if(nAddr<2)
+			{
+				addr[nAddr]=GetBreakOnMemoryRWAddress(towns,cmd.argv[i]);
+			}
 			++nAddr;
 		}
 	}
@@ -5589,10 +5596,16 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Co
 
 void TownsCommandInterpreter::Execute_BreakOnMemoryRead(FMTownsCommon &towns,Command &cmd,bool monitorOnly)
 {
+	if(cmd.argv.size()<3)
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+
+	unsigned int addr0=GetBreakOnMemoryRWAddress(towns,cmd.argv[2]);
 	if(4<=cmd.argv.size())
 	{
-		unsigned int addr0=cpputil::Xtoi(cmd.argv[2].c_str());
-		unsigned int addr1=cpputil::Xtoi(cmd.argv[3].c_str());
+		unsigned int addr1=GetBreakOnMemoryRWAddress(towns,cmd.argv[3]);
 		if(addr1<addr0)
 		{
 			std::swap(addr0,addr1);
@@ -5608,14 +5621,9 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryRead(FMTownsCommon &towns,Com
 	}
 	else if(3<=cmd.argv.size())
 	{
-		i486DebugMemoryAccess::SetBreakOnMemRead(towns.mem,towns.debugger,cpputil::Xtoi(cmd.argv[2].c_str()),monitorOnly);
+		i486DebugMemoryAccess::SetBreakOnMemRead(towns.mem,towns.debugger,addr0,monitorOnly);
 		std::cout << (true==monitorOnly ? "Break " : "Monitor ");
-		std::cout << "on Memory Read PHYS:" << cpputil::Uitox(cpputil::Xtoi(cmd.argv[2].c_str())) << std::endl;
-	}
-	else
-	{
-		PrintError(ERROR_TOO_FEW_ARGS);
-		return;
+		std::cout << "on Memory Read PHYS:" << cpputil::Uitox(addr0) << std::endl;
 	}
 }
 

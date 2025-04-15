@@ -480,6 +480,7 @@ public:
 
 	void Execute_AutoShot(FMTownsCommon &towns,Command &cmd);
 
+	uint32_t GetBreakOnMemoryRWAddress(FMTownsCommon &towns,std::string str) const;
 	void Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Command &cmd,bool monitorOnly);
 	void Execute_BreakOnMemoryRead(FMTownsCommon &towns,Command &cmd,bool monitorOnly);
 	void Execute_BreakOnFDCRead(FMTownsCommon &towns,Command &cmd,unsigned int readOrReadAddress,bool monitorOnly);
