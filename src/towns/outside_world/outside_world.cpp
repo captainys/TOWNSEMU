@@ -247,6 +247,7 @@ void Outside_World::UpdateStatusBarInfo(class FMTownsCommon &towns)
 		statusBarInfo.rocketRangerTiming=towns.mem.FetchByte(towns.state.appSpecific_ThrottlePtr);
 		statusBarInfo.rocketRangerSpeed=towns.mem.FetchWord(towns.state.appSpecific_StickPosXPtr);
 		statusBarInfo.rocketRangerNecessarySpeed=towns.mem.FetchWord(towns.state.appSpecific_StickPosYPtr);
+		statusBarInfo.rocketRangerPosition=towns.mem.FetchByte(towns.state.appSpecific_RudderPtr);
 	}
 }
 

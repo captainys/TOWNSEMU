@@ -146,6 +146,7 @@ public:
 
 		bool rocketRangerSpecial=false;
 		int rocketRangerTiming=0,rocketRangerSpeed=0,rocketRangerNecessarySpeed=0;
+		unsigned char rocketRangerPosition=0;
 	};
 	StatusBarInfo statusBarInfo;
 	unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)

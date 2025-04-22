@@ -414,11 +414,14 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 				state.appSpecific_StickPosYPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00018625,mem);
 				// Rocket Ranger Cyclic Counter
 				state.appSpecific_ThrottlePtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00037943,mem);
+				// Rocket Ranger Current Location
+				state.appSpecific_RudderPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0xE09A9,mem);
 
 				std::cout << "  Rocket Ranger Pointers" << std::endl;
 				std::cout << "  Speed During Takeoff " << cpputil::Uitox(state.appSpecific_StickPosXPtr) << std::endl;
 				std::cout << "  Necessary Speed for Takeoff " << cpputil::Uitox(state.appSpecific_StickPosYPtr) << std::endl;
 				std::cout << "  Cyclic Counter during Takeoff " << cpputil::Uitox(state.appSpecific_ThrottlePtr) << std::endl;
+				std::cout << "  Current Location " << cpputil::Uitox(state.appSpecific_RudderPtr) << std::endl;
 			}
 			break;
 		}
