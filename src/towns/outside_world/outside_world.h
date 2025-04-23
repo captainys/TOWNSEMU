@@ -335,6 +335,10 @@ public:
 
 		void Put16x16Select(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
 		void Put16x16SelectInvert(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
+
+		void Print(int x0,const char str[]);
+
+		static unsigned char font10x14[256][56];
 	};
 	virtual WindowInterface *CreateWindowInterface(void) const=0;
 	virtual void DeleteWindowInterface(WindowInterface *) const=0;

@@ -168,6 +168,7 @@ public:
 		void DrawTextureRect(int x0,int y0,int x1,int y1) const;
 
 		void UpdateStatusBitmap(void);
+		void UpdateStatusBitmapRocketRangerSpecial(unsigned int position);
 
 		std::vector <unsigned char> PAUSEicon,MENUicon;
 

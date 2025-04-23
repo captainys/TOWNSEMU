@@ -1934,7 +1934,37 @@ void FsSimpleWindowConnection::WindowConnection::UpdateStatusBitmap(void)
 			Put16x16SelectInvert(48+16*hdd,15,HDD_IDLE,HDD_BUSY,sharedEx.statusBarInfo.scsiAccessLamp[hdd]);
 		}
 	}
+
+	if(true==sharedEx.statusBarInfo.rocketRangerSpecial &&
+	   sharedEx.statusBarInfo.rocketRangerPosition!=winThrEx.prevStatusBarInfo.rocketRangerPosition)
+	{
+		UpdateStatusBitmapRocketRangerSpecial(sharedEx.statusBarInfo.rocketRangerPosition);
+	}
+
+
 	winThrEx.prevStatusBarInfo=sharedEx.statusBarInfo;
+}
+
+void FsSimpleWindowConnection::WindowConnection::UpdateStatusBitmapRocketRangerSpecial(unsigned int position)
+{
+	const char *const countries[]=
+	{
+		"ATLANTIC   ",		"USA        ",		"CANADA     ",		"COLUMBIA   ",
+		"ARABIA     ",		"VENEZUELA  ",		"PERU       ",		"BRAZIL     ",
+		"CONGO      ",		"KENYA      ",		"EAST AFRICA",		"WEST AFRICA",
+		"NIGERIA    ",		"SUDAN      ",		"ENGLAND    ",		"EGYPT      ",
+		"U.S.S.R    ",		"PERSIA     ",		"LIBYA      ",		"MIDEAST    ",
+		"SCANDINAVIA",		"ALGERIA    ",		"SPAIN      ",		"FRANCE     ",
+		"YUGOSLAVIA ",		"ITALY      ",		"GERMANY    ",
+	};
+	if(position<0x1B)
+	{
+		Print(260,countries[position]);
+	}
+	else
+	{
+		Print(260,"UNKNOWN    ");
+	}
 }
 
 GLuint FsSimpleWindowConnection::WindowConnection::GenTexture(void)
