@@ -522,6 +522,84 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		}
 		data|=0x80;
 	}
+	else if(LIBBLERABBLE==device)
+	{
+		bool button[4]=
+		{
+			buttonVirtual[0],buttonVirtual[1],this->run,this->pause
+		};
+		// Auto Shot
+		for(int i=0; i<4; ++i)
+		{
+			if(0!=autoShotInterval[i])
+			{
+				auto dt=townsTime%autoShotInterval[i];
+				if((autoShotInterval[i]/2)<=dt)
+				{
+					button[i]=false;
+				}
+			}
+		}
+		auto run=button[2];
+		auto pause=button[3];
+
+		data|=0x3F;
+		if(true!=COM)
+		{
+			if(true==right)
+			{
+				data&=0b11110111;
+			}
+			if(true==left)
+			{
+				data&=0b11111011;
+			}
+			if(true==down)
+			{
+				data&=0b11111101;
+			}
+			if(true==up)
+			{
+				data&=0b11111110;
+			}
+		}
+		else
+		{
+			if(true==right2)
+			{
+				data&=0b11110111;
+			}
+			if(true==left2)
+			{
+				data&=0b11111011;
+			}
+			if(true==down2)
+			{
+				data&=0b11111101;
+			}
+			if(true==up2)
+			{
+				data&=0b11111110;
+			}
+		}
+		if(true==run)
+		{
+			data&=0b11110011;
+		}
+		if(true==pause)
+		{
+			data&=0b11111100;
+		}
+		if(true==button[0])
+		{
+			data&=0b11101111;
+		}
+		if(true==button[1])
+		{
+			data&=0b11011111;
+		}
+		data&=(0xCF|(TRIG<<4));
+	}
 	else // if(NONE==device)
 	{
 		data|=0x3F;

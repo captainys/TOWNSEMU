@@ -573,6 +573,11 @@ public:
 	void SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause);
 
 
+	/*! Set Game-Pad State.  Called from Outside_World.
+	*/
+	void SetLibbleRabblePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool left2,bool right2,bool up2,bool down2,bool run,bool pause);
+
+
 	/*! Set Cyber-Stick State.  Called from Outside_World.
 	*/
 	void SetCyberStickState(int port,int x,int y,int z,int w,unsigned int trig);

@@ -1045,6 +1045,42 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					towns.SetCyberStickState(portId,ix,iy,iz,iw,trig);
 				}
 				break;
+
+			case TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG0:
+			case TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG1:
+			case TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG2:
+			case TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG3:
+			case TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG4:
+			case TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG5:
+			case TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG6:
+			case TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG7:
+				{
+					int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG0;
+					if(0<=padId && padId<gamePads.size())
+					{
+						auto &reading=gamePads[padId];
+						YsGamdPadTranslateAnalogToDigital(&reading.dirs[0],reading.axes[0],reading.axes[1]);
+
+						struct YsGamePadDirectionButton dir2;
+						YsGamdPadTranslateAnalogToDigital(&dir2,reading.axes[2],reading.axes[3]);
+
+						towns.SetLibbleRabblePadState(
+						    portId,
+						    reading.buttons[0],
+						    reading.buttons[1],
+						    reading.dirs[0].upDownLeftRight[2],
+						    reading.dirs[0].upDownLeftRight[3],
+						    reading.dirs[0].upDownLeftRight[0],
+						    reading.dirs[0].upDownLeftRight[1],
+						    dir2.upDownLeftRight[2],
+						    dir2.upDownLeftRight[3],
+						    dir2.upDownLeftRight[0],
+						    dir2.upDownLeftRight[1],
+						    reading.buttons[2],
+						    reading.buttons[3]);
+					}
+				}
+				break;
 			}
 		}
 
