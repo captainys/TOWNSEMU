@@ -141,6 +141,14 @@ static const FsGuiMainCanvas::HumanReadable gameportEmulationTypes[]
 	{TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL6,"6 Buttons Pad by Host Game Controller 6"},
 	{TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL7,"6 Buttons Pad by Host Game Controller 7"},
 	{TOWNS_GAMEPORTEMU_6BTNPAD_BY_KEY,"6 Buttons Pad by Host Keyboard"},
+	{TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG0,"Libble-Rabble Game Pad by Host Game Conttroller 0"},
+	{TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG1,"Libble-Rabble Game Pad by Host Game Conttroller 1"},
+	{TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG2,"Libble-Rabble Game Pad by Host Game Conttroller 2"},
+	{TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG3,"Libble-Rabble Game Pad by Host Game Conttroller 3"},
+	{TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG4,"Libble-Rabble Game Pad by Host Game Conttroller 4"},
+	{TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG5,"Libble-Rabble Game Pad by Host Game Conttroller 5"},
+	{TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG6,"Libble-Rabble Game Pad by Host Game Conttroller 6"},
+	{TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG7,"Libble-Rabble Game Pad by Host Game Conttroller 7"},
 };
 
 static const unsigned int selectableGameportDevices[]=
@@ -181,6 +189,14 @@ static const unsigned int selectableGameportDevices[]=
 	TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL2,
 	TOWNS_GAMEPORTEMU_6BTNPAD_BY_PHYSICAL3,
 	TOWNS_GAMEPORTEMU_6BTNPAD_BY_KEY,
+	TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG0,
+	TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG1,
+	TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG2,
+	TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG3,
+	TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG4,
+	TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG5,
+	TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG6,
+	TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG7,
 };
 
 /* static */ std::string FsGuiMainCanvas::GamePortEmulationTypeToHumanReadable(unsigned int emuType)
