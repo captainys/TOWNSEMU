@@ -221,7 +221,9 @@ void TownsFDC::MakeReady(void)
 							state.recordNotFound=(D77File::D77_SECTOR_STATUS_RECORD_NOT_FOUND==sec.crcStatus);
 							state.recordType=(0!=sec.DDM);
 							MakeReady();
-							DMACPtr->SetDMATransferEnd(TOWNSDMA_FPD);
+							// The following function sets Terminal-Count flag, but apparently it should only depend on DMA's counter.
+							// CAMELTRY starts correctly after deleting the following line.
+							// DMACPtr->SetDMATransferEnd(TOWNSDMA_FPD);
 						}
 					}
 					else
