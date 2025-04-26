@@ -7394,12 +7394,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			uint32_t incoming=Pop(mem,inst.operandSize);
 			HANDLE_EXCEPTION_PUSH_POP;
 
-			const uint32_t mask=0b1001000111111111010111;
+			const uint32_t mutableBits=0b1001000111111111010101; // Bits that POPF can change.
 
-			incoming&=mask;
+			incoming&=mutableBits;
 
 			auto EFLAGS=state.EFLAGS;
-			EFLAGS&=~mask;
+			EFLAGS&=~mutableBits;
 			EFLAGS|=incoming;
 
 			SetFLAGSorEFLAGS(inst.operandSize,EFLAGS);
