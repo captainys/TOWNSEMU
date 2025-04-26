@@ -89,6 +89,7 @@ public:
 		bool COM=false;       // COM from CPU.
 		unsigned char TRIG=3; // TRIG from CPU.
 		bool button[2],left,right,up,down,run,pause;
+		bool left2=false,right2=false,up2=false,down2=false; // For Libble-Rabble Game Pad.
 
 		Vec2i mouseMotion;  // For CyberStick, used as XY position.
 		int zAxis=0; // For CyberStick
@@ -120,6 +121,7 @@ public:
 		unsigned char Read(long long int townsTime); // Reading last coordinate should reset motion.  Not a const.
 
 		void SetGamePadState(bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause,long long int townsTime);
+		void SetLibbleRabblePadState(bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool left2,bool right2,bool up2,bool down2,bool run,bool pause,long long int townsTime);
 		void SetCyberStickState(int x,int y,int z,int w,unsigned int trig,long long int townsTime);
 		void SetCAPCOMCPSFState(bool left,bool right,bool up,bool down,bool A,bool B,bool X,bool Y,bool L,bool R, bool start,bool select,long long int townsTime);
 

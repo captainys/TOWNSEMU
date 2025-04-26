@@ -551,6 +551,23 @@ void TownsGamePort::Port::SetGamePadState(bool Abutton,bool Bbutton,bool left,bo
 	this->run  =run;
 	this->pause=pause;
 }
+void TownsGamePort::Port::SetLibbleRabblePadState(bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool left2,bool right2,bool up2,bool down2,bool run,bool pause,long long int townsTime)
+{
+	this->button[0]=Abutton;
+	this->button[1]=Bbutton;
+	this->left =left;
+	this->right=right;
+	this->up   =up;
+	this->down =down;
+
+	this->left2 =left2;
+	this->right2=right2;
+	this->up2   =up2;
+	this->down2 =down2;
+
+	this->run  =run;
+	this->pause=pause;
+}
 void TownsGamePort::Port::SetCyberStickState(int x,int y,int z,int w,unsigned int trig,long long int townsTime)
 {
 	SetAutoShotTimer(this->trig,trig,townsTime);
