@@ -241,6 +241,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Try this option if the sound is choppy or hear static noise." << std::endl;
 	std::cout << "-DAMPERWIRELINE" << std::endl;
 	std::cout << "  Render damper-wire line to make you feel nostalgic." << std::endl;
+	std::cout << "-SCANLINE15K\n";
+	std::cout << "  Enable scan-line effect in 15KHz screen modes.\n";
 	std::cout << "-TOWNSTYPE" << std::endl;
 	std::cout << "  Specify FM TOWNS type.  Can be one of:" << std::endl;
 	std::cout << "    MODEL2 2F 20F UX CX UG HG HR UR MA MX ME MF HC" << std::endl;
