@@ -1096,6 +1096,21 @@ add_test(
 		-DAMPERWIRELINE
 )
 
+add_test(
+	NAME VAIL_OF_DARKNESS_OPENING_MOVIE
+	COMMAND
+		${TARGET_NAME}
+		"${TOWNSEMU_TEST}/ROM_MX"
+		-CD
+		"${DISC_IMAGE_DIR}/VailOfDarkness.iso"
+		-DEBUG
+		-UNITTEST
+		-POWEROFFAT
+		000C:00001B64
+		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
+)
+
 # Rocket Ranger needs to slow down the CPU, or the opening demo crashes when the program
 # wipes BGM playback information before the BGM completed playing.  Same crash happens when
 # running it on real FM TOWNS II MX in the FAST mode.
