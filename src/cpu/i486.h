@@ -145,7 +145,7 @@ public:
 	     I486_OPCODE_xxxx to I486_RENUMBER_xxxx
 	*/
 	static unsigned short opCodeRenumberTable[I486_OPCODE_9BIT_MASK+1];
-	static unsigned char opCodeNeedOperandTable[I486_OPCODE_MAX+1];
+	static unsigned char opCodeNeedOperandTable[I486_OPCODE_9BIT_MASK+1];
 
 	enum
 	{

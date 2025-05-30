@@ -331,7 +331,7 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 	{
 		refetch = false;
 
-		switch (opCodeNeedOperandTable[inst.opCode])
+		switch (opCodeNeedOperandTable[inst.opCode&I486_OPCODE_9BIT_MASK])
 		{
 			// No Operand
 		case I486_NEEDOPERAND_NONE:
