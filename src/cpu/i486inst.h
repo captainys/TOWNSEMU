@@ -56,6 +56,7 @@ enum
 //	I486_OPCODE_
 
 	I486_OPCODE_MAX=0xFFF,
+	I486_OPCODE_9BIT_MASK=0x1FF,
 
 	I486_OPCODE_UNDEFINED_SHOOT_INT6=0x0FA6,  // In TownsOS V1.1 this instruction is used for testing(?) INT 6.
 	I486_OPCODE_UNDEFINED_SHOOT_INT6_WIN31=0x0FFF, // In Windows 3.1 this instruction is used for testing INT 6.
