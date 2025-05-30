@@ -549,7 +549,7 @@ const unsigned char YM2612::SSG_EG_PTN[8][2]=
 	{SSGEG_UP,  SSGEG_ZERO}, // 15
 };
 
-static unsigned int note_Table[16] = {0,0,0,0,0,0,0,0,1,2,3,3,3,3,3,3};
+static unsigned int note_Table[16] = {0,0,0,0,0,0,0,1,2,3,3,3,3,3,3,3};
 
 
 ////////////////////////////////////////////////////////////
