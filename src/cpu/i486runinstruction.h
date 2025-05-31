@@ -1732,7 +1732,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 					break; \
 				case 6: \
-					Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
+					Abort("Undefined REG for "+cpputil::Ustox(inst.RealOpCode())); \
 					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 					return 0; \
 				case 7: \
@@ -1776,7 +1776,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 					break; \
 				case 6: \
-					Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
+					Abort("Undefined REG for "+cpputil::Ustox(inst.RealOpCode())); \
 					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 					return 0; \
 				case 7: \
@@ -1830,7 +1830,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 						break; \
 					case 6: \
-						Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
+						Abort("Undefined REG for "+cpputil::Ustox(inst.RealOpCode())); \
 						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 						return 0; \
 					case 7: \
@@ -1876,7 +1876,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 						break; \
 					case 6: \
-						Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
+						Abort("Undefined REG for "+cpputil::Ustox(inst.RealOpCode())); \
 						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 						return 0; \
 					case 7: \
@@ -1927,7 +1927,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 						break; \
 					case 6: \
-						Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
+						Abort("Undefined REG for "+cpputil::Ustox(inst.RealOpCode())); \
 						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 						return 0; \
 					case 7: \
@@ -1973,7 +1973,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 						break; \
 					case 6: \
-						Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
+						Abort("Undefined REG for "+cpputil::Ustox(inst.RealOpCode())); \
 						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 						return 0; \
 					case 7: \
@@ -2175,7 +2175,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 
 	case I486_RENUMBER_REALLY_UNDEFINED:
-		std::cout << "Undefined instruction (" << cpputil::Ustox(inst.opCode) << ") at " << cpputil::Ustox(state.CS().value) << ":" << cpputil::Uitox(state.EIP) << "\n";
+		std::cout << "Undefined instruction (" << cpputil::Ustox(inst.RealOpCode()) << ") at " << cpputil::Ustox(state.CS().value) << ":" << cpputil::Uitox(state.EIP) << "\n";
 		Interrupt(INT_INVALID_OPCODE,mem,0,0,false);
 		EIPIncrement=0;
 		clocksPassed=ClocksForHandlingException();
@@ -3005,7 +3005,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				case 1:
 				case 2:
 				case 3:
-					Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
+					Abort("Undefined REG for "+cpputil::Ustox(inst.RealOpCode()));
 					break;
 				default:
 					std_unreachable;
@@ -5012,7 +5012,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			case 5:
 			case 6:
 			case 7:
-				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
+				Abort("Undefined REG for "+cpputil::Ustox(inst.RealOpCode()));
 				return 0;
 			default:
 				std_unreachable;
@@ -5278,7 +5278,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				break;
 			case 7:
-				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
+				Abort("Undefined REG for "+cpputil::Ustox(inst.RealOpCode()));
 				return 0;
 			default:
 				std_unreachable;
@@ -6154,7 +6154,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			break;
 		default:
-			Abort("Undefined REG for "+cpputil::Ustox(inst.opCode));
+			Abort("Undefined REG for "+cpputil::Ustox(inst.RealOpCode()));
 			return 0;
 		}
 		break;
@@ -8671,7 +8671,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	if(0==clocksPassed)
 	{
 		std::string msg="Clocks-Passed is not set.  Opcode=";
-		msg+=cpputil::Ustox(inst.opCode);
+		msg+=cpputil::Ustox(inst.RealOpCode());
 		msg+="H";
 		Abort(msg);
 		EIPIncrement=0;
@@ -8683,7 +8683,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		if(true==state.exception)
 		{
 			std::string msg="Unhandled exception!  Opcode=";
-			msg+=cpputil::Ustox(inst.opCode);
+			msg+=cpputil::Ustox(inst.RealOpCode());
 			msg+="H  ";
 			msg+=ExceptionTypeToStr(state.exceptionType);
 			msg+="(0x";
