@@ -331,7 +331,7 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 	{
 		refetch = false;
 
-		switch (opCodeNeedOperandTable[inst.opCode&I486_OPCODE_9BIT_MASK])
+		switch (opCodeNeedOperandTable[inst.opCode])
 		{
 			// No Operand
 		case I486_NEEDOPERAND_NONE:
@@ -2163,7 +2163,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	int EIPIncrement=inst.numBytes;
 	unsigned int clocksPassed=0;
 
-	switch(opCodeRenumberTable[inst.opCode&I486_OPCODE_9BIT_MASK])
+	switch(opCodeRenumberTable[inst.opCode])
 	{
 	case I486_RENUMBER_UNDEFINED_SHOOT_INT6:
 	case I486_RENUMBER_UNDEFINED_SHOOT_INT6_WIN31:
@@ -7729,7 +7729,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			if(0!=count)
 			{
-				switch(opCodeRenumberTable[inst.opCode&I486_OPCODE_9BIT_MASK])
+				switch(opCodeRenumberTable[inst.opCode])
 				{
 				case I486_RENUMBER_SHLD_RM_I8://       0x0FA4,
 				case I486_RENUMBER_SHLD_RM_CL://       0x0FA5,

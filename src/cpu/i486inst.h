@@ -55,8 +55,9 @@ enum
 {
 //	I486_OPCODE_
 
+	// 80386/80486 opcode is either 0x0?? or 0xF??.  This CPU core internally make them 0x0?? or 0x1?? to reduce table size.
+	// Reduced-size table may have a better chance of staying inside CPU cache.
 	I486_OPCODE_MAX=0x1FF,
-	I486_OPCODE_9BIT_MASK=0x1FF,
 	I486_OPCODE_TWOBYTE_FLAG=0x100,
 
 	I486_OPCODE_UNDEFINED_SHOOT_INT6=0x01A6,  // In TownsOS V1.1 this instruction is used for testing(?) INT 6.
