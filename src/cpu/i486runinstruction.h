@@ -809,7 +809,7 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 	// This instruction (0x0F) needs the second byte.
 	// Fetch it, and then re-fetch operand.
 		case I486_NEEDOPERAND_NEED_SECOND_BYTE: //0x0F
-			inst.opCode = (I486_OPCODE_NEED_SECOND_BYTE << 8) | FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset++, mem);
+			inst.opCode = I486_OPCODE_TWOBYTE_FLAG | FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset++, mem);
 			++inst.numBytes;
 			refetch = true;
 			break;
