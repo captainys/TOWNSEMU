@@ -1137,6 +1137,19 @@ public:
 			operandLen=0;
 		}
 
+		// Internally opCode is either 0x1?? or 0x0??.  Real opCode is either 0xF?? or 0x0??.
+		inline unsigned short RealOpCode(void) const
+		{
+			if(0==(opCode&0x100))
+			{
+				return opCode;
+			}
+			else
+			{
+				return 0xF00|opCode;
+			}
+		}
+
 		std::string Disassemble(const Operand &op1,const Operand &op2,SegmentRegister reg,unsigned int offset,const class i486SymbolTable &symTable,const std::map <unsigned int,std::string> &ioTable) const;
 	private:
 		/* operandSize is 8, 16, or 32 */
