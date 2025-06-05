@@ -517,7 +517,7 @@ static unsigned int detune1000Table[]=
 	   0,  95, 191, 286,
 	   0,  95, 191, 288,
 	   0,  95, 238, 334,
-	   0,  85, 238, 381, // 85?
+	   0,  95, 238, 381, // 85? i think 85 are probably errata in the redbook.
 	   0, 143, 286, 381,
 	   0, 143, 298, 429,
 	   0, 143, 334, 477,
@@ -527,9 +527,9 @@ static unsigned int detune1000Table[]=
 	   0, 191, 429, 620,
 	   0, 238, 477, 668,
 	   0, 238, 525, 763,
-	   0, 286, 672, 811,
-	   0, 286, 520, 906,
-	   0, 334, 668, 354,
+	   0, 286, 572, 811,
+	   0, 286, 620, 906,
+	   0, 334, 668, 954,
 	   0, 391, 763,1049,
 	   0, 391, 763,1049,
 
@@ -548,6 +548,8 @@ const unsigned char YM2612::SSG_EG_PTN[8][2]=
 	{SSGEG_UP  ,SSGEG_DOWN}, // 14
 	{SSGEG_UP,  SSGEG_ZERO}, // 15
 };
+
+static unsigned int note_Table[16] = {0,0,0,0,0,0,0,1,2,3,3,3,3,3,3,3};
 
 
 ////////////////////////////////////////////////////////////
@@ -751,13 +753,7 @@ unsigned int YM2612::Channel::Note(void) const
 	// Formula [2] pp.204
 	// There is an error.  F_NUM is 11bits.  There is no F11.
 	// Probably, F11, F10, F9, F8 should be read bit10, bit9, bit8, bit7.
-	unsigned int F10=((F_NUM>>10)&1);
-	unsigned int F9= ((F_NUM>> 9)&1);
-	unsigned int F8= ((F_NUM>> 8)&1);
-	unsigned int F7=((F_NUM>>11)&1);
-	unsigned int N3=(F10&(F9|F8|F7)); // |((~F10)&F9&F8&F7);  Measurement from actual FM TOWNS 2MX suggests no contribution from the second term.
-	unsigned int NOTE=(F10<<1)|N3;
-	return NOTE;
+	return note_Table[(F_NUM>>7)&15];
 }
 
 unsigned int YM2612::Channel::KC(unsigned int BLOCK,unsigned int F_NUM)
@@ -781,9 +777,7 @@ unsigned int YM2612::Channel::KC(unsigned int BLOCK,unsigned int F_NUM)
 	//    N3=(F11&(F10|F9|F8))|((~F11)&F10&F9&F8)
 	// However, the actual YM2612 didn't show any contribution from ((~F11)&F10&F9&F8).
 
-	unsigned int N4=((F_NUM>>9)&2);
-	unsigned int N3=((F_NUM>>10)&((F_NUM>>9)|(F_NUM>>8)|(F_NUM>>7)))&1;
-	unsigned int KC=(BLOCK<<2)|N4|N3;
+	unsigned int KC=(BLOCK<<2)|note_Table[(F_NUM>>7)&15];
 	return KC&0x1F;
 }
 

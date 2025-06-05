@@ -2030,66 +2030,39 @@ public:
 	*/
 	inline void RaiseCF(bool flag)
 	{
-		if(true==flag)
-		{
-			state.EFLAGS|=EFLAGS_CARRY;
-		}
+		state.EFLAGS|=(flag*EFLAGS_CARRY);
 	}
 	inline void RaiseDF(bool flag)
 	{
-		if(true==flag)
-		{
-			state.EFLAGS|=EFLAGS_DIRECTION;
-		}
+		state.EFLAGS|=(flag*EFLAGS_DIRECTION);
 	}
 	inline void RaiseIF(bool flag)
 	{
-		if(true==flag)
-		{
-			state.EFLAGS|=EFLAGS_INT_ENABLE;
-		}
+		state.EFLAGS|=(flag*EFLAGS_INT_ENABLE);
 	}
 	inline void RaiseOF(bool flag)
 	{
-		if(true==flag)
-		{
-			state.EFLAGS|=EFLAGS_OVERFLOW;
-		}
+		state.EFLAGS|=(flag*EFLAGS_OVERFLOW);
 	}
 	inline void RaiseSF(bool flag)
 	{
-		if(true==flag)
-		{
-			state.EFLAGS|=EFLAGS_SIGN;
-		}
+		state.EFLAGS|=(flag*EFLAGS_SIGN);
 	}
 	inline void RaiseTF(bool flag)
 	{
-		if(true==flag)
-		{
-			state.EFLAGS|=EFLAGS_TRAP;
-		}
+		state.EFLAGS|=(flag*EFLAGS_TRAP);
 	}
 	inline void RaiseZF(bool flag)
 	{
-		if(true==flag)
-		{
-			state.EFLAGS|=EFLAGS_ZERO;
-		}
+		state.EFLAGS|=(flag*EFLAGS_ZERO);
 	}
 	inline void RaiseAF(bool flag)
 	{
-		if(true==flag)
-		{
-			state.EFLAGS|=EFLAGS_AUX_CARRY;
-		}
+		state.EFLAGS|=(flag*EFLAGS_AUX_CARRY);
 	}
 	inline void RaisePF(bool flag)
 	{
-		if(true==flag)
-		{
-			state.EFLAGS|=EFLAGS_PARITY;
-		}
+		state.EFLAGS|=(flag*EFLAGS_PARITY);
 	}
 
 
