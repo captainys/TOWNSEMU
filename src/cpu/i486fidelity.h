@@ -358,11 +358,8 @@ public:
 			}
 			else
 			{
-				static bool userPage[16]={   // <-> system page
-					false,false,false,false,false,false,false,false,
-					false,false,true ,true ,false,false,true ,true,
-				};
-				if(true!=userPage[URUR]) // System Page.
+				// 0b1010!=URUR && 0b1011!=URUR && 0b1110!=URUR && 0b1111!=URUR
+				if((URUR|4)<14) // System Page.
 				{
 					raise();
 					return true;
