@@ -329,15 +329,43 @@ public:
 		// All pages are read/write in supervisor mode.  RW flag has meaning only if it is running in the user mode.
 		// The current level (U/S=1) is related to CPL.  If CPL is 0,1, or 2, the processor is executing at supervisor level.
 		// If CPL is 3, the processor is executing at user level.
-		if(3==cpu.state.CS().DPL && true==write && (0b1010==URUR || 0b1011==URUR || 0b1110==URUR)) // Read-Only Page.
+
+		// known working code >>
+		//if(3==cpu.state.CS().DPL && true==write && (0b1010==URUR || 0b1011==URUR || 0b1110==URUR)) // Read-Only Page.
+		//{
+		//	raise();
+		//	return true;
+		//}
+		//if(3==cpu.state.CS().DPL && 0b1010!=URUR && 0b1011!=URUR && 0b1110!=URUR && 0b1111!=URUR) // System Page.
+		//{
+		//	raise();
+		//	return true;
+		//}
+		// known working code << 
+
+		if(3==cpu.state.CS().DPL)
 		{
-			raise();
-			return true;
-		}
-		if(3==cpu.state.CS().DPL && 0b1010!=URUR && 0b1011!=URUR && 0b1110!=URUR && 0b1111!=URUR) // System Page.
-		{
-			raise();
-			return true;
+			if(true==write)
+			{
+				static bool readOnlyPage[16]={
+					false,false,false,false,false,false,false,false,
+					false,false,true ,true ,false,false,true ,false,
+				};
+				if(true==readOnlyPage[URUR]) // Read-Only Page.
+				{
+					raise();
+					return true;
+				}
+			}
+			static bool userPage[16]={   // <-> system page
+				false,false,false,false,false,false,false,false,
+				false,false,true ,true ,false,false,true ,true,
+			};
+			if(true!=userPage[URUR]) // System Page.
+			{
+				raise();
+				return true;
+			}
 		}
 		return false;
 	}
