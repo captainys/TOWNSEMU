@@ -423,12 +423,9 @@ public:
 		uint32_t type=seg.GetType();
 		if(true!=cpu.IsInRealMode() &&
 		   true!=cpu.GetVM() &&
-		   (i486DXCommon::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || i486DXCommon::SEGTYPE_CODE_CONFORMING_EXECONLY==type))
-		{
-			raise();
-			return true;
-		}
-		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && 0==(seg.value&0xFFFC))
+		   (i486DXCommon::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type ||
+		    i486DXCommon::SEGTYPE_CODE_CONFORMING_EXECONLY==type ||
+		    0==(seg.value&0xFFFC)))
 		{
 			raise();
 			return true;
