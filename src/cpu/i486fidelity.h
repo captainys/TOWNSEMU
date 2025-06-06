@@ -476,19 +476,18 @@ public:
 		};
 
 		uint32_t type=seg.GetType();
-		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && i486DXCommon::SEGTYPE_DATA_NORMAL_RW!=type && i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
-		{
-			raise();
-			return true;
-		}
-		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && 0==(seg.value&0xFFFC))
+		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() &&
+		    (
+		        (i486DXCommon::SEGTYPE_DATA_NORMAL_RW!=type &&
+		         i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW!=type) ||
+		         0==(seg.value&0xFFFC)
+		    ))
 		{
 			raise();
 			return true;
 		}
 
-		if(i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW==type ||
-		   i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_READONLY==type)
+		if(i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW==type)
 		{
 			if(32==seg.addressSize)
 			{
