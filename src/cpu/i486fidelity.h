@@ -347,24 +347,26 @@ public:
 		{
 			if(true==write)
 			{
-				static bool readOnlyPage[16]={
-					false,false,false,false,false,false,false,false,
-					false,false,true ,true ,false,false,true ,false,
-				};
-				if(true==readOnlyPage[URUR]) // Read-Only Page.
+				// If URUR is 0-9,       12, or 13,    exception because system page.
+				// IF URUR is     10, 11,    or    14, exception because read only.
+				// Only 15 is acceptable.
+				if(15!=URUR)
 				{
 					raise();
 					return true;
 				}
 			}
-			static bool userPage[16]={   // <-> system page
-				false,false,false,false,false,false,false,false,
-				false,false,true ,true ,false,false,true ,true,
-			};
-			if(true!=userPage[URUR]) // System Page.
+			else
 			{
-				raise();
-				return true;
+				static bool userPage[16]={   // <-> system page
+					false,false,false,false,false,false,false,false,
+					false,false,true ,true ,false,false,true ,true,
+				};
+				if(true!=userPage[URUR]) // System Page.
+				{
+					raise();
+					return true;
+				}
 			}
 		}
 		return false;
