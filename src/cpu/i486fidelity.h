@@ -699,7 +699,9 @@ public:
 	}
 	inline bool DescriptorException(const LoadSegmentRegisterFlags flags,i486DXCommon &cpu,uint32_t selector,const uint8_t *desc)
 	{
-		if(nullptr==desc || (true==flags.loadingStackSegment && 0==(selector&0xFFFC)))
+		// desc is not a nullptr.  Checked in the calling function.
+
+		if(true==flags.loadingStackSegment && 0==(selector&0xFFFC))
 		{
 			cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
 			return true;
@@ -734,12 +736,8 @@ public:
 			//   1111A Code Conforming     Readable
 			// So it was a mis-print in Intel 80386 programmer's reference. WTF.
 
-			if(0==(desc[5]&0x10)) // If system, GP.
-			{
-				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
-				return true;
-			}
-			else if(0!=(desc[5]&8) && 0==(desc[5]&2)) // If Code and Unreadable, GP.
+			if(0==(desc[5]&0x10) || // If system, GP.
+			   8==(desc[5]&0x0A))   // If Code (8) and Unreadable (2), GP.
 			{
 				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3); // If cpu is const i486DXCommon &, it does nothing.
 				return true;
