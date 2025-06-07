@@ -747,7 +747,7 @@ public:
 				auto RPL=selector&3;
 				auto CPL=cpu.state.CS().DPL;
 				auto DPL=(desc[5]>>5)&3;
-				if(DPL<CPL && DPL<RPL && (0==(desc[5]&8) || 0==(desc[5]&4))) // If Data or Non-Conforming Code and DPL<RPL,CPL
+				if(DPL<CPL && DPL<RPL && 0x0C!=(desc[5]&0x0C)) // If Data or Non-Conforming Code and DPL<RPL,CPL
 				{
 					cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
 					return true;
@@ -773,17 +773,9 @@ public:
 			// Needs to be:
 			//   Writable data segment
 			//   DPL must be equal to CPL
-			if(0==(desc[5]&0x10)) // If system, GP.
-			{
-				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
-				return true;
-			}
-			if(0!=(desc[5]&8)) // If code, GP.
-			{
-				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
-				return true;
-			}
-			if(0==(desc[5]&2)) // If readable data, GP.
+			if(0==(desc[5]&0x10) || // If system, GP.
+			   0!=(desc[5]&8) || // If code, GP.
+			   0==(desc[5]&2)) // If read-only data, GP.
 			{
 				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
 				return true;
