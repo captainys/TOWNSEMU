@@ -773,9 +773,8 @@ public:
 			// Needs to be:
 			//   Writable data segment
 			//   DPL must be equal to CPL
-			if(0==(desc[5]&0x10) || // If system, GP.
-			   0!=(desc[5]&8) || // If code, GP.
-			   0==(desc[5]&2)) // If read-only data, GP.
+			if(0x12!=(desc[5]&0x12) || // If system, GP.  Or if read-only data, GP.
+			   0!=(desc[5]&8)) // If code, GP.
 			{
 				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
 				return true;
