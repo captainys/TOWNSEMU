@@ -8,8 +8,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(UNIX)
-	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -Wno-unused-variable)
-	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -Wno-unused-variable)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-variable")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
 endif()
 
 set(DISC_IMAGE_DIR "C:/D/TownsISO")
