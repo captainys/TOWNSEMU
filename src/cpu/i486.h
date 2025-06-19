@@ -1130,7 +1130,7 @@ public:
 
 		inline void Clear(void)
 		{
-			numBytes=0;
+			numBytes=1;
 			fwait=0;
 			instPrefix=0;
 			segOverride=0;

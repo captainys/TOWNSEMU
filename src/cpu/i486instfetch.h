@@ -378,14 +378,14 @@ public:
 		// According to the sample taken 2024/06/07, burst-mode is used for roughly 99.96% of the instructions.
 		if(MAX_INSTRUCTION_LENGTH<=ptr.length)
 		{
-			inst.opCode=BURSTMODEFUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
-			CPUCLASS::template FetchOperand<CPUCLASS,MEMCLASS,BURSTMODEFUNCCLASS>(cpu,instOp,ptr,CS,offset+inst.numBytes,mem,defOperSize,defAddrSize);
+			inst.opCode=BURSTMODEFUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset,mem);
+			CPUCLASS::template FetchOperand<CPUCLASS,MEMCLASS,BURSTMODEFUNCCLASS>(cpu,instOp,ptr,CS,offset+1,mem,defOperSize,defAddrSize);
 			// BurstModeFetchInstructionFunctions does not update ptr.length.
 		}
 		else
 		{
-			inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
-			CPUCLASS::template FetchOperand<CPUCLASS,MEMCLASS,FUNCCLASS>(cpu,instOp,ptr,CS,offset+inst.numBytes,mem,defOperSize,defAddrSize);
+			inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset,mem);
+			CPUCLASS::template FetchOperand<CPUCLASS,MEMCLASS,FUNCCLASS>(cpu,instOp,ptr,CS,offset+1,mem,defOperSize,defAddrSize);
 		}
 	}
 };
