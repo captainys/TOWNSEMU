@@ -1,9 +1,9 @@
 build\io.obj
 build\vmif.obj
 -lib
-C:\hc386\small\hce.lib
-C:\hc386\small\na.lib
+D:\hc386\small\hce.lib
+D:\hc386\small\na.lib
 -lib
-C:\hc386\townslib\lib\tbios.lib
-C:\hc386\townslib\lib\snd.lib
-C:\hc386\exlib1\lib\fgs.lib
+D:\hc386\townslib\lib\tbios.lib
+D:\hc386\townslib\lib\snd.lib
+D:\hc386\exlib1\lib\fgs.lib

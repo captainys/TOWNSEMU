@@ -13,8 +13,8 @@ build\daadas.obj
 build\binaryop.obj
 build\mov.obj
 build\shldshrd.obj
--lib C:\hc386\small\hce.lib 
--lib C:\hc386\townslib\lib\tbios.lib 
+-lib D:\hc386\small\hce.lib 
+-lib D:\hc386\townslib\lib\tbios.lib 
 -exe build\gentest.exp
 -stack 16384
 -symbols

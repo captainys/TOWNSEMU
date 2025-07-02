@@ -1,11 +1,11 @@
-all : build\LAR_LSL.EXP BUILD\DRVMODE.EXP build\gentest.exp build\runtest.exp build\keytest.exp build\FAIL.EXE build\SUCCESS.EXE build\captcrtc.exp build\ff82_1pg.exp build\ff82_2pg.exp build\test01.exp build\test02.exp build\test03.exp build\test04.exp build\test05.exp build\test06.exp build\test07.exp build\test08.exp build\testcd.exp build\eaxds.exp build\egb01.exp build\egb02.exp build\highres1.exp build\fullcol1.exp build\mos01.exp build\sprite01.exp build\sprite02.exp build\timer.exp build\vramtest.exp build\readtoc.exp build\ym2612FB.exp build\ymtone.exp build\ymwave.exp build\ymwaverr.exp build\ymwaverp.exp build\ymenvl01.exp build\ymenvl02.exp build\repeat.exe build\cdda.exe build\vndrvbrk.exp build\vndrvena.exp build\vndrvpri.exp build\vndrvdir.exp build\fpu_calc.exp build\fpu_comp.exp build\fpuexp.exp build\SCSIERR.EXP build\EXPDOWN.EXP
+all : build\LAR_LSL.EXP BUILD\DRVMODE.EXP build\gentest.exp build\runtest.exp build\keytest.exp build\FAIL.EXE build\SUCCESS.EXE build\captcrtc.exp build\ff82_1pg.exp build\ff82_2pg.exp build\test01.exp build\test02.exp build\test03.exp build\test04.exp build\test05.exp build\test06.exp build\test07.exp build\test08.exp build\testcd.exp build\eaxds.exp build\egb01.exp build\egb02.exp build\highres1.exp build\fullcol1.exp build\mos01.exp build\sprite01.exp build\sprite02.exp build\timer.exp build\vramtest.exp build\readtoc.exp build\ym2612FB.exp build\ymtone.exp build\ymwave.exp build\ymwaverr.exp build\ymwaverp.exp build\ymenvl01.exp build\ymenvl02.exp build\repeat.exe build\cdda.exe build\vndrvbrk.exp build\vndrvena.exp build\vndrvpri.exp build\vndrvdir.exp build\fpu_calc.exp build\fpu_comp.exp build\fpuexp.exp build\SCSIERR.EXP build\EXPDOWN.EXP build\fullcol1.exp build\fullcol2.exp
 
 
 BUILD\DRVMODE.EXP : BUILD\DRVMODE.OBJ
-	386LINK BUILD\DRVMODE.OBJ -LIB C:\hc386\TOWNSLIB\LIB\FMCFRB.lib C:\hc386\small\hce.lib C:\hc386\small\na.lib -EXE BUILD\DRVMODE.EXP
+	386LINK BUILD\DRVMODE.OBJ -LIB D:\hc386\TOWNSLIB\LIB\FMCFRB.lib D:\hc386\small\hce.lib D:\hc386\small\na.lib -EXE BUILD\DRVMODE.EXP
 
 BUILD\DRVMODE.OBJ : DRVMODE.C
-	HCD386 DRVMODE.C -OBJ BUILD\DRVMODE.OBJ
+	RUN386 -nocrt D:\HC386\BIN\HCD386P DRVMODE.C -OBJ BUILD\DRVMODE.OBJ
 
 
 
@@ -72,7 +72,7 @@ cputest\TESTCASE.H : build\gentest.exp
 	run386 build\gentest.exp
 
 build\runtest.OBJ : cputest\runtest.c cputest\TESTCASE.H io.h vmif.h
-	run386 c:\hc386\bin\hcd386p cputest\runtest.c -obj build\runtest.OBJ
+	run386 D:\hc386\bin\hcd386p cputest\runtest.c -obj build\runtest.OBJ
 
 build\runtest.exp : build\io.obj build\vmif.obj build\runtest.OBJ build\f6f7.OBJ build\test_r_i.OBJ build\aadaam.OBJ build\btx.OBJ build\imul.OBJ build\bitshift.OBJ build\cbw_cwde.OBJ build\adcsbbsp.OBJ build\bt_mem_r.OBJ build\daadas.OBJ build\mov.OBJ build\shldshrd.OBJ build\binaryop.OBJ build\moveaxds.OBJ
 	386link @cputest\runtest.LN
@@ -110,7 +110,7 @@ build\captcrtc.obj : captcrtc.c io.h vmif.h
 	hcd386 captcrtc.c -obj build\captcrtc.obj
 
 build\captcrtc.exp : build\captcrtc.obj build\io.obj build\vmif.obj
-	386link build\captcrtc.obj build\io.obj -lib C:\hc386\small\hce.lib -lib C:\hc386\townslib\lib\tbios.lib -exe build\captcrtc.exp
+	386link build\captcrtc.obj build\io.obj -lib D:\hc386\small\hce.lib -lib D:\hc386\townslib\lib\tbios.lib -exe build\captcrtc.exp
 
 
 
@@ -118,13 +118,13 @@ build\ff82_1pg.obj : ff82_1pg.c io.h vmif.h
 	hcd386 ff82_1pg.c -obj build\ff82_1pg.obj
 
 build\ff82_1pg.exp : build\ff82_1pg.obj build\vmif.obj
-	386link build\ff82_1pg.obj -lib C:\hc386\small\hce.lib -exe build\ff82_1pg.exp @LIBS.LN
+	386link build\ff82_1pg.obj -lib D:\hc386\small\hce.lib -exe build\ff82_1pg.exp @LIBS.LN
 
 build\ff82_2pg.obj : ff82_2pg.c io.h vmif.h
 	hcd386 ff82_2pg.c -obj build\ff82_2pg.obj
 
 build\ff82_2pg.exp : build\ff82_2pg.obj build\vmif.obj
-	386link build\ff82_2pg.obj -lib C:\hc386\small\hce.lib -exe build\ff82_2pg.exp @LIBS.LN
+	386link build\ff82_2pg.obj -lib D:\hc386\small\hce.lib -exe build\ff82_2pg.exp @LIBS.LN
 
 
 
@@ -132,7 +132,7 @@ build\test01.obj : test01.c io.h vmif.h
 	hcd386 test01.c -obj build\test01.obj
 
 build\test01.exp : build\test01.obj build\vmif.obj
-	386link build\test01.obj -lib C:\hc386\small\hce.lib -exe build\test01.exp
+	386link build\test01.obj -lib D:\hc386\small\hce.lib -exe build\test01.exp
 
 
 
@@ -140,7 +140,7 @@ build\test02.obj : test02.c io.h vmif.h
 	hcd386 test02.c -obj build\test02.obj
 
 build\test02.exp : build\test02.obj build\vmif.obj
-	386link build\test02.obj -lib C:\hc386\small\hce.lib -exe build\test02.exp
+	386link build\test02.obj -lib D:\hc386\small\hce.lib -exe build\test02.exp
 
 
 
@@ -148,7 +148,7 @@ build\test03.obj : test03.c io.h vmif.h
 	hcd386 test03.c -obj build\test03.obj
 
 build\test03.exp : build\test03.obj build\vmif.obj
-	386link build\test03.obj -lib C:\hc386\small\hce.lib -exe build\test03.exp
+	386link build\test03.obj -lib D:\hc386\small\hce.lib -exe build\test03.exp
 
 
 
@@ -156,7 +156,7 @@ build\test04.obj : test04.c io.h vmif.h
 	hcd386 test04.c -obj build\test04.obj
 
 build\test04.exp : build\test04.obj build\vmif.obj
-	386link build\test04.obj -lib C:\hc386\small\hce.lib -exe build\test04.exp
+	386link build\test04.obj -lib D:\hc386\small\hce.lib -exe build\test04.exp
 
 
 
@@ -164,7 +164,7 @@ build\test05.obj : test05.c io.h vmif.h
 	hcd386 test05.c -obj build\test05.obj
 
 build\test05.exp : build\test05.obj build\vmif.obj
-	386link build\test05.obj -lib C:\hc386\small\hce.lib -exe build\test05.exp
+	386link build\test05.obj -lib D:\hc386\small\hce.lib -exe build\test05.exp
 
 
 
@@ -172,7 +172,7 @@ build\test06.obj : test06.c io.h vmif.h
 	hcd386 test06.c -obj build\test06.obj
 
 build\test06.exp : build\test06.obj build\vmif.obj
-	386link build\test06.obj -lib C:\hc386\small\hce.lib -exe build\test06.exp
+	386link build\test06.obj -lib D:\hc386\small\hce.lib -exe build\test06.exp
 
 
 
@@ -180,7 +180,7 @@ build\test07.obj : test07.c io.h vmif.h
 	hcd386 test07.c -obj build\test07.obj
 
 build\test07.exp : build\test07.obj build\vmif.obj
-	386link build\test07.obj -lib C:\hc386\small\hce.lib -exe build\test07.exp
+	386link build\test07.obj -lib D:\hc386\small\hce.lib -exe build\test07.exp
 
 
 
@@ -444,3 +444,22 @@ build\SCSIERRA.obj : scsierr.asm
 
 build\SCSIERR.EXP : build\SCSIERR.obj build\SCSIERRA.obj
 	386link build\SCSIERR.obj build\SCSIERRA.obj -exe build\SCSIERR.EXP @LIBS.LN
+
+
+
+build\fullcol1.obj : fullcol1.c io.h vmif.h
+	hcd386 fullcol1.c -obj build\fullcol1.obj
+
+build\fullcol1.exp : build\fullcol1.obj build\io.obj build\vmif.obj
+	386link build\fullcol1.obj -exe build\fullcol1.exp @LIBS.LN
+
+
+
+build\fullcol2.obj : fullcol2.c io.h vmif.h
+	hcd386 fullcol2.c -obj build\fullcol2.obj
+
+build\fullcol2.exp : build\fullcol2.obj build\io.obj build\vmif.obj
+	386link build\fullcol2.obj -exe build\fullcol2.exp @LIBS.LN
+
+
+
