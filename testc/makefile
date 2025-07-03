@@ -448,7 +448,7 @@ build\SCSIERR.EXP : build\SCSIERR.obj build\SCSIERRA.obj
 
 
 build\fullcol1.obj : fullcol1.c io.h vmif.h
-	hcd386 fullcol1.c -obj build\fullcol1.obj
+	RUN386 -nocrt D:\HC386\bin\hcd386p fullcol1.c -obj build\fullcol1.obj
 
 build\fullcol1.exp : build\fullcol1.obj build\io.obj build\vmif.obj
 	386link build\fullcol1.obj -exe build\fullcol1.exp @LIBS.LN
@@ -456,7 +456,7 @@ build\fullcol1.exp : build\fullcol1.obj build\io.obj build\vmif.obj
 
 
 build\fullcol2.obj : fullcol2.c io.h vmif.h
-	hcd386 fullcol2.c -obj build\fullcol2.obj
+	RUN386 -nocrt D:\HC386\bin\hcd386p fullcol2.c -obj build\fullcol2.obj
 
 build\fullcol2.exp : build\fullcol2.obj build\io.obj build\vmif.obj
 	386link build\fullcol2.obj -exe build\fullcol2.exp @LIBS.LN

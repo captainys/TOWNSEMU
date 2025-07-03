@@ -75,6 +75,8 @@ void TestFullColor(void)
 
 	EGB_resolution(EGB_work,0,22);
 
+	EGB_displayPage(EGB_work,0,1); // Required for High-Res CRTC screen modes.
+
 	EGB_writePage(EGB_work,0);
 	EGB_color(EGB_work,EGB_BACKGROUND_COLOR,0);
 	EGB_clearScreen(EGB_work);
@@ -131,6 +133,8 @@ void TestFullColor(void)
 			SND_joy_in_2(0,&pad);
 		}
 	}
+
+	EGB_resolution(EGB_work,0,12);
 }
 
 

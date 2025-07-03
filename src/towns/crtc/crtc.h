@@ -118,6 +118,7 @@ public:
 		HIGHRES_REG_P0_VRAM_OFFSET_X=0x116, // Prob
 		HIGHRES_REG_P0_VRAM_OFFSET_Y=0x117, // Prob
 		HIGHRES_REG_P0_ZOOM    =0x119,
+		HIGHRES_REG_RGB_BGR_BRG_OR_ELSE=0x11A,   // Low 6 bits give which component goes to R,G,B.  00rrggbb.
 		HIGHRES_REG_P0_PALETTE =0x11B,   // Prob 8000H 32K color, 0FH 16-color palette, 0FFH 256-color palette, FFFFFFH 24-bit color
 
 		HIGHRES_REG_P1_WID_H   =0x120,
@@ -151,6 +152,7 @@ public:
 	{
 	public:
 		unsigned int bitsPerPixel;
+		unsigned int highResRGBSwap; // Hopefully meaningful only in the 24-bit color mode.  Figured 2025/07/02
 		unsigned int VRAMAddr;
 		unsigned int VRAMOffset;
 		unsigned int FlipVRAMOffset;

@@ -12,6 +12,9 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 << LICENSE */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "egb.h"
 #include "fgs.h"
 #include "snd.h"
@@ -44,6 +47,12 @@ static char FGS_work[FGSWorkSize];
 #define IO_HIGHRES_ADDR_LATCH 0x472
 #define IO_HIGHRES_DATA 0x474
 
+void AddLog(const char str[])
+{
+	FILE *fp=fopen("log.txt","a");
+	fprintf(fp,"%s",str);
+	fclose(fp);
+}
 
 void WriteWordToHighResCRTC(unsigned int reg,unsigned int data)
 {
@@ -84,6 +93,8 @@ void TestFullColor(void)
 
 	EGB_resolution(EGB_work,0,22);
 
+	EGB_displayPage(EGB_work,0,1); // Required for High-Res CRTC screen modes.
+
 	EGB_writePage(EGB_work,0);
 	EGB_color(EGB_work,EGB_BACKGROUND_COLOR,0);
 	EGB_clearScreen(EGB_work);
@@ -108,7 +119,6 @@ void TestFullColor(void)
 	//
 	//	int res0,res1;
 	//	FGS_getResolution(&res0,&res1);
-
 
 	unsigned int reg011A=0x06;
 	WriteWordToHighResCRTC(0x11A,reg011A);
@@ -151,6 +161,8 @@ void TestFullColor(void)
 			SND_joy_in_2(0,&pad);
 		}
 	}
+
+	EGB_resolution(EGB_work,0,12);
 }
 
 

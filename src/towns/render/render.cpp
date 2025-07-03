@@ -872,6 +872,10 @@ void TownsRender::Render24Bit(const TownsCRTC::Layer &layer,const unsigned char 
 	auto ZV0=layer.zoom2x.y()/2;
 	auto ZV=ZV0;
 
+	unsigned int RED=(layer.highResRGBSwap>>4)&3;
+	unsigned int GREEN=(layer.highResRGBSwap>>2)&3;
+	unsigned int BLUE=layer.highResRGBSwap&3;
+
 	// yStep should be 1 if transparent.
 	// If transparnet==true, there is a possibility that memcpy overwrites background pixels.
 	unsigned int yStep=(true!=transparent ? ZV0 : 1);
@@ -899,6 +903,16 @@ void TownsRender::Render24Bit(const TownsCRTC::Layer &layer,const unsigned char 
 				dst[i]=VRAM[VRAMAddrCopy];
 			}
 			dst[3]=255;
+
+			if(0x06!=layer.highResRGBSwap)
+			{
+				auto R=dst[RED];
+				auto G=dst[GREEN];
+				auto B=dst[BLUE];
+				dst[0]=R;
+				dst[1]=G;
+				dst[2]=B;
+			}
 
 			dst+=4;
 			if(0==(--ZH))
