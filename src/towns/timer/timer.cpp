@@ -121,7 +121,7 @@ void TownsTimer::State::SetChannelCounter(unsigned int ch,unsigned int value)
 		CH.OUT=true;
 		if(true==CH.accessLow)
 		{
-			CH.counterInitialValue+=(value&1); // Force it to be even number.
+			CH.counterInitialValue&=~1; // Force it to be even number.
 		}
 		break;
 	}
