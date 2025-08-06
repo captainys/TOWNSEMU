@@ -35,6 +35,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "profiledlg.h"
 #include "subproc.h"
 #include "runvm.h"
+#include "uitxt.h"
 
 class FsGuiMainCanvas : public FsGuiCanvas
 {
@@ -61,6 +62,9 @@ public:
 
 
 	YSBOOL VMMustResume=YSFALSE;
+
+
+	UiText ui;
 
 private:
 	/*! For convenience, you can use THISCLASS instead of FsGuiMainCanvas 
