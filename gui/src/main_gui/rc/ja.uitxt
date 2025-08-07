@@ -13,7 +13,22 @@ UITXT
 
 # File Menu
 +/file   ファイル
-
++/file/openprofile プロファイルを開く
++/file/saveprofile プロファイルを保存
++/file/saveprofileas プロファイルを別名で保存
++/file/saveasdefault このプロファイルをデフォルトにする
++/file/reloaddefault デフォルトプロファイルを読み込む
++/file/cmosram CMOS RAM
++/file/cmosram/clear CMOS RAMを消去
++/file/new 新規作成
++/file/new/1232kb 1232KBフロッピーディスクイメージ
++/file/new/1440kb 1440KBフロッピーディスクイメージ
++/file/new/640kb  640KBフロッピーディスクイメージ
++/file/new/720kb  720KBフロッピーディスクイメージ
++/file/new/hd     ハードディスクイメージ
++/file/new/keymap キーマッピングテンプレートファイル
++/file/recent 最近使ったプロファイル
++/file/exit 終了
 
 # View Menu
 +/view   表示

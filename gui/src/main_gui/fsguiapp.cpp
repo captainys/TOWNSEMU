@@ -320,32 +320,32 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_F,ui("/file","File"))->GetSubMenu();
-		subMenu->AddTextItem(0,FSKEY_O,L"Open Profile")->BindCallBack(&THISCLASS::File_OpenProfile,this);
-		subMenu->AddTextItem(0,FSKEY_S,L"Save Profile")->BindCallBack(&THISCLASS::File_SaveProfile,this);
-		subMenu->AddTextItem(0,FSKEY_A,L"Save Profile As")->BindCallBack(&THISCLASS::File_SaveProfileAs,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,L"Save as Default")->BindCallBack(&THISCLASS::File_SaveDefaultProfile,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,L"Reload Default")->BindCallBack(&THISCLASS::File_ReloadDefaultProfile,this);
+		subMenu->AddTextItem(0,FSKEY_O,ui("/file/openprofile","Open Profile"))->BindCallBack(&THISCLASS::File_OpenProfile,this);
+		subMenu->AddTextItem(0,FSKEY_S,ui("/file/saveprofile","Save Profile"))->BindCallBack(&THISCLASS::File_SaveProfile,this);
+		subMenu->AddTextItem(0,FSKEY_A,ui("/file/saveprofileas","Save Profile As"))->BindCallBack(&THISCLASS::File_SaveProfileAs,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/file/saveasdefault","Save as Default"))->BindCallBack(&THISCLASS::File_SaveDefaultProfile,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/file/reloaddefault","Reload Default"))->BindCallBack(&THISCLASS::File_ReloadDefaultProfile,this);
 
 		{
-			auto subSubMenu=subMenu->AddTextItem(0,FSKEY_NULL,L"CMOS RAM")->AddSubMenu();
-			subSubMenu->AddTextItem(0,FSKEY_NULL,"Clear CMOS RAM")->BindCallBack(&THISCLASS::File_ClearCMOS,this);
+			auto subSubMenu=subMenu->AddTextItem(0,FSKEY_NULL,ui("/file/cmosram","CMOS RAM"))->AddSubMenu();
+			subSubMenu->AddTextItem(0,FSKEY_NULL,ui("/file/cmosram/clear","Clear CMOS RAM"))->BindCallBack(&THISCLASS::File_ClearCMOS,this);
 		}
 
 		{
-			auto subSubMenu=subMenu->AddTextItem(0,FSKEY_N,L"New")->AddSubMenu();
-			subSubMenu->AddTextItem(0,FSKEY_NULL,L"1232KB Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_1232KB,this);
-			subSubMenu->AddTextItem(0,FSKEY_NULL,L"1440KB Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_1440KB,this);
-			subSubMenu->AddTextItem(0,FSKEY_NULL,L"640KB Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_640KB,this);
-			subSubMenu->AddTextItem(0,FSKEY_NULL,L"720KB Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_720KB,this);
-			subSubMenu->AddTextItem(0,FSKEY_NULL,L"Hard-Disk Image")->BindCallBack(&THISCLASS::File_New_HDD,this);
-			subSubMenu->AddTextItem(0,FSKEY_NULL,L"Make Default Key Mapping File")->BindCallBack(&THISCLASS::File_MakeDefaultKeyMappingFile,this);
+			auto subSubMenu=subMenu->AddTextItem(0,FSKEY_N,ui("/file/new","New"))->AddSubMenu();
+			subSubMenu->AddTextItem(0,FSKEY_NULL,ui("/file/new/1232kb","1232KB Floppy Disk Image"))->BindCallBack(&THISCLASS::File_New_1232KB,this);
+			subSubMenu->AddTextItem(0,FSKEY_NULL,ui("/file/new/1440kb","1440KB Floppy Disk Image"))->BindCallBack(&THISCLASS::File_New_1440KB,this);
+			subSubMenu->AddTextItem(0,FSKEY_NULL,ui("/file/new/640kb","640KB Floppy Disk Image"))->BindCallBack(&THISCLASS::File_New_640KB,this);
+			subSubMenu->AddTextItem(0,FSKEY_NULL,ui("/file/new/720kb","720KB Floppy Disk Image"))->BindCallBack(&THISCLASS::File_New_720KB,this);
+			subSubMenu->AddTextItem(0,FSKEY_NULL,ui("/file/new/hd","Hard-Disk Image"))->BindCallBack(&THISCLASS::File_New_HDD,this);
+			subSubMenu->AddTextItem(0,FSKEY_NULL,ui("/file/new/keymap","Make Default Key Mapping File"))->BindCallBack(&THISCLASS::File_MakeDefaultKeyMappingFile,this);
 		}
 
-		fileRecentProfile=subMenu->AddTextItem(0,FSKEY_R,L"Recent")->AddSubMenu();
+		fileRecentProfile=subMenu->AddTextItem(0,FSKEY_R,ui("/file/recent","Recent"))->AddSubMenu();
 		RefreshRecentlyUsedFileList();
 		recentProfile.PopulateMenu(*fileRecentProfile,20,File_Recent,this);
 
-		subMenu->AddTextItem(0,FSKEY_X,L"Exit")->BindCallBack(&THISCLASS::File_Exit,this);
+		subMenu->AddTextItem(0,FSKEY_X,ui("/file/exit","Exit"))->BindCallBack(&THISCLASS::File_Exit,this);
 	}
 
 	{
@@ -364,7 +364,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 
 		auto savememm=subMenu->AddTextItem(0,FSKEY_A,L"Save Machine State to Memory");
 		auto loadmemm=subMenu->AddTextItem(0,FSKEY_O,L"Load Machine State from Memory");
-		auto loadmempm=subMenu->AddTextItem(0,FSKEY_D,L"Load Machine State from Memoryand Pause");
+		auto loadmempm=subMenu->AddTextItem(0,FSKEY_D,L"Load Machine State from Memory and Pause");
 
 		auto savemem=savememm->AddSubMenu();
 		auto loadmem=loadmemm->AddSubMenu();
