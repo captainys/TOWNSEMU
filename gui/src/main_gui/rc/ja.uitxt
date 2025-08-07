@@ -10,6 +10,7 @@ UITXT
 +/joystickid ゲームパッドID
 +/button ボタン
 +/axis 軸
++/none 無
 
 # File Menu
 +/file   ファイル
@@ -66,17 +67,27 @@ UITXT
 +/cdrom    CD-ROM
 +/cdrom/selectimage CDイメージファイルを選択
 +/cdrom/openclose CDを開いて閉じたことにする
-+/cdrom/eject 取り出したことにする
++/cdrom/eject 取り出し
 +/cdrom/stopcdda 音楽演奏停止
 
 # FD0 Menu
 +/fd0      FD0
++/fd/selectimage ディスクイメージを選択
++/fd/writeprotect 書込禁止
++/fd/writeenable 書込許可
++/fd/eject 取り出し
 
 # FD1 Menu
 +/fd1      FD1
 
 # Devices Menu
 +/devices  デバイス
++/devices/gameport0 ジョイスティックポート0
++/devices/gameport1 ジョイスティックポート1
++/devices/autoshot 連射
++/devices/autoshot/8persec 8連射/秒
++/devices/autoshot/12persec 12連射/秒
++/devices/autoshot/16persec 16連射/秒
 
 # Sound Menu
 +/sound    サウンド

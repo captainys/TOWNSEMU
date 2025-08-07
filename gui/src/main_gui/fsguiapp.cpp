@@ -446,43 +446,45 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_0,ui("/fd0","FD0"))->GetSubMenu();
-		subMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD0_SelectImageFile,this);
-		FD0_writeProtectMenu=subMenu->AddTextItem(0,FSKEY_P,L"Write Protect");
+		subMenu->AddTextItem(0,FSKEY_S,ui("/fd/selectimage","Select FD Image"))->BindCallBack(&THISCLASS::FD0_SelectImageFile,this);
+		FD0_writeProtectMenu=subMenu->AddTextItem(0,FSKEY_P,ui("/fd/writeprotect","Write Protect"));
 		FD0_writeProtectMenu->BindCallBack(&THISCLASS::FD0_WriteProtect,this);
-		FD0_writeUnprotectMenu=subMenu->AddTextItem(0,FSKEY_U,L"Write Unprotect");
+		FD0_writeUnprotectMenu=subMenu->AddTextItem(0,FSKEY_U,ui("/fd/writeenable","Write Unprotect"));
 		FD0_writeUnprotectMenu->BindCallBack(&THISCLASS::FD0_WriteUnprotect,this);
-		subMenu->AddTextItem(0,FSKEY_J,L"Eject")->BindCallBack(&THISCLASS::FD0_Eject,this);
+		subMenu->AddTextItem(0,FSKEY_J,ui("/fd/eject","Eject"))->BindCallBack(&THISCLASS::FD0_Eject,this);
 	}
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_1,ui("/fd1","FD1"))->GetSubMenu();
-		subMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD1_SelectImageFile,this);
-		FD1_writeProtectMenu=subMenu->AddTextItem(0,FSKEY_P,L"Write Protect");
+		subMenu->AddTextItem(0,FSKEY_S,ui("/fd/selectimage","Select FD Image"))->BindCallBack(&THISCLASS::FD1_SelectImageFile,this);
+		FD1_writeProtectMenu=subMenu->AddTextItem(0,FSKEY_P,ui("/fd/writeprotect","Write Protect"));
 		FD1_writeProtectMenu->BindCallBack(&THISCLASS::FD1_WriteProtect,this);
-		FD1_writeUnprotectMenu=subMenu->AddTextItem(0,FSKEY_U,L"Write Unprotect");
+		FD1_writeUnprotectMenu=subMenu->AddTextItem(0,FSKEY_U,ui("/fd/writeenable","Write Unprotect"));
 		FD1_writeUnprotectMenu->BindCallBack(&THISCLASS::FD1_WriteUnprotect,this);
-		subMenu->AddTextItem(0,FSKEY_J,L"Eject")->BindCallBack(&THISCLASS::FD1_Eject,this);
+		subMenu->AddTextItem(0,FSKEY_J,ui("/fd/eject","Eject"))->BindCallBack(&THISCLASS::FD1_Eject,this);
 	}
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_D,ui("/devices","Devices"))->GetSubMenu();
-		subMenu->AddTextItem(0,FSKEY_0,"Game Port 0")->BindCallBack(&THISCLASS::Device_GamePort0,this);
-		subMenu->AddTextItem(0,FSKEY_1,"Game Port 1")->BindCallBack(&THISCLASS::Device_GamePort1,this);
+		subMenu->AddTextItem(0,FSKEY_0,ui("/devices/gameport0","Game Port 0"))->BindCallBack(&THISCLASS::Device_GamePort0,this);
+		subMenu->AddTextItem(0,FSKEY_1,ui("/devices/gameport1","Game Port 1"))->BindCallBack(&THISCLASS::Device_GamePort1,this);
 
-		auto *autoShotMenu=subMenu->AddTextItem(0,FSKEY_A,"Auto Shot")->AddSubMenu();
+		auto *autoShotMenu=subMenu->AddTextItem(0,FSKEY_A,ui("/devices/autoshot","Auto Shot"))->AddSubMenu();
 		for(int port=0; port<2; ++port)
 		{
-			char str[256];
-			sprintf(str,"Game Port %d",port);
+			std::string str;
+			str=(0==port ? ui("/devices/gameport0","Game Port 0") : ui("/devices/gameport1","Game Port 1"));
 			auto *portMenu=autoShotMenu->AddTextItem(0,FSKEY_0+port,str)->AddSubMenu();
 			for(int button=0; button<MAX_NUM_BUTTONS; ++button)
 			{
-				sprintf(str,"Button %d",button);
+				str=ui("/button","Button");
+				str.push_back(' ');
+				str.push_back('0'+button);
 				auto *buttonMenu=portMenu->AddTextItem(0,FSKEY_0+button,str)->AddSubMenu();
-				padAutoShot[port][button][0]=buttonMenu->AddTextItem(0,FSKEY_0,"None");
-				padAutoShot[port][button][1]=buttonMenu->AddTextItem(0,FSKEY_1,"8 shots per second");
-				padAutoShot[port][button][2]=buttonMenu->AddTextItem(0,FSKEY_2,"12 shots per second");
-				padAutoShot[port][button][3]=buttonMenu->AddTextItem(0,FSKEY_3,"16 shots per second");
+				padAutoShot[port][button][0]=buttonMenu->AddTextItem(0,FSKEY_0,ui("/none","None"));
+				padAutoShot[port][button][1]=buttonMenu->AddTextItem(0,FSKEY_1,ui("/devices/autoshot/8persec","8 shots per second"));
+				padAutoShot[port][button][2]=buttonMenu->AddTextItem(0,FSKEY_2,ui("/devices/autoshot/12persec","12 shots per second"));
+				padAutoShot[port][button][3]=buttonMenu->AddTextItem(0,FSKEY_3,ui("/devices/autoshot/16persec","16 shots per second"));
 
 				padAutoShot[port][button][0]->BindCallBack(&THISCLASS::Device_AutoShot,this);
 				padAutoShot[port][button][1]->BindCallBack(&THISCLASS::Device_AutoShot,this);
