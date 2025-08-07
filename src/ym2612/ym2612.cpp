@@ -298,11 +298,12 @@ void YM2612::MakeDB100to4095Scale(void)
 		// 	printf("%4ddB -> %4d\n",i/100,DB100to4095Scale[i]);
 		// }
 	}
-	for(int i=0; i<4096; ++i)
+	for(int i=1; i<4096; ++i)
 	{
 		double dB100=100.0*(20.0*log10(C*(double)i));
 		DB100from4095Scale[i]=(unsigned int)dB100;
 	}
+	DB100from4095Scale[0]=DB100from4095Scale[1];
 }
 void YM2612::MakeLinearScaleTable(void)
 {
@@ -343,7 +344,7 @@ void YM2612::MakeAttackProfileTable(void)
 	}
 
 	int j=0;
-	for(int i=0; i<4096; ++i)
+	for(int i=0; i<4095; ++i)
 	{
 		for(; j<=attackExp[i+1]; ++j)
 		{
