@@ -26,6 +26,8 @@ public:
 
 	class FsGuiMainCanvas *canvasPtr;
 
+	UiText ui;
+
 	FsGuiTabControl *tab;
 
 	FsGuiStatic *profileFNameTxt;

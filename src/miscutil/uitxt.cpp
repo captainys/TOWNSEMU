@@ -73,7 +73,21 @@ bool UiText::Load(std::string fileName)
 						}
 					}
 
-					std::cout << '[' << tag << "]=" << msg << "\n";
+
+					for(size_t i=0; i+1<msg.size(); ++i)
+					{
+						if('\\'==msg[i])
+						{
+							if('n'==msg[i+1])
+							{
+								msg.erase(msg.begin()+i);
+								msg[i]='\n';
+							}
+						}
+					}
+
+
+					// std::cout << '[' << tag << "]=" << msg << "\n";
 
 					textTable[tag]=msg;
 				}

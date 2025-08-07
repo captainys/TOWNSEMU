@@ -5,6 +5,11 @@ UITXT
 
 +/ok     OK
 +/cancel 取消
++/browse ファイルダイアログで選ぶ
++/setdefault 初期値に戻す
++/joystickid ゲームパッドID
++/button ボタン
++/axis 軸
 
 # File Menu
 +/file   ファイル
@@ -50,7 +55,7 @@ UITXT
 +/profile/main     主要
 +/profile/main/romdir  ROMの場所
 +/profile/main/browsing_inst (ファイルセレクタでは、ROMファイルのうちのひとつを選ぶことでディレクトリを指定できます。)
-+/profile/main/freq_info (早すぎる周波数指定はかえってVMの実行速度を遅くする場合があります。)
++/profile/main/freq_info (高すぎる周波数指定はかえってVMの実行速度を遅くする場合があります。)
 +/profile/main/cpufreq CPU周波数(MHz)
 +/profile/main/ramsize メモリ容量(MB)
 +/profile/main/enable387 浮動小数点演算プロセッサ有効
@@ -67,16 +72,66 @@ UITXT
 +/profile/main/scanline 15KHz画面モードでスキャンライン効果
 +/profile/main/damperwireline ダンパーワイヤー線を表示してトリニトロン管を懐かしむ
 +/profile/main/loadstate 保存したステートから開始
++/profile/main/cpufidelity_info MEDIUMレベルの再現性のCPUは、一部の例外処理を省略することで、CPUの実行速度を速くすることができます。\nMEDIUMレベルで大半のTowns OSアプリ (DOS6を含む)を実行することができますが、Windows 3.1, Windows 95,\nLinux等のOSを実行することはできません。\nHIGHレベルの再現性のCPUは、例外処理やページ処理などを厳格化することで、Windows 3.1, Windows 95,\nLinux, OSASK等のOSを実行することができますが、実行速度はやや遅くなります。
+
+
 
 +/profile/rs232c   RS232C
++/profile/rs232c/tcpfwd RS232CをTCP/IPにフォワード
++/profile/rs232c/tcpfwd_addr IPアドレス:ポート
++/profile/rs232c/tcpfwd_warning !!注意!! 通信は暗号化されていません!!!!\n!!注意!! 他人に知られて困る情報をTCP/IPフォワードで送受信しないでください!!\n!!注意!! 個人情報が漏洩したりしても、僕は責任を取りません。
+
 +/profile/scsi     SCSI
++/profile/scsi/fast  高速SCSI(互換性が下がりますが、実行速度が上がります。)
+
 +/profile/gameport ジョイスティックポート
++/profile/gameport/port ポート
++/profile/gameport/maxbtnholdtime 最大ボタン押下時間(ms)
++/profile/gameport/maxbtnholdtime_info 最大ボタン押下時間にゼロ以外を指定すると、シングルクリックしやすくなります。\n一部のゲームで、マウスボタンを押してすぐ放さないと望まないメニュー選択が発生\nして、現実的にプレイ不能になります。そのような場合、この最大ボタン押下時間を\n指定すると、津軽はボタンを押して指定時間経過すると仮想的にボタンをリリースす\nることで、その問題が起きにくくします。
++/profile/gameport/mouse_integ_speed マウス移動速度
++/profile/gameport/mouse_integ_info (マウスカーソルが飛び回る場合は遅くしてみてください)
++/profile/gameport/slow 遅い
++/profile/gameport/fast 速い
++/profile/gameport/considervramoffset VRAMオフセットを考慮する
+
 +/profile/keyboard1 キーボード1
++/profile/keyboard1/mode モード (TRANS1:ESC->ESC+BREAK, TRANS2:ESC->ESC, TRANS3:ESC->BREAK)
++/profile/keyboard1/virtualkey 仮想キー(ゲームパッドのボタンをキーに割り当て)
++/profile/keyboard1/joistickid ゲームパッドID
++/profile/keyboard1/button ボタン
+
 +/profile/keyboard2 キーボード2
++/profile/keyboard2/keymappingfile キーマッピングファイル(ファイルメニューの新規作成でテンプレートを作成できます)
+
 +/profile/sound     サウンド
++/profile/sound/fmvolume FM音源音量
++/profile/sound/pcmvolume PCM音源音量
++/profile/sound/maxdoublebuf ダブルバッファ最大
++/profile/sound/num_midi_cards MIDIカード枚数
++/profile/sound/midi_info 現時点では、Windows上でのみMIDIカードに対応しています。他のホストではMIDIを有効にしても音が鳴りません。
+
 +/profile/boot      起動
++/profile/boot/option  起動時オプション
+
 +/profile/advanced  詳細
+
 +/profile/mouse_by_flightstick 操縦桿でマウス
-+/profile/application  アプリ別
++/profile/mouse_by_flightstick/info Wing CommanderやStrike CommanderのFM TOWNS版はマウスを操縦桿として使うことができます。\n上のオプションを有効にすると、ホストOSのジョイスティックの位置を元に津軽内のマウス位置\nをコントロールすることで、快適な操縦ができるようになります。アプリ別特殊設定も合わせて\n指定する必要があります。なお、Wing Commander 1がサイバースティックに対応してくれてさえ\nいたら完璧だったのになあ、と、30年以上思い続けて、ついにこの機能によってジョイスティッ\nクで操縦できた！と思ったら後から実は既にWing Commander 1はサイバースティックに対応して\nいたことが判明して、30年以上の思いはなんだったのだろうと思いましたが、とりあえず思いは\n果たしました。
++/profile/mouse_by_flightstick/throttle_for_stcm ホストジョイスティックのスロットル軸をStrike Commander/Wing Commanderで使う
++/profile/mouse_by_flightstick/throttle_info このオプションを有効にすると、ホストのスロットル軸でVM内に1,2,3,...,9,0キーコードを送ります。
+
++/profile/application  アプリ別特殊設定
+
 +/profile/hotkeys  ショートカットキー
++/profile/hotkeys/pauseresume 一時停止/再開(メニューのオン/オフ)
++/profile/hotkeys/qssdir クイックスクリーンショット保存場所
++/profile/hotkeys/qssname クイックスクリーンショットファイル名
+
 +/profile/tgdrv    ファイル共有
++/profile/tgdrv/info TGDRVを使うと、津軽内とホストOS間でファイルを共有することができます。共有するディレクトリを選んで、\n津軽内でTGDRV.COMを実行すると有効になります。TGDRV.COMはユーティリティディスク (TsugaruUtil.D77)に\nあります。\nなお、LinuxやmacOSから使うときは、ファイルに大文字・小文字の差があるので、アルファベットはすべて大\n文字である必要があります。ファイル名は最大で8文字＋3文字拡張子フォーマットである必要があります。\nTowns MENUから利用するためには、バージョンが2.1以上である必要があります。1.1ではTowns MENUにドライ\nブが現れません。\nファイルダイアログで共有ドライブを指定するときは、共有ドライブ内のファイルをひとつセレクタで選んで\nください。
+
++/profile/start FM TOWNS起動!
++/profile/autostart プロファイルを開くと同時にFM TOWNSを起動する
++/profile/separateprocess 別プロセスでVMを起動
++/profile/menu_info Scroll Lockキーを押すか、画面右下の[MENU]アイコンをクリックすることでVMからGUIに戻ることができます。
++/profile/menu_info_apple 画面右下の[MENU]アイコンをクリックすることでVMからGUIに戻ることができます。

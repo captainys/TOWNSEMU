@@ -118,6 +118,8 @@ void ProfileDialog::Make(const UiText &ui)
 {
 	const int nShowPath=PATH_SHOW;
 
+	this->ui=ui;
+
 	profileFNameTxt=AddStaticText(0,FSKEY_NULL,ui("/profile","PROFILE"),YSFALSE);
 
 	tab=AddTabControl(0,FSKEY_NULL,YSTRUE);
@@ -222,12 +224,13 @@ void ProfileDialog::Make(const UiText &ui)
 		auto tabId=AddTab(tab,ui("/profile/rs232c","RS232C"));
 		BeginAddTabItem(tab,tabId);
 
-		AddStaticText(0,FSKEY_NULL,"RS232C to TCP/IP Forwarding.",YSTRUE);
-		RS232CtoTCPTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"IPAddress:PORT",32,YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/rs232c/tcpfwd","RS232C to TCP/IP Forwarding."),YSTRUE);
+		RS232CtoTCPTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,ui("/profile/rs232c/tcpfwd_addr","IPAddress:PORT"),32,YSTRUE);
 		AddStaticText(0,FSKEY_NULL,
+		    ui("/profile/rs232c/tcpfwd_warning",
 			"!!CAUTION!! TRANSMISSION IS NOT ENCRYPTED!!!!\n"
 			"!!CAUTION!! DO NOT SEND SENSITIVE AND/OR PERSONAL INFORMATION OVER TCP/IP FORWARDING!!!!\n"
-			"!!CAUTION!! I WILL NOT TAKE RESPONSIBILITY FOR ANY DAMAGE CAUSED BY COMPROMISED INFORMATION!!!!"
+			"!!CAUTION!! I WILL NOT TAKE RESPONSIBILITY FOR ANY DAMAGE CAUSED BY COMPROMISED INFORMATION!!!!")
 			,YSTRUE);
 
 		EndAddTabItem();
@@ -265,7 +268,8 @@ void ProfileDialog::Make(const UiText &ui)
 		HDImgTxt[6]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
 		HDImgTxt[6]->SetLengthLimit(PATH_LENGTH);
 
-		fastSCSIBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Fast SCSI (Faster HDD access but may less compatibility)",YSTRUE);
+		fastSCSIBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,
+		   ui("/profile/scsi/fast","Fast SCSI (Faster HDD access but may less compatibility)"),YSTRUE);
 
 		EndAddTabItem();
 	}
@@ -276,7 +280,7 @@ void ProfileDialog::Make(const UiText &ui)
 
 		for(int i=0; i<2; ++i)
 		{
-			std::string label="Game Port ";
+			std::string label=ui("/profile/gameport/port","Game Port ");
 			label.push_back('0'+i);
 			label.push_back(':');
 
@@ -287,29 +291,30 @@ void ProfileDialog::Make(const UiText &ui)
 				gamePortDrp[i]->AddString(label.c_str(),YSFALSE);
 			}
 
-			AddStaticText(0,FSKEY_NULL,"Max Button-Hold Time(ms) ",YSTRUE);
+			AddStaticText(0,FSKEY_NULL,ui("/profile/gameport/maxbtnholdtime","Max Button-Hold Time(ms)"),YSTRUE);
 			maxButtonHoldTimeTxt[i][0]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,L"Btn0:",4,YSFALSE);
 			maxButtonHoldTimeTxt[i][1]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,L"Btn1:",4,YSFALSE);
 		}
 
 		AddStaticText(0,FSKEY_NULL,
+		    ui("/profile/gameport/maxbtnholdtime_info",
 			"Max Button-Hold Time will help you make a single click.  Some games are virtually unplayable\n"
 			"because you end up making unwanted menu selection unless you really release the button quickly\n"
 			"after pressing. By setting non-zero value in Max Button-Hold Time, Tsugaru virtually releases\n"
-			"the mouse/pad button after the specified time."
+			"the mouse/pad button after the specified time.")
 			,
 			YSTRUE);
 
 		gamePortDrp[0]->SelectByString(FsGuiMainCanvas::GamePortEmulationTypeToHumanReadable(TOWNS_GAMEPORTEMU_PHYSICAL0).c_str());
 		gamePortDrp[1]->SelectByString(FsGuiMainCanvas::GamePortEmulationTypeToHumanReadable(TOWNS_GAMEPORTEMU_MOUSE).c_str());
 
-		AddStaticText(0,FSKEY_NULL,"Mouse-Integration Speed",YSTRUE);
-		AddStaticText(0,FSKEY_NULL,"(Try slowing down if mouse-cursor jumps around)",YSTRUE);
-		AddStaticText(0,FSKEY_NULL,"Slow",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/gameport/mouse_integ_speed","Mouse-Integration Speed"),YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/gameport/mouse_integ_info","(Try slowing down if mouse-cursor jumps around)"),YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/gameport/slow","Slow"),YSTRUE);
 		mouseIntegSpdSlider=AddHorizontalSlider(0,FSKEY_NULL,20,32.0,256.0,YSFALSE);
-		AddStaticText(0,FSKEY_NULL,"Fast",YSFALSE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/gameport/fast","Fast"),YSFALSE);
 
-		mouseIntegConsiderVRAMOffsetBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Consider VRAM Offset",YSFALSE);
+		mouseIntegConsiderVRAMOffsetBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/gameport/considervramoffset","Consider VRAM Offset"),YSFALSE);
 		AddStaticText(0,FSKEY_NULL,"MinX:",YSTRUE);
 		mouseMinXTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",5,YSFALSE);
 		AddStaticText(0,FSKEY_NULL,"MinY:",YSFALSE);
@@ -326,14 +331,16 @@ void ProfileDialog::Make(const UiText &ui)
 		auto tabId=AddTab(tab,ui("/profile/keyboard1","Keyboard1"));
 		BeginAddTabItem(tab,tabId);
 
-		AddStaticText(0,FSKEY_NULL,"Keyboard Mode (TRANS1:ESC->ESC+BREAK, TRANS2:ESC->ESC, TRANS3:ESC->BREAK):",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,
+		    ui("/profile/keyboard1/mode",
+		    "Keyboard Mode (TRANS1:ESC->ESC+BREAK, TRANS2:ESC->ESC, TRANS3:ESC->BREAK):"),YSTRUE);
 		keyboardModeDrp=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSFALSE);
 		for(int i=0; i<TOWNS_KEYBOARD_MODE_NUM_MODES; ++i)
 		{
 			keyboardModeDrp->AddString(TownsKeyboardModeToStr(i).c_str(),YSFALSE);
 		}
 
-		AddStaticText(0,FSKEY_NULL,"Virtual Keys:",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/keyboard1/virtualkey","Virtual Keys:"),YSTRUE);
 		for(int row=0; row<10; ++row)
 		{
 			virtualKeyTownsKeyDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSTRUE);
@@ -348,7 +355,7 @@ void ProfileDialog::Make(const UiText &ui)
 				}
 			}
 
-			AddStaticText(0,FSKEY_NULL,"JoystickID:",YSFALSE);
+			AddStaticText(0,FSKEY_NULL,ui("/profile/keyboard1/joistickid","JoystickID:"),YSFALSE);
 			virtualKeyPhysIdDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
 			virtualKeyPhysIdDrp[row]->AddString("0",YSTRUE);
 			virtualKeyPhysIdDrp[row]->AddString("1",YSFALSE);
@@ -359,7 +366,7 @@ void ProfileDialog::Make(const UiText &ui)
 			virtualKeyPhysIdDrp[row]->AddString("6",YSFALSE);
 			virtualKeyPhysIdDrp[row]->AddString("7",YSFALSE);
 
-			AddStaticText(0,FSKEY_NULL,"Button:",YSFALSE);
+			AddStaticText(0,FSKEY_NULL,ui("/profile/keyboard1/button","Button:"),YSFALSE);
 			virtualKeyButtonDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
 			virtualKeyButtonDrp[row]->AddString("0",YSTRUE);
 			virtualKeyButtonDrp[row]->AddString("1",YSFALSE);
@@ -386,7 +393,7 @@ void ProfileDialog::Make(const UiText &ui)
 		auto tabId=AddTab(tab,ui("/profile/keyboard2","Keyboard2"));
 		BeginAddTabItem(tab,tabId);
 		
-		AddStaticText(0,FSKEY_NULL,"Virtual Keys:",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/keyboard1/virtualkey","Virtual Keys:"),YSTRUE);
 		for(int row=10; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
 		{
 			virtualKeyTownsKeyDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSTRUE);
@@ -401,7 +408,7 @@ void ProfileDialog::Make(const UiText &ui)
 				}
 			}
 
-			AddStaticText(0,FSKEY_NULL,"JoystickID:",YSFALSE);
+			AddStaticText(0,FSKEY_NULL,ui("/profile/keyboard1/joistickid","JoystickID:"),YSFALSE);
 			virtualKeyPhysIdDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
 			virtualKeyPhysIdDrp[row]->AddString("0",YSTRUE);
 			virtualKeyPhysIdDrp[row]->AddString("1",YSFALSE);
@@ -412,7 +419,7 @@ void ProfileDialog::Make(const UiText &ui)
 			virtualKeyPhysIdDrp[row]->AddString("6",YSFALSE);
 			virtualKeyPhysIdDrp[row]->AddString("7",YSFALSE);
 
-			AddStaticText(0,FSKEY_NULL,"Button:",YSFALSE);
+			AddStaticText(0,FSKEY_NULL,ui("/profile/keyboard1/button","Button:"),YSFALSE);
 			virtualKeyButtonDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
 			virtualKeyButtonDrp[row]->AddString("0",YSTRUE);
 			virtualKeyButtonDrp[row]->AddString("1",YSFALSE);
@@ -432,8 +439,8 @@ void ProfileDialog::Make(const UiText &ui)
 			virtualKeyButtonDrp[row]->AddString("15",YSFALSE);
 		}
 
-		AddStaticText(0,FSKEY_NULL,"Key-Mapping File (See File->New for Generating a Template)",YSTRUE);
-		selectKeyMapFileBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Browse",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/keyboard2/keymappingfile","Key-Mapping File (See File->New for Generating a Template)"),YSTRUE);
+		selectKeyMapFileBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,ui("/browse","Browse"),YSTRUE);
 		keyMapFileTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
 
 		EndAddTabItem();
@@ -443,19 +450,19 @@ void ProfileDialog::Make(const UiText &ui)
 		auto tabId=AddTab(tab,ui("/profile/sound","Sound"));
 		BeginAddTabItem(tab,tabId);
 
-		AddStaticText(0,FSKEY_NULL,"FM Volume",YSTRUE);
-		fmVolumeDefaultBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Set Default",YSFALSE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/sound/fmvolume","FM Volume"),YSTRUE);
+		fmVolumeDefaultBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,ui("/setdefault","Set Default"),YSFALSE);
 		fmVolumeText=AddStaticText(0,FSKEY_NULL,"00000",YSFALSE);
 		fmVolumeSlider=AddHorizontalSlider(0,FSKEY_NULL,32,0.0,8192.0,YSFALSE);
 
-		AddStaticText(0,FSKEY_NULL,"PCM Volume",YSTRUE);
-		pcmVolumeDefaultBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Set Default",YSFALSE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/sound/pcmvolume","PCM Volume"),YSTRUE);
+		pcmVolumeDefaultBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,ui("/setdefault","Set Default"),YSFALSE);
 		pcmVolumeText=AddStaticText(0,FSKEY_NULL,"00000",YSFALSE);
 		pcmVolumeSlider=AddHorizontalSlider(0,FSKEY_NULL,32,0.0,8192.0,YSFALSE);
 
-		maxSoundDoubldBufBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Maximum Double Buffering",YSTRUE);
+		maxSoundDoubldBufBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/sound/maxdoublebuf","Maximum Double Buffering"),YSTRUE);
 
-		AddStaticText(0,FSKEY_NULL,"Number of MIDI Cards",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/sound/num_midi_cards","Number of MIDI Cards"),YSTRUE);
 		numMidiCardsDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
 		numMidiCardsDrp->AddString("0",YSTRUE);
 		numMidiCardsDrp->AddString("1",YSFALSE);
@@ -475,7 +482,7 @@ void ProfileDialog::Make(const UiText &ui)
 		auto tabId=AddTab(tab,ui("/profile/boot","Boot"));
 		BeginAddTabItem(tab,tabId);
 
-		AddStaticText(0,FSKEY_NULL,"Boot Option:",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/boot/option","Boot Option:"),YSTRUE);
 		bootKeyBtn[ 0]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"None",YSFALSE);
 		bootKeyBtn[ 1]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"CD",YSFALSE);
 		bootKeyBtn[ 2]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"F0",YSFALSE);
@@ -563,16 +570,18 @@ void ProfileDialog::Make(const UiText &ui)
 		flightMouseSTCM=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Strike Commander",YSFALSE);
 
 		AddStaticText(0,FSKEY_NULL,
+		    ui("/profile/mouse_by_flightstick/info",
 			"Games like Wing Commander and Strike Commander let you control your fighter by mouse.\n"
 			"This feature translates joystick to mouse coordinate and let you fly using a flight joystick device.\n"
 			"Need to be used with Application-Specific Augmentation if the application is not\n"
-			"using TBIOS for reading mouse."
+			"using TBIOS for reading mouse.")
 		,YSTRUE);
 
 
-		strikeCommanderThrottleEnableBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Use Throttle Axis for Strike Commander/Wing Commander",YSTRUE);
+		strikeCommanderThrottleEnableBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,
+		  ui("/profile/mouse_by_flightstick/throttle_for_stcm","Use Throttle Axis for Strike Commander/Wing Commander"),YSTRUE);
 
-		AddStaticText(0,FSKEY_NULL,"JoystickID:",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/joystickid","JoystickID:"),YSTRUE);
 		strikeCommanderThrottlePhysIdDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
 		strikeCommanderThrottlePhysIdDrp->AddString("0",YSTRUE);
 		strikeCommanderThrottlePhysIdDrp->AddString("1",YSFALSE);
@@ -584,7 +593,7 @@ void ProfileDialog::Make(const UiText &ui)
 		strikeCommanderThrottlePhysIdDrp->AddString("7",YSFALSE);
 		strikeCommanderThrottlePhysIdDrp->Disable();
 
-		AddStaticText(0,FSKEY_NULL,"Axis:",YSFALSE);
+		AddStaticText(0,FSKEY_NULL,ui("/axis","Axis:"),YSFALSE);
 		strikeCommanderThrottleAxisDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
 		strikeCommanderThrottleAxisDrp->AddString("0",YSFALSE);
 		strikeCommanderThrottleAxisDrp->AddString("1",YSFALSE);
@@ -607,7 +616,7 @@ void ProfileDialog::Make(const UiText &ui)
 		auto tabId=AddTab(tab,ui("/profile/application","Application"));
 		BeginAddTabItem(tab,tabId);
 
-		AddStaticText(0,FSKEY_NULL,L"Application-Specific Augmentation",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/application","Application-Specific Augmentation"),YSTRUE);
 		appSpecificAugDrp=AddEmptyDropList(0,FSKEY_NULL,"",10,40,40,YSTRUE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_NONE).c_str(),YSTRUE);
 
@@ -633,7 +642,7 @@ void ProfileDialog::Make(const UiText &ui)
 		auto tabId=AddTab(tab,ui("/profile/hotkeys","Hot Keys"));
 		BeginAddTabItem(tab,tabId);
 
-		AddStaticText(0,FSKEY_NULL,"Pause/Resume(MENU on/off):",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/hotkeys/pauseresume","Pause/Resume(MENU on/off):"),YSTRUE);
 		pauseResumeKeyDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,12,12,YSFALSE);
 		for(auto str : hotKeyAssignable)
 		{
@@ -658,12 +667,12 @@ void ProfileDialog::Make(const UiText &ui)
 			hostShortCutFunctionDrp[i]->Select(0);
 		}
 
-		AddStaticText(0,FSKEY_NULL,"Quick Screen Shot Dir:",YSTRUE);
-		quickSsDirBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Browse",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/hotkeys/qssdir","Quick Screen Shot Dir:"),YSTRUE);
+		quickSsDirBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,ui("/browse","Browse"),YSTRUE);
 		quickSsDirTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);;
 
-		AddStaticText(0,FSKEY_NULL,"Quick State-Save File Name:",YSTRUE);
-		quickStateSaveFNameBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Browse",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/hotkeys/qssname","Quick State-Save File Name:"),YSTRUE);
+		quickStateSaveFNameBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,ui("/browse","Browse"),YSTRUE);
 		quickStateSaveFNameTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
 
 		EndAddTabItem();
@@ -675,11 +684,12 @@ void ProfileDialog::Make(const UiText &ui)
 
 		for(int i=0; i<MAX_NUM_SHARED_DIR; ++i)
 		{
-			browseShareDirBtn[i]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Browse",YSTRUE);
+			browseShareDirBtn[i]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,ui("/browse","Browse"),YSTRUE);
 			shareDirTxt[i]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);;
 		}
 
 		AddStaticText(0,FSKEY_NULL,
+		    ui("/profile/tgdrv/info",
 			"TGDRV enables VM-HOST file sharing.  Specify directories above to share,\n"
 			"and run TGDRV.COM in the utility disk (TsugaruUtil.D77) in the VM.  Then\n"
 			"shared directory will show up as a virtual drive.\n"
@@ -687,7 +697,7 @@ void ProfileDialog::Make(const UiText &ui)
 			"Towns MENU V2.1 is required.  Drive will be available, but will not be\n"
 			"visible from Towns MENU V1.1\n"
 			"\n"
-			"Browse: Click on a file in the shared directory.  Can be a dummy file.\n"
+			"Browse: Click on a file in the shared directory.  Can be a dummy file.\n")
 			,YSTRUE);
 
 		EndAddTabItem();
@@ -695,22 +705,24 @@ void ProfileDialog::Make(const UiText &ui)
 
 	tab->SelectCurrentTab(mainTabId);
 
-	runBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"START",YSTRUE);
-	autoStartBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Auto Start (Start VM as soon as the profile is loaded)",YSFALSE);
-	separateProcBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Separate Process",YSFALSE);
+	runBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,ui("/profile/start","START!"),YSTRUE);
+	autoStartBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/autostart","Auto Start (Start VM as soon as the profile is loaded)"),YSFALSE);
+	separateProcBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/separateprocess","Separate Process"),YSFALSE);
 
 	if(true!=canvasPtr->separateProcess)
 	{
 // macOS doen't send SCROLL_LOCK key code to the application.  WTF.
 #ifndef __APPLE__
 		AddStaticText(0,FSKEY_NULL,
+		    ui("/profile/menu_info",
 			"Press SCROLL_LOCK or Click on the lower-right [MENU] icon\n"
-			"to come back to the GUI from the VM.",
+			"to come back to the GUI from the VM."),
 			YSTRUE);
 #else
 		AddStaticText(0,FSKEY_NULL,
+		    ui("/profile/menu_info_apple",
 			"Click on the lower-right [MENU] icon\n"
-			"to come back to the GUI from the VM.",
+			"to come back to the GUI from the VM."),
 			YSTRUE);
 #endif
 	}
@@ -1727,17 +1739,18 @@ void ProfileDialog::ExplainCPUFidelity(void)
 {
 	FsGuiMessageBoxDialog *dlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiMessageBoxDialog>();
 	dlg->Make(
-		L"About CPU Fidelity",
-		L"Medium-Fidelity CPU core emulates x86 features necessary for majority of FM TOWNS applications\n"
-		L"including TownsOS and DOS6 and Fractal Engines.\n"
-		L"It skips exception handling that are not used in those applications.\n"
-		L"\n"
-		L"High-Fidelity CPU core emulates more x86 features necessary for installing and running Windows 3.1.\n"
-		L"\n"
-		L"Since High-Fidelity CPU needs to check and handle more exceptions, it is slower than Medium-Fidelity\n"
-		L"CPU core.\n"
-		L"\n"
-		L"Windows 3.1, Windows 95, Linux, and OSASK requires High-Fidelity CPU core.\n",
-		L"OK",nullptr);
+		"About CPU Fidelity",
+		ui("/profile/main/cpufidelity_info",
+		"Medium-Fidelity CPU core emulates x86 features necessary for majority of FM TOWNS applications\n"
+		"including TownsOS and DOS6 and Fractal Engines.\n"
+		"It skips exception handling that are not used in those applications.\n"
+		"\n"
+		"High-Fidelity CPU core emulates more x86 features necessary for installing and running Windows 3.1, Windows 95, and Linux.\n"
+		"\n"
+		"Since High-Fidelity CPU needs to check and handle more exceptions, it is slower than Medium-Fidelity\n"
+		"CPU core.\n"
+		"\n"
+		"Windows 3.1, Windows 95, Linux, and OSASK requires High-Fidelity CPU core.\n"),
+		"OK","");
 	AttachModalDialog(dlg);
 }
