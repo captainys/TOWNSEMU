@@ -48,9 +48,26 @@ UITXT
 
 # FM TOWNS Menu
 +/towns  FM TOWNS
++/towns/start FM TOWNS起動!
++/towns/startandclosegui FM TOWNS起動してGUIをクローズ
++/towns/reset リセット
++/towns/poweroff 電源オフ
++/towns/pause 一時停止
++/towns/resume 一時停止解除
++/towns/cpufreq CPU周波数
++/towns/keyboardmode キーボードモード
++/towns/keyboard/direct 直接モード(ゲーム等用)
++/towns/keyboard/trans1 翻訳モード(テキスト・コマンド入力用 ESC->ESC+BREAK)
++/towns/keyboard/trans2 翻訳モード(テキスト・コマンド入力用 ESC->ESC)
++/towns/keyboard/trans3 翻訳モード(テキスト・コマンド入力用 ESC->BREAK)
++/towns/savescrnshot スクリーンショットをセーブ
 
 # CD-ROM Menu
 +/cdrom    CD-ROM
++/cdrom/selectimage CDイメージファイルを選択
++/cdrom/openclose CDを開いて閉じたことにする
++/cdrom/eject 取り出したことにする
++/cdrom/stopcdda 音楽演奏停止
 
 # FD0 Menu
 +/fd0      FD0

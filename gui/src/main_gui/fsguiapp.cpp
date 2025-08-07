@@ -400,15 +400,15 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_T,ui("/towns","FM TOWNS"))->GetSubMenu();
-		subMenu->AddTextItem(0,FSKEY_S,L"Start Virtual Machine")->BindCallBack(&THISCLASS::VM_Start,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,L"Start and Close GUI")->BindCallBack(&THISCLASS::VM_StartAndCloseGUI,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,L"Reset Virtual Machine")->BindCallBack(&THISCLASS::VM_Reset,this);
-		subMenu->AddTextItem(0,FSKEY_Q,L"Power Off")->BindCallBack(&THISCLASS::VM_PowerOff,this);
-		subMenu->AddTextItem(0,FSKEY_P,L"Pause")->BindCallBack(&THISCLASS::VM_Pause,this);
-		subMenu->AddTextItem(0,FSKEY_R,L"Resume")->BindCallBack(&THISCLASS::VM_Resume,this);
+		subMenu->AddTextItem(0,FSKEY_S,ui("/towns/start","Start Virtual Machine"))->BindCallBack(&THISCLASS::VM_Start,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/startandclosegui","Start and Close GUI"))->BindCallBack(&THISCLASS::VM_StartAndCloseGUI,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/reset","Reset Virtual Machine"))->BindCallBack(&THISCLASS::VM_Reset,this);
+		subMenu->AddTextItem(0,FSKEY_Q,ui("/towns/poweroff","Power Off"))->BindCallBack(&THISCLASS::VM_PowerOff,this);
+		subMenu->AddTextItem(0,FSKEY_P,ui("/towns/pause","Pause"))->BindCallBack(&THISCLASS::VM_Pause,this);
+		subMenu->AddTextItem(0,FSKEY_R,ui("/towns/resume","Resume"))->BindCallBack(&THISCLASS::VM_Resume,this);
 
 		{
-			auto *freqSubMenu=subMenu->AddTextItem(0,FSKEY_F,L"CPU Frequency")->AddSubMenu();
+			auto *freqSubMenu=subMenu->AddTextItem(0,FSKEY_F,ui("/towns/cpufreq","CPU Frequency"))->AddSubMenu();
 			freqSubMenu->AddTextItem(0,FSKEY_1,L"1MHz")->BindCallBack(&THISCLASS::VM_1MHz,this);
 			freqSubMenu->AddTextItem(0,FSKEY_2,L"5MHz")->BindCallBack(&THISCLASS::VM_5MHz,this);
 			freqSubMenu->AddTextItem(0,FSKEY_3,L"8MHz")->BindCallBack(&THISCLASS::VM_8MHz,this);
@@ -421,14 +421,14 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		}
 
 		{
-			auto *keyboardSubMenu=subMenu->AddTextItem(0,FSKEY_K,L"Keyboard Mode")->AddSubMenu();
-			keyboardSubMenu->AddTextItem(0,FSKEY_D,L"Direct (for Gaming)")->BindCallBack(&THISCLASS::VM_Keyboard_Direct,this);
-			keyboardSubMenu->AddTextItem(0,FSKEY_T,L"Translation1 (for Typing, ESC->ESC+BREAK)")->BindCallBack(&THISCLASS::VM_Keyboard_Translation1,this);
-			keyboardSubMenu->AddTextItem(0,FSKEY_2,L"Translation2 (for Typing, ESC->ESC)")->BindCallBack(&THISCLASS::VM_Keyboard_Translation2,this);
-			keyboardSubMenu->AddTextItem(0,FSKEY_3,L"Translation3 (for Typing, ESC->BREAK)")->BindCallBack(&THISCLASS::VM_Keyboard_Translation3,this);
+			auto *keyboardSubMenu=subMenu->AddTextItem(0,FSKEY_K,ui("/towns/keyboardmode","Keyboard Mode"))->AddSubMenu();
+			keyboardSubMenu->AddTextItem(0,FSKEY_D,ui("/towns/keyboard/direct","Direct (for Gaming)"))->BindCallBack(&THISCLASS::VM_Keyboard_Direct,this);
+			keyboardSubMenu->AddTextItem(0,FSKEY_T,ui("/towns/keyboard/trans1","Translation1 (for Typing, ESC->ESC+BREAK)"))->BindCallBack(&THISCLASS::VM_Keyboard_Translation1,this);
+			keyboardSubMenu->AddTextItem(0,FSKEY_2,ui("/towns/keyboard/trans2","Translation2 (for Typing, ESC->ESC)"))->BindCallBack(&THISCLASS::VM_Keyboard_Translation2,this);
+			keyboardSubMenu->AddTextItem(0,FSKEY_3,ui("/towns/keyboard/trans3","Translation3 (for Typing, ESC->BREAK)"))->BindCallBack(&THISCLASS::VM_Keyboard_Translation3,this);
 		}
 
-		subMenu->AddTextItem(0,FSKEY_NULL,L"Save Screenshot")->BindCallBack(&THISCLASS::VM_SaveScreenshot,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/savescrnshot","Save Screenshot"))->BindCallBack(&THISCLASS::VM_SaveScreenshot,this);
 
 		{
 			auto *testSubMenu=subMenu->AddTextItem(0,FSKEY_NULL,L"Test")->AddSubMenu();
@@ -438,10 +438,10 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_C,ui("/cdrom","CD-ROM"))->GetSubMenu();
-		subMenu->AddTextItem(0,FSKEY_S,L"Select CD Image")->BindCallBack(&THISCLASS::CD_SelectImageFile,this);
-		subMenu->AddTextItem(0,FSKEY_C,L"Open and Close CD drive")->BindCallBack(&THISCLASS::CD_OpenClose,this);
-		subMenu->AddTextItem(0,FSKEY_E,L"Eject")->BindCallBack(&THISCLASS::CD_Eject,this);
-		subMenu->AddTextItem(0,FSKEY_B,L"Stop CDDA")->BindCallBack(&THISCLASS::CD_CDDAStop,this);
+		subMenu->AddTextItem(0,FSKEY_S,ui("/cdrom/selectimage","Select CD Image"))->BindCallBack(&THISCLASS::CD_SelectImageFile,this);
+		subMenu->AddTextItem(0,FSKEY_C,ui("/cdrom/openclose","Open and Close CD drive"))->BindCallBack(&THISCLASS::CD_OpenClose,this);
+		subMenu->AddTextItem(0,FSKEY_E,ui("/cdrom/eject","Eject"))->BindCallBack(&THISCLASS::CD_Eject,this);
+		subMenu->AddTextItem(0,FSKEY_B,ui("/cdrom/stopcdda","Stop CDDA"))->BindCallBack(&THISCLASS::CD_CDDAStop,this);
 	}
 
 	{
