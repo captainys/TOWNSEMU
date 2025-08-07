@@ -13,6 +13,7 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
 	set(IS_LIBRARY_PROJECT 1)
 endif()
 
+set(DATA_FILE_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/rc)
 
 #YSBEGIN "CMake Header" Ver 20170110
 # YS CMakeLists Template

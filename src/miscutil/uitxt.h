@@ -19,7 +19,7 @@ private:
 public:
 	void clear(void);
 	bool Load(std::string fileName);
-	std::string operator()(std::string tag,std::string dflt);
+	std::string operator()(std::string tag,std::string dflt) const;
 };
 
 #endif

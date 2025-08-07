@@ -31,6 +31,14 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <iostream>
 
+#ifdef _WIN32
+	#include <direct.h>
+	#define chdir _chdir
+	#define getcwd _getcwd
+#else
+	#include <unistd.h>
+#endif
+
 #include <ysclass.h>
 #include <ysport.h>
 #include <yscompilerwarning.h>
@@ -241,6 +249,24 @@ FsGuiMainCanvas::FsGuiMainCanvas()
 	mainMenu=nullptr;
 	profileDlg=new ProfileDialog(this);
 	resumeVMDlg=new ResumeVMDialog;
+
+	YsLocale locale;
+	std::string localeStr=locale.GetLanguagePart();
+	std::string langFile=localeStr+".uitxt";
+
+	std::cout << "Language=" << localeStr << "\n";
+	std::cout << "Try " << langFile << "\n";
+
+	char cwd[1024];
+	getcwd(cwd,1024);
+
+	FsChangeToProgramDir();
+	if(true==ui.Load(langFile))
+	{
+		std::cout << "Loaded "+langFile << "\n";
+	}
+
+	chdir(cwd);
 }
 
 FsGuiMainCanvas::~FsGuiMainCanvas()
@@ -260,7 +286,7 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 	srand(time(nullptr));
 
 	MakeMainMenu();
-	profileDlg->Make();
+	profileDlg->Make(ui);
 	LoadProfile(GetDefaultProfileFileName());
 	AddDialog(profileDlg);
 
@@ -293,7 +319,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	mainMenu->SetIsPullDownMenu(YSTRUE);
 
 	{
-		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_F,L"File")->GetSubMenu();
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_F,ui("/file","File"))->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_O,L"Open Profile")->BindCallBack(&THISCLASS::File_OpenProfile,this);
 		subMenu->AddTextItem(0,FSKEY_S,L"Save Profile")->BindCallBack(&THISCLASS::File_SaveProfile,this);
 		subMenu->AddTextItem(0,FSKEY_A,L"Save Profile As")->BindCallBack(&THISCLASS::File_SaveProfileAs,this);
@@ -323,13 +349,13 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
-		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_V,L"View")->GetSubMenu();
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_V,ui("/view","View"))->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_P,L"Profile Dialog")->BindCallBack(&THISCLASS::View_OpenProfileDialog,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Show Tip")->BindCallBack(&THISCLASS::View_ShowTip,this);
 	}
 
 	{
-		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_S,"State")->GetSubMenu();
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_S,ui("/state","State"))->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_S,L"Save Machine State")->BindCallBack(&THISCLASS::State_SaveState,this);
 		subMenu->AddTextItem(0,FSKEY_L,L"Load Machine State")->BindCallBack(&THISCLASS::State_LoadState,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Load Machine State and Pause")->BindCallBack(&THISCLASS::State_LoadStateAndPause,this);
@@ -373,7 +399,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
-		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_T,L"FM TOWNS")->GetSubMenu();
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_T,ui("/towns","FM TOWNS"))->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_S,L"Start Virtual Machine")->BindCallBack(&THISCLASS::VM_Start,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Start and Close GUI")->BindCallBack(&THISCLASS::VM_StartAndCloseGUI,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Reset Virtual Machine")->BindCallBack(&THISCLASS::VM_Reset,this);
@@ -411,7 +437,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
-		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_C,L"CD-ROM")->GetSubMenu();
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_C,ui("/cdrom","CD-ROM"))->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_S,L"Select CD Image")->BindCallBack(&THISCLASS::CD_SelectImageFile,this);
 		subMenu->AddTextItem(0,FSKEY_C,L"Open and Close CD drive")->BindCallBack(&THISCLASS::CD_OpenClose,this);
 		subMenu->AddTextItem(0,FSKEY_E,L"Eject")->BindCallBack(&THISCLASS::CD_Eject,this);
@@ -419,7 +445,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
-		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_0,L"FD0")->GetSubMenu();
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_0,ui("/fd0","FD0"))->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD0_SelectImageFile,this);
 		FD0_writeProtectMenu=subMenu->AddTextItem(0,FSKEY_P,L"Write Protect");
 		FD0_writeProtectMenu->BindCallBack(&THISCLASS::FD0_WriteProtect,this);
@@ -429,7 +455,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
-		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_1,L"FD1")->GetSubMenu();
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_1,ui("/fd1","FD1"))->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD1_SelectImageFile,this);
 		FD1_writeProtectMenu=subMenu->AddTextItem(0,FSKEY_P,L"Write Protect");
 		FD1_writeProtectMenu->BindCallBack(&THISCLASS::FD1_WriteProtect,this);
@@ -439,7 +465,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
-		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_D,"Devices")->GetSubMenu();
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_D,ui("/devices","Devices"))->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_0,"Game Port 0")->BindCallBack(&THISCLASS::Device_GamePort0,this);
 		subMenu->AddTextItem(0,FSKEY_1,"Game Port 1")->BindCallBack(&THISCLASS::Device_GamePort1,this);
 
@@ -469,7 +495,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
-		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_U,L"Sound")->GetSubMenu();
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_U,ui("/sound","Sound"))->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_R,"Select WAV File for PCM Sampling in the VM")->BindCallBack(&THISCLASS::Audio_SelectWAVToPCMRecording,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,"Start WAV Capture")->BindCallBack(&THISCLASS::Audio_Start_WAVCapture,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,"Stop WAV Capture")->BindCallBack(&THISCLASS::Audio_Stop_WAVCapture,this);
@@ -480,7 +506,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
-		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_A,L"Automation")->GetSubMenu();
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_A,ui("/auto","Automation"))->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_B,"Begin Recording")->BindCallBack(&THISCLASS::EventLog_StartRecording,this);
 		subMenu->AddTextItem(0,FSKEY_E,"End Recording")->BindCallBack(&THISCLASS::EventLog_EndRecording,this);
 		subMenu->AddTextItem(0,FSKEY_R,"Make Repeat")->BindCallBack(&THISCLASS::EventLog_MakeRepeat,this);
@@ -491,7 +517,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
-		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_H,L"Help")->GetSubMenu();
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_H,ui("/help","Help"))->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_H,L"Help")->BindCallBack(&THISCLASS::Help_Help,this);
 		subMenu->AddTextItem(0,FSKEY_A,L"About")->BindCallBack(&THISCLASS::Help_About,this);
 	}

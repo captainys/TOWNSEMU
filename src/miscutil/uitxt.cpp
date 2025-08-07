@@ -1,3 +1,4 @@
+#include <iostream>
 #include <fstream>
 #include "uitxt.h"
 
@@ -62,6 +63,7 @@ bool UiText::Load(std::string fileName)
 						case 2:
 							if(' '!=c && '\t'!=c)
 							{
+								msg.push_back(c);
 								++state;
 							}
 							break;
@@ -70,6 +72,9 @@ bool UiText::Load(std::string fileName)
 							break;
 						}
 					}
+
+					std::cout << '[' << tag << "]=" << msg << "\n";
+
 					textTable[tag]=msg;
 				}
 			}
@@ -79,7 +84,7 @@ bool UiText::Load(std::string fileName)
 	}
 	return false;
 }
-std::string UiText::operator()(std::string tag,std::string dflt)
+std::string UiText::operator()(std::string tag,std::string dflt) const
 {
 	auto found=textTable.find(tag);
 	if(textTable.end()==found)

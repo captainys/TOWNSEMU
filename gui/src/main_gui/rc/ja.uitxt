@@ -1,0 +1,82 @@
+UITXT
+
+# Needs to be UTF-8
+# Tags are case sensitive
+
++/ok     OK
++/cancel 取消
+
+# File Menu
++/file   ファイル
+
+
+# View Menu
++/view   表示
+
+
+# State Menu
++/state  どこでもセーブ
+
+
+# FM TOWNS Menu
++/towns  FM TOWNS
+
+# CD-ROM Menu
++/cdrom    CD-ROM
+
+# FD0 Menu
++/fd0      FD0
+
+# FD1 Menu
++/fd1      FD1
+
+# Devices Menu
++/devices  デバイス
+
+# Sound Menu
++/sound    サウンド
+
+# Automation Menu
++/auto  自動化
+
+# Help Menu
++/help        ヘルプ
+
+
+
+
+# Profile Dialog
++/profile          プロファイル
++/profile/main     主要
++/profile/main/romdir  ROMの場所
++/profile/main/browsing_inst (ファイルセレクタでは、ROMファイルのうちのひとつを選ぶことでディレクトリを指定できます。)
++/profile/main/freq_info (早すぎる周波数指定はかえってVMの実行速度を遅くする場合があります。)
++/profile/main/cpufreq CPU周波数(MHz)
++/profile/main/ramsize メモリ容量(MB)
++/profile/main/enable387 浮動小数点演算プロセッサ有効
++/profile/main/cpufidelity CPUの再現性
++/profile/main/whatsfidelity 何これ?
++/profile/main/pretend386dx 80386DXのふりをする(Towns OS V2.1 L10等用)
++/profile/main/cdimage CDイメージファイル
++/profile/main/cdspeed CDスピード
++/profile/main/writeprotect 書込禁止
++/profile/main/scaling 表示倍率(%)
++/profile/main/autoscaling ウィンドウに合わせて倍率を調節する
++/profile/main/maintainaspect 縦横比を維持する
++/profile/main/model モデル
++/profile/main/scanline 15KHz画面モードでスキャンライン効果
++/profile/main/damperwireline ダンパーワイヤー線を表示してトリニトロン管を懐かしむ
++/profile/main/loadstate 保存したステートから開始
+
++/profile/rs232c   RS232C
++/profile/scsi     SCSI
++/profile/gameport ジョイスティックポート
++/profile/keyboard1 キーボード1
++/profile/keyboard2 キーボード2
++/profile/sound     サウンド
++/profile/boot      起動
++/profile/advanced  詳細
++/profile/mouse_by_flightstick 操縦桿でマウス
++/profile/application  アプリ別
++/profile/hotkeys  ショートカットキー
++/profile/tgdrv    ファイル共有

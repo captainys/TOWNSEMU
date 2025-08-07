@@ -114,44 +114,47 @@ ProfileDialog::ProfileDialog(FsGuiMainCanvas *canvasPtr)
 	this->canvasPtr=canvasPtr;
 }
 
-void ProfileDialog::Make(void)
+void ProfileDialog::Make(const UiText &ui)
 {
 	const int nShowPath=PATH_SHOW;
 
-	profileFNameTxt=AddStaticText(0,FSKEY_NULL,L"PROFILE",YSFALSE);
+	profileFNameTxt=AddStaticText(0,FSKEY_NULL,ui("/profile","PROFILE"),YSFALSE);
 
 	tab=AddTabControl(0,FSKEY_NULL,YSTRUE);
 
 	int mainTabId=0;
 	{
-		auto tabId=AddTab(tab,"Main");
+		auto tabId=AddTab(tab,ui("/profile/main","Main"));
 		mainTabId=tabId;
 		BeginAddTabItem(tab,tabId);
 
-		ROMDirBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"ROM dir:",YSTRUE);
+		ROMDirBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,ui("/profile/main/romdir","ROM dir:"),YSTRUE);
 		ROMDirTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
 		ROMDirTxt->SetLengthLimit(PATH_LENGTH);
-		AddStaticText(0,FSKEY_NULL,"(When browsing for the ROM dir, please select one of the ROM files.)",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,
+		    ui("/profile/main/browsing_inst","(When browsing for the ROM dir, please select one of the ROM files.)"),YSTRUE);
 
-		CPUFreqTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"CPU Speed (MHz)",4,YSTRUE);
+		CPUFreqTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,ui("/profile/main/cpufreq","CPU Speed (MHz)"),4,YSTRUE);
 		CPUFreqTxt->SetInteger(25);
-		AddStaticText(0,FSKEY_NULL,"(Too-fast frequency rather slows down VM)",YSFALSE);
-		RAMSizeTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"RAM (MB)",4,YSFALSE);
-		RAMSizeTxt->SetInteger(4);
-		FPUBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Enable 80387 FPU",YSFALSE);
+		AddStaticText(0,FSKEY_NULL,
+		    ui("/profile/main/freq_info","(Too-fast frequency rather slows down VM)"),YSFALSE);
 
-		AddStaticText(0,FSKEY_NULL,"CPU Fidelity:",YSTRUE);
+		RAMSizeTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,ui("/profile/main/ramsize","RAM (MB)"),4,YSFALSE);
+		RAMSizeTxt->SetInteger(4);
+		FPUBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/main/enable387","Enable 80387 FPU"),YSFALSE);
+
+		AddStaticText(0,FSKEY_NULL,ui("/profile/main/cpufidelity","CPU Fidelity:"),YSTRUE);
 		CPUFidelityDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,20,20,YSFALSE);
 		CPUFidelityDrp->AddString(i486DXCommon::FidelityLevelToStr(i486DXCommon::MID_FIDELITY).c_str(),YSTRUE);
 		CPUFidelityDrp->AddString(i486DXCommon::FidelityLevelToStr(i486DXCommon::HIGH_FIDELITY).c_str(),YSFALSE);
-		CPUFidelityHelpBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"What's this?",YSFALSE);
-		pretend386DXBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Pretend 80386DX (for TownsOS V2.1 L10 etc.)",YSFALSE);
+		CPUFidelityHelpBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,ui("/profile/main/whatsfidelity","What's this?"),YSFALSE);
+		pretend386DXBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/main/pretend386dx","Pretend 80386DX (for TownsOS V2.1 L10 etc.)"),YSFALSE);
 
-		CDImgBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"CD Image:",YSTRUE);
+		CDImgBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,ui("/profile/main/cdimage","CD Image:"),YSTRUE);
 		CDImgTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
 		CDImgTxt->SetLengthLimit(PATH_LENGTH);
 
-		AddStaticText(0,FSKEY_NULL,"CD Speed",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/main/cdspeed","CD Speed"),YSTRUE);
 		CDSpeedDrp=AddEmptyDropList(0,FSKEY_NULL,"",16,8,8,YSFALSE);
 		CDSpeedDrp->AddString("Default",YSTRUE);
 		CDSpeedDrp->AddString("1X",YSFALSE);
@@ -164,27 +167,27 @@ void ProfileDialog::Make(void)
 		CDSpeedDrp->AddString("8X",YSFALSE);
 
 		FDImgBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"FD0:",YSTRUE);
-		FDWriteProtBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Write Protect",YSFALSE);
+		FDWriteProtBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/main/writeprotect","Write Protect"),YSFALSE);
 		FDImgTxt[0]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath-24,YSFALSE);
 		FDImgTxt[0]->SetLengthLimit(PATH_LENGTH);
 
 		FDImgBtn[1]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"FD1:",YSTRUE);
-		FDWriteProtBtn[1]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Write Protect",YSFALSE);
+		FDWriteProtBtn[1]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/main/writeprotect","Write Protect"),YSFALSE);
 		FDImgTxt[1]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath-24,YSFALSE);
 		FDImgTxt[1]->SetLengthLimit(PATH_LENGTH);
 
-		scrnScaleTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,L"Scaling(%):",4,YSTRUE);
+		scrnScaleTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,ui("/profile/main/scaling","Scaling(%):"),4,YSTRUE);
 		scrnScaleTxt->SetLengthLimit(PATH_LENGTH);
 		scrnScaleTxt->SetInteger(100);
 
-		scrnAutoScaleBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Auto Scaling (Fit to Window Size)",YSTRUE);
+		scrnAutoScaleBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/main/autoscaling","Auto Scaling (Fit to Window Size)"),YSTRUE);
 		scrnModeDrp=AddEmptyDropList(0,FSKEY_NULL,"",4,20,20,YSFALSE);
 		scrnModeDrp->AddString("NORMAL WINDOW",YSTRUE);
 		scrnModeDrp->AddString("MAXIMIZE",YSFALSE);
 		scrnModeDrp->AddString("FULL SCREEN",YSFALSE);
-		scrnMaintainAspectBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Maintain Aspect Ratio",YSFALSE);
+		scrnMaintainAspectBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/main/maintainaspect","Maintain Aspect Ratio"),YSFALSE);
 
-		AddStaticText(0,FSKEY_NULL,"Model:",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/main/model","Model:"),YSTRUE);
 
 		townsTypeDrp=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSFALSE);
 		townsTypeDrp->AddString("Unspecified",YSTRUE);
@@ -204,17 +207,19 @@ void ProfileDialog::Make(void)
 		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_HC).c_str(),YSFALSE);
 		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_MARTY).c_str(),YSFALSE);
 
-		scanLineEffectIn15KHzBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Scanline Effect (Only 15khz Screen)",YSFALSE);
-		damperWireLineBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Render Damper-Wire Line (to make you nostalgic)",YSFALSE);
+		scanLineEffectIn15KHzBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,
+		    ui("/profile/main/scanline","Scanline Effect (Only 15khz Screen)"),YSFALSE);
+		damperWireLineBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,
+		    ui("/profile/main/damperwireline","Render Damper-Wire Line (to make you nostalgic)"),YSFALSE);
 
-		startUpStateFNameBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Load VM State",YSTRUE);
+		startUpStateFNameBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,ui("/profile/main/loadstate","Load VM State"),YSTRUE);
 		startUpStateFNameTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
 
 		EndAddTabItem();
 	}
 
 	{
-		auto tabId=AddTab(tab,"RS232C");
+		auto tabId=AddTab(tab,ui("/profile/rs232c","RS232C"));
 		BeginAddTabItem(tab,tabId);
 
 		AddStaticText(0,FSKEY_NULL,"RS232C to TCP/IP Forwarding.",YSTRUE);
@@ -229,7 +234,7 @@ void ProfileDialog::Make(void)
 	}
 
 	{
-		auto tabId=AddTab(tab,"SCSI");
+		auto tabId=AddTab(tab,ui("/profile/scsi","SCSI"));
 		BeginAddTabItem(tab,tabId);
 
 		HDImgBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"HD0:",YSTRUE);
@@ -266,7 +271,7 @@ void ProfileDialog::Make(void)
 	}
 
 	{
-		auto tabId=AddTab(tab,"GamePort");
+		auto tabId=AddTab(tab,ui("/profile/gameport","GamePort"));
 		BeginAddTabItem(tab,tabId);
 
 		for(int i=0; i<2; ++i)
@@ -318,7 +323,7 @@ void ProfileDialog::Make(void)
 	}
 
 	{
-		auto tabId=AddTab(tab,"Keyboard1");
+		auto tabId=AddTab(tab,ui("/profile/keyboard1","Keyboard1"));
 		BeginAddTabItem(tab,tabId);
 
 		AddStaticText(0,FSKEY_NULL,"Keyboard Mode (TRANS1:ESC->ESC+BREAK, TRANS2:ESC->ESC, TRANS3:ESC->BREAK):",YSTRUE);
@@ -378,7 +383,7 @@ void ProfileDialog::Make(void)
 	}
 	
 	{
-		auto tabId=AddTab(tab,"Keyboard2");
+		auto tabId=AddTab(tab,ui("/profile/keyboard2","Keyboard2"));
 		BeginAddTabItem(tab,tabId);
 		
 		AddStaticText(0,FSKEY_NULL,"Virtual Keys:",YSTRUE);
@@ -435,7 +440,7 @@ void ProfileDialog::Make(void)
 	}
 
 	{
-		auto tabId=AddTab(tab,"Sound");
+		auto tabId=AddTab(tab,ui("/profile/sound","Sound"));
 		BeginAddTabItem(tab,tabId);
 
 		AddStaticText(0,FSKEY_NULL,"FM Volume",YSTRUE);
@@ -467,7 +472,7 @@ void ProfileDialog::Make(void)
 	}
 
 	{
-		auto tabId=AddTab(tab,"Boot");
+		auto tabId=AddTab(tab,ui("/profile/boot","Boot"));
 		BeginAddTabItem(tab,tabId);
 
 		AddStaticText(0,FSKEY_NULL,"Boot Option:",YSTRUE);
@@ -494,7 +499,7 @@ void ProfileDialog::Make(void)
 	}
 
 	{
-		auto tabId=AddTab(tab,"Advanced");
+		auto tabId=AddTab(tab,ui("/profile/advanced","Advanced"));
 		BeginAddTabItem(tab,tabId);
 		catchUpRealTimeBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Catch Up Real Time (Recommended OFF for ChaseHQ)",YSTRUE);
 
@@ -523,7 +528,7 @@ void ProfileDialog::Make(void)
 	}
 
 	{
-		auto tabId=AddTab(tab,"Mouse by Flight Joystick");
+		auto tabId=AddTab(tab,ui("/profile/mouse_by_flightstick","Mouse by Flight Joystick"));
 		BeginAddTabItem(tab,tabId);
 
 		flightMouseEnableBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Use Mouse by Flight Joystick",YSTRUE);
@@ -599,7 +604,7 @@ void ProfileDialog::Make(void)
 	}
 
 	{
-		auto tabId=AddTab(tab,"Application");
+		auto tabId=AddTab(tab,ui("/profile/application","Application"));
 		BeginAddTabItem(tab,tabId);
 
 		AddStaticText(0,FSKEY_NULL,L"Application-Specific Augmentation",YSTRUE);
@@ -625,7 +630,7 @@ void ProfileDialog::Make(void)
 	}
 
 	{
-		auto tabId=AddTab(tab,"Hot Keys");
+		auto tabId=AddTab(tab,ui("/profile/hotkeys","Hot Keys"));
 		BeginAddTabItem(tab,tabId);
 
 		AddStaticText(0,FSKEY_NULL,"Pause/Resume(MENU on/off):",YSTRUE);
@@ -665,7 +670,7 @@ void ProfileDialog::Make(void)
 	}
 
 	{
-		auto tabId=AddTab(tab,"TGDRV");
+		auto tabId=AddTab(tab,ui("/profile/tgdrv","TGDRV"));
 		BeginAddTabItem(tab,tabId);
 
 		for(int i=0; i<MAX_NUM_SHARED_DIR; ++i)

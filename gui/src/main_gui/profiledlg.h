@@ -8,6 +8,7 @@
 #include "fsguifiledialog.h"
 
 #include "townsprofile.h"
+#include "uitxt.h"
 
 class ProfileDialog : public FsGuiDialog
 {
@@ -114,7 +115,7 @@ public:
 
 	ProfileDialog(FsGuiMainCanvas *canvasPtr);
 
-	void Make(void);
+	void Make(const UiText &ui);
 
 	void OnSliderPositionChange(FsGuiSlider *slider,const double &prevPos,const double &prevValue);
 
