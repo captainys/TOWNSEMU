@@ -32,11 +32,19 @@ UITXT
 
 # View Menu
 +/view   表示
-
++/view/profiledialog プロファイルダイアログ
++/view/showtip 使い方のヒントを表示
 
 # State Menu
 +/state  どこでもセーブ
-
++/state/save ステートセーブ
++/state/load ステートロード
++/state/loadandpause ステートロードして一時停止
++/state/loadlaststate 最後に読み込んだステートをロード
++/state/loadlaststateandpause 最後に読み込んだステートをロードして一時停止
++/state/savetomem メモリにステートセーブ
++/state/loadfrommem メモリからステートロード
++/state/loadfrommemandpause メモリからステートロードして一時停止
 
 # FM TOWNS Menu
 +/towns  FM TOWNS

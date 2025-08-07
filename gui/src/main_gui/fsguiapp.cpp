@@ -350,21 +350,21 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_V,ui("/view","View"))->GetSubMenu();
-		subMenu->AddTextItem(0,FSKEY_P,L"Profile Dialog")->BindCallBack(&THISCLASS::View_OpenProfileDialog,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,L"Show Tip")->BindCallBack(&THISCLASS::View_ShowTip,this);
+		subMenu->AddTextItem(0,FSKEY_P,ui("/view/profiledialog","Profile Dialog"))->BindCallBack(&THISCLASS::View_OpenProfileDialog,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/view/showtip","Show Tip"))->BindCallBack(&THISCLASS::View_ShowTip,this);
 	}
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_S,ui("/state","State"))->GetSubMenu();
-		subMenu->AddTextItem(0,FSKEY_S,L"Save Machine State")->BindCallBack(&THISCLASS::State_SaveState,this);
-		subMenu->AddTextItem(0,FSKEY_L,L"Load Machine State")->BindCallBack(&THISCLASS::State_LoadState,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,L"Load Machine State and Pause")->BindCallBack(&THISCLASS::State_LoadStateAndPause,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,L"Load Last Machine State")->BindCallBack(&THISCLASS::State_LoadLastState,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,L"Load Last Machine State and Pause")->BindCallBack(&THISCLASS::State_LoadLastStateAndPause,this);
+		subMenu->AddTextItem(0,FSKEY_S,ui("/state/save","Save Machine State"))->BindCallBack(&THISCLASS::State_SaveState,this);
+		subMenu->AddTextItem(0,FSKEY_L,ui("/state/load","Load Machine State"))->BindCallBack(&THISCLASS::State_LoadState,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/state/loadandpause","Load Machine State and Pause"))->BindCallBack(&THISCLASS::State_LoadStateAndPause,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/state/loadlaststate","Load Last Machine State"))->BindCallBack(&THISCLASS::State_LoadLastState,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/state/loadlaststateandpause","Load Last Machine State and Pause"))->BindCallBack(&THISCLASS::State_LoadLastStateAndPause,this);
 
-		auto savememm=subMenu->AddTextItem(0,FSKEY_A,L"Save Machine State to Memory");
-		auto loadmemm=subMenu->AddTextItem(0,FSKEY_O,L"Load Machine State from Memory");
-		auto loadmempm=subMenu->AddTextItem(0,FSKEY_D,L"Load Machine State from Memory and Pause");
+		auto savememm=subMenu->AddTextItem(0,FSKEY_A,ui("/state/savetomem","Save Machine State to Memory"));
+		auto loadmemm=subMenu->AddTextItem(0,FSKEY_O,ui("/state/loadfrommem","Load Machine State from Memory"));
+		auto loadmempm=subMenu->AddTextItem(0,FSKEY_D,ui("/state/loadfrommemandpause","Load Machine State from Memory and Pause"));
 
 		auto savemem=savememm->AddSubMenu();
 		auto loadmem=loadmemm->AddSubMenu();
