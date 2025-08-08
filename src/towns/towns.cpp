@@ -444,6 +444,13 @@ void FMTownsCommon::AppSpecificSetup(Outside_World *outside_world,const TownsSta
 			gameport.state.ports[1].device=TOWNS_GAMEPORTEMU_NONE;
 		}
 		break;
+	case TOWNS_APPSPECIFIC_ROCKETRANGER:
+		// Need to prevent the opening movie ending before the opening music.
+		state.currentFreq=std::min<unsigned int>(5,state.currentFreq);
+		var.slowModeFreq=state.currentFreq;
+		state.fastModeFreq=state.currentFreq;
+		cdrom.state.readSectorTime=TOWNS_CD_READ_SECTOR_TIME_1X;
+		break;
 	}
 }
 

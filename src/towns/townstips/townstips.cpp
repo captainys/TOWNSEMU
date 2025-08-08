@@ -52,13 +52,12 @@ std::vector <std::string> TownsTips::GetTips(void)
 	);
 
 	tips.push_back(
-		"Tsugaru supports Windows 3.1, Windows 95, Linux, and OSASK.  To use those\n"
-		"operating systems, please check 'High-Fidelity Mode' option.  Many of the\n"
-		"80386's protection features are unnecessary for running majority of\n"
-		"Towns-OS games, so Tsugaru runs faster with this option turned off.\n"
-		"However, other operating systems, namely pre-emptive multi-tasking\n"
-		"operating systems, require those CPU features, which will be enabled\n"
-		"with 'High-Fidelity Mode' option.\n"
+		"Tsugaru supports Windows 3.1, Windows 95, Linux, and OSASK in addition to Towns OS.\n"
+		"To use those operating systems, please check 'High-Fidelity Mode' option.  Many of\n"
+		"the 80386's protection features are unnecessary for running majority of Towns-OS \n"
+		"games, so Tsugaru runs faster with this option turned off.  However, other operating\n"
+		"systems, namely pre-emptive multi-tasking operating systems, require those CPU \n"
+		"features, which will be enabled with 'High-Fidelity Mode' option."
 	);
 
 	tips.push_back(
@@ -76,6 +75,17 @@ std::vector <std::string> TownsTips::GetTips(void)
 		"used for generating your .CUE file may be using a different interpretation\n"
 		"from Tsugaru.  Consider using .MDS or .CCD.  If your .CUE file does not\n"
 		"have a PREGAP keyword, your .CUE file should be ok.\n"
+	);
+
+	tips.push_back(
+		"Rocket Ranger crashes unless you specify slow CPU speed.  What happens is the\n"
+		"opening movie ends before the opening music play back.  However, sound driver\n"
+		"will not be correctly terminated unless the opening music plays all the way.\n"
+		"Therefore, the sound driver crashes.  Miraculously the game itself continues,\n"
+		"but with no music because the sound driver crashed.\n"
+		"To prevent crash, please select CPU speed 4 to 5MHz\n"
+		"Because of this bug, I did not know Rocket Ranger had such a great soundtrack\n"
+		"until 2024.\n"
 	);
 
 	return tips;

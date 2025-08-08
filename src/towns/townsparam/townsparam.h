@@ -66,7 +66,7 @@ public:
 
 	bool catchUpRealTime=true;
 
-	bool damperWireLine=false;
+	bool damperWireLine=true;
 	bool scanLineEffectIn15KHz=false;
 
 	// If not "", VM starts from this saved state.

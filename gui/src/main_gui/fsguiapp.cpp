@@ -498,24 +498,24 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_U,ui("/sound","Sound"))->GetSubMenu();
-		subMenu->AddTextItem(0,FSKEY_R,"Select WAV File for PCM Sampling in the VM")->BindCallBack(&THISCLASS::Audio_SelectWAVToPCMRecording,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,"Start WAV Capture")->BindCallBack(&THISCLASS::Audio_Start_WAVCapture,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,"Stop WAV Capture")->BindCallBack(&THISCLASS::Audio_Stop_WAVCapture,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,"Save Captured WAV")->BindCallBack(&THISCLASS::Audio_Save_WAVCapture,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,"Start VGM Capture")->BindCallBack(&THISCLASS::Audio_Start_VGMCapture,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,"Stop VGM Capture")->BindCallBack(&THISCLASS::Audio_Stop_VGMCapture,this);
-		subMenu->AddTextItem(0,FSKEY_NULL,"Save Captured VGM")->BindCallBack(&THISCLASS::Audio_Save_VGMCapture,this);
+		subMenu->AddTextItem(0,FSKEY_R,ui("/sound/selectwavforsampling","Select WAV File for PCM Sampling in the VM"))->BindCallBack(&THISCLASS::Audio_SelectWAVToPCMRecording,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/sound/startwavcapture","Start WAV Capture"))->BindCallBack(&THISCLASS::Audio_Start_WAVCapture,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/sound/stopwavcapture","Stop WAV Capture"))->BindCallBack(&THISCLASS::Audio_Stop_WAVCapture,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/sound/savewavcapture","Save Captured WAV"))->BindCallBack(&THISCLASS::Audio_Save_WAVCapture,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/sound/startvgmcapture","Start VGM Capture"))->BindCallBack(&THISCLASS::Audio_Start_VGMCapture,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/sound/stopvtmcapture","Stop VGM Capture"))->BindCallBack(&THISCLASS::Audio_Stop_VGMCapture,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/sound/savevgmcapture","Save Captured VGM"))->BindCallBack(&THISCLASS::Audio_Save_VGMCapture,this);
 	}
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_A,ui("/auto","Automation"))->GetSubMenu();
-		subMenu->AddTextItem(0,FSKEY_B,"Begin Recording")->BindCallBack(&THISCLASS::EventLog_StartRecording,this);
-		subMenu->AddTextItem(0,FSKEY_E,"End Recording")->BindCallBack(&THISCLASS::EventLog_EndRecording,this);
-		subMenu->AddTextItem(0,FSKEY_R,"Make Repeat")->BindCallBack(&THISCLASS::EventLog_MakeRepeat,this);
-		subMenu->AddTextItem(0,FSKEY_P,"Play Back")->BindCallBack(&THISCLASS::EventLog_Replay,this);
-		subMenu->AddTextItem(0,FSKEY_A,"Stop Play Back")->BindCallBack(&THISCLASS::EventLog_Stop,this);
-		subMenu->AddTextItem(0,FSKEY_S,"Save Recording")->BindCallBack(&THISCLASS::EventLog_Save,this);
-		subMenu->AddTextItem(0,FSKEY_O,"Open Recording")->BindCallBack(&THISCLASS::EventLog_Open,this);
+		subMenu->AddTextItem(0,FSKEY_B,ui("/auto/beginrecording","Begin Recording"))->BindCallBack(&THISCLASS::EventLog_StartRecording,this);
+		subMenu->AddTextItem(0,FSKEY_E,ui("/auto/endrecording","End Recording"))->BindCallBack(&THISCLASS::EventLog_EndRecording,this);
+		subMenu->AddTextItem(0,FSKEY_R,ui("/auto/makerepeat","Make Repeat"))->BindCallBack(&THISCLASS::EventLog_MakeRepeat,this);
+		subMenu->AddTextItem(0,FSKEY_P,ui("/auto/playback","Play Back"))->BindCallBack(&THISCLASS::EventLog_Replay,this);
+		subMenu->AddTextItem(0,FSKEY_A,ui("/auto/stopplayback","Stop Play Back"))->BindCallBack(&THISCLASS::EventLog_Stop,this);
+		subMenu->AddTextItem(0,FSKEY_S,ui("/auto/saverecording","Save Recording"))->BindCallBack(&THISCLASS::EventLog_Save,this);
+		subMenu->AddTextItem(0,FSKEY_O,ui("/auto/openrecording","Open Recording"))->BindCallBack(&THISCLASS::EventLog_Open,this);
 	}
 
 	{
@@ -1725,7 +1725,7 @@ public:
 
 	FsGuiMainCanvas *owner;
 	FsGuiButton *closeBtn,*showOnStartUpBtn;
-	void Make(void)
+	void Make(const UiText &ui)
 	{
 		SetTopLeftCorner(16,16);
 
@@ -1734,12 +1734,18 @@ public:
 		{
 			i=0;
 		}
+
 		if(i<tips.size())
 		{
-			AddStaticText(0,FSKEY_NULL,tips[i].c_str(),YSTRUE);
+			char uiTag[256];
+			sprintf(uiTag,"/tip%d",i);
+
+			auto tip=ui(uiTag,tips[i]);
+
+			AddStaticText(0,FSKEY_NULL,tip,YSTRUE);
 		}
-		closeBtn=AddTextButton(0,FSKEY_ENTER,FSGUI_PUSHBUTTON,"Close",YSTRUE);
-		showOnStartUpBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Show a Tip on Start Up.",YSTRUE);
+		closeBtn=AddTextButton(0,FSKEY_ENTER,FSGUI_PUSHBUTTON,ui("/close","Close"),YSTRUE);
+		showOnStartUpBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/showtip/showtiponstartup","Show a Tip on Start Up."),YSTRUE);
 
 		TownsOptions opt;
 		YsString optionFile;
@@ -1783,7 +1789,7 @@ void FsGuiMainCanvas::View_ShowTip(FsGuiPopUpMenuItem *)
 		auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <View_ShowTipsDialog>();
 		dlg->owner=this;
 		dlg->i=rand()%tips.size();
-		dlg->Make();
+		dlg->Make(ui);
 		AttachModalDialog(dlg);
 	}
 }
