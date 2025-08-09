@@ -5,6 +5,8 @@ UITXT
 
 +/ok     OK
 +/cancel 取消
++/yes    はい
++/no     いいえ
 +/close 閉じる
 +/browse ファイルダイアログで選ぶ
 +/setdefault 初期値に戻す
@@ -12,6 +14,18 @@ UITXT
 +/button ボタン
 +/axis 軸
 +/none 無
+
+
++/overwritedefault デフォルトプロファイルを更新しますか?
++/overwriteprofile プロファイルを上書きしますか?
++/overwritekeymap キー割り当てファイルを上書きしますか?
++/confirmexit 津軽を終了しますか?
+
+
++/error/vmnotrunning この機能はFM TOWNS仮想マシン実行中に使用可能です。
++/error/vmalreadyrunning 既にFM TOWNS仮想マシンが実行中です。\n新しいセッションを開始するには、まず現在実行中の仮想マシンを終了してください。
++/error/loadprofile プロファイルの読み込みに失敗しました。
+
 
 # File Menu
 +/file   ファイル
@@ -115,7 +129,6 @@ UITXT
 
 
 
-
 # Profile Dialog
 +/profile          プロファイル
 +/profile/main     主要
@@ -167,7 +180,7 @@ UITXT
 +/profile/keyboard1/button ボタン
 
 +/profile/keyboard2 キーボード2
-+/profile/keyboard2/keymappingfile キーマッピングファイル(ファイルメニューの新規作成でテンプレートを作成できます)
++/profile/keyboard2/keymappingfile キー割り当てファイル(ファイルメニューの新規作成でテンプレートを作成できます)
 
 +/profile/sound     サウンド
 +/profile/sound/fmvolume FM音源音量

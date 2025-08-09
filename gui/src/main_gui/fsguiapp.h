@@ -50,6 +50,15 @@ private:
 	};
 
 public:
+	class GUIOptions
+	{
+	public:
+		bool localization=true;
+
+		bool RecognizeArguments(int ac,char *av[]);
+	};
+
+
 	/*! Main menu.  MainMenu is created in MakeMainMenu function, which is called 
 	    from the constructor.
 	*/

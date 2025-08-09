@@ -243,30 +243,31 @@ static const unsigned int selectableGameportDevices[]=
 
 ////////////////////////////////////////////////////////////
 
+bool FsGuiMainCanvas::GUIOptions::RecognizeArguments(int ac,char *av[])
+{
+	for(int i=1; i<ac; ++i)
+	{
+		std::string arg=av[i];
+		if("-en"==arg)
+		{
+			localization=false;
+		}
+		else
+		{
+			std::cout << "Unrecognized paramter " << av[i] << "\n";
+		}
+	}
+	return true;
+}
+
+////////////////////////////////////////////////////////////
+
 FsGuiMainCanvas::FsGuiMainCanvas()
 {
 	appMustTerminate=YSFALSE;
 	mainMenu=nullptr;
 	profileDlg=new ProfileDialog(this);
 	resumeVMDlg=new ResumeVMDialog;
-
-	YsLocale locale;
-	std::string localeStr=locale.GetLanguagePart();
-	std::string langFile=localeStr+".uitxt";
-
-	std::cout << "Language=" << localeStr << "\n";
-	std::cout << "Try " << langFile << "\n";
-
-	char cwd[1024];
-	getcwd(cwd,1024);
-
-	FsChangeToProgramDir();
-	if(true==ui.Load(langFile))
-	{
-		std::cout << "Loaded "+langFile << "\n";
-	}
-
-	chdir(cwd);
 }
 
 FsGuiMainCanvas::~FsGuiMainCanvas()
@@ -284,6 +285,30 @@ FsGuiMainCanvas::~FsGuiMainCanvas()
 void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 {
 	srand(time(nullptr));
+
+	GUIOptions GUIopt;
+	GUIopt.RecognizeArguments(argc,argv);
+
+	if(true==GUIopt.localization)
+	{
+		YsLocale locale;
+		std::string localeStr=locale.GetLanguagePart();
+		std::string langFile=localeStr+".uitxt";
+
+		std::cout << "Language=" << localeStr << "\n";
+		std::cout << "Try " << langFile << "\n";
+
+		char cwd[1024];
+		getcwd(cwd,1024);
+
+		FsChangeToProgramDir();
+		if(true==ui.Load(langFile))
+		{
+			std::cout << "Loaded "+langFile << "\n";
+		}
+
+		chdir(cwd);
+	}
 
 	MakeMainMenu();
 	profileDlg->Make(ui);
@@ -1093,7 +1118,7 @@ std::vector <YsWString> FsGuiMainCanvas::CheckMissingROMFiles(void) const
 void FsGuiMainCanvas::VM_Not_Running_Error(void)
 {
 	auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
-	dlg->Make(L"Error!",L"Virtual Machine is not runnnig.",L"OK",nullptr);
+	dlg->Make("Error!",ui("/error/vmnotrunning","Virtual Machine is not runnnig."),"OK");
 	AttachModalDialog(dlg);
 }
 
@@ -1101,10 +1126,11 @@ void FsGuiMainCanvas::VM_Already_Running_Error(void)
 {
 	auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
 	dlg->Make(
-	    L"Error!",
-	    L"Virtual Machine is already runnnig.\n"
-	    L"Close the Virtual Machine before starting a new session.",
-	    L"OK",nullptr);
+	    "Error!",
+	    ui("/error/vmalreadyrunning",
+	    "Virtual Machine is already runnnig.\n"
+	    "Close the Virtual Machine before starting a new session."),
+	    "OK");
 	AttachModalDialog(dlg);
 }
 
@@ -1118,7 +1144,7 @@ void FsGuiMainCanvas::File_SaveDefaultProfile(FsGuiPopUpMenuItem *)
 {
 	auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialogWithPayload<YsWString> >();
 	dlg->payload=L""; // Not used.
-	dlg->Make(L"Overwrite Default",L"Are you sure?",L"Yes",L"No");
+	dlg->Make(ui("/overwritedefault","Overwrite Default"),"Are you sure?",ui("/yes","Yes"),ui("/no","No"));
 	dlg->BindCloseModalCallBack(&FsGuiMainCanvas::File_SaveDefaultConfirm,this);
 	AttachModalDialog(dlg);
 }
@@ -1200,7 +1226,7 @@ void FsGuiMainCanvas::File_SaveProfileAs_FileSelected(FsGuiDialog *dlg,int retur
 		{
 			auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialogWithPayload<YsWString> >();
 			dlg->payload=fName;
-			dlg->Make(L"Overwrite Default",L"Are you sure?",L"Yes",L"No");
+			dlg->Make(ui("/overwriteprofile","Overwrite Profile"),"Are you sure?",ui("/yes","Yes"),ui("/no","No"));
 			dlg->BindCloseModalCallBack(&FsGuiMainCanvas::File_SaveProfileAs_OverwriteConfirm,this);
 			AttachModalDialog(dlg);
 		}
@@ -1246,7 +1272,7 @@ void FsGuiMainCanvas::File_MakeDefaultKeyMappingFile_Selected(FsGuiDialog *dlg,i
 		{
 			auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialogWithPayload<YsWString> >();
 			dlg->payload=fName;
-			dlg->Make(L"Overwrite Default",L"Are you sure?",L"Yes",L"No");
+			dlg->Make(ui("/overwritekeymap","Overwrite Key Mapping File"),"Are you sure?",ui("/yes","Yes"),ui("/no","No"));
 			dlg->BindCloseModalCallBack(&FsGuiMainCanvas::File_MakeDefaultKeyMappingFile_OverwriteConfirm,this);
 			AttachModalDialog(dlg);
 		}
@@ -1322,9 +1348,7 @@ void FsGuiMainCanvas::LoadProfile(YsWString fName)
 		else
 		{
 			auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
-			YsWString errMsg;
-			errMsg.SetUTF8String(profile.errorMsg.c_str());
-			dlg->Make(L"Profile Load Error",errMsg,L"OK",nullptr);
+			dlg->Make(ui("/error/loadprofile","Profile Load Error"),profile.errorMsg,"OK");
 			AttachModalDialog(dlg);
 		}
 
@@ -1378,7 +1402,7 @@ YsWString FsGuiMainCanvas::GetOptionFileName(void) const
 void FsGuiMainCanvas::File_Exit(FsGuiPopUpMenuItem *)
 {
 	auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
-	msgDlg->Make(L"Confirm Exit?",L"Confirm Exit?",L"Yes",L"No");
+	msgDlg->Make(ui("/confirmexit","Confirm Exit?"),"Confirm Exit?",ui("/yes","Yes"),ui("/no","No"));
 	msgDlg->BindCloseModalCallBack(&THISCLASS::File_Exit_ConfirmExitCallBack,this);
 	AttachModalDialog(msgDlg);
 }
