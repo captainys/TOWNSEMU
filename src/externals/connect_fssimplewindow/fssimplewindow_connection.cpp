@@ -13,6 +13,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <stdio.h>
+#ifdef _WIN32
+	#include <direct.h>
+	#define chdir _chdir
+	#define getcwd _getcwd
+#else
+	#include <unistd.h>
+#endif
 
 #include "fssimplewindow.h"
 #include "fssimplewindow_connection.h"
@@ -56,6 +63,23 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 {
 	delete [] FSKEYtoTownsKEY;
 	delete [] FSKEYState;
+}
+
+std::string FsSimpleWindowConnection::GetProgramResourceDirectory(void) const
+{
+	std::string RCDIR;
+
+	char cwd[1024];
+	getcwd(cwd,1024);
+
+	FsChangeToProgramDir();
+	char rcdir[1024];
+	getcwd(rcdir,1024);
+	RCDIR=rcdir;
+
+	chdir(cwd);
+
+	return RCDIR;
 }
 
 /* virtual */ std::vector <std::string> FsSimpleWindowConnection::MakeDefaultKeyMappingText(void) const

@@ -161,6 +161,15 @@ public:
 	Outside_World();
 	virtual ~Outside_World();
 
+	// Directories
+	/*! This function must return the directory where the executable is saved in Windows and Linux,
+	    /Contents/Resources sub-diretory of the application bundle in macOS.
+	    The returned string is in the system-encoding, which doesn't matter in macOS and Linux,
+	    but may matter in Windows until shift-JIS is eradicated.
+	*/
+	virtual std::string GetProgramResourceDirectory(void) const=0;
+
+
 	virtual void Start(void)=0;
 	virtual void Stop(void)=0;
 	virtual void DevicePolling(class FMTownsCommon &towns)=0;

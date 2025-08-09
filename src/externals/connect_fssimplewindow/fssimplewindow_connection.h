@@ -106,6 +106,8 @@ public:
 	FsSimpleWindowConnection();
 	~FsSimpleWindowConnection();
 
+	std::string GetProgramResourceDirectory(void) const override;
+
 	std::vector <struct YsGamePadReading> prevGamePads;
 
 	// For mouse emulation by pad digital axes.
