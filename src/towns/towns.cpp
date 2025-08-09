@@ -51,6 +51,8 @@ void FMTownsCommon::State::PowerOn(void)
 		return false;
 	}
 
+	towns.var.specialPath["progdir"]=outside_world->GetProgramResourceDirectory();
+
 	for(auto &s : argv.initCmd)
 	{
 		outside_world->commandQueue.push(s);
@@ -986,8 +988,9 @@ unsigned int FMTownsCommon::MachineID(void) const
 	return (highByte<<8)|lowByte;
 }
 
-bool FMTownsCommon::LoadROMImages(const char dirName[])
+bool FMTownsCommon::LoadROMImages(std::string dirName)
 {
+	dirName=cpputil::ExpandFileName(dirName,var.specialPath);
 	if(true!=physMem.LoadROMImages(dirName))
 	{
 		Device::Abort("Unable to load ROM images.");

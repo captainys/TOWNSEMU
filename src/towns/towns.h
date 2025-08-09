@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <vector>
 #include <string>
+#include <map>
 
 #include "lineparser.h"
 
@@ -396,6 +397,16 @@ public:
 
 
 
+		/*! This special path is initialized in FMTowns::Initialize, and maps
+		      "progdir"
+		    to the resource directory.  It is same as the directory where the executable is stored
+		    in Windows and Linux, and Contents/Resources sub-directory of the application bundle
+		    in macOS.
+		*/
+		std::map <std::string,std::string> specialPath;
+
+
+
 		class MemoryStateSave
 		{
 		public:
@@ -604,7 +615,7 @@ public:
 	    It just redirect the call to mem.LoadROMImages() function.
 	    Returns false if it could not read ROM images.
 	*/
-	bool LoadROMImages(const char dirName[]);
+	bool LoadROMImages(std::string dirName);
 
 	/*! Once the ROMs are loaded, call PowerOn function to start the virtual machine.
 	*/

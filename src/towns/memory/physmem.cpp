@@ -361,7 +361,7 @@ TownsPhysicalMemory::TownsPhysicalMemory(class FMTownsCommon *townsPtr,class Mem
 	state.Reset();
 }
 
-bool TownsPhysicalMemory::LoadROMImages(const char dirName[])
+bool TownsPhysicalMemory::LoadROMImages(std::string dirName)
 {
 	std::string fName;
 	fName=cpputil::MakeFullPathName(dirName,"FMT_SYS.ROM");
