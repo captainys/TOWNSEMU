@@ -1157,3 +1157,66 @@ bool cpputil::Is2toN(unsigned int i)
 {
 	return 0==(i&(i-1));
 }
+
+std::string cpputil::ExpandFileName(std::string src,const std::map <std::string,std::string> &dict)
+{
+	std::string expandedName,pending,variable;
+	unsigned int state=0; // 0:Nothing  1:Found Found '$'  2:Found '{' immediately afeter '$'
+	for(auto c : src)
+	{
+		switch(state)
+		{
+		case 0:
+			if('$'==c)
+			{
+				pending.push_back(c);
+				state=1;
+			}
+			else
+			{
+				expandedName.push_back(c);
+			}
+			break;
+		case 1:
+			if('{'==c)
+			{
+				pending.push_back(c);
+				state=2;
+			}
+			else
+			{
+				expandedName+=pending;
+				pending="";
+				variable="";
+				expandedName.push_back(c);
+				state=0;
+			}
+			break;
+		case 2:
+			if('}'==c)
+			{
+				auto found=dict.find(variable);
+				if(dict.end()!=found)
+				{
+					expandedName+=found->second;
+				}
+				else
+				{
+					expandedName+=pending;
+					expandedName.push_back(c);
+				}
+				pending="";
+				variable="";
+				state=0;
+			}
+			else
+			{
+				pending.push_back(c);
+				variable.push_back(c);
+			}
+			break;
+		}
+	}
+	expandedName+=pending;
+	return expandedName;
+}

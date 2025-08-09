@@ -19,6 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <string>
 #include <stdint.h>
+#include <map>
 
 namespace cpputil
 {
@@ -433,6 +434,15 @@ bool WildCardCompare(std::string ptn,std::string str);
 bool WildCardCompare(int lenPtn,const char ptn[],int lenStr,const char str[]);
 
 bool Is2toN(unsigned int i);
+
+/*!
+If dict is like: "progdir"->"c:/users/soji/tsugaru", this function expands
+  ${progdir}/cdimg
+to
+  c:/users/soji/tsugaru/cdimg
+and returns the expanded file/directory name.
+*/
+std::string ExpandFileName(std::string src,const std::map <std::string,std::string> &dict);
 };
 
 

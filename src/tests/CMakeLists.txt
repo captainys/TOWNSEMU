@@ -21,3 +21,6 @@ add_executable(relpath relpath.cpp)
 target_link_libraries(relpath cpputil)
 add_test(NAME relativePath COMMAND relpath)
 
+add_executable(expandfile expandfile.cpp)
+target_link_libraries(expandfile cpputil)
+add_test(NAME expandfile COMMAND expandfile)
