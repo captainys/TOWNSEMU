@@ -300,10 +300,10 @@ void FMTownsCommon::State::PowerOn(void)
 
 	for(auto i=0; i<argv.sharedDir.size() && i<TownsVnDrv::MAX_NUM_SHARED_DIRECTORIES; ++i)
 	{
-		towns.vndrv.sharedDir[i].hostPath=argv.sharedDir[i];
+		towns.vndrv.sharedDir[i].hostPath=towns.var.ExpandFileName(argv.sharedDir[i]);
 		towns.vndrv.sharedDir[i].linked=true;
 
-		towns.tgdrv.sharedDir[i].hostPath=argv.sharedDir[i];
+		towns.tgdrv.sharedDir[i].hostPath=towns.var.ExpandFileName(argv.sharedDir[i]);
 		towns.tgdrv.sharedDir[i].linked=true;
 	}
 

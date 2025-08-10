@@ -168,6 +168,16 @@ public:
 
 	/*!
 	*/
+	void AddSpecialPathsToProfile(TownsProfile &profile);
+
+
+
+	std::map <std::string,std::string> MakeSpecialPathTable(void) const;
+
+
+
+	/*!
+	*/
 	bool IsVMRunning(void) const;
 
 	/*!
@@ -186,7 +196,7 @@ private:
 	template <class VMClass>
 	void ReallyRunWithinSameProcess(VMClass &VM);
 	std::string FindTsugaruCUI(void) const;
-	std::vector <YsWString> CheckMissingROMFiles(void) const;
+	std::vector <std::string> CheckMissingROMFiles(void) const;
 	std::string GetCMOSFileName(void) const;
 
 	YsWString GetDefaultNewDiskImageFileName(void) const;

@@ -134,6 +134,8 @@ UITXT
 +/profile/main     主要
 +/profile/main/romdir  ROMの場所
 +/profile/main/browsing_inst (ファイルセレクタでは、ROMファイルのうちのひとつを選ぶことでディレクトリを指定できます。)
++/profile/main/cmosfile CMOS RAMイメージファイル
++/profile/main/cmos_inst (空欄にすると、デフォルトイメージファイルを使います。)
 +/profile/main/freq_info (高すぎる周波数指定はかえってVMの実行速度を遅くする場合があります。)
 +/profile/main/cpufreq CPU周波数(MHz)
 +/profile/main/ramsize メモリ容量(MB)

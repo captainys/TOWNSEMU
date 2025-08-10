@@ -30,6 +30,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <time.h>
 #include <stdlib.h>
 #include <iostream>
+#include <memory>
 
 #ifdef _WIN32
 	#include <direct.h>
@@ -756,6 +757,32 @@ YsWString FsGuiMainCanvas::GetRecentFileListFileName(void) const
 }
 
 
+std::map <std::string,std::string> FsGuiMainCanvas::MakeSpecialPathTable(void) const
+{
+	std::map <std::string,std::string> specialPath;
+
+	std::unique_ptr <FsSimpleWindowConnection> outside_world(new FsSimpleWindowConnection);
+	specialPath["progdir"]=outside_world->GetProgramResourceDirectory();
+
+	YsWString wPath,wFile;
+	lastSelectedProfileFName.SeparatePathFile(wPath,wFile);
+	specialPath["profiledir"]=wPath.GetUTF8String();
+
+	return specialPath;
+}
+
+void FsGuiMainCanvas::AddSpecialPathsToProfile(TownsProfile &profile)
+{
+	std::pair <std::string,std::string> p;
+
+	YsWString wPath,wFile;
+	lastSelectedProfileFName.SeparatePathFile(wPath,wFile);
+
+	p.first="profiledir";
+	p.second=wPath.GetUTF8String();
+	profile.specialPath.push_back(p);
+}
+
 
 void FsGuiMainCanvas::Run(void)
 {
@@ -771,6 +798,7 @@ void FsGuiMainCanvas::ReallyRunWithinSameProcess(VMClass &VM)
 	{
 		VM.profile.CMOSFName=GetCMOSFileName();
 	}
+	AddSpecialPathsToProfile(VM.profile);
 	RemoveDialog(profileDlg);
 	AddDialog(resumeVMDlg);
 
@@ -797,15 +825,15 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	auto missing=CheckMissingROMFiles();
 	if(0<missing.size())
 	{
-		YsWString msg;
-		msg=L"Missing ROM files:";
+		std::string msg;
+		msg="Missing ROM files:";
 		for(auto fName : missing)
 		{
-			msg+=L" ";
+			msg+=" ";
 			msg+=fName;
 		}
 		auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
-		msgDlg->Make(L"Error",msg,L"OK",nullptr);
+		msgDlg->Make("Error",msg,"OK");
 		AttachModalDialog(msgDlg);
 		return false;
 	}
@@ -824,15 +852,17 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 
 	if(true==separateProcess)
 	{
+		if(""==profile.CMOSFName)
+		{
+			profile.CMOSFName=GetCMOSFileName();
+		}
+		AddSpecialPathsToProfile(profile);
+
 		ProfileDialog::ToSystemEncoding(profile);
 		auto argv=profile.MakeArgv();
 
 		argv[0]=FindTsugaruCUI();
 		ProfileDialog::ToSystemEncoding(argv[0]);
-
-		argv.push_back("-CMOS");
-		argv.push_back(GetCMOSFileName());
-		ProfileDialog::ToSystemEncoding(argv.back());
 
 		for(auto arg : argv)
 		{
@@ -1086,23 +1116,28 @@ YsVec2i FsGuiMainCanvas::GetGUIDimension(void) const
 	return dim;
 }
 
-std::vector <YsWString> FsGuiMainCanvas::CheckMissingROMFiles(void) const
+std::vector <std::string> FsGuiMainCanvas::CheckMissingROMFiles(void) const
 {
-	std::vector <YsWString> missing;
-	const YsWString ROMFName[]=
+	auto specialPath=MakeSpecialPathTable();
+
+	std::vector <std::string> missing;
+	const std::string ROMFName[]=
 	{
-		L"FMT_DIC.ROM",
-		L"FMT_DOS.ROM",
-		// L"FMT_F20.ROM",
-		L"FMT_FNT.ROM",
-		L"FMT_SYS.ROM",
+		"FMT_DIC.ROM",
+		"FMT_DOS.ROM",
+		// "FMT_F20.ROM",
+		"FMT_FNT.ROM",
+		"FMT_SYS.ROM",
 	};
-	YsWString path=profileDlg->ROMDirTxt->GetWString();
+	std::string path=profileDlg->ROMDirTxt->GetString().c_str();
 	for(auto file : ROMFName)
 	{
-		YsWString ful;
-		ful.MakeFullPathName(path,file);
-		if(YSTRUE!=YsFileIO::CheckFileExist(ful))
+		std::string ful=cpputil::MakeFullPathName(path,file);
+
+		auto expand=cpputil::ExpandFileName(ful.c_str(),specialPath);
+
+		std::ifstream ifp(expand,std::ios::binary);
+		if(true!=ifp.is_open())
 		{
 			missing.push_back(file);
 		}

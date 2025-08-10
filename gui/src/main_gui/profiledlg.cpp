@@ -136,6 +136,12 @@ void ProfileDialog::Make(const UiText &ui)
 		AddStaticText(0,FSKEY_NULL,
 		    ui("/profile/main/browsing_inst","(When browsing for the ROM dir, please select one of the ROM files.)"),YSTRUE);
 
+		CMOSFileBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,ui("/profile/main/cmosfile","CMOS RAM Image:"),YSTRUE);
+		CMOSFileTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+		ROMDirTxt->SetLengthLimit(PATH_LENGTH);
+		AddStaticText(0,FSKEY_NULL,
+		    ui("/profile/main/cmos_inst","(If you leave it blank, Tsugaru will use the default location.)"),YSTRUE);
+
 		CPUFreqTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,ui("/profile/main/cpufreq","CPU Speed (MHz)"),4,YSTRUE);
 		CPUFreqTxt->SetInteger(25);
 		AddStaticText(0,FSKEY_NULL,
@@ -1230,6 +1236,11 @@ void ProfileDialog::ToSystemEncoding(TownsProfile &profile)
 	{
 		ToSystemEncoding(dir);
 	}
+
+	for(auto &p : profile.specialPath)
+	{
+		ToSystemEncoding(p.second);
+	}
 }
 
 /* static */ void ProfileDialog::ToSystemEncoding(std::string &str)
@@ -1250,6 +1261,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	YsString utf8;
 
 	profile.ROMPath=ROMDirTxt->GetWString().GetUTF8String();
+
+	profile.CMOSFName=CMOSFileTxt->GetWString().GetUTF8String();
 
 	profile.freq=CPUFreqTxt->GetInteger();
 	profile.useFPU=(YSTRUE==FPUBtn->GetCheck());
@@ -1457,6 +1470,9 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 
 	str.SetUTF8String(profile.ROMPath.data());
 	ROMDirTxt->SetText(str);
+
+	str.SetUTF8String(profile.CMOSFName.data());
+	CMOSFileTxt->SetText(str);
 
 	CPUFreqTxt->SetInteger(profile.freq);
 	FPUBtn->SetCheck(true==profile.useFPU ? YSTRUE : YSFALSE);

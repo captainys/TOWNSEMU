@@ -96,6 +96,11 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.back()+=ROMPath;
 	text.back().push_back('\"');
 
+	text.push_back("CMOSFILE ");
+	text.back().push_back('\"');
+	text.back()+=CMOSFName;
+	text.back().push_back('\"');
+
 	text.push_back("CDIMG___ ");
 	text.back().push_back('\"');
 	text.back()+=cdImgFName;
@@ -404,6 +409,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			if(2<=argv.size())
 			{
 				ROMPath=argv[1].c_str();
+			}
+		}
+		else if(0==argv[0].STRCMP("CMOSFILE"))
+		{
+			if(2<=argv.size())
+			{
+				CMOSFName=argv[1].c_str();
 			}
 		}
 		else if(0==argv[0].STRCMP("CDIMG___"))
@@ -882,6 +894,12 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.back().pop_back();
 	}
 
+	if(""!=CMOSFName)
+	{
+		argv.push_back("-CMOS");
+		argv.push_back(CMOSFName);
+	}
+
 	argv.push_back("-WINDOWSHIFT");
 	argv.push_back("-FORCEQUITONPOFF");
 
@@ -1250,6 +1268,13 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	sstream.str("");
 	sstream << nMidiCards;
 	argv.push_back(sstream.str());
+
+	for(auto p : specialPath)
+	{
+		argv.push_back("-SPECIALPATH");
+		argv.push_back(p.first);
+		argv.push_back(p.second);
+	}
 
 	return argv;
 }
