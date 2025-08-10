@@ -1239,7 +1239,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		}
 		break;
 	case CMD_LOAD_EVENTLOG:
-		if(true==towns.eventLog.LoadEventLog(cmd.argv[1]))
+		if(true==towns.eventLog.LoadEventLog(towns.var.ExpandFileName(cmd.argv[1])))
 		{
 			printf("Loaded event log.\n");
 			printf("PLAYEVT command for play back.\n");
@@ -1262,10 +1262,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		towns.eventLog.MakeRepeat();
 		break;
 	case CMD_SAVE_KEYMAP:
-		Execute_SaveKeyMap(*outside_world,cmd);
+		Execute_SaveKeyMap(towns,*outside_world,cmd);
 		break;
 	case CMD_LOAD_KEYMAP:
-		Execute_LoadKeyMap(*outside_world,cmd);
+		Execute_LoadKeyMap(towns,*outside_world,cmd);
 		break;
 	case CMD_SAVE_YM2612LOG:
 		if(2<=cmd.argv.size())
@@ -1314,7 +1314,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 	case CMD_LOADWAV:
 		if(2<=cmd.argv.size())
 		{
-			if(YSOK==towns.sound.LoadWav(cmd.argv[1]))
+			if(YSOK==towns.sound.LoadWav(towns.var.ExpandFileName(cmd.argv[1])))
 			{
 				std::cout << "Loaded " << cmd.argv[1] << " to be sent to PCM sampling register." << std::endl;
 			}
@@ -1363,7 +1363,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 	case CMD_SAVE_STATE:
 		if(2<=cmd.argv.size())
 		{
-			if(true!=towns.SaveState(cmd.argv[1]))
+			if(true!=towns.SaveState(towns.var.ExpandFileName(cmd.argv[1])))
 			{
 				PrintError(ERROR_CANNOT_SAVE_FILE);
 			}
@@ -1380,7 +1380,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 	case CMD_LOAD_STATE:
 		if(2<=cmd.argv.size())
 		{
-			if(true!=towns.LoadState(cmd.argv[1]))
+			if(true!=towns.LoadState(towns.var.ExpandFileName(cmd.argv[1])))
 			{
 				PrintError(ERROR_CANNOT_OPEN_FILE);
 			}
@@ -1693,7 +1693,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 	case CMD_SAVE_VM_TO_HOST_DUMP:
 		if(2<=cmd.argv.size())
 		{
-			if(true==cpputil::WriteBinaryFile(cmd.argv[1],towns.var.vmToHost.size(),towns.var.vmToHost.data()))
+			if(true==cpputil::WriteBinaryFile(towns.var.ExpandFileName(cmd.argv[1]),towns.var.vmToHost.size(),towns.var.vmToHost.data()))
 			{
 				std::cout << "Saved." << std::endl;
 			}
@@ -1781,7 +1781,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 	case CMD_SAVE_FMPCM_RECORDING:
 		if(2<=cmd.argv.size())
 		{
-			towns.sound.SaveRecording(cmd.argv[1]);
+			towns.sound.SaveRecording(towns.var.ExpandFileName(cmd.argv[1]));
 		}
 		break;
 
@@ -1797,7 +1797,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		if(2<=cmd.argv.size())
 		{
 			towns.sound.TrimVGMRecording();
-			if(true==towns.sound.SaveVGMRecording(cmd.argv[1]))
+			if(true==towns.sound.SaveVGMRecording(towns.var.ExpandFileName(cmd.argv[1])))
 			{
 				std::cout << "Saved VGM Recording." << std::endl;
 			}
@@ -1811,7 +1811,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 	case CMD_SAVE_WAVERAM:
 		if(2<=cmd.argv.size())
 		{
-			if(true==cpputil::WriteBinaryFile(cmd.argv[1],towns.sound.state.rf5c68.state.waveRAM.size(),towns.sound.state.rf5c68.state.waveRAM.data()))
+			if(true==cpputil::WriteBinaryFile(
+			    towns.var.ExpandFileName(cmd.argv[1]),
+			    towns.sound.state.rf5c68.state.waveRAM.size(),towns.sound.state.rf5c68.state.waveRAM.data()))
 			{
 				std::cout << "Saved." << std::endl;
 			}
@@ -1830,7 +1832,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		if(2<=cmd.argv.size())
 		{
 			auto data=towns.debugger.GetDOSStdout();
-			if(true==cpputil::WriteBinaryFile(cmd.argv[1],data.size(),(unsigned char *)data.data()))
+			if(true==cpputil::WriteBinaryFile(towns.var.ExpandFileName(cmd.argv[1]),data.size(),(unsigned char *)data.data()))
 			{
 				std::cout << "Saved." << std::endl;
 			}
@@ -1860,7 +1862,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		break;
 
 	case CMD_QUICK_SAVESTATE:
-		if(true!=towns.SaveState(towns.var.quickStateSaveFName))
+		if(true!=towns.SaveState(towns.var.ExpandFileName(towns.var.quickStateSaveFName)))
 		{
 			PrintError(ERROR_CANNOT_SAVE_FILE);
 		}
@@ -1870,7 +1872,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		}
 		break;
 	case CMD_QUICK_LOADSTATE:
-		if(true!=towns.LoadState(towns.var.quickStateSaveFName))
+		if(true!=towns.LoadState(towns.var.ExpandFileName(towns.var.quickStateSaveFName)))
 		{
 			PrintError(ERROR_CANNOT_OPEN_FILE);
 		}
@@ -1892,7 +1894,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		}
 		else
 		{
-			if(true==FileSys::Chdir(cmd.argv[1]))
+			if(true==FileSys::Chdir(towns.var.ExpandFileName(cmd.argv[1])))
 			{
 				std::cout << FileSys::Getcwd() << std::endl;
 			}
@@ -1908,7 +1910,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 	case CMD_OPEN_DEBUG_LOG:
 		if(2<=cmd.argv.size())
 		{
-			if(true==towns.debugger.OpenLogFile(cmd.argv[1]))
+			if(true==towns.debugger.OpenLogFile(towns.var.ExpandFileName(cmd.argv[1])))
 			{
 				std::cout << "Begin logging." << std::endl;
 			}
@@ -4144,7 +4146,7 @@ void TownsCommandInterpreter::Execute_SaveHistory(FMTownsCommon &towns,const std
 
 void TownsCommandInterpreter::Execute_SaveEventLog(FMTownsCommon &towns,const std::string &fName)
 {
-	if(true!=towns.eventLog.SaveEventLog(fName))
+	if(true!=towns.eventLog.SaveEventLog(towns.var.ExpandFileName(fName)))
 	{
 		PrintError(ERROR_CANNOT_SAVE_FILE);
 	}
@@ -4709,7 +4711,7 @@ void TownsCommandInterpreter::Execute_CMOSLoad(FMTownsCommon &towns,Command &cmd
 {
 	if(2<=cmd.argv.size())
 	{
-		auto dat=cpputil::ReadBinaryFile(cmd.argv[1]);
+		auto dat=cpputil::ReadBinaryFile(towns.var.ExpandFileName(cmd.argv[1]));
 		if(0==dat.size())
 		{
 			PrintError(ERROR_CANNOT_OPEN_FILE);
@@ -4730,7 +4732,10 @@ void TownsCommandInterpreter::Execute_CMOSSave(FMTownsCommon &towns,Command &cmd
 {
 	if(2<=cmd.argv.size())
 	{
-		if(true!=cpputil::WriteBinaryFile(cmd.argv[1],TOWNS_CMOS_SIZE,towns.physMem.state.CMOSRAM))
+		if(true!=cpputil::WriteBinaryFile(
+		    towns.var.ExpandFileName(cmd.argv[1]),
+		    TOWNS_CMOS_SIZE,
+		    towns.physMem.state.CMOSRAM))
 		{
 			PrintError(ERROR_CANNOT_SAVE_FILE);
 		}
@@ -4749,11 +4754,12 @@ void TownsCommandInterpreter::Execute_CDLoad(FMTownsCommon &towns,Command &cmd)
 	if(2<=cmd.argv.size())
 	{
 		auto imgFileName=towns.var.ApplyAlias(cmd.argv[1]);
+		imgFileName=towns.var.ExpandFileName(imgFileName);
 		auto errCode=towns.cdrom.LoadDiscImage(imgFileName);
-		std::cout << "[" << cmd.argv[1] << "]" << std::endl;
+		std::cout << "[" << imgFileName << "]" << std::endl;
 		if(DiscImage::ERROR_NOERROR==errCode)
 		{
-			std::cout << "Loaded Disc Image:" << cmd.argv[1] << std::endl;
+			std::cout << "Loaded Disc Image:" << imgFileName << std::endl;
 		}
 		else
 		{
@@ -4771,11 +4777,12 @@ void TownsCommandInterpreter::Execute_SCSICDLoad(unsigned int SCSIID,FMTownsComm
 		    towns.scsi.state.dev[SCSIID].devType==TownsSCSI::SCSIDEVICE_CDROM))
 		{
 			auto imgFileName=towns.var.ApplyAlias(cmd.argv[1]);
+			imgFileName=towns.var.ExpandFileName(imgFileName);
 			auto res=towns.scsi.LoadCDImage(SCSIID,imgFileName);
-			std::cout << "[" << cmd.argv[1] << "]" << std::endl;
+			std::cout << "[" << imgFileName << "]" << std::endl;
 			if(true==res)
 			{
-				std::cout << "Loaded Disc Image:" << cmd.argv[1] << " SCSI-ID:" << SCSIID << std::endl;
+				std::cout << "Loaded Disc Image:" << imgFileName << " SCSI-ID:" << SCSIID << std::endl;
 			}
 			else
 			{
@@ -4794,9 +4801,10 @@ void TownsCommandInterpreter::Execute_FDLoad(int drv,FMTownsCommon &towns,Comman
 	if(2<=cmd.argv.size())
 	{
 		auto imgFileName=towns.var.ApplyAlias(cmd.argv[1]);
+		imgFileName=towns.var.ExpandFileName(imgFileName);
 		if(true==towns.fdc.LoadD77orRDDorRAW(drv,imgFileName.c_str(),towns.state.townsTime,false))
 		{
-			std::cout << "Loaded FD image." << std::endl;
+			std::cout << "Loaded FD image:" << imgFileName << std::endl;
 		}
 		else
 		{
@@ -4865,7 +4873,7 @@ void TownsCommandInterpreter::Execute_UpdateMemoryFilter(FMTownsCommon &towns,Co
 
 void TownsCommandInterpreter::Execute_SaveYM2612Log(FMTownsCommon &towns,std::string fName)
 {
-	std::ofstream ofp(fName);
+	std::ofstream ofp(towns.var.ExpandFileName(fName));
 	if(ofp.is_open())
 	{
 		for(auto rwl : towns.sound.state.ym2612.regWriteLog)
@@ -5066,7 +5074,7 @@ void TownsCommandInterpreter::Execute_XMODEMtoVM(FMTownsCommon &towns,Command &c
 {
 	if(2<=cmd.argv.size())
 	{
-		auto dat=cpputil::ReadBinaryFile(cmd.argv[1]);
+		auto dat=cpputil::ReadBinaryFile(towns.var.ExpandFileName(cmd.argv[1]));
 		if(0==dat.size())
 		{
 			PrintError(ERROR_CANNOT_OPEN_FILE);
@@ -5096,7 +5104,7 @@ void TownsCommandInterpreter::Execute_XMODEMfromVM(FMTownsCommon &towns,Command 
 	{
 		if(towns.serialport.state.intel8251.clientPtr==&towns.serialport.defaultClient)
 		{
-			towns.serialport.defaultClient.SetUpXMODEMfromVM(cmd.argv[1]);
+			towns.serialport.defaultClient.SetUpXMODEMfromVM(towns.var.ExpandFileName(cmd.argv[1]));
 			std::cout << "Ready to receive " << cmd.argv[1] << std::endl;
 			std::cout << "(XMODEM upload must be started before this command in FM TOWNS)" << std::endl;
 		}
@@ -5117,7 +5125,7 @@ void TownsCommandInterpreter::Execute_XMODEMCRCfromVM(FMTownsCommon &towns,Comma
 	{
 		if(towns.serialport.state.intel8251.clientPtr==&towns.serialport.defaultClient)
 		{
-			towns.serialport.defaultClient.SetUpXMODEMCRCfromVM(cmd.argv[1]);
+			towns.serialport.defaultClient.SetUpXMODEMCRCfromVM(towns.var.ExpandFileName(cmd.argv[1]));
 			std::cout << "Ready to receive " << cmd.argv[1] << std::endl;
 			std::cout << "(XMODEM upload must be started before this command in FM TOWNS)" << std::endl;
 		}
@@ -5132,11 +5140,11 @@ void TownsCommandInterpreter::Execute_XMODEMCRCfromVM(FMTownsCommon &towns,Comma
 	}
 }
 
-void TownsCommandInterpreter::Execute_SaveKeyMap(const Outside_World &outside_world,const Command &cmd)
+void TownsCommandInterpreter::Execute_SaveKeyMap(const FMTownsCommon &towns,const Outside_World &outside_world,const Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
-		std::ofstream ofp(cmd.argv[1]);
+		std::ofstream ofp(towns.var.ExpandFileName(cmd.argv[1]));
 		if(ofp.is_open())
 		{
 			for(auto str : outside_world.MakeKeyMappingText())
@@ -5156,11 +5164,11 @@ void TownsCommandInterpreter::Execute_SaveKeyMap(const Outside_World &outside_wo
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
-void TownsCommandInterpreter::Execute_LoadKeyMap(Outside_World &outside_world,const Command &cmd)
+void TownsCommandInterpreter::Execute_LoadKeyMap(const FMTownsCommon &towns,Outside_World &outside_world,const Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
-		std::ifstream ifp(cmd.argv[1]);
+		std::ifstream ifp(towns.var.ExpandFileName(cmd.argv[1]));
 		if(ifp.is_open())
 		{
 			std::vector <std::string> text;
@@ -5212,7 +5220,7 @@ void TownsCommandInterpreter::Execute_SaveScreenShot(FMTownsCommon &towns,Comman
 	TownsRender render;
 	towns.RenderQuiet(render,layer[0],layer[1]);
 
-	SaveScreenShot(towns,render,cmd.argv[1]);
+	SaveScreenShot(towns,render,towns.var.ExpandFileName(cmd.argv[1]));
 }
 void TownsCommandInterpreter::Execute_SaveMemDump(FMTownsCommon &towns,Command &cmd)
 {
@@ -5345,6 +5353,8 @@ void TownsCommandInterpreter::Execute_QuickScreenShot(FMTownsCommon &towns,Comma
 		{
 			ful=fmt;
 		}
+
+		ful=towns.var.ExpandFileName(ful);
 
 		int mapX,mapY;
 		if(true==towns.GetApplicationSpecificMapXY(mapX,mapY))

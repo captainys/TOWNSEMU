@@ -109,6 +109,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-ALIAS aliasLabel filename" << std::endl;
 	std::cout << "  Define file-name alias.  Alias can later be used as a parameter to FDxLOAD, TAPELOAD commands." << std::endl;
 	std::cout << "  eg. You can use -ALIAS DISKA \"full-path-to-game-diskA\" to ease disk swap from command." << std::endl;
+	std::cout << "-SPCIALPATH var_name path\n";
+	std::cout << "  Define a special path used in the program.  Tsugaru has by default one special path\n";
+	std::cout << "  progdir which maps to the directory where the program is stored in Windows and Linux\n";
+	std::cout << "  and Contents/Resources sub-directory of the application bundle in macOS.\n";
 	std::cout << "-CMOS filename" << std::endl;
 	std::cout << "  Specify CMOS (BIOS settings) file.  If you specify this option," << std::endl;
 	std::cout << "  CMOS settings will be saved automatically when closing the program." << std::endl;
@@ -609,6 +613,14 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			auto LABEL=argv[i+1];
 			cpputil::Capitalize(LABEL);
 			fileNameAlias[LABEL]=argv[i+2];
+			i+=2;
+		}
+		else if("-SPCIALPATH"==ARG && i+2<argc)
+		{
+			std::pair <std::string,std::string> pair;
+			pair.first=argv[i+1];
+			pair.second=argv[i+2];
+			specialPath.push_back(pair);
 			i+=2;
 		}
 		else if("-CDPATH"==ARG && i+1<argc)

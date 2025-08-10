@@ -391,6 +391,12 @@ public:
 
 
 
+		/*! Expand special path.  For example ${progdir} to the program or resource directory.
+		*/
+		std::string ExpandFileName(std::string incoming) const;
+
+
+
 		/*!
 		*/
 		std::vector <uint8_t> vmToHost;

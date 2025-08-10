@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <utility>
 #include "townsdef.h"
 #include "i486.h" // Need FidelityLevel.
 
@@ -90,6 +91,7 @@ public:
 	bool memCardWriteProtected=false;
 
 	std::unordered_map <std::string,std::string> fileNameAlias;
+	std::vector <std::pair <std::string,std::string> > specialPath;
 
 	std::vector <std::string> sharedDir;
 

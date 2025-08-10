@@ -52,6 +52,10 @@ void FMTownsCommon::State::PowerOn(void)
 	}
 
 	towns.var.specialPath["progdir"]=outside_world->GetProgramResourceDirectory();
+	for(auto p : argv.specialPath)
+	{
+		towns.var.specialPath[p.first]=p.second;
+	}
 
 	for(auto &s : argv.initCmd)
 	{
@@ -80,6 +84,7 @@ void FMTownsCommon::State::PowerOn(void)
 		if(""!=argv.fdImgFName[drv])
 		{
 			auto imgFileName=towns.var.ApplyAlias(argv.fdImgFName[drv]);
+			imgFileName=cpputil::ExpandFileName(imgFileName,towns.var.specialPath);
 			towns.fdc.LoadD77orRDDorRAW(drv,imgFileName.c_str(),towns.state.townsTime);
 			if(true==argv.fdImgWriteProtect[drv])
 			{
@@ -105,6 +110,7 @@ void FMTownsCommon::State::PowerOn(void)
 	if(""!=argv.cdImgFName)
 	{
 		auto imgFileName=towns.var.ApplyAlias(argv.cdImgFName);
+		imgFileName=cpputil::ExpandFileName(imgFileName,towns.var.specialPath);
 		auto errCode=towns.cdrom.state.GetDisc().Open(imgFileName);
 		if(DiscImage::ERROR_NOERROR!=errCode)
 		{
@@ -122,6 +128,7 @@ void FMTownsCommon::State::PowerOn(void)
 	{
 		auto scsi=argv.scsiImg[scsiID];
 		auto imgFileName=towns.var.ApplyAlias(scsi.imgFName);
+		imgFileName=cpputil::ExpandFileName(imgFileName,towns.var.specialPath);
 		if(scsi.imageType==TownsStartParameters::SCSIIMAGE_HARDDISK)
 		{
 			if(true!=towns.scsi.LoadHardDiskImage(scsiID,imgFileName))
@@ -198,7 +205,8 @@ void FMTownsCommon::State::PowerOn(void)
 	}
 	if(0<argv.CMOSFName.size())
 	{
-		auto CMOSBinary=cpputil::ReadBinaryFile(argv.CMOSFName);
+		auto CMOSFName=cpputil::ExpandFileName(argv.CMOSFName,towns.var.specialPath);
+		auto CMOSBinary=cpputil::ReadBinaryFile(CMOSFName);
 		if(0<CMOSBinary.size())
 		{
 			towns.physMem.SetCMOS(CMOSBinary);
@@ -508,6 +516,11 @@ std::string FMTownsCommon::Variable::ApplyAlias(std::string incoming) const
 		return found->second;
 	}
 	return incoming;
+}
+
+std::string FMTownsCommon::Variable::ExpandFileName(std::string incoming) const
+{
+	return cpputil::ExpandFileName(incoming,specialPath);
 }
 
 ////////////////////////////////////////////////////////////

@@ -448,8 +448,8 @@ public:
 
 	void Execute_SaveYM2612Log(FMTownsCommon &towns,std::string fName);
 
-	void Execute_SaveKeyMap(const Outside_World &outside_world,const Command &cmd);
-	void Execute_LoadKeyMap(Outside_World &outside_world,const Command &cmd);
+	void Execute_SaveKeyMap(const FMTownsCommon &towns,const Outside_World &outside_world,const Command &cmd);
+	void Execute_LoadKeyMap(const FMTownsCommon &towns,Outside_World &outside_world,const Command &cmd);
 
 	void Execute_Search_Bytes(FMTownsCommon &towns,Command &cmd);
 	void Execute_Search_String(FMTownsCommon &towns,Command &cmd);
