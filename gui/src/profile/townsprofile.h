@@ -34,6 +34,14 @@ public:
 	/*! The first arg will be "Tsugaru_CUI".  Should be replaced with the full-path name.
 	*/
 	std::vector <std::string> MakeArgv(void) const;
+
+	/*! Change file and directory names relative to the base directory.
+	    Example:
+	      MakeRelativePath("C:/Users/captainys/FMTOWNS","${profiledir}");
+	*/
+	void MakeRelativePath(std::string baseDir,std::string alias);
+
+	void MakeRelative(std::string &fName,std::string baseDir,std::string alias);
 };
 
 /* } */

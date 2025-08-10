@@ -246,6 +246,8 @@ private:
 	void SaveProfile(YsWString fName) const;
 	void LoadProfile(YsWString fName);
 
+	void File_MakeRelativePath(FsGuiPopUpMenuItem *);
+
 	void File_SaveProfile(FsGuiPopUpMenuItem *);
 	void File_OpenProfile(FsGuiPopUpMenuItem *);
 	void File_OpenProfile_FileSelected(FsGuiDialog *dlg,int returnCode);

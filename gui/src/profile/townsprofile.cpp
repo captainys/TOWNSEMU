@@ -1279,3 +1279,110 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 
 	return argv;
 }
+
+void TownsProfile::MakeRelativePath(std::string baseDir,std::string alias)
+{
+	MakeRelative(startUpStateFName,baseDir,alias);
+
+	MakeRelative(ROMPath,baseDir,alias);
+	MakeRelative(CMOSFName,baseDir,alias);
+	for(auto &fName : fdImgFName)
+	{
+		MakeRelative(fName,baseDir,alias);
+	}
+	MakeRelative(cdImgFName,baseDir,alias);
+	MakeRelative(memCardImgFName,baseDir,alias);
+	MakeRelative(startUpScriptFName,baseDir,alias);
+	MakeRelative(symbolFName,baseDir,alias);
+	MakeRelative(playbackEventLogFName,baseDir,alias);
+	MakeRelative(keyMapFName,baseDir,alias);
+
+	for(auto &fName : sharedDir)
+	{
+		MakeRelative(fName,baseDir,alias);
+	}
+	for(auto &fName : fdSearchPaths)
+	{
+		MakeRelative(fName,baseDir,alias);
+	}
+	for(auto &fName : cdSearchPaths)
+	{
+		MakeRelative(fName,baseDir,alias);
+	}
+
+	for(auto &s : scsiImg)
+	{
+		MakeRelative(s.imgFName,baseDir,alias);
+	}
+
+	for(auto &s : toSend)
+	{
+		MakeRelative(s.hostFName,baseDir,alias);
+	}
+
+	MakeRelative(quickScrnShotDir,baseDir,alias);
+	MakeRelative(quickStateSaveFName,baseDir,alias);
+}
+
+void TownsProfile::MakeRelative(std::string &fName,std::string baseDir,std::string alias)
+{
+	auto src=fName;
+	for(auto &c : src)
+	{
+		if('\\'==c)
+		{
+			c='/';
+		}
+	}
+	for(auto &c : baseDir)
+	{
+		if('\\'==c)
+		{
+			c='/';
+		}
+	}
+
+	if(0<baseDir.size() && '/'==baseDir.back())
+	{
+		baseDir.pop_back();
+	}
+
+	// Special case baseDir==src
+	if(baseDir==src || (baseDir+"/")==src)
+	{
+		fName=alias;
+		return;
+	}
+
+	// (1) src is longer or equal to than baseDir.
+	// (2) baseDir matches the first part of src, and
+	// (3) subsequent char is '/'.
+
+	// (1)
+	if(src.size()<=baseDir.size())
+	{
+		return;
+	}
+
+	// (2)
+	auto chopOff=src;
+	chopOff.resize(baseDir.size());
+	if(baseDir!=chopOff)
+	{
+		return;
+	}
+
+	// (3)
+	if(src[baseDir.size()]!='/')
+	{
+		return;
+	}
+
+	if(0<=alias.size() && alias.back()=='/')
+	{
+		alias.pop_back();
+	}
+
+	alias.insert(alias.end(),src.begin()+baseDir.size(),src.end());
+	std::swap(fName,alias);
+}

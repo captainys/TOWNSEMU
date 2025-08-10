@@ -34,6 +34,7 @@ UITXT
 +/file/saveprofileas プロファイルを別名で保存
 +/file/saveasdefault このプロファイルをデフォルトにする
 +/file/reloaddefault デフォルトプロファイルを読み込む
++/file/makerelative プロファイルのファイル名を${profiledir}からの相対パスにする
 +/file/cmosram CMOS RAM
 +/file/cmosram/clear CMOS RAMを消去
 +/file/new 新規作成

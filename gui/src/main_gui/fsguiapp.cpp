@@ -351,6 +351,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		subMenu->AddTextItem(0,FSKEY_A,ui("/file/saveprofileas","Save Profile As"))->BindCallBack(&THISCLASS::File_SaveProfileAs,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,ui("/file/saveasdefault","Save as Default"))->BindCallBack(&THISCLASS::File_SaveDefaultProfile,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,ui("/file/reloaddefault","Reload Default"))->BindCallBack(&THISCLASS::File_ReloadDefaultProfile,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,ui("/file/makerelative","Make File/Dir Names Relative to ${profiledir}"))->BindCallBack(&THISCLASS::File_MakeRelativePath,this);
 
 		{
 			auto subSubMenu=subMenu->AddTextItem(0,FSKEY_NULL,ui("/file/cmosram","CMOS RAM"))->AddSubMenu();
@@ -1407,6 +1408,23 @@ void FsGuiMainCanvas::LoadProfile(YsWString fName)
 				break;
 			}
 		}
+	}
+}
+
+void FsGuiMainCanvas::File_MakeRelativePath(FsGuiPopUpMenuItem *)
+{
+	if(nullptr!=profileDlg)
+	{
+		auto profile=profileDlg->GetProfile();
+
+		YsWString wPath,wFile;
+		lastSelectedProfileFName.SeparatePathFile(wPath,wFile);
+
+		profile.MakeRelativePath(wPath.GetUTF8String().c_str(),"${profiledir}");
+
+		profileDlg->SetProfile(profile);
+
+		SetNeedRedraw(YSTRUE);
 	}
 }
 
