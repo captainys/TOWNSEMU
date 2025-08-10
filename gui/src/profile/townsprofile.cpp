@@ -41,6 +41,7 @@ void TownsProfile::CleanUp(void)
 	bootKeyComb=BOOT_KEYCOMB_NONE;
 	autoStart=false;
 	scaling=150;
+	damperWireLine=true;
 	pretend386DX=false;
 	freq=40;
 	appSpecificSetting=TOWNS_APPSPECIFIC_NONE;
