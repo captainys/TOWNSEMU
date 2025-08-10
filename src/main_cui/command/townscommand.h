@@ -466,7 +466,7 @@ public:
 	void Execute_SaveScreenShot(FMTownsCommon &towns,Command &cmd);
 	void Execute_SaveVRAMLayer(FMTownsCommon &towns,Command &cmd);
 
-	void SaveScreenShot(FMTownsCommon &towns,TownsRender &render,std::string &fName);
+	void SaveScreenShot(FMTownsCommon &towns,TownsRender &render,std::string fName);
 
 	void Execute_SpecialDebug(FMTownsCommon &towns,Command &cmd);
 

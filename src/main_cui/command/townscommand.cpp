@@ -5389,7 +5389,7 @@ void TownsCommandInterpreter::Execute_QuickScreenShot(FMTownsCommon &towns,Comma
 	SaveScreenShot(towns,render,ful);
 }
 
-void TownsCommandInterpreter::SaveScreenShot(FMTownsCommon &towns,TownsRender &render,std::string &fName)
+void TownsCommandInterpreter::SaveScreenShot(FMTownsCommon &towns,TownsRender &render,std::string fName)
 {
 	if(0!=towns.var.scrnShotWid && 0!=towns.var.scrnShotHei)
 	{
