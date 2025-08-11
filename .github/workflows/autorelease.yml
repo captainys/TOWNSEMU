@@ -34,10 +34,11 @@ jobs:
       run: |
           cmake -E copy ./main_cui/Release/Tsugaru_CUI.exe .
           cmake -E copy ../gui/build/main_gui/Release/Tsugaru_GUI.exe .
+          cmake -E copy ../gui/build/main_gui/Release/ja.uitxt .
           cmake -E copy ../readme.md .
           cmake -E copy ../command.md .
           cmake -E copy ../util/TsugaruUtil.D77 .
-          cmake -E tar cvf windows_binary_latest.zip --format=zip Tsugaru_CUI.exe Tsugaru_GUI.exe TsugaruUtil.D77 readme.md command.md
+          cmake -E tar cvf windows_binary_latest.zip --format=zip Tsugaru_CUI.exe Tsugaru_GUI.exe TsugaruUtil.D77 readme.md command.md ja.uitxt
       working-directory: ./ci_windows
     - name: upload_to_artifact
       uses: actions/upload-artifact@v4
@@ -84,10 +85,11 @@ jobs:
       run: |
           cmake -E copy ./main_cui/Tsugaru_CUI .
           cmake -E copy ../gui/build/main_gui/Tsugaru_GUI .
+          cmake -E copy ../gui/build/main_gui/ja.uitxt .
           cmake -E copy ../readme.md .
           cmake -E copy ../command.md .
           cmake -E copy ../util/TsugaruUtil.D77 .
-          cmake -E tar cvf ubuntu_binary_latest.zip --format=zip Tsugaru_CUI Tsugaru_GUI TsugaruUtil.D77 readme.md command.md
+          cmake -E tar cvf ubuntu_binary_latest.zip --format=zip Tsugaru_CUI Tsugaru_GUI TsugaruUtil.D77 readme.md command.md ja.uitxt
       working-directory: ./ci_ubuntu
     - name: upload_to_artifact
       uses: actions/upload-artifact@v4
