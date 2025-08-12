@@ -38,6 +38,7 @@ jobs:
     - name: mkdir
       run: mkdir ci_ubuntu
     - name: install-OpenGL
+      run: sudo apt-get update
       run: sudo apt-get install libglu1-mesa-dev mesa-common-dev
     - name: cmake
       run: cmake ../src -DCMAKE_BUILD_TYPE=Release
