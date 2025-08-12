@@ -37,6 +37,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: mkdir
       run: mkdir ci_ubuntu
+    - name: update-local-apt-get-cache
+      run: sudo apt-get update
     - name: install-OpenGL
       run: sudo apt-get install libglu1-mesa-dev mesa-common-dev
     - name: cmake
