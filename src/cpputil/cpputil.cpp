@@ -167,6 +167,11 @@ bool cpputil::WriteTextFile(std::string fName,const std::vector <std::string> &t
 	return false;
 }
 
+std::vector <std::string> cpputil::Parser(const std::string &str)
+{
+	return Parser(str.c_str());
+}
+
 std::vector <std::string> cpputil::Parser(const char str[])
 {
 	const int STATE_OUTSIDE=0,STATE_WORD=1,STATE_DOUBLEQUOTE=2;
@@ -451,6 +456,11 @@ bool cpputil::StrToBool(const std::string &str)
 	return "TRUE"==str || "True"==str || "true"==str;
 }
 
+int cpputil::Xtoi(const std::string &str)
+{
+	return Xtoi(str.c_str());
+}
+
 int cpputil::Xtoi(const char str[])
 {
 	int n=0;
@@ -478,6 +488,11 @@ int cpputil::Xtoi(const char str[])
 		++str;
 	}
 	return n;
+}
+
+int cpputil::Atoi(const std::string &str)
+{
+	return Atoi(str.c_str());
 }
 
 int cpputil::Atoi(const char str[])

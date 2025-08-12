@@ -1,6 +1,6 @@
 #include <string>
 #include <sstream>
-#include <ysclass.h>
+#include <stdlib.h>
 
 #include "townsprofile.h"
 #include "townsdef.h"
@@ -397,71 +397,70 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 	unsigned int nVirtualKey=0;
 	for(auto &cppstr : text)
 	{
-		YsString str(cppstr.data());
-		auto argv=str.Argv();
+		auto argv=cpputil::Parser(cppstr);
 
 		if(0==argv.size())
 		{
 			continue;
 		}
 
-		if(0==argv[0].STRCMP("ROMDIR__"))
+		if(argv[0]=="ROMDIR__")
 		{
 			if(2<=argv.size())
 			{
 				ROMPath=argv[1].c_str();
 			}
 		}
-		else if(0==argv[0].STRCMP("CMOSFILE"))
+		else if(argv[0]=="CMOSFILE")
 		{
 			if(2<=argv.size())
 			{
 				CMOSFName=argv[1].c_str();
 			}
 		}
-		else if(0==argv[0].STRCMP("CDIMG___"))
+		else if(argv[0]=="CDIMG___")
 		{
 			if(2<=argv.size())
 			{
 				cdImgFName=argv[1].c_str();
 			}
 		}
-		else if(0==argv[0].STRCMP("CDSPEEDX"))
+		else if(argv[0]=="CDSPEEDX")
 		{
 			if(2<=argv.size())
 			{
-				cdSpeed=argv[1].Atoi();
+				cdSpeed=cpputil::Atoi(argv[1]);
 			}
 		}
-		else if(0==argv[0].STRCMP("FDIMG___"))
+		else if(argv[0]=="FDIMG___")
 		{
 			if(4<=argv.size())
 			{
-				int drive=argv[1].Atoi();
-				int fileNum=argv[2].Atoi();
-				if(0<=drive && drive<NUM_FDDRIVES && 0<=fileNum && 0==fileNum)
+				int drive=cpputil::Atoi(argv[1]);
+				int fileNum=cpputil::Atoi(argv[2]);
+				if(0<=drive && drive<NUM_FDDRIVES && 0<=fileNum && fileNum)
 				{
 					fdImgFName[drive]=argv[3].c_str();
 				}
 			}
 		}
-		else if(0==argv[0].STRCMP("FDWPROT_"))
+		else if(argv[0]=="FDWPROT_")
 		{
 			if(4<=argv.size())
 			{
-				int drive=argv[1].Atoi();
-				int fileNum=argv[2].Atoi();
-				if(0<=drive && drive<2 && 0<=fileNum && 0==fileNum)
+				int drive=cpputil::Atoi(argv[1]);
+				int fileNum=cpputil::Atoi(argv[2]);
+				if(0<=drive && drive<2 && 0<=fileNum && fileNum)
 				{
-					fdImgWriteProtect[drive]=(0!=argv[3].Atoi());
+					fdImgWriteProtect[drive]=(0!=cpputil::Atoi(argv[3]));
 				}
 			}
 		}
-		else if(0==argv[0].STRCMP("SCSIIMG_"))
+		else if(argv[0]=="SCSIIMG_")
 		{
 			if(3<=argv.size())
 			{
-				int scsiId=argv[1].Atoi();
+				int scsiId=cpputil::Atoi(argv[1]);
 				if(0<=scsiId && scsiId<MAX_NUM_SCSI_DEVICES)
 				{
 					scsiImg[scsiId].imgFName=argv[2].c_str();
@@ -476,117 +475,117 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				}
 			}
 		}
-		else if (0==argv[0].STRCMP("FASTSCSI"))
+		else if (argv[0]=="FASTSCSI")
 		{
 			if (2<=argv.size())
 			{
-				fastSCSI=(0!=argv[1].Atoi());
+				fastSCSI=(0!=cpputil::Atoi(argv[1]));
 			}
 		}
-		else if(0==argv[0].STRCMP("KEYCOMB_"))
+		else if(argv[0]=="KEYCOMB_")
 		{
 			if(2<=argv.size())
 			{
 				bootKeyComb=TownsStrToKeyComb(argv[1].c_str());
 			}
 		}
-		else if(0==argv[0].STRCMP("AUTOSTAR"))
+		else if(argv[0]=="AUTOSTAR")
 		{
 			if(2<=argv.size())
 			{
-				autoStart=(0!=argv[1].Atoi());
+				autoStart=(0!=cpputil::Atoi(argv[1]));
 			}
 		}
-		else if(0==argv[0].STRCMP("SEPARPRC"))
+		else if(argv[0]=="SEPARPRC")
 		{
 			if(2<=argv.size())
 			{
-				separateProcess=(0!=argv[1].Atoi());
+				separateProcess=(0!=cpputil::Atoi(argv[1]));
 			}
 		}
-		else if(0==argv[0].STRCMP("GAMEPORT"))
+		else if(argv[0]=="GAMEPORT")
 		{
 			if(3<=argv.size())
 			{
-				int port=argv[1].Atoi();
-				if(0==port || 1==port)
+				int port=cpputil::Atoi(argv[1]);
+				if(port || 1==port)
 				{
 					gamePort[port]=TownsStrToGamePortEmu(argv[2].c_str());
 				}
 			}
 		}
-		else if(0==argv[0].STRCMP("BTNHOLDT"))
+		else if(argv[0]=="BTNHOLDT")
 		{
 			if(4<=argv.size())
 			{
-				int port=argv[1].Atoi()&1;
-				int btn=argv[2].Atoi()&1;
-				int nanosec=argv[3].Atoi();
+				int port=cpputil::Atoi(argv[1])&1;
+				int btn=cpputil::Atoi(argv[2])&1;
+				int nanosec=cpputil::Atoi(argv[3]);
 				maxButtonHoldTime[port][btn]=nanosec;
 			}
 		}
-		else if(0==argv[0].STRCMP("SCALING_"))
+		else if(argv[0]=="SCALING_")
 		{
 			if(2<=argv.size())
 			{
-				scaling=argv[1].Atoi();
+				scaling=cpputil::Atoi(argv[1]);
 			}
 		}
-		else if(0==argv[0].STRCMP("AUTOSCAL"))
+		else if(argv[0]=="AUTOSCAL")
 		{
 			if(2<=argv.size())
 			{
-				autoScaling=(0!=argv[1].Atoi());
+				autoScaling=(0!=cpputil::Atoi(argv[1]));
 			}
 		}
-		else if(0==argv[0].STRCMP("MTNASPCT"))
+		else if(argv[0]=="MTNASPCT")
 		{
 			if(2<=argv.size())
 			{
-				maintainAspect=(0!=argv[1].Atoi());
+				maintainAspect=(0!=cpputil::Atoi(argv[1]));
 			}
 		}
-		else if(0==argv[0].STRCMP("MAXIMIZE"))
+		else if(argv[0]=="MAXIMIZE")
 		{
 			if(2<=argv.size())
 			{
-				windowModeOnStartUp=(0!=argv[1].Atoi() ? WINDOW_MAXIMIZE : WINDOW_NORMAL);
+				windowModeOnStartUp=(0!=cpputil::Atoi(argv[1]) ? WINDOW_MAXIMIZE : WINDOW_NORMAL);
 			}
 		}
-		else if(0==argv[0].STRCMP("WNDWMODE"))
+		else if(argv[0]=="WNDWMODE")
 		{
 			if(2<=argv.size())
 			{
-				if(0==argv[1].STRCMP("NORMAL"))
+				if(argv[1]=="NORMAL")
 				{
 					windowModeOnStartUp=WINDOW_NORMAL;
 				}
-				else if(0==argv[1].STRCMP("MAXIMIZE"))
+				else if(argv[1]=="MAXIMIZE")
 				{
 					windowModeOnStartUp=WINDOW_MAXIMIZE;
 				}
-				else if(0==argv[1].STRCMP("FULLSCREEN"))
+				else if(argv[1]=="FULLSCREEN")
 				{
 					windowModeOnStartUp=WINDOW_FULLSCREEN;
 				}
 			}
 		}
-		else if(0==argv[0].STRCMP("FREQUENC"))
+		else if(argv[0]=="FREQUENC")
 		{
 			if(2<=argv.size())
 			{
-				freq=argv[1].Atoi();
+				freq=cpputil::Atoi(argv[1]);
 				if(freq<1)
 				{
 					freq=1;
 				}
 			}
 		}
-		else if(0==argv[0].STRCMP("USE80387"))
+		else if(argv[0]=="USE80387")
 		{
 			if(2<=argv.size())
 			{
-				if(0!=argv[1].Atoi())
+				if(0!=cpputil::Atoi(argv[1]))
 				{
 					useFPU=true;
 				}
@@ -596,11 +595,11 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				}
 			}
 		}
-		else if(0==argv[0].STRCMP("MEMSIZE_"))
+		else if(argv[0]=="MEMSIZE_")
 		{
 			if(2<=argv.size())
 			{
-				memSizeInMB=argv[1].Atoi();
+				memSizeInMB=cpputil::Atoi(argv[1]);
 				if(memSizeInMB<1)
 				{
 					memSizeInMB=1;
@@ -611,152 +610,152 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				}
 			}
 		}
-		else if(0==argv[0].STRCMP("CATCHUPT"))
+		else if(argv[0]=="CATCHUPT")
 		{
 			if(2<=argv.size())
 			{
-				catchUpRealTime=(0!=argv[1].Atoi());
+				catchUpRealTime=(0!=cpputil::Atoi(argv[1]));
 			}
 		}
-		else if(0==argv[0].STRCMP("APPSPEC_"))
+		else if(argv[0]=="APPSPEC_")
 		{
 			if(2<=argv.size())
 			{
 				appSpecificSetting=TownsStrToApp(argv[1].c_str());
 			}
 		}
-		else if(0==argv[0].STRCMP("RUNAS386"))
+		else if(argv[0]=="RUNAS386")
 		{
 			if(2<=argv.size())
 			{
-				pretend386DX=(0!=argv[1].Atoi());
+				pretend386DX=(0!=cpputil::Atoi(argv[1]));
 			}
 		}
-		else if(0==argv[0].STRCMP("MOUSESPD"))
+		else if(argv[0]=="MOUSESPD")
 		{
 			if(2<=argv.size())
 			{
-				mouseIntegrationSpeed=argv[1].Atoi();
+				mouseIntegrationSpeed=cpputil::Atoi(argv[1]);
 			}
 		}
-		else if(0==argv[0].STRCMP("MOUSERNG"))
+		else if(argv[0]=="MOUSERNG")
 		{
 			if(5<=argv.size())
 			{
-				mouseMinX=argv[1].Atoi();
-				mouseMinY=argv[2].Atoi();
-				mouseMaxX=argv[3].Atoi();
-				mouseMaxY=argv[4].Atoi();
+				mouseMinX=cpputil::Atoi(argv[1]);
+				mouseMinY=cpputil::Atoi(argv[2]);
+				mouseMaxX=cpputil::Atoi(argv[3]);
+				mouseMaxY=cpputil::Atoi(argv[4]);
 			}
 		}
-		else if(0==argv[0].STRCMP("FLTMOUSE"))
+		else if(argv[0]=="FLTMOUSE")
 		{
 			if(2<=argv.size())
 			{
-				mouseByFlightstickAvailable=(0!=argv[1].Atoi());
+				mouseByFlightstickAvailable=(0!=cpputil::Atoi(argv[1]));
 			}
 		}
-		else if(0==argv[0].STRCMP("FLTMOSID"))
+		else if(argv[0]=="FLTMOSID")
 		{
 			if(2<=argv.size())
 			{
-				mouseByFlightstickPhysicalId=argv[1].Atoi();
+				mouseByFlightstickPhysicalId=cpputil::Atoi(argv[1]);
 			}
 		}
-		else if(0==argv[0].STRCMP("FLTMOSCT"))
+		else if(argv[0]=="FLTMOSCT")
 		{
 			if(3<=argv.size())
 			{
-				mouseByFlightstickCenterX=argv[1].Atoi();
-				mouseByFlightstickCenterY=argv[2].Atoi();
+				mouseByFlightstickCenterX=cpputil::Atoi(argv[1]);
+				mouseByFlightstickCenterY=cpputil::Atoi(argv[2]);
 			}
 		}
-		else if(0==argv[0].STRCMP("FLTMOSSC"))
+		else if(argv[0]=="FLTMOSSC")
 		{
 			if(3<=argv.size())
 			{
-				mouseByFlightstickScaleX=argv[1].Atof();
-				mouseByFlightstickScaleY=argv[2].Atof();
+				mouseByFlightstickScaleX=atof(argv[1].c_str());
+				mouseByFlightstickScaleY=atof(argv[2].c_str());
 			}
 		}
-		else if(0==argv[0].STRCMP("FLTMOSZZ"))
+		else if(argv[0]=="FLTMOSZZ")
 		{
 			if(2<=argv.size())
 			{
-				mouseByFlightstickZeroZoneX=(float)(argv[1].Atof()/100.0);
-				mouseByFlightstickZeroZoneY=(float)(argv[1].Atof()/100.0);
+				mouseByFlightstickZeroZoneX=(float)(atof(argv[1].c_str())/100.0);
+				mouseByFlightstickZeroZoneY=(float)(atof(argv[1].c_str())/100.0);
 			}
 		}
-		else if(0==argv[0].STRCMP("USESCTHR"))
+		else if(argv[0]=="USESCTHR")
 		{
 			if(2<=argv.size())
 			{
-				useThrottleAxis=(0!=argv[1].Atoi());
+				useThrottleAxis=(0!=cpputil::Atoi(argv[1]));
 			}
 		}
-		else if(0==argv[0].STRCMP("SCTHRAXS"))
+		else if(argv[0]=="SCTHRAXS")
 		{
 			if(3<=argv.size())
 			{
-				throttlePhysicalId=argv[1].Atoi();
-				throttleAxis=argv[2].Atoi();
+				throttlePhysicalId=cpputil::Atoi(argv[1]);
+				throttleAxis=cpputil::Atoi(argv[2]);
 			}
 		}
-		else if(0==argv[0].STRCMP("VIRTUKEY"))
+		else if(argv[0]=="VIRTUKEY")
 		{
 			if(3<=argv.size() && nVirtualKey<MAX_NUM_VIRTUALKEYS)
 			{
 				virtualKeys[nVirtualKey].townsKey=argv[1];
-				virtualKeys[nVirtualKey].physicalId=argv[2].Atoi();
-				virtualKeys[nVirtualKey].button=argv[3].Atoi();
+				virtualKeys[nVirtualKey].physicalId=cpputil::Atoi(argv[2]);
+				virtualKeys[nVirtualKey].button=cpputil::Atoi(argv[3]);
 				++nVirtualKey;
 			}
 		}
-		else if(0==argv[0].STRCMP("KEYMAPFN"))
+		else if(argv[0]=="KEYMAPFN")
 		{
 			if(2<=argv.size())
 			{
 				keyMapFName=argv[1].c_str();
 			}
 		}
-		else if(0==argv[0].STRCMP("KYBDMODE"))
+		else if(argv[0]=="KYBDMODE")
 		{
 			if(2<=argv.size())
 			{
 				keyboardMode=TownsStrToKeyboardMode(argv[1].c_str());
 			}
 		}
-		else if(0==argv[0].STRCMP("DAMPWIRE"))
+		else if(argv[0]=="DAMPWIRE")
 		{
 			if(2<=argv.size())
 			{
-				damperWireLine=(0!=argv[1].Atoi());
+				damperWireLine=(0!=cpputil::Atoi(argv[1]));
 			}
 		}
-		else if (0 == argv[0].STRCMP("SCANLINE15K"))
+		else if (argv[0]=="SCANLINE15K")
 		{
 			if(2<=argv.size())
 			{
-				scanLineEffectIn15KHz=(0!=argv[1].Atoi());
+				scanLineEffectIn15KHz=(0!=cpputil::Atoi(argv[1]));
 			}
 		}
-		else if(0==argv[0].STRCMP("FMVOLUME"))
+		else if(argv[0]=="FMVOLUME")
 		{
 			if(2<=argv.size())
 			{
-				fmVol=argv[1].Atoi();
+				fmVol=cpputil::Atoi(argv[1]);
 			}
 		}
-		else if(0==argv[0].STRCMP("PCMVOLUM"))
+		else if(argv[0]=="PCMVOLUM")
 		{
 			if(2<=argv.size())
 			{
-				pcmVol=argv[1].Atoi();
+				pcmVol=cpputil::Atoi(argv[1]);
 			}
 		}
-		else if(0==argv[0].STRCMP("SNDDBLBF"))
+		else if(argv[0]=="SNDDBLBF")
 		{
-			if(2<=argv.size() && 0==argv[1].STRCMP("MAX"))
+			if(2<=argv.size() && argv[1]=="MAX")
 			{
 				maximumSoundDoubleBuffering=true;
 			}
@@ -765,97 +764,97 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				maximumSoundDoubleBuffering=false;
 			}
 		}
-		else if(0==argv[0].STRCMP("MIDICARD"))
+		else if(argv[0]=="MIDICARD")
 		{
 			if(2<=argv.size())
 			{
-				nMidiCards=argv[1].Atoi();
+				nMidiCards=cpputil::Atoi(argv[1]);
 			}
 			else
 			{
 				nMidiCards=0;
 			}
 		}
-		else if(0==argv[0].STRCMP("LOADSTAT"))
+		else if(argv[0]=="LOADSTAT")
 		{
 			if(2<=argv.size())
 			{
 				startUpStateFName=argv[1];
 			}
 		}
-		else if(0==argv[0].STRCMP("QSSDIREC"))
+		else if(argv[0]=="QSSDIREC")
 		{
 			if(2<=argv.size())
 			{
 				quickScrnShotDir=argv[1].c_str();
 			}
 		}
-		else if(0==argv[0].STRCMP("HOSTSCUT"))
+		else if(argv[0]=="HOSTSCUT")
 		{
 			if(5<=argv.size())
 			{
 				HostShortCut hsc;
 				hsc.hostKey=argv[1].c_str();
-				hsc.ctrl=(0!=argv[2].Atoi());
-				hsc.shift=(0!=argv[3].Atoi());
+				hsc.ctrl=(0!=cpputil::Atoi(argv[2]));
+				hsc.shift=(0!=cpputil::Atoi(argv[3]));
 				hsc.cmdStr=argv[4].c_str();
 				hostShortCutKeys.push_back(hsc);
 			}
 		}
-		else if(0==argv[0].STRCMP("QSTASAVE"))
+		else if(argv[0]=="QSTASAVE")
 		{
 			if(2<=argv.size())
 			{
 				quickStateSaveFName=argv[1].c_str();
 			}
 		}
-		else if(0==argv[0].STRCMP("PAUSEKEY"))
+		else if(argv[0]=="PAUSEKEY")
 		{
 			if(2<=argv.size())
 			{
 				pauseResumeKeyLabel=argv[1].c_str();
 			}
 		}
-		else if(0==argv[0].STRCMP("SHAREDIR"))
+		else if(argv[0]=="SHAREDIR")
 		{
 			sharedDir.push_back(argv[1].c_str());
 		}
-		else if(0==argv[0].STRCMP("TOWNSTYP"))
+		else if(argv[0]=="TOWNSTYP")
 		{
 			if(2<=argv.size())
 			{
 				townsType=StrToTownsType(argv[1].c_str());
 			}
 		}
-		else if(0==argv[0].STRCMP("SCRNCROP"))
+		else if(argv[0]=="SCRNCROP")
 		{
 			if(5<=argv.size())
 			{
-				scrnShotX0=argv[1].Atoi();
-				scrnShotY0=argv[2].Atoi();
-				scrnShotWid=argv[3].Atoi();
-				scrnShotHei=argv[4].Atoi();
+				scrnShotX0=cpputil::Atoi(argv[1]);
+				scrnShotY0=cpputil::Atoi(argv[2]);
+				scrnShotWid=cpputil::Atoi(argv[3]);
+				scrnShotHei=cpputil::Atoi(argv[4]);
 			}
 		}
-		else if(0==argv[0].STRCMP("MAPLOC_X"))
+		else if(argv[0]=="MAPLOC_X")
 		{
 			if(2<=argv.size())
 			{
 				mapXYExpression[0]=argv[1];
 			}
 		}
-		else if(0==argv[0].STRCMP("MAPLOC_Y"))
+		else if(argv[0]=="MAPLOC_Y")
 		{
 			if(2<=argv.size())
 			{
 				mapXYExpression[1]=argv[1];
 			}
 		}
-		else if(0==argv[0].STRCMP("CPUFIDEL") && 2<=argv.size())
+		else if(argv[0]=="CPUFIDEL" && 2<=argv.size())
 		{
 			CPUFidelityLevel=i486DXCommon::StrToFidelityLevel(argv[1].c_str());
 		}
-		else if(0==argv[0].STRCMP("RS232TCP"))
+		else if(argv[0]=="RS232TCP")
 		{
 			if(2<=argv.size())
 			{

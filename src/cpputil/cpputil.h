@@ -33,6 +33,7 @@ bool WriteBinaryFile(const std::string &fName,unsigned long long length,const un
 bool WriteBinaryFile(const std::string &fName,unsigned long long int start,unsigned long long length,const unsigned char dat[]);
 std::vector <std::string> ReadTextFile(std::string fName);
 bool WriteTextFile(std::string fName,const std::vector <std::string> &text);
+std::vector <std::string> Parser(const std::string &str);
 std::vector <std::string> Parser(const char str[]);
 const std::string &Capitalize(std::string &s);
 std::string Capitalize(const char s[]);
@@ -48,7 +49,9 @@ const char *StrSkipSpace(const char str[]);
 const char *StrSkipNonSpace(const char str[]);
 const char *BoolToStr(bool b);
 bool StrToBool(const std::string &str);
+int Xtoi(const std::string &str);
 int Xtoi(const char str[]);
+int Atoi(const std::string &str);
 int Atoi(const char str[]);
 inline char FourBitToX(int i);
 
