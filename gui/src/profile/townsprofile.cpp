@@ -13,79 +13,19 @@ TownsProfile::TownsProfile()
 }
 void TownsProfile::CleanUp(void)
 {
-	ROMPath="";
-	cdImgFName="";
-	cdSpeed=0;
-	for(auto &f : fdImgFName)
-	{
-		f="";
-	}
-	for(auto &wp : fdImgWriteProtect)
-	{
-		wp=false;
-	}
-	for(auto &f : scsiImg)
-	{
-		f.imageType=SCSIIMAGE_NONE;
-		f.imgFName="";
-	}
+	TownsStartParameters init;
+	TownsStartParameters *copyTo=this;
+	*copyTo=init;
 
-	gamePort[0]=TOWNS_GAMEPORTEMU_PHYSICAL0;
-	gamePort[1]=TOWNS_GAMEPORTEMU_MOUSE;
-
-	maxButtonHoldTime[0][0]=0;
-	maxButtonHoldTime[0][1]=0;
-	maxButtonHoldTime[1][0]=0;
-	maxButtonHoldTime[1][1]=0;
-
-	bootKeyComb=BOOT_KEYCOMB_NONE;
 	autoStart=false;
 	scaling=150;
-	damperWireLine=true;
-	pretend386DX=false;
-	freq=40;
-	appSpecificSetting=TOWNS_APPSPECIFIC_NONE;
 
-	memSizeInMB=4;
-	mouseIntegrationSpeed=256;
-	considerVRAMOffsetInMouseIntegration=true;
-
-	mouseByFlightstickAvailable=false;
-	mouseByFlightstickPhysicalId=-1;
-	mouseByFlightstickCenterX=320,mouseByFlightstickCenterY=200;
-	mouseByFlightstickZeroZoneX=0;
-	mouseByFlightstickZeroZoneY=0;
-	mouseByFlightstickScaleX=500.0f;
-	mouseByFlightstickScaleY=400.0f;
-
-	throttlePhysicalId=-1;
-	throttleAxis=2;
-
-	keyboardMode=TOWNS_KEYBOARD_MODE_DEFAULT;
 	virtualKeys.resize(MAX_NUM_VIRTUALKEYS);
 	for(auto &vk : virtualKeys)
 	{
 		vk.townsKey="";
 		vk.physicalId=-1;
 	}
-
-	keyMapFName="";
-
-	catchUpRealTime=true;
-
-	fmVol=-1;
-	pcmVol=-1;
-
-	quickScrnShotDir="";
-	hostShortCutKeys.clear();
-
-	quickStateSaveFName="";
-
-	pauseResumeKeyLabel="SCROLLLOCK";
-
-	sharedDir.clear();
-
-	RS232CtoTCPAddr="";
 }
 std::vector <std::string> TownsProfile::Serialize(void) const
 {
