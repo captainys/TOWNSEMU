@@ -245,6 +245,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Try this option if the sound is choppy or hear static noise." << std::endl;
 	std::cout << "-DAMPERWIRELINE" << std::endl;
 	std::cout << "  Render damper-wire line to make you feel nostalgic." << std::endl;
+	std::cout << "-NODAMPERWIRELINE" << std::endl;
+	std::cout << "  Don't render damper-wire line." << std::endl;
 	std::cout << "-SCANLINE15K\n";
 	std::cout << "  Enable scan-line effect in 15KHz screen modes.\n";
 	std::cout << "-TOWNSTYPE" << std::endl;
@@ -915,6 +917,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-DAMPERWIRELINE"==ARG)
 		{
 			damperWireLine=true;
+		}
+		else if("-NODAMPERWIRELINE"==ARG)
+		{
+			damperWireLine=false;
 		}
 		else if("-SCANLINE15K"==ARG)
 		{

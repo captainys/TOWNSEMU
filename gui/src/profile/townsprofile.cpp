@@ -1066,6 +1066,10 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	{
 		argv.push_back("-DAMPERWIRELINE");
 	}
+	else
+	{
+		argv.push_back("-NODAMPERWIRELINE");
+	}
 
 	if(true==scanLineEffectIn15KHz)
 	{
