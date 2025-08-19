@@ -195,6 +195,18 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		}
 		break;
 
+	case TOWNSIO_MAINRAM_WAIT_1STGEN: //     0x5E0,
+		return state.mainRAMWait;
+		break;
+
+	case TOWNSIO_MAINRAM_WAIT: //            0x5E2,
+		return state.mainRAMWait;
+		break;
+
+	case TOWNSIO_VRAMWAIT: //                0x5E6,
+		return state.VRAMWait;
+		break;
+
 	case TOWNSIO_FASTMODE:
 		if(TOWNSTYPE_2_CX<=townsType)
 		{

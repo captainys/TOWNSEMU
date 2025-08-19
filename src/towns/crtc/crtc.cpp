@@ -476,7 +476,7 @@ Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 }
 Vec2i TownsCRTC::GetLowResPageOriginOnMonitor(unsigned char page) const
 {
-	int x0,y0;
+	int x0,y0,STD_H,STD_V;
 	static const int reg[6]=
 	{
 		REG_HDS0,REG_HAJ0,REG_VDS0,
@@ -488,56 +488,56 @@ Vec2i TownsCRTC::GetLowResPageOriginOnMonitor(unsigned char page) const
 	*/
 	auto HDS=std::max(state.crtcReg[reg[page*3]],state.crtcReg[reg[page*3+1]]);
 	auto VDS=state.crtcReg[reg[page*3+2]];
-	switch(CLKSEL())
+	switch(state.crtcReg[REG_HST])
 	{
-	case 0:
-		x0=(HDS-0x129)>>1;
-		y0=(VDS-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
+	case 779:
+		STD_H=127;
 		break;
-	case 1:
-		if(0x31F==state.crtcReg[REG_HST])
-		{
-			// RAGNAROK in Free Software Collection 10 uses this setting.
-			// It is unknown if any other programs use the same setting at this time.
-			// This interpretation still leaves the layer_1 16 pixels left of where it should be.
-			x0=(HDS-0x8A);  // Looks like no division-by-2 in 31KHz mode.
-		}
-		else
-		{
-			x0=(HDS-0xe7)>>1;
-		}
-		y0=(VDS-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
+	case 863:
+		STD_H=156;
 		break;
-	case 2:
-		x0=(HDS-0x8a);
-		y0=(VDS-0x46)>>1;
+	case 1559: // 15KHz Non-interlaced mode
+		STD_H=231;
 		break;
-	case 3:
-		// VING Games use CLKSEL=3 with HST=0x029D, making it 31KHz mode, in which case around 0x8A is the left-edge of the monitor, and
-		// 0x46 is the top-edge.
-		// TBIOS exclusively uses CLKSEL=3 for 24KHz mode, in which case 0x9C is the left-edge of the monitor, and
-		// 0x40 is the top-edge.
-		// I still don't know the correct way to calculate he origin on the monitor.  I make an ad-hoc fix for the time being.
-		if(0x29D!=state.crtcReg[REG_HST])
-		{
-			x0=(HDS-0x9c);
-			y0=(VDS-0x40)>>1;
-		}
-		else
-		{
-			x0=(HDS-0x8A);
-			y0=(VDS-0x46)>>1;
-		}
+	case 1819: // 15KHz Interlaced mode
+		STD_H=297;
 		break;
-	default:
-		x0=0;
-		y0=0;
+	default: // usually 669 or 799
+		STD_H=138;
 		break;
 	}
+	auto HDS_MIN=std::min(state.crtcReg[REG_HDS0],state.crtcReg[REG_HDS1]);
+	if(HDS_MIN<STD_H)
+	{
+		STD_H=HDS_MIN;
+	}
+	switch(state.crtcReg[REG_VST])
+	{
+	case 523:
+		STD_V=40;
+		break;
+	case 524:
+		STD_V=42;
+		break;
+	case 879:
+		STD_V=64;
+		break;
+	default: // usually 1049
+		STD_V=70;
+		break;
+	}
+	auto VDS_MIN=std::min(state.crtcReg[REG_VDS0],state.crtcReg[REG_VDS1]);
+	if(VDS_MIN<STD_V)
+	{
+		STD_V=VDS_MIN;
+	}
+	x0=(HDS-STD_H);
+	y0=(VDS-STD_V)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
 
 	// Probably >>
 	if(15==GetHorizontalFrequency())
 	{
+		x0>>=1;
 		y0<<=1;
 	}
 	// Probably <<
@@ -607,16 +607,17 @@ Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 			wid*=zoom.x();
 			wid/=4;
 		}
-		if(640<wid)
-		{
-			wid=640;
-		}
 	}
 	auto FO=state.crtcReg[REG_FO0+4*page];
 	auto LO=state.crtcReg[REG_LO0+4*page];
 	if(0==FO || FO==LO)  // FO==LO condition is to render GENOCIDE2 opening correctly.
 	{
 		hei/=2;
+	}
+
+	if(800<wid)
+	{
+		wid=800;
 	}
 
 	return Vec2i::Make(wid,hei);
