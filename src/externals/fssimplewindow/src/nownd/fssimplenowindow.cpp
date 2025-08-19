@@ -57,7 +57,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	#include <dirent.h>
 	#include <fcntl.h>
 	#include <unistd.h>
-	#include <termio.h>
+	#include <termios.h>
 	#include <stdio.h>
 	#include <stdlib.h>
 	#include <time.h>
@@ -74,7 +74,7 @@ static int mapFSKEYtoVK[FSKEY_NUM_KEYCODE];
 #ifdef __APPLE__
 static struct sgttyb OriginalConsoleSetting;
 #elif !defined(_WIN32)
-struct termio OriginalConsoleSetting;
+struct termios OriginalConsoleSetting;
 #endif
 
 
@@ -242,7 +242,7 @@ static void Restore(int)
 #elif defined(__APPLE__)
 	ioctl(fileno(stdin),TIOCSETP,&OriginalConsoleSetting);
 #else
-	ioctl(0,TCSETA,&OriginalConsoleSetting);
+	tcsetattr(STDIN_FILENO, TCSANOW, &OriginalConsoleSetting);
 #endif
 	printf("%s %d\n",__FUNCTION__,__LINE__);
 	exit(0);
@@ -263,14 +263,14 @@ static void FsSetUpInkeyConsole(void)
 	inkey.sg_flags&=~ECHO;
 	ioctl(fileno(stdin),TIOCSETP,&inkey);
 #else
-	struct termio inkey;
-	ioctl(0,TCGETA,&OriginalConsoleSetting);
+	struct termios inkey;
+	tcgetattr(STDIN_FILENO, &OriginalConsoleSetting);
 	inkey=OriginalConsoleSetting;
 	inkey.c_lflag&=~ECHO;
 	inkey.c_lflag&=~ICANON;
 	inkey.c_cc[VMIN]=0;   /* Zero wait */
 	inkey.c_cc[VTIME]=0;  /* Wait 0 second */
-	ioctl(0,TCSETA,&inkey);
+	tcsetattr(STDIN_FILENO, TCSANOW, &inkey);
 #endif
 }
 
