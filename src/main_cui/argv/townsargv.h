@@ -19,11 +19,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <string>
 #include <vector>
 #include "townsdef.h"
+#include "townsparam.h"
 #include "townsprofile.h"
 
 
 
-class TownsARGV : public TownsProfile
+class TownsARGV : public TownsStartParameters
 {
 public:
 	TownsARGV();

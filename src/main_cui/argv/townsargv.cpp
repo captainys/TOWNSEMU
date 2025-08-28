@@ -346,8 +346,13 @@ bool TownsARGV::TryLoadProfile(std::string fName)
 		auto text=cpputil::ReadTextFile(fName);
 		if(0<text.size())
 		{
-			if(true==Deserialize(text))
+			TownsProfile profile;
+			if(true==profile.Deserialize(text))
 			{
+				TownsStartParameters *to=this;
+				TownsStartParameters *from=&profile;
+				*to=*from;
+
 				std::string path,file;
 				cpputil::SeparatePathFile(path,file,fName);
 
