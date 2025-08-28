@@ -1334,7 +1334,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.pretend386DX=(YSTRUE==pretend386DXBtn->GetCheck());
 
-	profile.autoStart=(YSTRUE==autoStartBtn->GetCheck());
+	profile.autoStartOnLoad=(YSTRUE==autoStartBtn->GetCheck());
 
 	profile.scaling=scrnScaleTxt->GetInteger();
 	profile.autoScaling=(YSTRUE==scrnAutoScaleBtn->GetCheck());
@@ -1555,7 +1555,7 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		pretend386DXBtn->SetCheck(YSFALSE);
 	}
 
-	if(true==profile.autoStart)
+	if(true==profile.autoStartOnLoad)
 	{
 		autoStartBtn->SetCheck(YSTRUE);
 	}

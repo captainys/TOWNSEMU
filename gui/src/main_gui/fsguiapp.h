@@ -244,7 +244,7 @@ private:
 	YsWString GetOptionFileName(void) const;
 
 	void SaveProfile(YsWString fName) const;
-	void LoadProfile(YsWString fName);
+	bool LoadProfile(YsWString fName);
 
 	void File_MakeRelativePath(FsGuiPopUpMenuItem *);
 

@@ -313,7 +313,18 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 
 	MakeMainMenu();
 	profileDlg->Make(ui);
-	LoadProfile(GetDefaultProfileFileName());
+
+	bool profileLoaded=false;
+	if(2<=argc)
+	{
+		YsWString profileFileName;
+		YsSystemEncodingToUnicode(profileFileName,argv[1]);
+		profileLoaded=LoadProfile(profileFileName);
+	}
+	if(true!=profileLoaded)
+	{
+		LoadProfile(GetDefaultProfileFileName());
+	}
 	AddDialog(profileDlg);
 
 	resumeVMDlg->Make(this);
@@ -1357,8 +1368,9 @@ void FsGuiMainCanvas::SaveProfile(YsWString fName) const
 	fp.Fclose();
 	lastSelectedProfileFName=fName;
 }
-void FsGuiMainCanvas::LoadProfile(YsWString fName)
+bool FsGuiMainCanvas::LoadProfile(YsWString fName)
 {
+	bool loaded=false;
 	std::vector <std::string> text;
 
 	profileDlg->profileFNameTxt->SetText(fName);
@@ -1372,6 +1384,10 @@ void FsGuiMainCanvas::LoadProfile(YsWString fName)
 		{
 			text.push_back(inStream.Fgets().c_str());
 		}
+
+		// LastSelectedProfileName needs to be set before VM_Start so that directory macro ${profiledir} works correctly.
+		lastSelectedProfileFName=fName;
+
 		TownsProfile profile;
 		if(true==profile.Deserialize(text))
 		{
@@ -1380,6 +1396,7 @@ void FsGuiMainCanvas::LoadProfile(YsWString fName)
 			{
 				VM_Start(nullptr);
 			}
+			loaded=true;
 		}
 		else
 		{
@@ -1388,7 +1405,6 @@ void FsGuiMainCanvas::LoadProfile(YsWString fName)
 			AttachModalDialog(dlg);
 		}
 
-		lastSelectedProfileFName=fName;
 		for(auto imgFName : profile.fdImgFName)
 		{
 			if(""!=imgFName)
@@ -1409,6 +1425,7 @@ void FsGuiMainCanvas::LoadProfile(YsWString fName)
 			}
 		}
 	}
+	return loaded;
 }
 
 void FsGuiMainCanvas::File_MakeRelativePath(FsGuiPopUpMenuItem *)
