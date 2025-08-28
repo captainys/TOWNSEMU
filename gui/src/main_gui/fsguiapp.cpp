@@ -313,20 +313,6 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 
 	MakeMainMenu();
 	profileDlg->Make(ui);
-
-	bool profileLoaded=false;
-	if(2<=argc)
-	{
-		YsWString profileFileName;
-		YsSystemEncodingToUnicode(profileFileName,argv[1]);
-		profileLoaded=LoadProfile(profileFileName);
-	}
-	if(true!=profileLoaded)
-	{
-		LoadProfile(GetDefaultProfileFileName());
-	}
-	AddDialog(profileDlg);
-
 	resumeVMDlg->Make(this);
 
 	// Pause/Resume key is made a variable.  Need to be checked in OnInterval.
@@ -342,11 +328,28 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 	}
 
 	ArrangeDialog();
-	FitWindowToGUI();
 
 	YsDisregardVariable(argc);
 	YsDisregardVariable(argv);
 	YsGLSLCreateSharedRenderer();
+
+	bool profileLoaded=false;
+	if(2<=argc)
+	{
+		YsWString profileFileName;
+		YsSystemEncodingToUnicode(profileFileName,argv[1]);
+		profileLoaded=LoadProfile(profileFileName);
+	}
+	if(true!=profileLoaded)
+	{
+		LoadProfile(GetDefaultProfileFileName());
+	}
+
+	if(true!=IsVMRunning())
+	{
+		FitWindowToGUI();
+		AddDialog(profileDlg);
+	}
 }
 
 void FsGuiMainCanvas::MakeMainMenu(void)
