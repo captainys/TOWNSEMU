@@ -66,7 +66,6 @@ add_subdirectory(../../src/externals/yssocket/src yssocket)
 add_subdirectory(../../src/externals/connect_fssimplewindow connect_fssimplewindow)
 
 
-add_subdirectory(profile)
 add_subdirectory(subprocess)
 add_subdirectory(main_gui)
 add_subdirectory(tests_gui)

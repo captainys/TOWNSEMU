@@ -1376,7 +1376,7 @@ void FsGuiMainCanvas::LoadProfile(YsWString fName)
 		if(true==profile.Deserialize(text))
 		{
 			profileDlg->SetProfile(profile);
-			if(true==profile.autoStart)
+			if(true==profile.autoStartOnLoad)
 			{
 				VM_Start(nullptr);
 			}

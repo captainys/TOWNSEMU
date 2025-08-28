@@ -6,3 +6,7 @@ target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(townsoptions townsoptions.h townsoptions.cpp)
 target_link_libraries(townsoptions townsdef cpputil)
 target_include_directories(townsoptions PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(townsprofile townsprofile.cpp townsprofile.h)
+target_include_directories(townsprofile PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(townsprofile townsdef townsparam cpputil)

@@ -29,6 +29,7 @@ TownsARGV::TownsARGV()
 void TownsARGV::PrintHelp(void) const
 {
 	std::cout << "Usage:" << std::endl;
+	std::cout << "The 1st parameter can be ROM directory, or the Profile file name.\n";
 	std::cout << "-HELP,-H,-?" << std::endl;
 	std::cout << "  Print Help." << std::endl;
 	std::cout << "-SCALE X" << std::endl;
@@ -333,6 +334,33 @@ void TownsARGV::CopyFile(std::string src,std::string dst)
 	}
 	std::cout << "Failed to copy a file." << std::endl;
 	exit(1);
+}
+
+bool TownsARGV::TryLoadProfile(std::string fName)
+{
+	auto FNAME=fName;
+	cpputil::Capitalize(FNAME);
+	auto EXT=cpputil::GetExtension(FNAME);
+	if(".TSUGARU"==EXT && true==cpputil::FileExists(fName))
+	{
+		auto text=cpputil::ReadTextFile(fName);
+		if(0<text.size())
+		{
+			if(true==Deserialize(text))
+			{
+				std::string path,file;
+				cpputil::SeparatePathFile(path,file,fName);
+
+				std::pair <std::string,std::string> p;
+				p.first="profiledir";
+				p.second=path;
+				this->specialPath.push_back(p);
+
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
@@ -997,7 +1025,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			if(1==i)
 			{
-				ROMPath=argv[i];
+				if(true!=TryLoadProfile(argv[i]))
+				{
+					ROMPath=argv[i];
+				}
 			}
 			else
 			{

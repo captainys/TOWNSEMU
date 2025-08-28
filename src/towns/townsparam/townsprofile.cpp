@@ -17,7 +17,7 @@ void TownsProfile::CleanUp(void)
 	TownsStartParameters *copyTo=this;
 	*copyTo=init;
 
-	autoStart=false;
+	autoStartOnLoad=false;
 	scaling=150;
 
 	virtualKeys.resize(MAX_NUM_VIRTUALKEYS);
@@ -104,7 +104,7 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.back()+=TownsKeyCombToStr(bootKeyComb);
 
 	text.push_back("AUTOSTAR ");
-	text.back()+=(autoStart ? "1" : "0");
+	text.back()+=(autoStartOnLoad ? "1" : "0");
 
 	text.push_back("SEPARPRC ");
 	text.back()+=(separateProcess ? "1" : "0");
@@ -433,7 +433,7 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			if(2<=argv.size())
 			{
-				autoStart=(0!=cpputil::Atoi(argv[1]));
+				autoStartOnLoad=(0!=cpputil::Atoi(argv[1]));
 			}
 		}
 		else if(argv[0]=="SEPARPRC")

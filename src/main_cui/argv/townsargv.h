@@ -19,17 +19,18 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <string>
 #include <vector>
 #include "townsdef.h"
-#include "townsparam.h"
+#include "townsprofile.h"
 
 
 
-class TownsARGV : public TownsStartParameters
+class TownsARGV : public TownsProfile
 {
 public:
 	TownsARGV();
 	void PrintHelp(void) const;
 	void PrintApplicationList(void) const;
 	void CopyFile(std::string src,std::string dst);
+	bool TryLoadProfile(std::string fName);
 	bool AnalyzeCommandParameter(int argc,char *argv[]);
 };
 

@@ -18,8 +18,8 @@ public:
 	};
 
 
-	// autoStart flag is unique to TownsProfile.  Not in TownsStartParameters.
-	bool autoStart=false;
+	// autoStartOnLoad flag is unique to TownsProfile.  Not in TownsStartParameters.
+	bool autoStartOnLoad=false;
 
 	// separateProcess flag is unique to TownsProfile.  Not in TownsStartParameters.
 	bool separateProcess=false;
