@@ -365,9 +365,19 @@ void TownsSound::ProcessSound(void)
 			memset(nextFMPCMWave.data(),0,nextFMPCMWave.size());
 
 			bool wavGenerated=false;
-			if(true==IsFMPlaying() && 0!=(state.muteFlag&2) && 0!=(state.audioFlag&64))
+			if(true==IsFMPlaying())
 			{
-				state.ym2612.MakeWaveForNSamples(nextFMPCMWave.data(),numSamplesPerWave,lastFMPCMWaveGenTime);
+				if(0!=(state.muteFlag&2) && 0!=(state.audioFlag&64))
+				{
+					state.ym2612.MakeWaveForNSamples(nextFMPCMWave.data(),numSamplesPerWave,lastFMPCMWaveGenTime);
+				}
+				else
+				{
+					// Even when YM2612 is muted, it needs to MakeWaveForNSamples because it does update time-dependent state variables.
+					std::vector <unsigned char> dummy;
+					dummy.resize(numSamplesPerWave*4);
+					state.ym2612.MakeWaveForNSamples(dummy.data(),numSamplesPerWave,lastFMPCMWaveGenTime);
+				}
 				wavGenerated=true;
 			}
 			if(true==IsPCMPlaying())
