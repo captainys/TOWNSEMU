@@ -44,6 +44,8 @@ public:
 		std::string cmdStr;
 	};
 
+	bool verbose=false;
+
 	unsigned int townsType=TOWNSTYPE_UNKNOWN;
 
 	unsigned int CPUFidelityLevel=i486DXCommon::MID_FIDELITY;

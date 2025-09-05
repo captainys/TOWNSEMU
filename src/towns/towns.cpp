@@ -42,6 +42,11 @@ void FMTownsCommon::State::PowerOn(void)
 
 /* static */ bool FMTownsCommon::Setup(FMTownsCommon &towns,Outside_World *outside_world,Outside_World::WindowInterface *windowInterface,const TownsStartParameters &argv)
 {
+	if(true==argv.verbose)
+	{
+		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";
+	}
+
 	if(""==argv.ROMPath)
 	{
 		std::cout << "Usage:" << std::endl;
@@ -51,10 +56,20 @@ void FMTownsCommon::State::PowerOn(void)
 		return false;
 	}
 
+	if(true==argv.verbose)
+	{
+		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";
+	}
+
 	towns.var.specialPath["progdir"]=outside_world->GetProgramResourceDirectory();
 	for(auto p : argv.specialPath)
 	{
 		towns.var.specialPath[p.first]=p.second;
+	}
+
+	if(true==argv.verbose)
+	{
+		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";
 	}
 
 	for(auto &s : argv.initCmd)
@@ -62,12 +77,27 @@ void FMTownsCommon::State::PowerOn(void)
 		outside_world->commandQueue.push(s);
 	}
 
+	if(true==argv.verbose)
+	{
+		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";
+	}
+
 	towns.var.fileNameAlias=argv.fileNameAlias;
 
-	if(true!=towns.LoadROMImages(argv.ROMPath.c_str()))
+	if(true==argv.verbose)
+	{
+		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";
+	}
+
+	if(true!=towns.LoadROMImages(argv.ROMPath.c_str(),argv.verbose))
 	{
 		std::cout << towns.vmAbortReason << std::endl;
 		return false;
+	}
+
+	if(true==argv.verbose)
+	{
+		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";
 	}
 
 	if(TOWNSTYPE_MARTY==argv.townsType &&
@@ -413,6 +443,11 @@ void FMTownsCommon::State::PowerOn(void)
 			std::cout << "Warning!  RS232C to TCP forwarding failed to connect!" << std::endl;
 			std::cout << "Host address " << argv.RS232CtoTCPAddr << std::endl;
 		}
+	}
+
+	if(true==argv.verbose)
+	{
+		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";
 	}
 
 	return true;
@@ -1001,10 +1036,10 @@ unsigned int FMTownsCommon::MachineID(void) const
 	return (highByte<<8)|lowByte;
 }
 
-bool FMTownsCommon::LoadROMImages(std::string dirName)
+bool FMTownsCommon::LoadROMImages(std::string dirName,bool verbose)
 {
 	dirName=cpputil::ExpandFileName(dirName,var.specialPath);
-	if(true!=physMem.LoadROMImages(dirName))
+	if(true!=physMem.LoadROMImages(dirName,verbose))
 	{
 		Device::Abort("Unable to load ROM images.");
 		return false;

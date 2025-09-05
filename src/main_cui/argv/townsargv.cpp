@@ -280,6 +280,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  !!CAUTION!! TRANSMISSION IS NOT ENCRYPTED!!!!\n" << std::endl;
 	std::cout << "  !!CAUTION!! DO NOT SEND SENSITIVE AND/OR PERSONAL INFORMATION OVER TCP/IP FORWARDING!!!!\n" << std::endl;
 	std::cout << "  !!CAUTION!! I WILL NOT TAKE RESPONSIBILITY FOR ANY DAMAGE CAUSED BY COMPROMISED INFORMATION!!!!" << std::endl;
+
+	std::cout << "-VERBOSE\n";
+	std::cout << "  Additional console output.\n";
 }
 
 void TownsARGV::PrintApplicationList(void) const
@@ -378,6 +381,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			PrintHelp();
 			exit(1);
+		}
+		else if("-VERBOSE"==ARG)
+		{
+			verbose=true;
 		}
 		else if("-APP"==ARG)
 		{

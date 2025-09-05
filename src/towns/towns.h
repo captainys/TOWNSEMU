@@ -621,7 +621,7 @@ public:
 	    It just redirect the call to mem.LoadROMImages() function.
 	    Returns false if it could not read ROM images.
 	*/
-	bool LoadROMImages(std::string dirName);
+	bool LoadROMImages(std::string dirName,bool verbose=false);
 
 	/*! Once the ROMs are loaded, call PowerOn function to start the virtual machine.
 	*/

@@ -361,41 +361,60 @@ TownsPhysicalMemory::TownsPhysicalMemory(class FMTownsCommon *townsPtr,class Mem
 	state.Reset();
 }
 
-bool TownsPhysicalMemory::LoadROMImages(std::string dirName)
+std::vector <unsigned char> TownsPhysicalMemory::LoadROMImage(std::string fName,bool verbose)
+{
+	if(true==verbose)
+	{
+		std::cout << "Trying " << fName << "\n";
+	}
+	auto data=cpputil::ReadBinaryFile(fName);
+	if(true==verbose)
+	{
+		std::cout << data.size() << " bytes.\n";
+	}
+	return data;
+}
+
+bool TownsPhysicalMemory::LoadROMImages(std::string dirName,bool verbose)
 {
 	std::string fName;
 	fName=cpputil::MakeFullPathName(dirName,"FMT_SYS.ROM");
-	sysRom=cpputil::ReadBinaryFile(fName);
+	sysRom=LoadROMImage(fName,verbose);
 
 	fName=cpputil::MakeFullPathName(dirName,"FMT_DOS.ROM");
-	dosRom=cpputil::ReadBinaryFile(fName);
+	dosRom=LoadROMImage(fName,verbose);
 
 	fName=cpputil::MakeFullPathName(dirName,"FMT_FNT.ROM");
-	fontRom=cpputil::ReadBinaryFile(fName);
+	fontRom=LoadROMImage(fName,verbose);
 
 	fName=cpputil::MakeFullPathName(dirName,"FMT_F20.ROM");
-	font20Rom=cpputil::ReadBinaryFile(fName);
+	font20Rom=LoadROMImage(fName,verbose);
 
 	fName=cpputil::MakeFullPathName(dirName,"FMT_DIC.ROM");
-	dicRom=cpputil::ReadBinaryFile(fName);
+	dicRom=LoadROMImage(fName,verbose);
 
 	fName=cpputil::MakeFullPathName(dirName,"MYTOWNS.ROM");
-	std::vector <uint8_t> serROM=cpputil::ReadBinaryFile(fName);
+	std::vector <uint8_t> serROM=LoadROMImage(fName,verbose);
 
 	fName=cpputil::MakeFullPathName(dirName,"MAR_EX0.ROM");
-	std::vector <uint8_t> mar0=cpputil::ReadBinaryFile(fName);
+	std::vector <uint8_t> mar0=LoadROMImage(fName,verbose);
 	fName=cpputil::MakeFullPathName(dirName,"MAR_EX1.ROM");
-	std::vector <uint8_t> mar1=cpputil::ReadBinaryFile(fName);
+	std::vector <uint8_t> mar1=LoadROMImage(fName,verbose);
 	fName=cpputil::MakeFullPathName(dirName,"MAR_EX2.ROM");
-	std::vector <uint8_t> mar2=cpputil::ReadBinaryFile(fName);
+	std::vector <uint8_t> mar2=LoadROMImage(fName,verbose);
 	fName=cpputil::MakeFullPathName(dirName,"MAR_EX3.ROM");
-	std::vector <uint8_t> mar3=cpputil::ReadBinaryFile(fName);
+	std::vector <uint8_t> mar3=LoadROMImage(fName,verbose);
 
 
 	fName=cpputil::MakeFullPathName(dirName,"FMT_ALL.ROM");
-	auto allRoms=cpputil::ReadBinaryFile(fName);
+	auto allRoms=LoadROMImage(fName,verbose);
 	if(0<allRoms.size())
 	{
+		if(true==verbose)
+		{
+			std::cout << "Checking FMT_ALL.ROM\n";
+		}
+
 		size_t ptr=0;
 		while(ptr+16<=allRoms.size())
 		{
@@ -461,6 +480,11 @@ bool TownsPhysicalMemory::LoadROMImages(std::string dirName)
 			toRead->clear();
 			toRead->insert(toRead->begin(),allRoms.data()+ptr+16,allRoms.data()+ptr+16+len);
 			ptr+=16+len;
+		}
+
+		if(true==verbose)
+		{
+			std::cout << ".\n";
 		}
 	}
 

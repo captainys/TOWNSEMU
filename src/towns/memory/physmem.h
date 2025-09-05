@@ -458,7 +458,9 @@ public:
 
 	TownsPhysicalMemory(class FMTownsCommon *townsPtr,class Memory *memPtr,class RF5C68 *pcmPtr);
 
-	bool LoadROMImages(std::string dirName);
+	bool LoadROMImages(std::string dirName,bool verbose=false);
+
+	std::vector <unsigned char> LoadROMImage(std::string fName,bool verbose=false);
 
 	/*! Set CMOS image.
 	*/
