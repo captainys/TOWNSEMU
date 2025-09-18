@@ -106,6 +106,9 @@ void TownsCDROM::State::Reset(void)
 
 	CDDAWave.clear();
 	CDDAPlayPointer=0;
+
+	lidClosed=true;
+	lidLocked=false;
 }
 
 void TownsCDROM::UpdateCDDAStateInternal(long long int townsTime)
@@ -144,6 +147,9 @@ void TownsCDROM::State::ResetMPU(void)
 	ClearStatusQueue();
 	DMATransfer=false;
 	CPUTransfer=false;
+
+	lidClosed=true;
+	lidLocked=false;
 }
 
 ////////////////////////////////////////////////////////////
@@ -385,6 +391,17 @@ std::vector <std::string> TownsCDROM::GetStatusText(void) const
 	std::vector <std::string> text;
 
 	text.push_back("");
+	text.back()+="CD Image:";
+	if(DiscImage::FILETYPE_NONE!=state.GetDisc().fileType)
+	{
+		text.back()+=state.GetDisc().fName;
+	}
+	else
+	{
+		text.back()+="Not Loaded";
+	}
+
+	text.push_back("");
 	text.back()+="Last Command:"+cpputil::Ubtox(state.cmd);
 
 	switch(state.cmd&0x9F)
@@ -514,6 +531,10 @@ std::vector <std::string> TownsCDROM::GetStatusText(void) const
 		text.back()+="!!Undefined!!";
 		break;
 	}
+
+	text.push_back("LID:");
+	text.back()+=std::string(true==state.lidClosed ? "CLOSED" : "OPEN");
+	text.back()+=std::string(true==state.lidLocked ? " LOCKED" : " UNLOCKED");
 
 	return text;
 }
@@ -1448,7 +1469,9 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	//   Added headPositionHSG
 	// Version 6
 	//   Bug fix.  Use PushUcharArray/ReadUcharArray for status queue.
-	return 6;
+	// Version 7
+	//   lidClosed, lidLocked
+	return 7;
 }
 /* virtual */ void TownsCDROM::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1504,6 +1527,9 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	PushUint32(data,state.readSectorTime); // Version 3 or newer.
 
 	PushUint32(data,state.CPUTransferPointer); // Version 4 or newer
+
+	PushBool(data,state.lidClosed); // Version 7 or newer
+	PushBool(data,state.lidLocked); // Version 7 or newer
 }
 /* virtual */ bool TownsCDROM::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -1652,6 +1678,18 @@ void TownsCDROM::SetSIRQ_IRR(void)
 		state.CPUTransferPointer=ReadUint32(data);
 	}
 	var.sectorCacheForCPUTransfer.clear();
+
+	if(7<=version)
+	{
+		state.lidClosed=ReadBool(data); // Version 7 or newer
+		state.lidLocked=ReadBool(data); // Version 7 or newer
+	}
+	else
+	{
+		state.lidClosed=true;
+		state.lidLocked=false;
+	}
+
 	return true;
 }
 

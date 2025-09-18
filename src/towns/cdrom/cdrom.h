@@ -235,6 +235,8 @@ public:
 
 		bool discChanged;
 
+		bool lidClosed,lidLocked;
+
 
 		// Fractal Engine Demo does the following:
 		// (1) Issue command 62H (MODE1READ+SIRQ Request+Status Request),
