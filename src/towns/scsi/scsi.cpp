@@ -164,6 +164,12 @@ void TownsSCSI::State::Reset(void)
 	selId=0;
 	phase=PHASE_BUSFREE;
 	lastDataByte=0;
+
+	for(auto &d : dev)
+	{
+		d.lidClosed=true;
+		d.lidLocked=false;
+	}
 }
 
 
@@ -244,6 +250,8 @@ bool TownsSCSI::LoadCDImage(unsigned int scsiId,std::string fName)
 			state.deviceConnected=true;
 			state.dev[scsiId].imageFName=fName;
 			state.dev[scsiId].devType=SCSIDEVICE_CDROM;
+			state.dev[scsiId].lidClosed=true;
+			state.dev[scsiId].lidLocked=false;
 			return true;
 		}
 	}
@@ -1564,6 +1572,37 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 {
 	std::vector <std::string> text;
 
+	int scsiId=0;
+	for(auto &d : state.dev)
+	{
+		if(SCSIDEVICE_NONE!=d.devType)
+		{
+			text.push_back("SCSI ID:");
+			text.back()+=cpputil::Ubtox(scsiId);
+
+			switch(d.devType)
+			{
+			case SCSIDEVICE_HARDDISK:
+				text.back()+=" HDD";
+				break;
+			case SCSIDEVICE_CDROM:
+				text.back()+=" CD ";
+				break;
+			}
+
+			text.back()+="IMG:";
+			text.back()+=d.imageFName;
+
+			if(SCSIDEVICE_CDROM==d.devType)
+			{
+				text.back()+=" ";
+				text.back()+=std::string(true==d.lidClosed ? "CLOSED " : "OPEN ");
+				text.back()+=std::string(true==d.lidLocked ? "LOCKED   " : "UNLOCKED ");
+			}
+		}
+		++scsiId;
+	}
+
 	text.push_back("");
 	text.back()="PHASE:";
 	text.back()+=PhaseToStr(state.phase);
@@ -1691,7 +1730,9 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 
 /* virtual */ uint32_t TownsSCSI::SerializeVersion(void) const
 {
-	return 1;
+	// Version 2:
+	//   lidClosed,lidLocked flags.
+	return 2;
 }
 /* virtual */ void TownsSCSI::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1704,6 +1745,12 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 		PushString(data,dev.imageFName);
 		PushString(data,cpputil::MakeRelativePath(dev.imageFName,stateDir));
 		PushInt64(data,dev.imageSize);
+
+		if(SCSIDEVICE_CDROM==dev.devType)
+		{
+			PushBool(data,dev.lidClosed);
+			PushBool(data,dev.lidLocked);
+		}
 	}
 
 	PushBool(data,state.deviceConnected);
@@ -1796,6 +1843,17 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 					loaded=true;
 				}
 			}
+		}
+
+		if(SCSIDEVICE_CDROM==dev.devType && 2<=version)
+		{
+			dev.lidClosed=ReadBool(data);
+			dev.lidLocked=ReadBool(data);
+		}
+		else
+		{
+			dev.lidClosed=true;
+			dev.lidLocked=false;
 		}
 	}
 

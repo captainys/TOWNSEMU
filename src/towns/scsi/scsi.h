@@ -242,6 +242,8 @@ public:
 
 		bool CDDAWasPlaying=false; // Not saved in the machine state
 		DiscImage::MinSecFrm CDDAEndTime; // Make sure it is reported at least once.
+
+		bool lidClosed,lidLocked; // For CD-ROM drive.
 	};
 
 	class State
