@@ -316,15 +316,15 @@ public:
 
 	std::vector <std::string> searchPaths;
 
-	virtual const char *DeviceName(void) const{return "CDROM";}
+	const char *DeviceName(void) const override {return "CDROM";}
 
 	TownsCDROM(class FMTownsCommon *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr);
 	~TownsCDROM();
 	void WaitUntilAsyncWaveReaderFinished(void);
 
 
-	virtual void PowerOn(void);
-	virtual void Reset(void);
+	void PowerOn(void) override;
+	void Reset(void) override;
 
 	inline void UpdateCDDAState(long long int townsTime)
 	{
@@ -361,8 +361,15 @@ public:
 		return (CDDA_PLAYING==state.CDDAState || CDDA_STOPPING==state.CDDAState);
 	}
 
-	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
-	virtual unsigned int IOReadByte(unsigned int ioport);
+	inline bool DiscLoadedAndLidClosed(void) const
+	{
+		return (0!=state.GetDisc().GetNumTracks() && true==state.lidClosed);
+	}
+
+	bool CanOpenCloseFromCommand(void) const;
+
+	void IOWriteByte(unsigned int ioport,unsigned int data) override;
+	unsigned int IOReadByte(unsigned int ioport) override;
 
 	std::vector <std::string> GetStatusText(void) const;
 
@@ -377,6 +384,14 @@ public:
 	/*!
 	*/
 	void Eject(void);
+
+	/*!
+	*/
+	void OpenLid(void);
+
+	/*!
+	*/
+	void CloseLid(void);
 
 	/*! 
 	*/
@@ -419,9 +434,9 @@ private:
 	void SetSIRQ_IRR(void);
 
 
-	virtual uint32_t SerializeVersion(void) const;
-	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
-	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
+	uint32_t SerializeVersion(void) const override;
+	void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const override;
+	bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version) override;
 
 public:
 	// Will be called from FMTownsCommon::LoadState

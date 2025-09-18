@@ -182,6 +182,12 @@ void TownsCDROM::WaitUntilAsyncWaveReaderFinished(void)
 {
 	state.Reset();
 }
+
+bool TownsCDROM::CanOpenCloseFromCommand(void) const
+{
+	return TOWNSTYPE_2_MX<=townsPtr->townsType;
+}
+
 /* virtual */ void TownsCDROM::IOWriteByte(unsigned int ioport,unsigned int data)
 {
 	bool cmdOrParam=false;
@@ -382,6 +388,13 @@ void TownsCDROM::WaitUntilAsyncWaveReaderFinished(void)
 	case TOWNSIO_CDROM_SUBCODE_DATA://      0x4CD,
 		Abort("Unsupported CDROM I/O Read 04CDH");
 		return 0;
+
+	case TOWNSIO_CDROM_CAPS: // 0x4B0:
+		if(true==CanOpenCloseFromCommand())
+		{
+			return 0x0F;
+		}
+		break;
 	}
 	return 0xff;
 }
@@ -564,12 +577,28 @@ unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
 	}
 
 	state.discChanged=true;
+	state.lidClosed=true;
+	state.lidLocked=false;
 	return state.GetDisc().Open(cpputil::FindFileWithSearchPaths(fName,searchPaths));
 }
 
 void TownsCDROM::Eject(void)
 {
 	state.GetDisc().CleanUp();
+	state.lidClosed=false;
+}
+
+void TownsCDROM::OpenLid(void)
+{
+	if(true==CDDAIsPlaying())
+	{
+		StopCDDA();
+	}
+	state.lidClosed=false;
+}
+void TownsCDROM::CloseLid(void)
+{
+	state.lidClosed=true;
 }
 
 void TownsCDROM::BreakOnCommandCheck(const char phase[])
@@ -678,7 +707,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 			// Probably the logic is:
 			//    GETSTATE when CD media is not in  -> GETSTATE command itself succeeds (1st byte==0), but the drive is not ready (2nd byte==9)
 			//    MODE1READ when CD media is not in -> MODE1READ command fails (1st byte=0x21), and the drive is not ready (2nd byte=9)
-			if(0==state.GetDisc().GetNumTracks())
+			if(true!=DiscLoadedAndLidClosed())
 			{
 				state.PushStatusQueue(0x21,9,0,0);
 				break;
@@ -776,7 +805,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		{
 			if(3==state.paramQueue[0])
 			{
-				if(0==state.GetDisc().GetNumTracks())
+				if(true!=DiscLoadedAndLidClosed())
 				{
 					SetStatusDriveNotReady();
 					return;
@@ -874,6 +903,88 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		}
 		break;
 	case CDCMD_CDDASET://    0x81,
+		if(true==CanOpenCloseFromCommand())
+		{
+			if(true==StatusRequestBit(state.cmd))
+			{
+				if(2==state.paramQueue[0] && 0==state.paramQueue[1]) // Unlock
+				{
+					std::cout << "CD Unlock\n";
+					SetStatusNoError();
+					state.lidLocked=false;
+					if(0!=(CMDFLAG_IRQ&state.cmd))
+					{
+						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+						state.SIRQ=true;
+					}
+					break;
+				}
+				if(2==state.paramQueue[0] && 1==state.paramQueue[1]) // Lock
+				{
+					std::cout << "CD Lock\n";
+					SetStatusNoError();
+					state.lidLocked=true;
+					if(0!=(CMDFLAG_IRQ&state.cmd))
+					{
+						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+						state.SIRQ=true;
+					}
+					break;
+				}
+				if(2==state.paramQueue[0] && 2==state.paramQueue[1]) // Open
+				{
+					std::cout << "CD Open\n";
+					unsigned char secondByte=9;
+					if(true==CDDAIsPlaying())
+					{
+						secondByte=3;
+					}
+					state.PushStatusQueue(0,secondByte,0,0);
+					state.PushStatusQueue(9,9,0,0);
+					OpenLid();
+					if(0!=(CMDFLAG_IRQ&state.cmd))
+					{
+						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+						state.SIRQ=true;
+					}
+					break;
+				}
+				if(2==state.paramQueue[0] && 4==state.paramQueue[1]) // Close
+				{
+					std::cout << "CD Close\n";
+					if(true!=state.lidClosed)
+					{
+						// If lid is not closed, CDDA is not supposed to be playing.
+						if(0!=state.GetDisc().GetNumTracks())
+						{
+							state.PushStatusQueue(0,9,0,0);
+						}
+						else
+						{
+							state.PushStatusQueue(0,9,0,0);
+							state.PushStatusQueue(0x10,9,0,0);
+						}
+					}
+					else
+					{
+						unsigned char secondByte=0;
+						if(true==CDDAIsPlaying())
+						{
+							secondByte=3;
+							StopCDDA();
+						}
+						state.PushStatusQueue(0,secondByte,0,0);
+					}
+					if(0!=(CMDFLAG_IRQ&state.cmd))
+					{
+						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+						state.SIRQ=true;
+					}
+					break;
+				}
+			}
+		}
+
 		// ChaseHQ issues command 0xC1 and expects no status is returned.
 		// Therefore this command should not return status if STATUS-REQUEST bit is off.
 		// It still compares the 1st status byte ang 0x08, but the meaning is unknown.
@@ -1241,7 +1352,7 @@ void TownsCDROM::SetStatusDriveNotReadyOrDiscChangedOrNoError(void)
 }
 bool TownsCDROM::SetStatusDriveNotReadyOrDiscChanged(void)
 {
-	if(0==state.GetDisc().GetNumTracks())
+	if(true!=DiscLoadedAndLidClosed())
 	{
 		SetStatusDriveNotReady();
 		return true;
