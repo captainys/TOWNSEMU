@@ -91,6 +91,10 @@ Interpretation in the Linux for Towns source towns_cd.c (static void process_eve
 21H 07H        Drive Not Ready   <- This is probably wrong.  CD-ROM BIOS returns media error for 21 07 xx xx.
 21H 08H        Media Changed
 21H 0FH        Retry?
+
+MX
+24 xx 01 00    CD Door Open
+24 xx 02 00    CD Door Locked
 */
 
 
@@ -422,6 +426,8 @@ private:
 	void PushStatusCDDAStopDone(void);
 	void SetStatusSubQRead(void);
 	void PushStatusCDDAPlayEnded(void);
+
+	unsigned char StatusSecondByte(void) const;
 
 public:
 	/*! As it says.  This function can now also be called from the command module.

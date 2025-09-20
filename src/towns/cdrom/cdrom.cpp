@@ -982,6 +982,29 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 					}
 					break;
 				}
+				if(2==state.paramQueue[0] && 8==state.paramQueue[1]) // Unknown.  Towns OS V2.1 L51 uses it.
+				{
+					std::cout << "CD Check Door State\n";
+					SetStatusDriveNotReadyOrDiscChangedOrNoError();
+
+					unsigned char doorState=0;
+					if(true!=state.lidClosed)
+					{
+						doorState=1;
+					}
+					else if(true==state.lidLocked)
+					{
+						doorState=2;
+					}
+					state.PushStatusQueue(0x24,StatusSecondByte(),doorState,0);
+
+					if(0!=(CMDFLAG_IRQ&state.cmd))
+					{
+						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+						state.SIRQ=true;
+					}
+					break;
+				}
 			}
 		}
 
@@ -1367,29 +1390,7 @@ bool TownsCDROM::SetStatusDriveNotReadyOrDiscChanged(void)
 }
 void TownsCDROM::SetStatusNoError(void)
 {
-	unsigned char next2ndByteOfStatusCode=0;
-	if(CDDA_PAUSED==state.CDDAState)
-	{
-		// Probably: Response to A0H, 00 01 xx xx means CDDA is paused.
-		// 0256:00001F01 A03100                    MOV     AL,[0031H]   // Second byte of the status code, if the first byte is 00H
-		// 0256:00001F04 3C01                      CMP     AL,01H
-		// 0256:00001F06 7408                      JE      00001F10
-		// 0256:00001F08 E83006                    CALL    0000253B
-		// 0256:00001F0B E8EF05                    CALL    000024FD { ()}
-		// 0256:00001F0E EB02                      JMP     00001F12
-		// 0256:00001F10 B422                      MOV     AH,22H   // Already-Paused Error.
-		// 0256:00001F12 C3                        RET
-		next2ndByteOfStatusCode=0x01;
-	}
-	else if(true==CDDAIsPlaying())
-	{
-		next2ndByteOfStatusCode=0x03;
-		// Probably: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
-		// Confirmed: Shadow of the Beast 2 checks the 2nd byte to be 03 for verifying that the CDDA started playing.
-		//    000C:0006F30B 80FC03                    CMP     AH,03H
-		//    000C:0006F30E 75ED                      JNE     0006F2FD
-	}
-	state.PushStatusQueue(0,next2ndByteOfStatusCode,0,0);
+	state.PushStatusQueue(0,StatusSecondByte(),0,0);
 }
 void TownsCDROM::SetStatusDriveNotReady(void)
 {
@@ -1541,6 +1542,39 @@ void TownsCDROM::PushStatusCDDAStopDone(void)
 void TownsCDROM::PushStatusCDDAPlayEnded(void)
 {
 	state.PushStatusQueue(0x07,0,0,0);
+}
+
+unsigned char TownsCDROM::StatusSecondByte(void) const
+{
+	if(true!=DiscLoadedAndLidClosed())
+	{
+		return 9;
+	}
+	else if(CDDA_PAUSED==state.CDDAState)
+	{
+		// Probably: Response to A0H, 00 01 xx xx means CDDA is paused.
+		// 0256:00001F01 A03100                    MOV     AL,[0031H]   // Second byte of the status code, if the first byte is 00H
+		// 0256:00001F04 3C01                      CMP     AL,01H
+		// 0256:00001F06 7408                      JE      00001F10
+		// 0256:00001F08 E83006                    CALL    0000253B
+		// 0256:00001F0B E8EF05                    CALL    000024FD { ()}
+		// 0256:00001F0E EB02                      JMP     00001F12
+		// 0256:00001F10 B422                      MOV     AH,22H   // Already-Paused Error.
+		// 0256:00001F12 C3                        RET
+		return 1;
+	}
+	else if(true==CDDAIsPlaying())
+	{
+		// Probably: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
+		// Confirmed: Shadow of the Beast 2 checks the 2nd byte to be 03 for verifying that the CDDA started playing.
+		//    000C:0006F30B 80FC03                    CMP     AH,03H
+		//    000C:0006F30E 75ED                      JNE     0006F2FD
+		return 3;
+	}
+
+	// Actually, 5 for immediately after CDDA Stopped.
+
+	return 0;
 }
 
 void TownsCDROM::StopCDDA(void)

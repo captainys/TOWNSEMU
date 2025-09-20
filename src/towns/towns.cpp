@@ -753,6 +753,7 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_TRANSFER_CTRL);
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_SUBCODE_STATUS);
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_SUBCODE_DATA);
+	io.AddDevice(&cdrom,TOWNSIO_CDROM_CAPS);
 
 
 	io.AddDevice(&rtc,TOWNSIO_RTC_DATA);//                 0x70,
