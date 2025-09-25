@@ -257,6 +257,8 @@ i486DXCommon::i486DXCommon(VMBase *vmPtr) : CPU(vmPtr)
 
 void i486DXCommon::Reset(void)
 {
+	state.mode=MODE_REAL;
+
 	// page 10-1 [1]
 	state.EFLAGS=RESET_EFLAGS;
 
@@ -1069,6 +1071,22 @@ i486DXCommon::InterruptDescriptor i486DXCommon::DebugGetInterruptDescriptor(unsi
 		desc.OFFSET=0;
 	}
 	return desc;
+}
+
+unsigned int i486DXCommon::State::RecalculateMode(void) const
+{
+	if(0==(CR[0]&CR0_PROTECTION_ENABLE))
+	{
+		return MODE_REAL;
+	}
+	else if(0!=(EFLAGS&EFLAGS_VIRTUAL86))
+	{
+		return MODE_VM86;
+	}
+	else
+	{
+		return MODE_NATIVE;
+	}
 }
 
 i486DXCommon::OperandValue i486DXCommon::DescriptorTableToOperandValue(const SystemAddressRegister &reg,int operandSize) const

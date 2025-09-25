@@ -72,6 +72,13 @@ public:
 public:
 	enum
 	{
+		MODE_REAL,
+		MODE_VM86,
+		MODE_NATIVE
+	};
+
+	enum
+	{
 		LOW_FIDELITY  =0x00,
 		MID_FIDELITY  =0x80,
 		HIGH_FIDELITY =0xFF,
@@ -748,6 +755,7 @@ public:
 	#ifdef YS_LITTLE_ENDIAN
 		uint8_t *reg8Ptr[8];
 	#endif
+		unsigned int mode; // Cache.  Should be re-calculated upon state-load
 
 		State();
 
@@ -978,6 +986,8 @@ public:
 		bool exception;
 		unsigned int exceptionCode,exceptionType;
 		uint32_t exceptionLinearAddr=0; // For EXCEPTION_PF
+
+		unsigned int RecalculateMode(void) const;
 
 		void Serialize(std::vector <unsigned char> &data) const;
 		bool Deserialize(const unsigned char *&data,uint32_t version);
