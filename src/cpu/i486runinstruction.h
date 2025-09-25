@@ -6117,6 +6117,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				cr0&=(~0xFFFF);
 				cr0|=(i&0xFFFF);
 				SetCR(0,cr0);
+				state.mode=state.RecalculateMode();
 			}
 			break;
 		case 7: // INVLPG
@@ -6535,6 +6536,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			auto crNum=((MODR_M>>3)&3); // I think it should be &3 not &7.  Only CR0 to CR3.
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,4);
 			SetCR(crNum,value.GetAsDword(),mem);
+			state.mode=state.RecalculateMode();
 		}
 		else
 		{
@@ -7501,6 +7503,9 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				typename FIDELITY::EFLAGS ioplBits;
 				FIDELITY::SaveEFLAGS(ioplBits,*this);
 				SetFLAGSorEFLAGS(inst.operandSize,eflags);
+
+				state.mode=state.RecalculateMode();
+
 			#ifdef __linux__
 				ConsumeVariable(state.EFLAGS);
 			#endif
@@ -8667,6 +8672,19 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		__builtin_unreachable();
 #endif
 	}
+
+
+	// Tentative
+	if(state.mode!=state.RecalculateMode())
+	{
+		std::string msg="Running mode is not updated.  Opcode=";
+		msg+=cpputil::Ustox(inst.RealOpCode());
+		msg+="H";
+		Abort(msg);
+		EIPIncrement=0;
+	}
+	// Tentative
+
 
 	if(0==clocksPassed)
 	{

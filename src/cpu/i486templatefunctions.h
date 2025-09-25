@@ -195,6 +195,9 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 					auto TempSS=state.SS().value;
 					auto TempESP=state.ESP();
 					state.EFLAGS&=~(EFLAGS_VIRTUAL86|EFLAGS_TRAP);
+
+					state.mode=state.RecalculateMode();
+
 					// if(fromInterruptGate)
 					{
 						state.EFLAGS&=~EFLAGS_INT_ENABLE;
