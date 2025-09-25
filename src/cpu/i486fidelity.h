@@ -854,7 +854,7 @@ public:
 	// High fidelity level considers Protected Mode && IOPL<CPL for Windows 3.1 protected-mode interrupt handlers.
 	static inline bool TakeIOReadException(i486DXFidelityLayer<THISCLASS> &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 	{
-		if(true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86) || cpu.GetIOPL()<cpu.state.CS().DPL))
+		if(i486DXCommon::MODE_VM86==cpu.state.mode || cpu.GetIOPL()<cpu.state.CS().DPL) // <-> true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86)
 		{
 			if(true!=cpu.TestIOMapPermission(cpu.state.TR,ioport,accessSize,mem))
 			{
@@ -869,7 +869,7 @@ public:
 	// High fidelity level considers Protected Mode && IOPL<CPL for Windows 3.1 protected-mode interrupt handlers.
 	static inline bool TakeIOWriteException(i486DXFidelityLayer<THISCLASS> &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 	{
-		if(true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86) || cpu.GetIOPL()<cpu.state.CS().DPL))
+		if(i486DXCommon::MODE_VM86==cpu.state.mode || cpu.GetIOPL()<cpu.state.CS().DPL) // <-> true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86)
 		{
 			if(true!=cpu.TestIOMapPermission(cpu.state.TR,ioport,accessSize,mem))
 			{
@@ -943,7 +943,7 @@ public:
 
 	inline static bool SLDT_STR_LLDT_LTR_VERR_VERW_Cause_INT6_InRealModeVM86Mode(i486DXCommon &cpu)
 	{
-		if(true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86)))
+		if(i486DXCommon::MODE_VM86==cpu.state.mode) // <->(true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86)))
 		{
 			return true;
 		}
