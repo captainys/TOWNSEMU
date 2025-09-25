@@ -2946,7 +2946,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			else
 			{
-				if(IsInRealMode() || 0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
+				if(MODE_NATIVE!=state.mode) // <-> (IsInRealMode() || 0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
 				{
 					Interrupt(6,mem,0,0,false);
 					EIPIncrement=0;
@@ -6163,7 +6163,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 	case I486_RENUMBER_LSL://              0x0F03,
 		clocksPassed=10;
-		if(true!=IsInRealMode() && true!=GetVM())
+		if(MODE_NATIVE==state.mode) // <-> (true!=IsInRealMode() && true!=GetVM())
 		{
 			auto selectorValue=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8); // What to do with high 16 bits?
 			auto selector=selectorValue.GetAsWord();
