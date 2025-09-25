@@ -1111,7 +1111,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 		    mem);
 	}
 
-	if(true==IsInRealMode() || true==GetVM())
+	if(MODE_NATIVE!=state.mode) // <-> (true==IsInRealMode() || true==GetVM())
 	{
 		LoadSegmentRegister(state.CS(),newCS,mem);
 		state.EIP=newEIP&0xFFFF;
@@ -1227,7 +1227,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 template <class FIDELITY>
 inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks)
 {
-	if(true==IsInRealMode() || true==GetVM())
+	if(MODE_NATIVE!=state.mode) // <-> (true==IsInRealMode() || true==GetVM())
 	{
 		LoadSegmentRegister(state.CS(),newCS,mem);
 		state.EIP=newEIP&0xFFFF;
@@ -7504,7 +7504,17 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				FIDELITY::SaveEFLAGS(ioplBits,*this);
 				SetFLAGSorEFLAGS(inst.operandSize,eflags);
 
-				state.mode=state.RecalculateMode();
+				// The pseudo code in i486 Programmer's Reference Manual suggests that IRET in VM86 mode will cause #GP(0).
+				// The textual explanation in i486 Programmer's Reference Manual tells IRET will cause #GP(0) if IOPL<3.
+				// i486 Programmer's Reference Manual also says IRETD can be used to enter VM86 mode.  However,
+				// Figure 23-2 (pp. 23-5) clearly indicates that IRETD cannot be used to exit VM86 mode.
+				// G*d D**n it!  What should I believe?
+				// For the time being, I make sure IRETD won't exit VM86 mode.
+				state.EFLAGS|=prevVMFlag;  // Can stay in the VM86 mode, but not allowed to get out of the VM86 mode by IRET.
+				state.EFLAGS&=EFLAGS_MASK;
+				state.EFLAGS|=EFLAGS_ALWAYS_ON;
+
+				state.mode=state.RecalculateMode(); // Next VM-flag must be set before recalculating the running mode.
 
 			#ifdef __linux__
 				ConsumeVariable(state.EFLAGS);
@@ -7515,6 +7525,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				// if(state.EFLAGS&EFLAGS_NESTED)
 				//{
 				//	TaskReturn
+				//	Not supported, but in this case, restoration of prevVMFlag above may not be correct.
 				//}
 				// else
 				if(0==prevVMFlag && 0!=(state.EFLAGS&EFLAGS_VIRTUAL86)) // Stack-Return-To-V86
@@ -7539,16 +7550,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					LoadSegmentRegister(state.SS(),TempSS,mem);
 					IRET_TO_VM86=true;
 				}
-
-				// The pseudo code in i486 Programmer's Reference Manual suggests that IRET in VM86 mode will cause #GP(0).
-				// The textual explanation in i486 Programmer's Reference Manual tells IRET will cause #GP(0) if IOPL<3.
-				// i486 Programmer's Reference Manual also says IRETD can be used to enter VM86 mode.  However,
-				// Figure 23-2 (pp. 23-5) clearly indicates that IRETD cannot be used to exit VM86 mode.
-				// G*d D**n it!  What should I believe?
-				// For the time being, I make sure IRETD won't exit VM86 mode.
-				state.EFLAGS|=prevVMFlag;
-				state.EFLAGS&=EFLAGS_MASK;
-				state.EFLAGS|=EFLAGS_ALWAYS_ON;
 
 				// IRET to Virtual86 mode requires EFLAGS be loaded before the segment register.
 				auto CPL=state.CS().DPL;
