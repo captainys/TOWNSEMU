@@ -373,6 +373,10 @@ void i486Debugger::BeforeRunOneInstruction(i486DXCommon &cpu,Memory &mem,InOut &
 		//               JNE BUSYWAIT              CSEIPLog[currentPtr]
 		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-2)&CSEIP_LOG_MASK].count;
 		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-1)&CSEIP_LOG_MASK].count;
+
+		CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-1)&CSEIP_LOG_MASK].SS=cpu.state.SS().value;
+		CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-1)&CSEIP_LOG_MASK].ESP=cpu.state.ESP();
+
 		CSEIPLogPtr=(CSEIPLogPtr+CSEIP_LOG_MASK-0)&CSEIP_LOG_MASK;
 	}
 	else if(CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-4)&CSEIP_LOG_MASK]==CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-1)&CSEIP_LOG_MASK] &&
@@ -394,6 +398,10 @@ void i486Debugger::BeforeRunOneInstruction(i486DXCommon &cpu,Memory &mem,InOut &
 		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-4)&CSEIP_LOG_MASK].count;
 		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-3)&CSEIP_LOG_MASK].count;
 		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-2)&CSEIP_LOG_MASK].count;
+
+		CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-2)&CSEIP_LOG_MASK].SS=cpu.state.SS().value;
+		CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-2)&CSEIP_LOG_MASK].ESP=cpu.state.ESP();
+
 		CSEIPLogPtr=(CSEIPLogPtr+CSEIP_LOG_MASK-1)&CSEIP_LOG_MASK;
 	}
 	else if(CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-6)&CSEIP_LOG_MASK]==CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-2)&CSEIP_LOG_MASK] &&
@@ -405,6 +413,10 @@ void i486Debugger::BeforeRunOneInstruction(i486DXCommon &cpu,Memory &mem,InOut &
 		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-5)&CSEIP_LOG_MASK].count;
 		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-4)&CSEIP_LOG_MASK].count;
 		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-3)&CSEIP_LOG_MASK].count;
+
+		CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-3)&CSEIP_LOG_MASK].SS=cpu.state.SS().value;
+		CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-3)&CSEIP_LOG_MASK].ESP=cpu.state.ESP();
+
 		CSEIPLogPtr=(CSEIPLogPtr+CSEIP_LOG_MASK-2)&CSEIP_LOG_MASK;
 	}
 	else
@@ -564,7 +576,11 @@ void i486Debugger::HandleException(i486DXCommon &cpu,Memory &mem,unsigned int in
 	auto &prevCSEIPLog=CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK];
 	if(true==inInstruction && cpu.state.ESP()!=prevCSEIPLog.ESP)
 	{
-		ExternalBreak("ESP value changed before handling exception.");
+		std::string msg="ESP value changed before handling exception. ";
+		msg+=cpputil::Uitox(prevCSEIPLog.ESP);
+		msg+=" to ";
+		msg+=cpputil::Uitox(cpu.state.ESP());
+		ExternalBreak(msg);
 	}
 }
 
