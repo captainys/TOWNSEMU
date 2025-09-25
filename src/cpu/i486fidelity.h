@@ -284,7 +284,7 @@ public:
 	}
 	inline static bool IOPLExceptionInVM86Mode(i486DXFidelityLayer<THISCLASS> &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes)
 	{
-		if(true!=cpu.IsInRealMode() && cpu.GetVM() && cpu.GetIOPL()<3)
+		if(i486DXCommon::MODE_VM86==cpu.state.mode && cpu.GetIOPL()<3) // <-> true!=cpu.IsInRealMode() && cpu.GetVM()
 		{
 			cpu.RaiseException(exceptionType,0);
 			cpu.HandleException(false,mem,instNumBytes);
@@ -426,8 +426,7 @@ public:
 		};
 
 		uint32_t type=seg.GetType();
-		if(true!=cpu.IsInRealMode() &&
-		   true!=cpu.GetVM() &&
+		if(i486DXCommon::MODE_NATIVE==cpu.state.mode && // <-> true!=cpu.IsInRealMode() && true!=cpu.GetVM() &&
 		   (i486DXCommon::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type ||
 		    i486DXCommon::SEGTYPE_CODE_CONFORMING_EXECONLY==type ||
 		    0==(seg.value&0xFFFC)))
@@ -481,7 +480,7 @@ public:
 		};
 
 		uint32_t type=seg.GetType();
-		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() &&
+		if(i486DXCommon::MODE_NATIVE==cpu.state.mode && // <-> true!=cpu.IsInRealMode() && true!=cpu.GetVM() &&
 		    (
 		        (i486DXCommon::SEGTYPE_DATA_NORMAL_RW!=type &&
 		         i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW!=type) ||
