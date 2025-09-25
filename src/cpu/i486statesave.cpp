@@ -199,6 +199,7 @@ bool i486DXCommon::State::Deserialize(const unsigned char *&data,uint32_t versio
 	}
 
 
+	mode=RecalculateMode();
 	CSEIPWindow.CleanUp();   // This must be cleared on state-load.
 	SSESPWindow.CleanUp();         // This must be cleared on state-load.
 	return true;
