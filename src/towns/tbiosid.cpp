@@ -249,7 +249,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			{
 				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
-				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false,i486DXCommon::MODE_NATIVE);
+				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,i486DXCommon::MODE_NATIVE);
 
 				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDC,mem);
 				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDE,mem);
@@ -272,7 +272,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			{
 				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
-				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false,i486DXCommon::MODE_NATIVE);
+				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,i486DXCommon::MODE_NATIVE);
 
 				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x4B060,mem);
 				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x4B064,mem);
@@ -289,7 +289,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 				std::cout << "  Event Queue Base Physical Base=" << cpputil::Uitox(state.appSpecific_WC2_EventQueueBaseAddr) << std::endl;
 
 				i486DXCommon::SegmentRegister CS;
-				cpu.DebugLoadSegmentRegister(CS,0x0014,mem,false,i486DXCommon::MODE_NATIVE);
+				cpu.DebugLoadSegmentRegister(CS,0x0014,mem,i486DXCommon::MODE_NATIVE);
 				if(0x74==cpu.DebugFetchByte(32,CS,0x8F634,mem) &&
 				   0x72==cpu.DebugFetchByte(32,CS,0x8F635,mem) &&
 				   0x22==cpu.DebugFetchByte(32,CS,0x8F636,mem) &&
@@ -321,7 +321,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			{
 				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
-				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false,i486DXCommon::MODE_NATIVE);
+				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,i486DXCommon::MODE_NATIVE);
 
 				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x9122,mem);
 				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x9124,mem);
@@ -338,7 +338,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			{
 				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
-				cpu.DebugLoadSegmentRegister(DS,0x005C,mem,false,i486DXCommon::MODE_NATIVE);
+				cpu.DebugLoadSegmentRegister(DS,0x005C,mem,i486DXCommon::MODE_NATIVE);
 
 				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2DFE,mem);
 				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2E00,mem);
@@ -351,7 +351,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			{
 				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
-				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false,i486DXCommon::MODE_NATIVE);
+				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,i486DXCommon::MODE_NATIVE);
 
 				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x5E420,mem);
 				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x5E422,mem);
@@ -364,7 +364,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			{
 				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
-				cpu.DebugLoadSegmentRegister(DS,0x0118,mem,false,i486DXCommon::MODE_NATIVE);
+				cpu.DebugLoadSegmentRegister(DS,0x0118,mem,i486DXCommon::MODE_NATIVE);
 
 				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x15E60+0x0C,mem);
 				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x15E60+0x0E,mem);
@@ -377,7 +377,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			{
 				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
-				cpu.DebugLoadSegmentRegister(DS,0x014,mem,false,i486DXCommon::MODE_NATIVE);
+				cpu.DebugLoadSegmentRegister(DS,0x014,mem,i486DXCommon::MODE_NATIVE);
 
 				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x55CDC,mem);
 				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x55CDE,mem);
@@ -390,7 +390,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			{
 				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
-				cpu.DebugLoadSegmentRegister(DS,0x014,mem,false,i486DXCommon::MODE_NATIVE);
+				cpu.DebugLoadSegmentRegister(DS,0x014,mem,i486DXCommon::MODE_NATIVE);
 
 				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x20794,mem);
 				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x20798,mem);
@@ -406,7 +406,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			{
 				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
-				cpu.DebugLoadSegmentRegister(DS,0x014,mem,false,i486DXCommon::MODE_NATIVE);
+				cpu.DebugLoadSegmentRegister(DS,0x014,mem,i486DXCommon::MODE_NATIVE);
 
 				// Rocket Ranger Airspeed during Takeoff
 				state.appSpecific_StickPosXPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0001861A,mem);
