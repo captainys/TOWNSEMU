@@ -3941,7 +3941,7 @@ void TownsCommandInterpreter::Execute_AddressTranslation(FMTownsCommon &towns,Co
 		std::cout << farPtr.Format() << std::endl;
 
 		i486DXCommon::SegmentRegister seg;
-		towns.CPU().DebugLoadSegmentRegister(seg,farPtr.SEG,towns.mem,towns.CPU().IsInRealMode());
+		towns.CPU().DebugLoadSegmentRegister(seg,farPtr.SEG,towns.mem,false,towns.CPU().state.mode);
 		auto linear=seg.baseLinearAddr+farPtr.OFFSET;
 
 		towns.CPU().PrintPageTranslation(towns.mem,linear);
@@ -4992,19 +4992,19 @@ void TownsCommandInterpreter::FoundAt(FMTownsCommon &towns,unsigned int physAddr
 	if(true!=towns.CPU().IsInRealMode() && 0x000C!=towns.CPU().state.CS().value)
 	{
 		i486DXCommon::SegmentRegister seg;
-		towns.CPU().DebugLoadSegmentRegister(seg,0x000c,towns.mem,false);
+ 		towns.CPU().DebugLoadSegmentRegister(seg,0x000c,towns.mem,false,i486DXCommon::MODE_NATIVE);
 		FoundAt("000C:",seg.baseLinearAddr,linearAddr);
 	}
 	if(true!=towns.CPU().IsInRealMode() && 0x0014!=towns.CPU().state.DS().value)
 	{
 		i486DXCommon::SegmentRegister seg;
-		towns.CPU().DebugLoadSegmentRegister(seg,0x0014,towns.mem,false);
+		towns.CPU().DebugLoadSegmentRegister(seg,0x0014,towns.mem,false,i486DXCommon::MODE_NATIVE);
 		FoundAt("0014:",seg.baseLinearAddr,linearAddr);
 	}
 	if(true!=towns.CPU().IsInRealMode())
 	{
 		i486DXCommon::SegmentRegister seg;
-		towns.CPU().DebugLoadSegmentRegister(seg,0x0110,towns.mem,false);
+		towns.CPU().DebugLoadSegmentRegister(seg,0x0110,towns.mem,false,i486DXCommon::MODE_NATIVE);
 		FoundAt("0110:",seg.baseLinearAddr,linearAddr);
 	}
 }
@@ -5470,7 +5470,7 @@ uint32_t TownsCommandInterpreter::GetBreakOnMemoryRWAddress(FMTownsCommon &towns
 		else
 		{
 			i486DXCommon::SegmentRegister seg;
-			towns.CPU().DebugLoadSegmentRegister(seg,farPtr.SEG,towns.mem,towns.CPU().IsInRealMode());
+			towns.CPU().DebugLoadSegmentRegister(seg,farPtr.SEG,towns.mem,false,towns.CPU().state.mode);
 			auto linear=seg.baseLinearAddr+farPtr.OFFSET;
 
 			unsigned int exceptionType,exceptionCode;

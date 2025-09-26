@@ -305,9 +305,7 @@ void i486Debugger::BeforeRunOneInstruction(i486DXCommon &cpu,Memory &mem,InOut &
 
 	++instHist[inst.opCode];
 
-	prevVM86Mode=cpu.GetVM();
-	prevProtectedMode=(true!=cpu.GetVM() && true!=cpu.IsInRealMode());
-	prevRealMode=cpu.IsInRealMode();
+	prevMode=cpu.state.mode;
 
 	if(BRKPNT_FLAG_NONE!=breakOrMonitorOnVxDCall)
 	{
@@ -469,7 +467,7 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DXCommon
 		CheckForBreakPoints(cpu);
 		if(true==breakOnVM86Mode)
 		{
-			if(true!=prevVM86Mode && true==cpu.GetVM())
+			if(i486DXCommon::MODE_VM86!=prevMode && i486DXCommon::MODE_VM86==cpu.state.mode)
 			{
 				stop=true;
 				externalBreakReason="Entered VM86 Mode";
@@ -477,8 +475,7 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DXCommon
 		}
 		if(true==breakOnProtectedMode)
 		{
-			bool protectedMode=(true!=cpu.GetVM() && true!=cpu.IsInRealMode());
-			if(true!=prevProtectedMode && true==protectedMode)
+			if(i486DXCommon::MODE_REAL==prevMode && i486DXCommon::MODE_REAL!=cpu.state.mode)
 			{
 				stop=true;
 				externalBreakReason="Entered Protected Mode";
@@ -486,7 +483,7 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DXCommon
 		}
 		if(true==breakOnRealMode)
 		{
-			if(true!=prevRealMode && true==cpu.IsInRealMode())
+			if(i486DXCommon::MODE_REAL!=prevMode && i486DXCommon::MODE_REAL==cpu.state.mode)
 			{
 				stop=true;
 				externalBreakReason="Entered Real Mode";
@@ -497,10 +494,8 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DXCommon
 	{
 		auto &prevCSEIPLog=CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK];
 		i486DXCommon::SegmentRegister CS;
-		cpu.DebugLoadSegmentRegister(CS,prevCSEIPLog.SEG,mem,prevRealMode);
-		if(prevVM86Mode==cpu.GetVM() &&
-		   prevProtectedMode==(true!=cpu.GetVM() && true!=cpu.IsInRealMode()) &&
-		   prevRealMode==cpu.IsInRealMode())
+		cpu.DebugLoadSegmentRegister(CS,prevCSEIPLog.SEG,mem,false,prevMode);
+		if(prevMode==cpu.state.mode)
 		{
 			additionalDisasm=cpu.Disassemble(inst,op1,op2,CS,prevCSEIPLog.OFFSET,mem,GetSymTable(),GetIOTable());
 		}

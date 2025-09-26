@@ -146,9 +146,10 @@ public:
 	bool autoAnnotateVxDCall=false;
 	std::map <unsigned int,std::map <unsigned int,std::string> > VxDFuncLabel;
 
-	bool breakOnVM86Mode=false,prevVM86Mode=false;
-	bool breakOnProtectedMode=false,prevProtectedMode=false;
-	bool breakOnRealMode=false,prevRealMode=false;
+	bool breakOnVM86Mode=false;
+	bool breakOnProtectedMode=false;
+	bool breakOnRealMode=false;
+	unsigned int prevMode=i486DXCommon::MODE_REAL; // MODE_REAL,MODE_VM86,MODE_NATIVE
 
 	uint32_t breakOnCallStackDepth=0x7fffffff;
 

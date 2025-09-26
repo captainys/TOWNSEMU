@@ -9,8 +9,8 @@ void FMTownsCommon::AB2_Identify(void)
 	auto &cpu=CPU();
 	i486DXCommon::SegmentRegister CS,DS;
 	unsigned int exceptionType,exceptionCode;
-	cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
-	cpu.DebugLoadSegmentRegister(CS,0x000C,mem,false);
+	cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false,i486DXCommon::MODE_NATIVE);
+	cpu.DebugLoadSegmentRegister(CS,0x000C,mem,false,i486DXCommon::MODE_NATIVE);
 
 	if(0x66 == cpu.DebugFetchByte(32, CS, 0xeeea, mem) &&
 	   0xa3 == cpu.DebugFetchByte(32, CS, 0xeeeb, mem) &&

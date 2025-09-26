@@ -48,7 +48,7 @@ void FMTownsCommon::Daikoukai2_CaptureFlags(void)
 
 	i486DXCommon::SegmentRegister DS;
 	unsigned int excType,excCode;
-	cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
+	cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false,i486DXCommon::MODE_NATIVE);
 
 	state.appSpecific_Daikoukai2_p_flag=cpu.DebugFetchByte(32,DS,0x2899,mem);
 	state.appSpecific_Daikoukai2_GetaYAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,DS.baseLinearAddr+0xAF80,mem);

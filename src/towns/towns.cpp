@@ -1112,7 +1112,7 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 		state.MOS_work_physicalAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,state.MOS_work_linearAddr,mem);
 
 		i486DXCommon::SegmentRegister CS;
-		cpu.DebugLoadSegmentRegister(CS,0x110,mem,false);
+		cpu.DebugLoadSegmentRegister(CS,0x110,mem,false,i486DXCommon::MODE_NATIVE);
 		state.TBIOS_physicalAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,CS.baseLinearAddr,mem);
 		state.tbiosVersion=IdentifyTBIOS(state.TBIOS_physicalAddr);
 		state.TBIOS_mouseInfoOffset=FindTBIOSMouseInfoOffset(state.tbiosVersion,state.TBIOS_physicalAddr);
@@ -1150,7 +1150,7 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 		{
 			i486DXCommon::SegmentRegister DS;
 			unsigned int exceptionType,exceptionCode;
-			cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
+			cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false,i486DXCommon::MODE_NATIVE);
 
 			uint32_t ptrToStruct=cpu.DebugFetchDword(32,DS,0x13418,mem);
 
