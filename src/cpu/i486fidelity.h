@@ -925,15 +925,21 @@ public:
 		}
 	}
 
+	// Apparently none of Towns OS, Win3.1, Win95, Linux, and OSASK uses task return anyway.
 	inline static bool IsTaskReturn(i486DXCommon &cpu)
 	{
 		// Intel 64 and IA-32 Architectures Software Developer's Manual tells,
 		// If PE=1, VM=1, IOPL=3, it will be IRET from VM86 mode to VM86 mode,
 		// regardless of NT flag.
 		// Task return if PE=1, VM=0, NT=1.
-		return (
-		    true!=cpu.IsInRealMode() &&
-		   (cpu.state.EFLAGS&(i486DXCommon::EFLAGS_VIRTUAL86|i486DXCommon::EFLAGS_NESTED))==i486DXCommon::EFLAGS_NESTED);
+
+		// Then, in the Native mode (not real, not vm86), and NT=1?
+		return i486DXCommon::MODE_NATIVE==cpu.state.mode && 0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_NESTED);
+
+		// Known working (?) unused anyway though condition.
+		// return (
+		//     true!=cpu.IsInRealMode() &&
+		//    (cpu.state.EFLAGS&(i486DXCommon::EFLAGS_VIRTUAL86|i486DXCommon::EFLAGS_NESTED))==i486DXCommon::EFLAGS_NESTED);
 	}
 
 	inline static bool SLDT_STR_LLDT_LTR_VERR_VERW_Cause_INT6_InRealModeVM86Mode(i486DXCommon &cpu)
