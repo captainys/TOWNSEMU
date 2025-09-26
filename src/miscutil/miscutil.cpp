@@ -144,7 +144,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DXCommon &cpu,const Me
 		}
 		else
 		{
-			cpu.DebugLoadSegmentRegister(seg,ptr.SEG,mem,false,cpu.state.mode);
+			cpu.DebugLoadSegmentRegister(seg,ptr.SEG,mem,cpu.state.mode);
 			segTxt=cpputil::Ustox(ptr.SEG);
 		}
 		for(auto addr0=lineStart; addr0<=lineEnd; addr0+=16)
@@ -236,7 +236,7 @@ std::vector <std::string> miscutil::MakeMemDump2(const i486DXCommon &cpu,const M
 			}
 			else
 			{
-				cpu.DebugLoadSegmentRegister(seg,ptr.SEG,mem,false,cpu.state.mode);
+				cpu.DebugLoadSegmentRegister(seg,ptr.SEG,mem,cpu.state.mode);
 				segTxt=cpputil::Ustox(ptr.SEG);
 			}
 
@@ -302,7 +302,7 @@ unsigned char miscutil::GetByte(const i486DXCommon &cpu,const Memory &mem,i486DX
 		}
 		else
 		{
-			cpu.DebugLoadSegmentRegister(seg,ptr.SEG,mem,false,cpu.state.mode);
+			cpu.DebugLoadSegmentRegister(seg,ptr.SEG,mem,cpu.state.mode);
 		}
 		return cpu.DebugFetchByte(32,seg,ptr.OFFSET+offset,mem);
 	}

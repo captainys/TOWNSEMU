@@ -494,7 +494,7 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DXCommon
 	{
 		auto &prevCSEIPLog=CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK];
 		i486DXCommon::SegmentRegister CS;
-		cpu.DebugLoadSegmentRegister(CS,prevCSEIPLog.SEG,mem,false,prevMode);
+		cpu.DebugLoadSegmentRegister(CS,prevCSEIPLog.SEG,mem,prevMode);
 		if(prevMode==cpu.state.mode)
 		{
 			additionalDisasm=cpu.Disassemble(inst,op1,op2,CS,prevCSEIPLog.OFFSET,mem,GetSymTable(),GetIOTable());

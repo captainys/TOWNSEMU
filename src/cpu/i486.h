@@ -3330,7 +3330,7 @@ public:
 
 	/*! DebugLoadSegmentRegister is implemented in the sub-class.  It is not performance critical.
 	*/
-	virtual unsigned int DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool,unsigned int mode) const=0;
+	virtual unsigned int DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,unsigned int mode) const=0;
 
 	void DebugLoadSegmentRegisterFromFarPointer(SegmentRegister &seg,const Memory &mem,FarPointer ptr) const
 	{
@@ -3340,7 +3340,7 @@ public:
 		}
 		else if(0==(ptr.SEG&0xFFFF0000))
 		{
-			DebugLoadSegmentRegister(seg,ptr.SEG&0xFFFF,mem,false,state.mode);
+			DebugLoadSegmentRegister(seg,ptr.SEG&0xFFFF,mem,state.mode);
 		}
 		else if((ptr.SEG&0xFFFF0000)==FarPointer::SEG_REGISTER)
 		{
@@ -3478,7 +3478,7 @@ public:
 
 		It returns the upper-4 bytes of the descriptor.  In real mode, it always returns 0xFFFFFFFF.
 	*/
-	unsigned int DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool,unsigned int mode) const override;
+	unsigned int DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,unsigned int mode) const override;
 
 	/*! Load Task Register.
 	*/
