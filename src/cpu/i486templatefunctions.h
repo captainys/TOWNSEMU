@@ -322,7 +322,7 @@ const unsigned char *i486DXFidelityLayer <FIDELITY>::GetSegmentDescriptor(unsign
 }
 
 template <class FIDELITY>
-unsigned int i486DXFidelityLayer <FIDELITY>::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
+unsigned int i486DXFidelityLayer <FIDELITY>::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool,unsigned int mode) const
 {
 	LoadSegmentRegisterTemplate<const i486DXFidelityLayer <FIDELITY>,FIDELITY> loader;
 	return loader.LoadSegmentRegister(*this,reg,value,mem,state.mode);
