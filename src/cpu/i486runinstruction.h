@@ -8676,14 +8676,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 
 	// Tentative
-	if(state.mode!=state.RecalculateMode())
-	{
-		std::string msg="Running mode is not updated.  Opcode=";
-		msg+=cpputil::Ustox(inst.RealOpCode());
-		msg+="H";
-		Abort(msg);
-		EIPIncrement=0;
-	}
+	// if(state.mode!=state.RecalculateMode())
+	// {
+	// 	std::string msg="Running mode is not updated.  Opcode=";
+	// 	msg+=cpputil::Ustox(inst.RealOpCode());
+	// 	msg+="H";
+	// 	Abort(msg);
+	// 	EIPIncrement=0;
+	// }
 	// Tentative
 
 
