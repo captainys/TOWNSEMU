@@ -1336,7 +1336,7 @@ void i486DXFidelityLayer<FIDELITY>::SwitchTaskToTSS(Memory &mem,uint32_t instNum
 	else
 	{
 		SegmentRegister seg;
-		LoadSegmentRegister(seg,selector,mem,false,MODE_NATIVE); // Force to read from GDT by setting mode=MODE_NATIVE
+		LoadSegmentRegister(seg,selector,mem,MODE_NATIVE); // Force to read from GDT by setting mode=MODE_NATIVE
 		const unsigned char byteData[]=
 		{
 			(unsigned char)( seg.limit    &0xff),
@@ -1368,13 +1368,13 @@ void i486DXFidelityLayer<FIDELITY>::SwitchTaskToTSS(Memory &mem,uint32_t instNum
 	uint16_t CS=DebugFetchWord(32,state.TR,TSS_OFFSET_CS,mem);
 
 	// Set CS first so that the rest segment selectors can be loaded with the new CPL.
-	LoadSegmentRegister(state.CS(),CS,mem,false,MODE_NATIVE);
+	LoadSegmentRegister(state.CS(),CS,mem,MODE_NATIVE);
 
-	LoadSegmentRegister(state.ES(),ES,mem,false,MODE_NATIVE);
-	LoadSegmentRegister(state.SS(),SS,mem,false,MODE_NATIVE);
-	LoadSegmentRegister(state.DS(),DS,mem,false,MODE_NATIVE);
-	LoadSegmentRegister(state.FS(),FS,mem,false,MODE_NATIVE);
-	LoadSegmentRegister(state.GS(),GS,mem,false,MODE_NATIVE);
+	LoadSegmentRegister(state.ES(),ES,mem,MODE_NATIVE);
+	LoadSegmentRegister(state.SS(),SS,mem,MODE_NATIVE);
+	LoadSegmentRegister(state.DS(),DS,mem,MODE_NATIVE);
+	LoadSegmentRegister(state.FS(),FS,mem,MODE_NATIVE);
+	LoadSegmentRegister(state.GS(),GS,mem,MODE_NATIVE);
 	SetCR(3,DebugFetchDword(32,state.TR,TSS_OFFSET_CR3,mem),mem);
 }
 
@@ -8070,7 +8070,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					else
 					{
 						SegmentRegister seg;
-						LoadSegmentRegister(seg,selector,mem,false,MODE_NATIVE); // Force to read from GDT by setting mode=MODE_NATIVE
+						LoadSegmentRegister(seg,selector,mem,MODE_NATIVE); // Force to read from GDT by setting mode=MODE_NATIVE
 						const unsigned char byteData[]=
 						{
 							(unsigned char)( seg.limit    &0xff),
@@ -8131,7 +8131,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					// Assume state.exception==false here.
 					// Also protected mode, not VM86
 					SegmentRegister seg;
-					auto fourBytes=LoadSegmentRegister(seg,selector,mem,false,MODE_NATIVE);
+					auto fourBytes=LoadSegmentRegister(seg,selector,mem,MODE_NATIVE);
 					if(true==state.exception) // Could not be loaded.
 					{
 						state.exception=false;
@@ -8177,7 +8177,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					}
 
 					SegmentRegister seg;
-					auto fourBytes=LoadSegmentRegister(seg,selector,mem,false,MODE_NATIVE);
+					auto fourBytes=LoadSegmentRegister(seg,selector,mem,MODE_NATIVE);
 					if(true==state.exception) // Could not be loaded.
 					{
 						state.exception=false;

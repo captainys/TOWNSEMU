@@ -117,7 +117,7 @@ public:
 		}
 	}
 
-	inline unsigned int LoadSegmentRegister(CPUCLASS &cpu,SegmentRegister &reg,unsigned int value,const Memory &mem,bool,unsigned int mode)
+	inline unsigned int LoadSegmentRegister(CPUCLASS &cpu,SegmentRegister &reg,unsigned int value,const Memory &mem,unsigned int mode)
 	{
 		value=cpu.LOW16BITS(value);
 		if(i486DXCommon::MODE_NATIVE!=mode)

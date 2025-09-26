@@ -325,7 +325,7 @@ template <class FIDELITY>
 unsigned int i486DXFidelityLayer <FIDELITY>::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
 {
 	LoadSegmentRegisterTemplate<const i486DXFidelityLayer <FIDELITY>,FIDELITY> loader;
-	return loader.LoadSegmentRegister(*this,reg,value,mem,false,state.mode);
+	return loader.LoadSegmentRegister(*this,reg,value,mem,state.mode);
 }
 
 template <class FIDELITY>
@@ -341,13 +341,13 @@ unsigned int i486DXFidelityLayer <FIDELITY>::LoadSegmentRegister(SegmentRegister
 
 	fidelity.SetLoadSegmentRegisterFlags(loader.fidelityFlags,*this,reg);
 
-	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,false,state.mode);
+	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,state.mode);
 
 	return ret;
 }
 
 template <class FIDELITY>
-unsigned int i486DXFidelityLayer <FIDELITY>::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool,unsigned int mode)
+unsigned int i486DXFidelityLayer <FIDELITY>::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,unsigned int mode)
 {
 	FIDELITY fidelity;
 
@@ -359,7 +359,7 @@ unsigned int i486DXFidelityLayer <FIDELITY>::LoadSegmentRegister(SegmentRegister
 
 	fidelity.SetLoadSegmentRegisterFlags(loader.fidelityFlags,*this,reg);
 
-	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,false,mode);
+	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,mode);
 
 	return ret;
 }

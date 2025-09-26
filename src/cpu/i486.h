@@ -3466,11 +3466,11 @@ public:
 	*/
 	unsigned int LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem);
 
-	/*! It works the same as LoadSegmentRegister function except it takes isInRealMode flag from the outside.
+	/*! It works the same as LoadSegmentRegister function except it takes CPU mode from the outside.
 
 		It returns the upper-4 bytes of the descriptor.  In real mode, it always returns 0xFFFFFFFF.
 	*/
-	unsigned int LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool,unsigned int mode);
+	unsigned int LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,unsigned int mode);
 
 	/*! Loads a segment register.
 	    It does not rely on the current CPU state, instead isInRealMode is given as a parameter.
