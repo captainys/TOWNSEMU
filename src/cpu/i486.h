@@ -3470,7 +3470,7 @@ public:
 
 		It returns the upper-4 bytes of the descriptor.  In real mode, it always returns 0xFFFFFFFF.
 	*/
-	unsigned int LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode);
+	unsigned int LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool,unsigned int mode);
 
 	/*! Loads a segment register.
 	    It does not rely on the current CPU state, instead isInRealMode is given as a parameter.

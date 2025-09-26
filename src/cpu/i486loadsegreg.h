@@ -117,10 +117,10 @@ public:
 		}
 	}
 
-	inline unsigned int LoadSegmentRegister(CPUCLASS &cpu,SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
+	inline unsigned int LoadSegmentRegister(CPUCLASS &cpu,SegmentRegister &reg,unsigned int value,const Memory &mem,bool,unsigned int mode)
 	{
 		value=cpu.LOW16BITS(value);
-		if(true==isInRealMode || 0!=(i486DXCommon::EFLAGS_VIRTUAL86&cpu.state.EFLAGS))
+		if(i486DXCommon::MODE_NATIVE!=mode)
 		{
 			reg.value=value;
 			reg.baseLinearAddr=(value<<4);
@@ -128,9 +128,9 @@ public:
 			reg.operandSize=16;
 			// reg.limit=0xffff;   Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
 			reg.limit=std::max<unsigned int>(reg.limit,0xffff);
-			reg.DPL=(0!=(i486DXCommon::EFLAGS_VIRTUAL86&cpu.state.EFLAGS) ? 3 : 0);
-			if(true==isInRealMode)
+			if(i486DXCommon::MODE_REAL==mode)
 			{
+				reg.DPL=0;
 				// OSASK boot loader accesses SS set in the real-mode after switching to the protected-mode without setting a new SS value.
 				// Segment type must be made accesible.
 				// I'm not sure what to do from the VM86 mode.
@@ -138,6 +138,7 @@ public:
 			}
 			else
 			{
+				reg.DPL=3;
 				fidelity.SetSegmentRegisterAttribBytes(reg.attribBytes,0);
 			}
 			return 0xFFFFFFFF;
