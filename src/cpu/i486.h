@@ -2744,7 +2744,7 @@ public:
 
 	inline bool IsInRealMode(void) const
 	{
-		return (0==(state.GetCR(0)&CR0_PROTECTION_ENABLE));
+		return MODE_REAL==state.mode;
 	}
 	inline unsigned int Return0InRealMode1InProtectedMode(void) const
 	{
