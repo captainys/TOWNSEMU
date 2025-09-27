@@ -817,7 +817,7 @@ public:
 	}
 	inline static bool CheckRETFtoOuterLevel(i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL,uint16_t imm16)
 	{
-		if(0==cpu.GetVM() && true!=cpu.IsInRealMode() && cpu.state.CS().DPL>prevDPL)
+		if(i486DXCommon::MODE_NATIVE==cpu.state.mode && cpu.state.CS().DPL>prevDPL) // <-> 0==cpu.GetVM() && true!=cpu.IsInRealMode()
 		{
 			uint32_t newSP,newSS;
 
