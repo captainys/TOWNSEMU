@@ -127,7 +127,8 @@ public:
 			reg.addressSize=16;
 			reg.operandSize=16;
 			// reg.limit=0xffff;   Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
-			reg.limit=std::max<unsigned int>(reg.limit,0xffff);
+			reg.minLimit=0;
+			reg.maxLimit=std::max<unsigned int>(reg.maxLimit,0xffff);
 			if(i486DXCommon::MODE_REAL==mode)
 			{
 				reg.DPL=0;
@@ -177,13 +178,14 @@ public:
 			unsigned int segBase=cpputil::GetWord(rawDesc+2)|(rawDesc[4]<<16)|(rawDesc[7]<<24);
 		#endif
 
+			unsigned int limit; // Can be minLimit or maxLimit.
 			if((0x80&rawDesc[6])==0) // G==0
 			{
-				reg.limit=segLimit;
+				limit=segLimit;
 			}
 			else
 			{
-				reg.limit=(segLimit+1)*4096-1;
+				limit=(segLimit+1)*4096-1;
 			}
 			reg.baseLinearAddr=segBase;
 			reg.value=value;
@@ -200,6 +202,10 @@ public:
 				reg.addressSize=32;
 				reg.operandSize=32;
 			}
+
+			// Do it after filling address size and attrib bytes.
+			reg.SetLimitForType(limit);
+
 			return cpputil::GetDword(rawDesc+4);
 		}
 	}

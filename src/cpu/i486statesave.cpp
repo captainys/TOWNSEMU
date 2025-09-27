@@ -6,7 +6,7 @@ void i486DXCommon::SegmentProperty::Serialize(std::vector <unsigned char> &data)
 	PushUint32(data,baseLinearAddr);
 	PushUint32(data,operandSize);
 	PushUint32(data,addressSize);
-	PushUint32(data,limit);
+	PushUint32(data,GetOneLimitForType());
 	PushUint32(data,DPL);
 	PushUint32(data,attribBytes);
 }
@@ -16,7 +16,7 @@ bool i486DXCommon::SegmentProperty::Deserialize(const unsigned char *&data,unsig
 	baseLinearAddr=ReadUint32(data);
 	operandSize=ReadUint32(data);
 	addressSize=ReadUint32(data);
-	limit=ReadUint32(data);
+	auto limit=ReadUint32(data);
 	DPL=ReadUint32(data);
 	if(2<=version)
 	{
@@ -26,6 +26,10 @@ bool i486DXCommon::SegmentProperty::Deserialize(const unsigned char *&data,unsig
 	{
 		attribBytes=0;
 	}
+
+	// Do it after filling address size and attrib bytes.
+	SetLimitForType(limit);
+
 	return true;
 }
 

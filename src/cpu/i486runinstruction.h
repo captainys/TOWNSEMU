@@ -912,7 +912,7 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 		{ \
 			offset&=0xFFFF; \
 		} \
-		if(seg.limit<offset+3) \
+		if(offset<seg.minLimit || seg.maxLimit<offset+3) \
 		{ \
 			return nullptr; \
 		} \
@@ -1339,8 +1339,8 @@ void i486DXFidelityLayer<FIDELITY>::SwitchTaskToTSS(Memory &mem,uint32_t instNum
 		LoadSegmentRegister(seg,selector,mem,MODE_NATIVE); // Force to read from GDT by setting mode=MODE_NATIVE
 		const unsigned char byteData[]=
 		{
-			(unsigned char)( seg.limit    &0xff),
-			(unsigned char)((seg.limit>>8)&0xff),
+			(unsigned char)( seg.maxLimit    &0xff),
+			(unsigned char)((seg.maxLimit>>8)&0xff),
 			(unsigned char)( seg.baseLinearAddr     &0xff),
 			(unsigned char)((seg.baseLinearAddr>>8) &0xff),
 			(unsigned char)((seg.baseLinearAddr>>16)&0xff),
@@ -7595,7 +7595,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						if(true!=valid)
 						{
 							s.value=0;
-							s.limit=0;
+							s.minLimit=0;
+							s.maxLimit=0;
 						}
 					}
 				}
@@ -8073,8 +8074,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						LoadSegmentRegister(seg,selector,mem,MODE_NATIVE); // Force to read from GDT by setting mode=MODE_NATIVE
 						const unsigned char byteData[]=
 						{
-							(unsigned char)( seg.limit    &0xff),
-							(unsigned char)((seg.limit>>8)&0xff),
+							(unsigned char)( seg.maxLimit    &0xff),
+							(unsigned char)((seg.maxLimit>>8)&0xff),
 							(unsigned char)( seg.baseLinearAddr     &0xff),
 							(unsigned char)((seg.baseLinearAddr>>8) &0xff),
 							(unsigned char)((seg.baseLinearAddr>>16)&0xff),

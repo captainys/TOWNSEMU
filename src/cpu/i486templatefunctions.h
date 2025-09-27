@@ -1230,7 +1230,7 @@ bool i486DXFidelityLayer<FIDELITY>::TestIOMapPermission(const SegmentRegister &T
 	{
 		unsigned int IOMapOffset=IOMapOffset0+(ioport>>3);
 		unsigned int IOMapBit=(1<<(ioport&7));
-		if(TR.limit<IOMapOffset)
+		if(TR.maxLimit<IOMapOffset)
 		{
 			return false;
 		}

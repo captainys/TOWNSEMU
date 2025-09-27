@@ -281,7 +281,7 @@ public:
 		uint32_t baseLinearAddr;
 		uint32_t operandSize;
 		uint32_t addressSize;
-		uint32_t limit;
+		uint32_t minLimit,maxLimit;
 		uint16_t DPL=0;
 		uint16_t attribBytes=0;
 
@@ -294,6 +294,47 @@ public:
 				return type&0x1E;
 			}
 			return type;
+		}
+
+		// Don't use it for TaskRegister.
+		// Use it after setting address size and attrib byte.
+		inline void SetLimitForType(unsigned int limit)
+		{
+			auto type=GetType();
+			if(i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_READONLY==type ||
+			   i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW==type)
+			{
+				minLimit=limit;
+				if(32==addressSize)
+				{
+					maxLimit=0xFFFFFFFF;
+				}
+				else
+				{
+					maxLimit=0xFFFF;
+				}
+			}
+			else
+			{
+				minLimit=0;
+				maxLimit=limit;
+			}
+		}
+		// Don't use it for TaskRegister.
+		// Use it when the segment register is complete.  Don't use it for partially set register.
+		inline uint32_t GetOneLimitForType(void) const
+		{
+			auto type=GetType();
+			uint32_t limit=0;
+			if(i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_READONLY==type ||
+			   i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW==type)
+			{
+				return minLimit;
+			}
+			else
+			{
+				return maxLimit;
+			}
 		}
 
 		void Serialize(std::vector <unsigned char> &data) const;
@@ -3352,7 +3393,8 @@ public:
 			seg.baseLinearAddr=0;
 			seg.operandSize=32;
 			seg.addressSize=32;
-			seg.limit=0xFFFFFFFF;
+			seg.minLimit=0;
+			seg.maxLimit=0xFFFFFFFF;
 		}
 		else if((ptr.SEG&0xFFFF0000)==FarPointer::REAL_ADDR)
 		{
@@ -3360,7 +3402,8 @@ public:
 			seg.baseLinearAddr=seg.value*0x10;
 			seg.operandSize=16;
 			seg.addressSize=16;
-			seg.limit=0xFFFF;
+			seg.minLimit=0;
+			seg.maxLimit=0xFFFF;
 		}
 	}
 
@@ -3453,7 +3496,8 @@ public:
 	inline void NullifySegmentRegister(SegmentRegister &reg)
 	{
 		reg.value=0;
-		reg.limit=0;
+		reg.minLimit=0;
+		reg.maxLimit=0;
 	}
 
 	/*! Loads a segment register.

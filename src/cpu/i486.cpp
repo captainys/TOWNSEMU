@@ -272,12 +272,18 @@ void i486DXCommon::Reset(void)
 	LoadSegmentRegisterRealMode(state.FS(),RESET_FS);
 	LoadSegmentRegisterRealMode(state.GS(),RESET_GS);
 
-	state.CS().limit=0xffff;
-	state.SS().limit=0xffff;
-	state.DS().limit=0xffff;
-	state.ES().limit=0xffff;
-	state.FS().limit=0xffff;
-	state.GS().limit=0xffff;
+	state.CS().minLimit=0;
+	state.SS().minLimit=0;
+	state.DS().minLimit=0;
+	state.ES().minLimit=0;
+	state.FS().minLimit=0;
+	state.GS().minLimit=0;
+	state.CS().maxLimit=0xffff;
+	state.SS().maxLimit=0xffff;
+	state.DS().maxLimit=0xffff;
+	state.ES().maxLimit=0xffff;
+	state.FS().maxLimit=0xffff;
+	state.GS().maxLimit=0xffff;
 
 	state.GDTR.linearBaseAddr=RESET_GDTRBASE;
 	state.GDTR.limit=RESET_GDTRLIMIT;
@@ -290,7 +296,8 @@ void i486DXCommon::Reset(void)
 	state.LDTR.selector=RESET_LDTRSELECTOR;
 
 	state.TR.baseLinearAddr=RESET_TRBASE;
-	state.TR.limit=RESET_TRLIMIT;
+	state.TR.minLimit=0;
+	state.TR.maxLimit=RESET_TRLIMIT;
 	state.TR.value=RESET_TRSELECTOR;
 	state.TR.attrib=RESET_TRATTRIB;
 
@@ -457,12 +464,14 @@ std::vector <std::string> i486DXCommon::GetSegRegText(void) const
 	text.push_back(
 	     "CS="+cpputil::Ustox(state.CS().value)
 	    +"(LIN:"+cpputil::Uitox(state.CS().baseLinearAddr)
-	    +" LMT:"+cpputil::Uitox(state.CS().limit)
+	    +" LMT:"+cpputil::Uitox(state.CS().minLimit)
+		+" to "+cpputil::Uitox(state.CS().maxLimit)
 	    +")"
 	    +"  "
 	     "DS="+cpputil::Ustox(state.DS().value)
 	    +"(LIN:"+cpputil::Uitox(state.DS().baseLinearAddr)
-	    +" LMT:"+cpputil::Uitox(state.DS().limit)
+	    +" LMT:"+cpputil::Uitox(state.DS().minLimit)
+		+" to "+cpputil::Uitox(state.DS().maxLimit)
 	    +")"
 	    +"  "
 	    );
@@ -470,12 +479,14 @@ std::vector <std::string> i486DXCommon::GetSegRegText(void) const
 	text.push_back(
 	     "ES="+cpputil::Ustox(state.ES().value)
 	    +"(LIN:"+cpputil::Uitox(state.ES().baseLinearAddr)
-	    +" LMT:"+cpputil::Uitox(state.ES().limit)
+	    +" LMT:"+cpputil::Uitox(state.ES().minLimit)
+		+" to "+cpputil::Uitox(state.ES().maxLimit)
 	    +")"
 	    +"  "
 	     "FS="+cpputil::Ustox(state.FS().value)
 	    +"(LIN:"+cpputil::Uitox(state.FS().baseLinearAddr)
-	    +" LMT:"+cpputil::Uitox(state.FS().limit)
+	    +" LMT:"+cpputil::Uitox(state.FS().minLimit)
+		+" to "+cpputil::Uitox(state.FS().maxLimit)
 	    +")"
 	    +"  "
 	    );
@@ -483,12 +494,14 @@ std::vector <std::string> i486DXCommon::GetSegRegText(void) const
 	text.push_back(
 	     "GS="+cpputil::Ustox(state.GS().value)
 	    +"(LIN:"+cpputil::Uitox(state.GS().baseLinearAddr)
-	    +" LMT:"+cpputil::Uitox(state.GS().limit)
+	    +" LMT:"+cpputil::Uitox(state.GS().minLimit)
+		+" to "+cpputil::Uitox(state.GS().maxLimit)
 	    +")"
 	    +"  "
 	    +"SS="+cpputil::Ustox(state.SS().value)
 	    +"(LIN:"+cpputil::Uitox(state.SS().baseLinearAddr)
-	    +" LMT:"+cpputil::Uitox(state.SS().limit)
+	    +" LMT:"+cpputil::Uitox(state.SS().minLimit)
+		+" to "+cpputil::Uitox(state.SS().maxLimit)
 	    +")"
 	    +"  "
 	    );
@@ -2531,7 +2544,7 @@ bool i486DXCommon::DebugTestIOMapPermission(const SegmentRegister &TR,unsigned i
 	{
 		unsigned int IOMapOffset=IOMapOffset0+(ioport>>3);
 		unsigned int IOMapBit=(1<<(ioport&7));
-		if(TR.limit<IOMapOffset)
+		if(TR.maxLimit<IOMapOffset)
 		{
 			return false;
 		}

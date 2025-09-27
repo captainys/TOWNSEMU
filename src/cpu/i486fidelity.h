@@ -117,7 +117,7 @@ public:
 
 	static inline bool SegmentReadException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset,uint32_t bytes)
 	{
-		if(seg.limit<offset) // Needed to run Fractal Engine Demo and other Psygnosis games.
+		if(seg.maxLimit<offset) // Needed to run Fractal Engine Demo and other Psygnosis games.
 		{
 			cpu.RaiseException(i486DXCommon::EXCEPTION_GP,0);
 			return true;
@@ -434,29 +434,7 @@ public:
 			raise();
 			return true;
 		}
-		if(i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_READONLY==type ||
-		   i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW==type)
-		{
-			if(32==seg.addressSize)
-			{
-				// Valid Range=seg.limit+1 and above
-				if(offset<=seg.limit || 0xFFFFFFFF-bytes+1<offset)
-				{
-					raise();
-					return true;
-				}
-			}
-			else
-			{
-				// Valid Range=seg.limit+1 to 0xFFFF
-				if(offset<=seg.limit || 0xFFFF-bytes+1<offset)
-				{
-					raise();
-					return true;
-				}
-			}
-		}
-		else if(seg.limit-bytes+1<offset)
+		if(offset<seg.minLimit || seg.maxLimit-bytes+1<offset)
 		{
 			raise();
 			return true;
@@ -490,29 +468,7 @@ public:
 			raise();
 			return true;
 		}
-
-		if(i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW==type)
-		{
-			if(32==seg.addressSize)
-			{
-				// Valid Range=seg.limit+1 and above
-				if(offset<=seg.limit || 0xFFFFFFFF-bytes+1<offset)
-				{
-					raise();
-					return true;
-				}
-			}
-			else
-			{
-				// Valid Range=seg.limit+1 to 0xFFFF
-				if(offset<=seg.limit || 0xFFFF-bytes+1<offset)
-				{
-					raise();
-					return true;
-				}
-			}
-		}
-		else if(seg.limit-bytes+1<offset)
+		if(offset<seg.minLimit || seg.maxLimit-bytes+1<offset)
 		{
 			raise();
 			return true;
@@ -690,7 +646,8 @@ public:
 			else
 			{
 				reg.value=selector;
-				reg.limit=0;
+				reg.minLimit=0;
+				reg.maxLimit=0;
 				return true;
 			}
 		}

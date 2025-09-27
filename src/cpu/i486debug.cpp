@@ -1143,19 +1143,21 @@ std::vector <unsigned int> i486Debugger::FindCaller(unsigned int procAddr,const 
 {
 	std::vector <unsigned int> caller;
 
-	unsigned int limit=0;
+	unsigned int minLimit=0,maxLimit=0;
 	if(cpu.IsInRealMode())
 	{
-		limit=0xFFFF;
+		minLimit=0;
+		maxLimit=0xFFFF;
 	}
 	else
 	{
-		limit=seg.limit;
+		minLimit=seg.minLimit;
+		maxLimit=seg.maxLimit;
 	}
 
 	MemoryAccess::ConstMemoryWindow memWindow;
 	memWindow.ptr=nullptr;
-	for(unsigned int EIP=0; EIP<limit; ++EIP)
+	for(unsigned int EIP=minLimit; EIP<maxLimit; ++EIP)
 	{
 		if(0==(EIP&0x7FFF))
 		{
