@@ -50,7 +50,7 @@ public:
 
 	constexpr bool PageLevelException(class i486DXCommon &cpu,bool write,uint32_t linearAddr,uint32_t pageIndex,uint32_t pageInfo) const{return false;}
 
-	inline static void SetPageFlags(class i486DXCommon &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags,uint32_t dir_current,uint32_t table_current){};
+	inline static void SetPageFlags(class i486DXCommon &cpu,i486DXCommon::PageTableEntry &,uint32_t linearAddr,Memory &mem,uint32_t flags,uint32_t dir_current,uint32_t table_current){};
 
 	constexpr bool SegmentWriteException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &reg,uint32_t offset,uint32_t bytes) const{return false;}
 
@@ -369,7 +369,7 @@ public:
 		return false;
 	}
 
-	inline static void SetPageFlags(class i486DXCommon &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags,uint32_t pageDir,uint32_t pageTable)
+	inline static void SetPageFlags(class i486DXCommon &cpu,i486DXCommon::PageTableEntry &cached,uint32_t linearAddr,Memory &mem,uint32_t flags,uint32_t pageDir,uint32_t pageTable)
 	{
 		auto dirAndTable=(pageDir&pageTable);
 		if((dirAndTable&flags)==flags || 0==(dirAndTable&1))
@@ -401,6 +401,11 @@ public:
 		pageTable|=flags;
 		mem.StoreDword(pageDirectoryPtr+(pageDirectoryIndex<<2),pageDir);
 		mem.StoreDword(pageTablePtr+(pageTableIndex<<2),pageTable);
+
+		// When setting flags, cached entries must also be updated, or the flag will be clear next time
+		// reading from a page-table cache, and flags will be re-set all the time.
+		cached.dir=pageDir;
+		cached.table=pageTable;
 	}
 
 
