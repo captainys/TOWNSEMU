@@ -1044,6 +1044,9 @@ void i486DXCommon::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int
 	reg.operandSize=16;
 	reg.DPL=0; // In real mode, there is no restrictioin, so I think it should be set to highest privilege.
 	// reg.limit=0xffff;  Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
+	reg.minLimit=0;
+	reg.minLimitAdjust=0;
+	reg.maxLimit=std::max<uint32_t>(reg.maxLimit,0xFFFF); // Make sure it can access 64KB minimum.
 }
 
 void i486DXCommon::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandSize,const unsigned char byteData[])
