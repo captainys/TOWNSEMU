@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.20)
 project(TSUGARU)
 
 # Uncomment the following line to compile CPU core in high-fidelity mode.
