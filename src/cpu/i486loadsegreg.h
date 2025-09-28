@@ -128,6 +128,7 @@ public:
 			reg.operandSize=16;
 			// reg.limit=0xffff;   Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
 			reg.minLimit=0;
+			reg.minLimitAdjust=0;
 			reg.maxLimit=std::max<unsigned int>(reg.maxLimit,0xffff);
 			if(i486DXCommon::MODE_REAL==mode)
 			{

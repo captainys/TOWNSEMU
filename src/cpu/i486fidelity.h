@@ -434,7 +434,7 @@ public:
 			raise();
 			return true;
 		}
-		if(offset<seg.minLimit || seg.maxLimit-bytes+1<offset)
+		if(offset<seg.minLimit+seg.minLimitAdjust || seg.maxLimit-bytes+1<offset)
 		{
 			raise();
 			return true;
@@ -468,7 +468,7 @@ public:
 			raise();
 			return true;
 		}
-		if(offset<seg.minLimit || seg.maxLimit-bytes+1<offset)
+		if(offset<seg.minLimit+seg.minLimitAdjust || seg.maxLimit-bytes+1<offset)
 		{
 			raise();
 			return true;

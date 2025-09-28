@@ -49,6 +49,7 @@ bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long
 	cpu.state.CS().operandSize=operandSize;
 	cpu.state.CS().addressSize=addressSize;
 	cpu.state.CS().minLimit=0;
+	cpu.state.CS().minLimitAdjust=0;
 	cpu.state.CS().maxLimit=0x1000000;
 
 	cpu.state.CS().value=0;
@@ -56,6 +57,7 @@ bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long
 	cpu.state.SS().operandSize=operandSize;
 	cpu.state.SS().addressSize=addressSize;
 	cpu.state.SS().minLimit=0;
+	cpu.state.SS().minLimitAdjust=0;
 	cpu.state.SS().maxLimit=0x1000000;
 
 	cpu.state.CS().value=0;
@@ -63,6 +65,7 @@ bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long
 	cpu.state.DS().operandSize=operandSize;
 	cpu.state.DS().addressSize=addressSize;
 	cpu.state.DS().minLimit=0;
+	cpu.state.DS().minLimitAdjust=0;
 	cpu.state.DS().maxLimit=0x1000000;
 
 	cpu.state.EIP=0x1000;

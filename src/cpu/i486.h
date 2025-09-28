@@ -282,6 +282,7 @@ public:
 		uint32_t operandSize;
 		uint32_t addressSize;
 		uint32_t minLimit,maxLimit;
+		uint32_t minLimitAdjust; // Needed for EXPAND_DOWN segments.  *uck!
 		uint16_t DPL=0;
 		uint16_t attribBytes=0;
 
@@ -305,6 +306,7 @@ public:
 			   i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW==type)
 			{
 				minLimit=limit;
+
 				if(32==addressSize)
 				{
 					maxLimit=0xFFFFFFFF;
@@ -313,10 +315,18 @@ public:
 				{
 					maxLimit=0xFFFF;
 				}
+
+				// Offset minLimit is not inclusive in Expand-Down segment.
+				// https://wiki.osdev.org/Segment_Limits#Expand_Down
+				minLimitAdjust=std::min<uint32_t>(1,maxLimit-minLimit);
+				// When G bit is set, minimum limit is rounded up by 4KB,
+				// but if so, the low 11 bits of the parameter limit should be filled.
+				// Therefore, adjustment should be 1 or 0 regardless of the G bit.
 			}
 			else
 			{
 				minLimit=0;
+				minLimitAdjust=0;
 				maxLimit=limit;
 			}
 		}
@@ -3394,6 +3404,7 @@ public:
 			seg.operandSize=32;
 			seg.addressSize=32;
 			seg.minLimit=0;
+			seg.minLimitAdjust=0;
 			seg.maxLimit=0xFFFFFFFF;
 		}
 		else if((ptr.SEG&0xFFFF0000)==FarPointer::REAL_ADDR)
@@ -3403,6 +3414,7 @@ public:
 			seg.operandSize=16;
 			seg.addressSize=16;
 			seg.minLimit=0;
+			seg.minLimitAdjust=0;
 			seg.maxLimit=0xFFFF;
 		}
 	}

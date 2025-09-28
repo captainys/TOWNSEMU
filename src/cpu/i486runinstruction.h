@@ -912,7 +912,7 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 		{ \
 			offset&=0xFFFF; \
 		} \
-		if(offset<seg.minLimit || seg.maxLimit<offset+3) \
+		if(offset<seg.minLimit+seg.minLimitAdjust || seg.maxLimit<offset+3) \
 		{ \
 			return nullptr; \
 		} \
@@ -7596,6 +7596,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						{
 							s.value=0;
 							s.minLimit=0;
+							s.minLimitAdjust=0;
 							s.maxLimit=0;
 						}
 					}
