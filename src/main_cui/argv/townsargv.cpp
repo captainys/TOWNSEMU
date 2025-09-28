@@ -64,6 +64,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  it runs slower." << std::endl;
 	std::cout << "  The machine-state file saved from the default-fidelity CPU core" << std::endl;
 	std::cout << "  may crash if loaded to the high-fidelity CPU core, or vise-versa." << std::endl;
+	std::cout << "-DEFAULTFIDELITY" << std::endl;
+	std::cout << "-MIDFIDELITY" << std::endl;
+	std::cout << "  Use default-fidelity CPU core.  The default fielity core cannot\n";
+	std::cout << "  run Windows 3.1, Windows 95, Linux, and OSASK.\n";
 	std::cout << "-LOWRES" << std::endl;
 	std::cout << "  Disable High Resolution CRTC" << std::endl;
 	std::cout << "-PAUSE" << std::endl;
@@ -74,6 +78,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Directory visible in the VM via VNDRV." << std::endl;
 	std::cout << "-DEBUG,-DEBUGGER" << std::endl;
 	std::cout << "  Start the machine with debugger enabled." << std::endl;
+	std::cout << "-NODEBUG\n";
+	std::cout << "  Disable debugger.\n";
 	std::cout << "-COPYFILE src dst" << std::endl;
 	std::cout << "  Copy a file before starting the VM." << std::endl;
 	std::cout << "  Used for auto testing." << std::endl;
@@ -475,6 +481,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-DEBUG"==ARG || "-DEBUGGER"==ARG)
 		{
 			debugger=true;
+		}
+		else if("-NODEBUG"==ARG || "-NODEBUGGER"==ARG)
+		{
+			debugger=false;
 		}
 		else if("-COPYFILE"==ARG && i+2<argc)
 		{
@@ -949,6 +959,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-HIGHFIDELITY"==ARG || "-HIGHFIDELITYCPU"==ARG)
 		{
 			CPUFidelityLevel=i486DXCommon::HIGH_FIDELITY;
+		}
+		else if("-DEFAULTFIDELITY"==ARG || "-MIDFIDELITY"==ARG)
+		{
+			CPUFidelityLevel=i486DXCommon::MID_FIDELITY;
 		}
 		else if("-LOWRES"==ARG)
 		{
