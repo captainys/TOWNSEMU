@@ -1084,8 +1084,6 @@ uint8_t i486DXFidelityLayer<FIDELITY>::EvaluateOperandRegOrMem8(Memory &mem,int 
 template <class FIDELITY>
 uint16_t i486DXFidelityLayer<FIDELITY>::EvaluateOperandRegOrMem16(Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
-	i486DXCommon::OperandValue value;
-	value.numBytes=0;
 	if(OPER_REG32==op.operandType)
 	{
 		return state.NULL_and_reg32[op.reg];
@@ -1105,8 +1103,6 @@ uint16_t i486DXFidelityLayer<FIDELITY>::EvaluateOperandRegOrMem16(Memory &mem,in
 template <class FIDELITY>
 uint32_t i486DXFidelityLayer<FIDELITY>::EvaluateOperandRegOrMem32(Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
-	i486DXCommon::OperandValue value;
-	value.numBytes=0;
 	if(OPER_REG32==op.operandType)
 	{
 		return state.NULL_and_reg32[op.reg];
