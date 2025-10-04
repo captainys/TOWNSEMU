@@ -42,6 +42,8 @@ void FMTownsCommon::State::PowerOn(void)
 
 /* static */ bool FMTownsCommon::Setup(FMTownsCommon &towns,Outside_World *outside_world,Outside_World::WindowInterface *windowInterface,const TownsStartParameters &argv)
 {
+	bool result=true;
+
 	if(true==argv.verbose)
 	{
 		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";
@@ -272,7 +274,7 @@ void FMTownsCommon::State::PowerOn(void)
 		else
 		{
 			std::cout << "Cannot load key-mapping file." << std::endl;
-			return false;
+			result=false; // In the GUI environment, it shouldn't be a fatal error.  Just continue the initialization process.
 		}
 	}
 
@@ -450,7 +452,7 @@ void FMTownsCommon::State::PowerOn(void)
 		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";
 	}
 
-	return true;
+	return result;
 }
 
 void FMTownsCommon::AppSpecificSetup(Outside_World *outside_world,const TownsStartParameters &argv)

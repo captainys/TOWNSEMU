@@ -350,7 +350,7 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 	}
 	if(true!=profileLoaded)
 	{
-		LoadProfile(GetDefaultProfileFileName());
+		File_ReloadDefaultProfile(nullptr);
 	}
 
 	if(true!=IsVMRunning())
@@ -1216,7 +1216,16 @@ void FsGuiMainCanvas::File_SaveDefaultConfirm(FsGuiDialog *dlg,int returnCode)
 }
 void FsGuiMainCanvas::File_ReloadDefaultProfile(FsGuiPopUpMenuItem *)
 {
+	// This function should never fail even if default profile file does not exist.
+	// If the default profile does not exist, just reset the profile dialog.
+
+	TownsProfile profile;
+	profileDlg->SetProfile(profile); // Reset profile dir once.
+
 	LoadProfile(GetDefaultProfileFileName());
+	lastSelectedProfileFName=GetDefaultProfileFileName();
+	// In this case, update lastSelectedProfile anyway, even if the default profile does not exist yet.
+	// Not doing so may mess up MakeRelativePath.
 }
 
 void FsGuiMainCanvas::File_SaveProfile(FsGuiPopUpMenuItem *)

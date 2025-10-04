@@ -1291,7 +1291,7 @@ void TownsProfile::MakeRelative(std::string &fName,std::string baseDir,std::stri
 	}
 
 	// Special case baseDir==src
-	if(baseDir==src || (baseDir+"/")==src)
+	if(""!=src && ""!=baseDir && (baseDir==src || (baseDir+"/")==src))
 	{
 		fName=alias;
 		return;
