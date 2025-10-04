@@ -216,6 +216,43 @@ macOSでは、Tsugaru_GUIアプリケーションを実行してください。
 
 
 
+# Making a Portable Environment using Special Paths
+After 20251004, you can use special paths ```${progdir}``` and ```${profiledir}``` to specify files in the GUI.  You also can change the base directory, where options, recent files, and default profile are stored by the command-line option:
+```
+-basedir directory_name
+```
+You can use ```${progdir}``` in the directory name given to the -basedir option.
+
+With these additions, you can set up a directory in a portable drive, save all Tsugaru executables, copy disc/disk/ROM images in the sub-directories, and write a launcher, like by a batch file or a script to start the executable as:
+```
+Tsugaru_GUI -basedir ${progdir}
+```
+(* In macOS, ```${progdir}``` points to Tsugaru_GUI.app/Contents/Resources, so make it like ```${progdir}/../..```)
+
+Then, you can set up your profiles all relative to the ```${profiledir}```.
+
+You can also select files and directories from the GUI, and select a menu, Make File/Dir Names Relative to ```${profiledir}```, in the File menu to make all files relative.
+
+
+20251014バージョン以降、特殊なパス名、```${progdir}```と```${profiledir}```をGUI環境で使うことができます。また、デフォルトプロファイル、オプション、最近使ったファイル等を保存するベースディレクトリを、次のコマンドオプションで指定することができるようになりました。
+```
+-basedir directory_name
+```
+directory_nameには```${progdir}```のみ使用可能です。
+
+この機能により、ポータブルディスクドライブに津軽用のディレクトリを作成し、津軽の実行ファイルをそのディレクトリに、ディスクイメージ、ROMイメージ等をそのサブディレクトリにコピーして、簡単な起動ようスクリプトを書くことで、ポータブルな実行環境を作成することができます。起動スクリプトは、Tsugaru_GUIを次のように起動します。
+```
+Tsugaru_GUI -basedir ${progdir}
+```
+なお、macOS環境では、```${progdir}```は、Tsugaru_GUI.app/Contents/Resourcesを指すので、```${progdir}/../..```のように二つ上のディレクトリを指すようにすると良いでしょう。
+
+こうすることで、あとはすべてのファイルやディレクトリを```${profiledir}```からの相対パスで指定することができます。
+
+また、セットアップに関しては、普通にファイルセレクタでファイルを選択してから、ファイルメニューの、「プロファイルのファイル名を```${profiledir}```からの相対パスにする」を選ぶことで、選択したファイル名やディレクトリ名を相対パス化することができます。
+
+
+
+
 # Starting the Command-Line Program
 It starts from terminal/command prompt.  The basic options are:
 ```
