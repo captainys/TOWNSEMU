@@ -249,13 +249,19 @@ bool FsGuiMainCanvas::GUIOptions::RecognizeArguments(int ac,char *av[])
 	for(int i=1; i<ac; ++i)
 	{
 		std::string arg=av[i];
-		if("-en"==arg)
+		if("-en"==arg || "-EN"==arg)
 		{
 			localization=false;
+		}
+		else if(("-basedir"==arg || "-BASEDIR"==arg) && i+1<ac)
+		{
+			profileDirSysENC=av[i+1];
+			++i;
 		}
 		else
 		{
 			std::cout << "Unrecognized paramter " << av[i] << "\n";
+			return false;
 		}
 	}
 	return true;
@@ -289,6 +295,8 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 
 	GUIOptions GUIopt;
 	GUIopt.RecognizeArguments(argc,argv);
+
+	profileDirSysENC=GUIopt.profileDirSysENC;
 
 	if(true==GUIopt.localization)
 	{
@@ -1458,8 +1466,24 @@ YsWString FsGuiMainCanvas::GetDefaultProfileFileName(void) const
 YsWString FsGuiMainCanvas::GetTsugaruProfileDir(void) const
 {
 	YsWString path;
-	path.MakeFullPathName(YsSpecialPath::GetUserDocDirW(),L"Tsugaru_TOWNS");
-	YsFileIO::MkDir(path);
+	if(""!=profileDirSysENC)
+	{
+		std::map <std::string,std::string> specialPath;
+
+		std::unique_ptr <FsSimpleWindowConnection> outside_world(new FsSimpleWindowConnection);
+		specialPath["progdir"]=outside_world->GetProgramResourceDirectory();
+
+		auto expand=cpputil::ExpandFileName(profileDirSysENC.c_str(),specialPath);
+
+		YsSystemEncodingToUnicode(path,expand.c_str());
+
+		YsFileIO::MkDir(path);
+	}
+	else
+	{
+		path.MakeFullPathName(YsSpecialPath::GetUserDocDirW(),L"Tsugaru_TOWNS");
+		YsFileIO::MkDir(path);
+	}
 	return path;
 }
 

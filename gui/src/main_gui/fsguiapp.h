@@ -54,6 +54,7 @@ public:
 	{
 	public:
 		bool localization=true;
+		std::string profileDirSysENC;
 
 		bool RecognizeArguments(int ac,char *av[]);
 	};
@@ -92,6 +93,7 @@ public:
 	Subprocess subproc;
 	std::vector <std::string> VMLog;
 
+	std::string profileDirSysENC; // In system encoding.  If empty, ~/Documents/Tsugaru_TOWNS will be used.
 	mutable YsWString lastSelectedProfileFName;
 	mutable YsWString lastSelectedCDFName;
 	mutable YsWString lastSelectedFDFName;
