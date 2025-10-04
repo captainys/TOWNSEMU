@@ -897,6 +897,11 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 			}
 		});
 	}
+	if(CMOSFileBtn==btn)
+	{
+		std::vector <const wchar_t *> extList={L".BIN"};
+		BrowseSaveAs(L"CMOS RAM Image",CMOSFileTxt,extList);
+	}
 	if(CDImgBtn==btn)
 	{
 		std::vector <const wchar_t *> extList={L".CUE",L".ISO",L".MDS",L".CCD"};
