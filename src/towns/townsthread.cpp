@@ -318,7 +318,8 @@ void TownsThread::VMEnd(FMTownsCommon *townsPtr,Outside_World *outside_world,cla
 
 	if(0<townsPtr->var.CMOSFName.size())
 	{
-		if(true!=cpputil::WriteBinaryFile(townsPtr->var.CMOSFName,TOWNS_CMOS_SIZE,townsPtr->physMem.state.CMOSRAM))
+		auto expanded=townsPtr->var.ExpandFileName(townsPtr->var.CMOSFName);
+		if(true!=cpputil::WriteBinaryFile(expanded,TOWNS_CMOS_SIZE,townsPtr->physMem.state.CMOSRAM))
 		{
 			std::cout << "Failed to save CMOS." << std::endl;
 		}
