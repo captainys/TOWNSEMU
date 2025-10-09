@@ -292,7 +292,11 @@ bool TownsCDROM::CanOpenCloseFromCommand(void) const
 	// AWESOME bangs on 04C0h, and constantly clear DEI and SIRQ, regardless of the events.
 	// The following check must only be done when command is written or parameter queue changes,
 	// or the command is reset every time 04C0h is banged.
-	if(true==cmdOrParam && true==state.cmdReceived && PARAM_QUEUE_LEN<=state.nParamQueue)
+	if(true==cmdOrParam && true==state.cmdReceived &&
+	     (
+	         PARAM_QUEUE_LEN<=state.nParamQueue ||
+	         5==(state.cmd&0x9F) // Puzznic seems to be using command 45H without pushing parameter queue.
+	     ))
 	{
 		ExecuteCDROMCommand();
 	}
