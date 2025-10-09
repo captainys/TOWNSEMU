@@ -319,7 +319,7 @@ inline unsigned int i486DXCommon::FetchOperandRMandDecode(
 }
 
 template <class CPUCLASS,class MEMCLASS,class FUNCCLASS>
-void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,MEMCLASS &mem,unsigned int defOperSize,unsigned int defAddrSize)
+void i486DXCommon::FetchOperandLoop(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,MEMCLASS &mem,unsigned int defOperSize,unsigned int defAddrSize)
 {
 	auto &inst=instOp.inst;
 	auto &op1=instOp.op1;

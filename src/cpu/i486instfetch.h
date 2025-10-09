@@ -379,13 +379,13 @@ public:
 		if(MAX_INSTRUCTION_LENGTH<=ptr.length)
 		{
 			inst.opCode=BURSTMODEFUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset,mem);
-			CPUCLASS::template FetchOperand<CPUCLASS,MEMCLASS,BURSTMODEFUNCCLASS>(cpu,instOp,ptr,CS,offset+1,mem,defOperSize,defAddrSize);
+			CPUCLASS::template FetchOperandLoop<CPUCLASS,MEMCLASS,BURSTMODEFUNCCLASS>(cpu,instOp,ptr,CS,offset+1,mem,defOperSize,defAddrSize);
 			// BurstModeFetchInstructionFunctions does not update ptr.length.
 		}
 		else
 		{
 			inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset,mem);
-			CPUCLASS::template FetchOperand<CPUCLASS,MEMCLASS,FUNCCLASS>(cpu,instOp,ptr,CS,offset+1,mem,defOperSize,defAddrSize);
+			CPUCLASS::template FetchOperandLoop<CPUCLASS,MEMCLASS,FUNCCLASS>(cpu,instOp,ptr,CS,offset+1,mem,defOperSize,defAddrSize);
 		}
 	}
 };

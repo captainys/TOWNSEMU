@@ -3135,7 +3135,7 @@ private:
 	    with minimum code duplicate.
 	*/
 	template <class CPUCLASS,class MEMCLASS,class FUNCCLASS>
-	static void FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,MEMCLASS &mem,unsigned int defOperSize,unsigned int defAddrSize);
+	static void FetchOperandLoop(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,MEMCLASS &mem,unsigned int defOperSize,unsigned int defAddrSize);
 
 public:
 	/*! Fetch an instruction from specific segment and offset.
