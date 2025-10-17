@@ -2145,7 +2145,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	const auto &op1=instOp.op1;
 	const auto &op2=instOp.op2;
 	FetchInstruction(state.CSEIPWindow,instOp,state.CS(),state.EIP,mem);
-	if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+
+	if(true==fidelity.HandleExceptionAfterFetchInstruction(*this,mem,inst,op1))
 	{
 		return ClocksForHandlingException();
 	}
@@ -2154,11 +2155,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	{
 		debuggerPtr->BeforeRunOneInstruction(*this,mem,io,inst);
 		fidelity.BeforeRunOneInstruction(*this,inst,debuggerPtr);
-	}
-
-	if(true==fidelity.LockNotAllowed(*this,mem,inst,op1))
-	{
-		return ClocksForHandlingException();
 	}
 
 	int EIPIncrement=inst.numBytes;

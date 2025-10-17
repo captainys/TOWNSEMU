@@ -1159,7 +1159,8 @@ public:
 		EXCEPTION_ND,
 		EXCEPTION_UD,
 		EXCEPTION_SS,
-		EXCEPTION_PF
+		EXCEPTION_PF,
+		EXCEPTION_LOCK_MAYBE,  // Raised tentatively in the High-Fidelity mode FetchOperandLoop when LOCK prefix is used.
 	};
 	enum
 	{
