@@ -3445,6 +3445,8 @@ public:
 		}
 		return 50;
 	}
+
+	inline static void OnLock(const i486DXCommon &){}
 };
 
 // Fidelity Layer
@@ -3997,6 +3999,13 @@ public:
 	unsigned long RedirectLinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem) override
 	{
 		return LinearAddressToPhysicalAddressRead(linearAddr,mem);
+	}
+
+	// Note: If the incoming parameter is const, the base-class OnLock is used.
+	// This function is used only by FetchOperandLoop.
+	static void OnLock(i486DXCommon &cpu)
+	{
+		FIDELITY::OnLock(cpu);
 	}
 };
 

@@ -108,6 +108,8 @@ public:
 	inline constexpr bool IsTaskReturn(i486DXCommon &cpu){return false;}
 
 	inline static bool SLDT_STR_LLDT_LTR_VERR_VERW_Cause_INT6_InRealModeVM86Mode(i486DXCommon &){return false;}
+
+	inline static void OnLock(i486DXCommon &){}
 };
 
 class i486DXDefaultFidelityOperation : public i486DXLowFidelityOperation
@@ -911,6 +913,10 @@ public:
 			return true;
 		}
 		return false;
+	}
+
+	inline static void OnLock(i486DXCommon &cpu)
+	{
 	}
 };
 

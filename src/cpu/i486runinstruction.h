@@ -827,6 +827,7 @@ void i486DXCommon::FetchOperandLoop(CPUCLASS &cpu,InstructionAndOperand &instOp,
 			refetch = true;
 			break;
 		case I486_NEEDOPERAND_PREFIX_LOCK:
+			cpu.OnLock(cpu);
 			inst.instPrefix = INST_PREFIX_LOCK;
 			inst.opCode = FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset++, mem);
 			++inst.numBytes;
