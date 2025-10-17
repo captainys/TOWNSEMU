@@ -120,16 +120,18 @@ void TownsThread::VMMainLoopTemplate(
 				while(townsPtr->state.townsTime<townsPtr->var.nextTimeSync)
 				{
 					// With the inner-loop, it saves one 64-bit comparison + conditional jump per instruction for RunFastDevicePolling.
+					uint32_t payBack=0;
 					while(townsPtr->state.townsTime<=townsPtr->state.nextFastDevicePollingTime &&
 					      true!=townsPtr->debugger.stop) // Same check, except one timer check
 					{
 						townsPtr->RunOneInstruction();
 						townsPtr->pic.ProcessIRQ(townsPtr->CPU(),townsPtr->mem);
-
-						auto payBack=std::min<long long int>(TIME_DEFICIT_PAYBACK_PER_INSTRUCTION,timeDeficit);
-						townsPtr->state.townsTime+=payBack;
-						timeDeficit-=payBack;
+						payBack+=TIME_DEFICIT_PAYBACK_PER_INSTRUCTION;
 					}
+
+					payBack=std::min<uint32_t>(payBack,timeDeficit);
+					townsPtr->state.townsTime+=payBack;
+					timeDeficit-=payBack;
 
 					townsPtr->RunScheduledTasks();
 					townsPtr->RunFastDevicePolling();
