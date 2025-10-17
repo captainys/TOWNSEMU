@@ -125,13 +125,13 @@ void TownsThread::VMMainLoopTemplate(
 					{
 						townsPtr->RunOneInstruction();
 						townsPtr->pic.ProcessIRQ(townsPtr->CPU(),townsPtr->mem);
-						townsPtr->RunScheduledTasks();
 
 						auto payBack=std::min<long long int>(TIME_DEFICIT_PAYBACK_PER_INSTRUCTION,timeDeficit);
 						townsPtr->state.townsTime+=payBack;
 						timeDeficit-=payBack;
 					}
 
+					townsPtr->RunScheduledTasks();
 					townsPtr->RunFastDevicePolling();
 
 					if(true==townsPtr->debugger.stop)
