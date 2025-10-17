@@ -686,7 +686,7 @@ public:
 	*/
 	inline void RunFastDevicePolling(void)
 	{
-		if(state.nextFastDevicePollingTime<state.townsTime)
+		// if(state.nextFastDevicePollingTime<state.townsTime)  Time check is now done by TownsThread::VMMainLoopTemplate
 		{
 			RunFastDevicePollingInternal();
 		}
