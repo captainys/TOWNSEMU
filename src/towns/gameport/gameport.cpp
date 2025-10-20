@@ -260,7 +260,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		}
 		data&=(0xCF|(TRIG<<4));
 
-		if(MARTYPAD==device && true==zoom)
+		if(true==zoom)
 		{
 			data|=0x40;
 		}
