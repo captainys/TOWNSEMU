@@ -823,10 +823,10 @@ void FMTownsCommon::SetMouseButtonState(bool lButton,bool rButton)
 	}
 }
 
-void FMTownsCommon::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause)
+void FMTownsCommon::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause,bool zoom)
 {
 	auto &p=gameport.state.ports[port&1];
-	p.SetGamePadState(Abutton,Bbutton,left,right,up,down,run,pause,state.townsTime);
+	p.SetGamePadState(Abutton,Bbutton,left,right,up,down,run,pause,zoom,state.townsTime);
 }
 
 void FMTownsCommon::SetLibbleRabblePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool left2,bool right2,bool up2,bool down2,bool run,bool pause)

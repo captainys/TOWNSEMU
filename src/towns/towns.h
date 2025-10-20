@@ -587,7 +587,7 @@ public:
 
 	/*! Set Game-Pad State.  Called from Outside_World.
 	*/
-	void SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause);
+	void SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause,bool zoom);
 
 
 	/*! Set Game-Pad State.  Called from Outside_World.

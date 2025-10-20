@@ -678,6 +678,7 @@ std::string FsSimpleWindowConnection::GetProgramResourceDirectory(void) const
 				// Not implemented yet.
 				break;
 			case TOWNS_GAMEPORTEMU_KEYBOARD:
+			case TOWNS_GAMEPORTEMU_MARTYPAD_BY_KEY:
 				{
 					bool Abutton=(0!=windowEvent.keyState[FSKEY_Z]);
 					bool Bbutton=(0!=windowEvent.keyState[FSKEY_X]);
@@ -695,7 +696,12 @@ std::string FsSimpleWindowConnection::GetProgramResourceDirectory(void) const
 					{
 						down=false;
 					}
-					towns.SetGamePadState(portId,Abutton,Bbutton,left,right,up,down,run,pause);
+					bool zoom=false;
+					if(TOWNS_GAMEPORTEMU_MARTYPAD_BY_KEY==gamePort[portId])
+					{
+						zoom=(0!=windowEvent.keyState[FSKEY_Q]);
+					}
+					towns.SetGamePadState(portId,Abutton,Bbutton,left,right,up,down,run,pause,zoom);
 				}
 				break;
 			case TOWNS_GAMEPORTEMU_CAPCOM_BY_KEY:
@@ -762,10 +768,40 @@ std::string FsSimpleWindowConnection::GetProgramResourceDirectory(void) const
 						    reading.dirs[0].upDownLeftRight[0],
 						    reading.dirs[0].upDownLeftRight[1],
 						    reading.buttons[2],
-						    reading.buttons[3]);
+						    reading.buttons[3],
+						    false);
 					}
 				}
 				break;
+
+			case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL0:
+			case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL1:
+			case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL2:
+			case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL3:
+			case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL4:
+			case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL5:
+			case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL6:
+			case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL7:
+				{
+					int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL0;
+					if(0<=padId && padId<gamePads.size())
+					{
+						auto &reading=gamePads[padId];
+						towns.SetGamePadState(
+						    portId,
+						    reading.buttons[0],
+						    reading.buttons[1],
+						    reading.dirs[0].upDownLeftRight[2],
+						    reading.dirs[0].upDownLeftRight[3],
+						    reading.dirs[0].upDownLeftRight[0],
+						    reading.dirs[0].upDownLeftRight[1],
+						    reading.buttons[2],
+						    reading.buttons[3],
+						    reading.buttons[4]);
+					}
+				}
+				break;
+
 			case TOWNS_GAMEPORTEMU_ANALOG0:
 			case TOWNS_GAMEPORTEMU_ANALOG1:
 			case TOWNS_GAMEPORTEMU_ANALOG2:
@@ -789,7 +825,8 @@ std::string FsSimpleWindowConnection::GetProgramResourceDirectory(void) const
 						    reading.dirs[0].upDownLeftRight[0],
 						    reading.dirs[0].upDownLeftRight[1],
 						    reading.buttons[2],
-						    reading.buttons[3]);
+						    reading.buttons[3],
+						    /*zoom=*/false);
 					}
 				}
 				break;

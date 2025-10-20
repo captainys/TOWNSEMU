@@ -35,6 +35,7 @@ public:
 		CAPCOMCPSF,
 		GAMEPAD_6BTN,
 		LIBBLERABBLE,
+		MARTYPAD,
 		MOUSEREAD_RESET_TIMEOUT=1000000, // 1000000ns=1ms
 		CYBERSTICK_TIMEOUT=2000000,      // 2000000ns=2ms
 		CYBERSTICK_READ_INTERVAL=3500,   //    3500ns=3.5us
@@ -88,7 +89,7 @@ public:
 		int state;
 		bool COM=false;       // COM from CPU.
 		unsigned char TRIG=3; // TRIG from CPU.
-		bool button[2],left,right,up,down,run,pause;
+		bool button[2],left,right,up,down,run,pause,zoom;
 		bool left2=false,right2=false,up2=false,down2=false; // For Libble-Rabble Game Pad.
 
 		Vec2i mouseMotion;  // For CyberStick, used as XY position.
@@ -120,7 +121,7 @@ public:
 		void Write(long long int townsTime,bool COM,unsigned char TRIG);
 		unsigned char Read(long long int townsTime); // Reading last coordinate should reset motion.  Not a const.
 
-		void SetGamePadState(bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause,long long int townsTime);
+		void SetGamePadState(bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause,bool zoom,long long int townsTime);
 		void SetLibbleRabblePadState(bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool left2,bool right2,bool up2,bool down2,bool run,bool pause,long long int townsTime);
 		void SetCyberStickState(int x,int y,int z,int w,unsigned int trig,long long int townsTime);
 		void SetCAPCOMCPSFState(bool left,bool right,bool up,bool down,bool A,bool B,bool X,bool Y,bool L,bool R, bool start,bool select,long long int townsTime);

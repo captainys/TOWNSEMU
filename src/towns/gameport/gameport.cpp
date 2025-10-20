@@ -87,6 +87,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	case TOWNS_GAMEPORTEMU_LIBBLE_RABBLE_PAD_BY_ANALOG7:
 		return LIBBLERABBLE;
 
+	case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL0:
+	case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL1:
+	case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL2:
+	case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL3:
+	case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL4:
+	case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL5:
+	case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL6:
+	case TOWNS_GAMEPORTEMU_MARTYPAD_BY_PHYSICAL7:
+	case TOWNS_GAMEPORTEMU_MARTYPAD_BY_KEY:
+		return MARTYPAD;
+
 	default:
 		return GAMEPAD;
 	}
@@ -192,7 +203,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		}
 		data&=(0xCF|(TRIG<<4));
 	}
-	else if(GAMEPAD==device)
+	else if(GAMEPAD==device || MARTYPAD==device)
 	{
 		bool button[4]=
 		{
@@ -248,6 +259,11 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 			data&=0b11011111;
 		}
 		data&=(0xCF|(TRIG<<4));
+
+		if(MARTYPAD==device && true==zoom)
+		{
+			data|=0x40;
+		}
 	}
 	else if(CYBERSTICK==device)
 	{
@@ -609,7 +625,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	return data;
 }
 
-void TownsGamePort::Port::SetGamePadState(bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause,long long int townsTime)
+void TownsGamePort::Port::SetGamePadState(bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause,bool zoom,long long int townsTime)
 {
 	if(true!=this->button[0] && this->button[0]!=Abutton)
 	{
@@ -628,6 +644,7 @@ void TownsGamePort::Port::SetGamePadState(bool Abutton,bool Bbutton,bool left,bo
 	this->down =down;
 	this->run  =run;
 	this->pause=pause;
+	this->zoom =zoom;
 }
 void TownsGamePort::Port::SetLibbleRabblePadState(bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool left2,bool right2,bool up2,bool down2,bool run,bool pause,long long int townsTime)
 {
