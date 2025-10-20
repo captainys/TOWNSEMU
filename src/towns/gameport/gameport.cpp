@@ -532,7 +532,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 
 		data|=((~flags)&0x3F);
 
-		if(true==COM)
+		if(true==zoom)
 		{
 			data|=0x40;
 		}
