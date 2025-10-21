@@ -139,7 +139,7 @@ void TownsGamePort::Port::Write(long long int townsTime,bool COM,unsigned char T
 unsigned char TownsGamePort::Port::Read(long long int townsTime)
 {
 	unsigned char data=0;
-	if(true==COM)
+	if(true==COM && MARTYPAD!=device)
 	{
 		data|=0x40;
 	}
@@ -260,7 +260,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		}
 		data&=(0xCF|(TRIG<<4));
 
-		if(true==zoom)
+		if(true==COM && true==zoom)
 		{
 			data|=0x40;
 		}
