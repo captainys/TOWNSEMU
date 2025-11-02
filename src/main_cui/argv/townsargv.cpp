@@ -398,6 +398,12 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			{
 				std::string APP=argv[i+1];
 				cpputil::Capitalize(APP);
+				if("?"==APP)
+				{
+					PrintApplicationList();
+					exit(1);
+				}
+
 				appSpecificSetting=TownsStrToApp(APP);
 				if(TOWNS_APPSPECIFIC_STRIKECOMMANDER==appSpecificSetting && memSizeInMB<8)
 				{
@@ -408,6 +414,7 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			else
 			{
 				PrintApplicationList();
+				exit(1);
 			}
 		}
 		else if("-SCALE"==ARG && i+1<argc)

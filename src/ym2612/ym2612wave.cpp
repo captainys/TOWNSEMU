@@ -19,36 +19,70 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "ym2612.h"
 
-
-
-inline void WordOp_Set(unsigned char *ptr,short value)
+class WordOp_Set
 {
-#ifdef YS_LITTLE_ENDIAN
-	if(value<-32767)
+public:
+	inline WordOp_Set(unsigned char *ptr,short value)
 	{
-		*((short *)ptr)=-32767;
+	#ifdef YS_LITTLE_ENDIAN
+		if(value<-32767)
+		{
+			*((short *)ptr)=-32767;
+		}
+		else if(32767<value)
+		{
+			*((short *)ptr)=32767;
+		}
+		else
+		{
+			*((short *)ptr)=value;
+		}
+	#else
+		if(value<-32767)
+		{
+			value=-32767;
+		}
+		else if(32767<value)
+		{
+			value=32767;
+		}
+		ptr[1]=value&255;
+		ptr[0]=(value>>8)&255;
+	#endif
 	}
-	else if(32767<value)
+};
+
+class WordOp_Add
+{
+public:
+	inline WordOp_Add(unsigned char *ptr,int value)
 	{
-		*((short *)ptr)=32767;
+	#ifdef YS_LITTLE_ENDIAN  // CPU is little endian.
+		value+=*(int16_t *)ptr;
+	#else
+		unsigned char conv[2];
+		conv[0]=ptr[1];
+		conv[1]=ptr[0];
+		value+=*(int16_t *)conv;
+	#endif
+
+		if(value<-32767)
+		{
+			value=-32767;
+		}
+		else if(32767<value)
+		{
+			value=32767;
+		}
+
+	#ifdef YS_LITTLE_ENDIAN
+		*(int16_t *)ptr=value;
+	#else
+		ptr[1]=value&255;
+		ptr[0]=value>>8;
+	#endif
 	}
-	else
-	{
-		*((short *)ptr)=value;
-	}
-#else
-	if(value<-32767)
-	{
-		value=-32767;
-	}
-	else if(32767<value)
-	{
-		value=32767;
-	}
-	ptr[0]=value&255;
-	ptr[1]=(value>>8)&255;
-#endif
-}
+};
 
 static inline int Gain(int a,int b)
 {
@@ -1167,7 +1201,7 @@ public:
 	}
 };
 
-template <class LFOClass,class SCHEDULER>
+template <class LFOClass,class SCHEDULER,class MAKE_OR_ADD>
 long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamples,uint64_t lastWaveGenTime)
 {
 	const unsigned int microsecS12Step=4096000000/WAVE_SAMPLING_RATE;
@@ -1319,8 +1353,8 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 			ch.slots[2].microsecS12+=microsecS12Step;
 			ch.slots[3].microsecS12+=microsecS12Step;
 		}
-		WordOp_Set(wave+i*4  ,leftOut);
-		WordOp_Set(wave+i*4+2,rightOut);
+		MAKE_OR_ADD(wave+i*4  ,leftOut);
+		MAKE_OR_ADD(wave+i*4+2,rightOut);
 	}
 
 	scheduler.EndMakeWave(this);
@@ -1356,22 +1390,62 @@ long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int nPla
 	{
 		if(true==state.LFO)
 		{
-			return MakeWaveForNSamplesTemplate <WithLFO,WithScheduler> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+			return MakeWaveForNSamplesTemplate <WithLFO,WithScheduler,WordOp_Set> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
 		}
 		else
 		{
-			return MakeWaveForNSamplesTemplate <WithoutLFO,WithScheduler> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+			return MakeWaveForNSamplesTemplate <WithoutLFO,WithScheduler,WordOp_Set> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
 		}
 	}
 	else
 	{
 		if(true==state.LFO)
 		{
-			return MakeWaveForNSamplesTemplate <WithLFO,WithoutScheduler> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+			return MakeWaveForNSamplesTemplate <WithLFO,WithoutScheduler,WordOp_Set> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
 		}
 		else
 		{
-			return MakeWaveForNSamplesTemplate <WithoutLFO,WithoutScheduler> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+			return MakeWaveForNSamplesTemplate <WithoutLFO,WithoutScheduler,WordOp_Set> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+		}
+	}
+}
+
+long long int YM2612::AddWaveForNSamples(unsigned char wavBuf[],unsigned long long int numSamplesRequested,uint64_t lastWaveGenTime)
+{
+	unsigned int nPlayingCh=0;
+	unsigned int playingCh[NUM_CHANNELS];
+	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
+	{
+		if(0!=(state.playingCh&(1<<chNum)))
+		{
+			playingCh[nPlayingCh++]=chNum;
+		}
+	}
+	return AddWaveForNSamples(wavBuf,nPlayingCh,playingCh,numSamplesRequested,lastWaveGenTime);
+}
+
+long long int YM2612::AddWaveForNSamples(unsigned char wave[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamples,uint64_t lastWaveGenTime)
+{
+	if(true==useScheduling)
+	{
+		if(true==state.LFO)
+		{
+			return MakeWaveForNSamplesTemplate <WithLFO,WithScheduler,WordOp_Add> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+		}
+		else
+		{
+			return MakeWaveForNSamplesTemplate <WithoutLFO,WithScheduler,WordOp_Add> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+		}
+	}
+	else
+	{
+		if(true==state.LFO)
+		{
+			return MakeWaveForNSamplesTemplate <WithLFO,WithoutScheduler,WordOp_Add> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+		}
+		else
+		{
+			return MakeWaveForNSamplesTemplate <WithoutLFO,WithoutScheduler,WordOp_Add> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
 		}
 	}
 }

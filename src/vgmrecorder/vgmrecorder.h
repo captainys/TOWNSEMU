@@ -31,6 +31,7 @@ public:
 		VGM_CMD_YM2612_CH0=0x52,
 		VGM_CMD_YM2612_CH3=0x53,
 		VGM_CMD_YM2203=0x55,
+		VGM_CMD_YM2203_2=0xA5, // All chips of the YM-familiy that use command 0x5n use 0xAn for the second chip.
 		VGM_CMD_WAIT=0x61,
 		VGM_CMD_WAIT_735=0x62,
 		VGM_CMD_WAIT_882=0x63,
@@ -72,7 +73,9 @@ public:
 		REG_YM2203,
 		REG_AY8910,
 		REG_RF5C68,
-		MEM_RF5C68
+		MEM_RF5C68,
+		REG_YM2203_2,
+		REG_YM2203_C,
 	};
 	class RegWriteLog
 	{
@@ -105,6 +108,8 @@ public:
 	unsigned int YM2203clock=1228800; // For FM77AV YM2203
 	unsigned int RF5C68clock=8000000; // Actually I don't know.  I know the sampling frequency is 20725Hz.
 	unsigned int AY8910clock=1228800; // For FM-7 AY3-8910
+
+	uint32_t secondYM2203flag=0;
 
 
 	/*!

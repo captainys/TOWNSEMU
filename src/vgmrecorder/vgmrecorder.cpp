@@ -5,6 +5,7 @@ void VGMRecorder::CleanUp(void)
 {
 	log.clear();
 	memWrite.clear();
+	secondYM2203flag=0;
 }
 
 void VGMRecorder::WriteRegister(uint64_t VMTime,unsigned char target,unsigned int reg,unsigned char value)
@@ -15,6 +16,11 @@ void VGMRecorder::WriteRegister(uint64_t VMTime,unsigned char target,unsigned in
 	newLog.reg=reg;
 	newLog.value=value;
 	log.push_back(newLog);
+
+	if(REG_YM2203_2==target)
+	{
+		secondYM2203flag=0x40000000;
+	}
 }
 
 void VGMRecorder::WritePCMMemory(uint64_t VMTime,unsigned char target,unsigned int address,unsigned char value)
@@ -91,7 +97,7 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 
 	WriteUint(vgm.data()+VGM_OFFSET_RF5C68CLK,RF5C68clock);
 
-	WriteUint(vgm.data()+VGM_OFFSET_YM2203CLK,YM2203clock);
+	WriteUint(vgm.data()+VGM_OFFSET_YM2203CLK,YM2203clock|secondYM2203flag);
 
 	WriteUint(vgm.data()+VGM_OFFSET_AY8910CLK,AY8910clock);
 	vgm[VGM_OFFSET_AY8910TYPE]=0; // AY8910
@@ -149,6 +155,11 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 				break;
 			case REG_YM2203:
 				vgm.push_back(VGM_CMD_YM2203);
+				vgm.push_back(L.reg);
+				vgm.push_back(L.value);
+				break;
+			case REG_YM2203_2:
+				vgm.push_back(VGM_CMD_YM2203_2);
 				vgm.push_back(L.reg);
 				vgm.push_back(L.value);
 				break;
