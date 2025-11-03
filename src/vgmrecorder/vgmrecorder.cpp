@@ -21,6 +21,10 @@ void VGMRecorder::WriteRegister(uint64_t VMTime,unsigned char target,unsigned in
 	{
 		secondYM2203flag=0x40000000;
 	}
+	if(REG_YM2203_3==target)
+	{
+		YM2608clock=YM2203clock*2; // I do not know if it is correct.
+	}
 }
 
 void VGMRecorder::WritePCMMemory(uint64_t VMTime,unsigned char target,unsigned int address,unsigned char value)
@@ -104,6 +108,8 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 	vgm[VGM_OFFSET_AY8910FLAGS]=(0<AY8910clock ? 1 : 0); // What's this?
 	vgm[VGM_OFFSET_AY_IN_YM2203_FLAGS]=(0<YM2203clock ? 1 : 0);  // What's this?
 
+	WriteUint(vgm.data()+VGM_OFFSET_YM2608CLK,YM2608clock);
+
 
 	if(0<extHeader.size())
 	{
@@ -160,6 +166,11 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 				break;
 			case REG_YM2203_2:
 				vgm.push_back(VGM_CMD_YM2203_2);
+				vgm.push_back(L.reg);
+				vgm.push_back(L.value);
+				break;
+			case REG_YM2203_3:
+				vgm.push_back(VGM_CMD_YM2608_PORT0);
 				vgm.push_back(L.reg);
 				vgm.push_back(L.value);
 				break;
@@ -404,7 +415,7 @@ void VGMRecorder::TrimNoSoundSegments(void)
 	// }
 }
 
-std::vector <unsigned char> VGMRecorder::GenerateExtraHeaderForYM2203CVolumeProblem(void)
+std::vector <unsigned char> VGMRecorder::GenerateExtraHeaderForYM2203CVolumeProblem(void) const
 {
 	// VGM Player seems to play SSG-part of YM2203 way too quiet,
 	// or FM-part way too loud.  It seems to be necessary to balance it by extra header.
@@ -432,6 +443,17 @@ std::vector <unsigned char> VGMRecorder::GenerateExtraHeaderForYM2203CVolumeProb
 	               // It surprised me that VGM community left this YM2203 volume inaccuracy problem unresolved,
 	               // leaving it to the VGM encoder.
 	data[16]=0x80; // Bit15 to make it relative.
+
+	unsigned int ptr=17;
+	if(0!=secondYM2203flag)
+	{
+		++data[12];
+		data[ptr++]=6;    // YM2203C
+		data[ptr++]=0x80; // Second chip flag
+		data[ptr++]=0x80; // Relative volume to 0x100
+		data[ptr++]=0x80; // Relative volume to 0x100
+		// 21 bytes
+	}
 
 	return data;
 }
