@@ -207,6 +207,14 @@ void TownsFDC::MakeReady(void)
 						{
 							std::cout << "Warning: Not all sector data was transferred by DMA (FD->Mem)." << std::endl;
 							std::cout << "Tsugaru does not support resume DMA from middle of a sector." << std::endl;
+
+							// From BCC: 2025/11/18 FBCNV.EXP failed when the destination drive is a floppy disk drive.
+							// Looks like FBCNV.EXP changes the sector length to 256 to read from FM-77 disk.
+							// The DOS driver does not know that the sector length is changed to 256.  Therefore,
+							// it tries to read from the disk once, and if no error, it assumes everything is ok.
+							// Unless lost data error is returned this time, the DOS driver does not re-examine
+							// the sector length, and the VM was crashing in the subsequent sector write.
+							state.lostData=true; // This prevents the crash of FBCNV.EXP
 						}
 
 						// What am I supposed to if error during DMA?
