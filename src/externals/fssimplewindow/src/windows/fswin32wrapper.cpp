@@ -481,7 +481,10 @@ int FsGetKeyState(int fsKeyCode)
 	if(true==FsWin32IsWindowActive())
 	{
 		const int vk=fsKeyMapper.FsKeyToVk(fsKeyCode);
-		return (GetKeyState(vk)&0x8000)!=0;
+		if(0!=vk) // Some keys including FSKEY_TENENTER, FSKEY_WHEELUP, FSKEY_WHEELDOWN are unassignable, and must not be given to GetKeyState.
+		{
+			return (GetKeyState(vk)&0x8000)!=0;
+		}
 	}
 	return 0;
 }
