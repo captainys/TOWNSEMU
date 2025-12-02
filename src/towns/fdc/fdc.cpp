@@ -82,11 +82,9 @@ void TownsFDC::MakeReady(void)
 		{
 			drv.lastSeekDir=-1;
 		}
-		drv.trackPos=drv.dataReg;
-		if(state.lastCmd&0x10)
-		{
-			SetTrackReg(drv.trackPos);
-		}
+		drv.trackPos+=drv.dataReg;
+		drv.trackPos-=GetTrackReg();
+		SetTrackReg(drv.dataReg);
 		break;
 	case 0x20: // Step?
 	case 0x30: // Step?
