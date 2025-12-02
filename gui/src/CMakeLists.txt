@@ -8,8 +8,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(UNIX)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-variable")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-variable -Wno-incompatible-pointer-types")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
+
+	include_directories(/usr/local/include)
+	link_directories(/usr/local/lib)
 endif()
 
 set(DISC_IMAGE_DIR "C:/D/TownsISO")
