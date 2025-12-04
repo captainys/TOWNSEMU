@@ -231,6 +231,8 @@ public:
 
 		CMD_OPEN_DEBUG_LOG,
 		CMD_CLOSE_DEBUG_LOG,
+
+		CMD_LOADM,
 	};
 
 	enum
@@ -486,6 +488,8 @@ public:
 	void Execute_BreakOnFDCRead(FMTownsCommon &towns,Command &cmd,unsigned int readOrReadAddress,bool monitorOnly);
 
 	void Execute_LS(FMTownsCommon &towns,Command &cmd);
+
+	void Execute_Loadm(FMTownsCommon &towns,Command &cmd);
 };
 
 

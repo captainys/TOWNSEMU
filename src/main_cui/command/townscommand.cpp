@@ -157,6 +157,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["EMS"]=CMD_EDIT_MEMORY_STRING;
 	primaryCmdMap["EM"]=CMD_EDIT_MEMORY;
 	primaryCmdMap["REPLACE"]=CMD_REPLACE;
+	primaryCmdMap["LOADM"]=CMD_LOADM;
 	primaryCmdMap["SAVEMEMDUMP"]=CMD_SAVE_MEMORY_DUMP;
 
 
@@ -628,6 +629,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  FF makes a byte. FFFF makes a word.  FFFFFFFF makes a dword." << std::endl;
 	std::cout << "REPLACE hexadecimal-data hexadecimal-data" << std::endl;
 	std::cout << "  Replace in main memory." << std::endl;
+	std::cout << "LOADM binary-file seg:offset\n";
+	std::cout << "  Load binary into specified location.\n";
+
 	std::cout << "SAVEMEMDUMP filename seg:offset length" << std::endl;
 	std::cout << "  Save memory dump.  Seg, offset, and length are in hexadecimal." << std::endl;
 	std::cout << "CRTCPAGE 1|0 1|0" << std::endl;
@@ -1531,6 +1535,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		break;
 	case CMD_REPLACE:
 		Execute_Replace(towns,cmd);
+		break;
+	case CMD_LOADM:
+		Execute_Loadm(towns,cmd);
 		break;
 	case CMD_SAVE_MEMORY_DUMP:
 		Execute_SaveMemDump(towns,cmd);
@@ -4650,6 +4657,48 @@ void TownsCommandInterpreter::Execute_EditMemory(FMTownsCommon &towns,Command &c
 void TownsCommandInterpreter::Execute_Replace(FMTownsCommon &towns,Command &cmd)
 {
 	std::cout << "Not implemented yet." << std::endl;
+}
+
+void TownsCommandInterpreter::Execute_Loadm(FMTownsCommon &towns,Command &cmd)
+{
+	if(3<=cmd.argv.size())
+	{
+		auto bin=cpputil::ReadBinaryFile(towns.var.ExpandFileName(cmd.argv[1]));
+		if(0==bin.size())
+		{
+			PrintError(ERROR_CANNOT_OPEN_FILE);
+			return;
+		}
+
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[2],towns.CPU());
+		if(farPtr.SEG==i486DXCommon::FarPointer::NO_SEG)
+		{
+			farPtr.SEG=towns.CPU().state.DS().value;
+		}
+
+		if((farPtr.SEG&0xFFFF0000)==i486DXCommon::FarPointer::PHYS_ADDR)
+		{
+			for(size_t i=0; i<bin.size(); ++i)
+			{
+				towns.mem.StoreByte(farPtr.OFFSET+i,bin[i]);
+			}
+		}
+		else
+		{
+			i486DXCommon::SegmentRegister seg;
+			towns.CPU().DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
+			for(size_t i=0; i<bin.size(); ++i)
+			{
+				towns.CPU().DebugStoreByte(towns.mem,32,seg,farPtr.OFFSET+i,bin[i]);
+			}
+		}
+
+		std::cout << "Stored " << bin.size() << " bytes\n";
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
 }
 
 void TownsCommandInterpreter::Execute_CRTCPage(FMTownsCommon &towns,Command &cmd)
