@@ -860,6 +860,7 @@ void TownsSCSI::ExecSCSICommand(void)
 			else
 			{
 				outsideworld->CDDAPause();
+				state.dev[state.selId].CDDAWasPlaying=false; // This flag is set only when all scheduled segment has been played.
 			}
 			state.status=STATUSCODE_GOOD;
 			state.message=0; // What am I supposed to return?
