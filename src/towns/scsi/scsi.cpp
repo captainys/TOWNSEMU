@@ -797,8 +797,10 @@ void TownsSCSI::ExecSCSICommand(void)
 
 			state.dev[state.selId].CDDAWave=state.dev[state.selId].discImg.GetWave(start,end);
 			state.dev[state.selId].CDDAState=CDDA_PLAYING;
-
+			state.dev[state.selId].CDDAPlayPointer=0;
+			state.dev[state.selId].CDDABeginTime=start;
 			state.dev[state.selId].CDDAEndTime=end;
+
 			state.status=STATUSCODE_GOOD;
 			state.message=0; // What am I supposed to return?
 			state.senseKey=SENSEKEY_NO_SENSE;
@@ -833,8 +835,10 @@ void TownsSCSI::ExecSCSICommand(void)
 
 			state.dev[state.selId].CDDAWave=state.dev[state.selId].discImg.GetWave(start,end);
 			state.dev[state.selId].CDDAState=CDDA_PLAYING;
-
+			state.dev[state.selId].CDDAPlayPointer=0;
+			state.dev[state.selId].CDDABeginTime=start;
 			state.dev[state.selId].CDDAEndTime=end;
+
 			state.status=STATUSCODE_GOOD;
 			state.message=0; // What am I supposed to return?
 			state.senseKey=SENSEKEY_NO_SENSE;
@@ -863,7 +867,6 @@ void TownsSCSI::ExecSCSICommand(void)
 				if(CDDA_PLAYING==state.dev[state.selId].CDDAState)
 				{
 					state.dev[state.selId].CDDAState=CDDA_PAUSED;
-					state.dev[state.selId].CDDAWasPlaying=false; // This flag is set only when all scheduled segment has been played.
 				}
 			}
 			state.status=STATUSCODE_GOOD;
@@ -1155,10 +1158,8 @@ void TownsSCSI::ExecSCSICommand(void)
 						subQData[13]=(unsigned char)trackTime.MSF.min;
 						subQData[14]=(unsigned char)trackTime.MSF.sec;
 						subQData[15]=(unsigned char)trackTime.MSF.frm;
-
-						state.dev[state.selId].CDDAWasPlaying=true;
 					}
-					else if(true==state.dev[state.selId].CDDAWasPlaying)
+					else if(CDDA_STOPPING==state.dev[state.selId].CDDAState)
 					{
 						// WAV playback and CDDA playback time not exactly match.
 						// Make sure CDDA end time is reported at least once.
@@ -1176,7 +1177,7 @@ void TownsSCSI::ExecSCSICommand(void)
 						subQData[14]=(unsigned char)trackTime.MSF.sec;
 						subQData[15]=(unsigned char)trackTime.MSF.frm;
 
-						state.dev[state.selId].CDDAWasPlaying=false;
+						state.dev[state.selId].CDDAState=CDDA_IDLE;
 					}
 					else
 					{
@@ -1591,6 +1592,69 @@ std::vector <unsigned char> TownsSCSI::MakeTOCData(int scsiId,unsigned int start
 	return dat;
 }
 
+void TownsSCSI::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate)
+{
+	for(auto &d : state.dev)
+	{
+		if(DiscImage::AUDIO_SAMPLING_RATE!=outSamplingRate)
+		{
+			std::cout << "TownsSCSI::AddWaveForNumSamples does not support other than " << DiscImage::AUDIO_SAMPLING_RATE << "Hz" << std::endl;
+			d.CDDAState=CDDA_STOPPING;
+			continue;
+		}
+
+		auto CDDAWaveSize=(d.CDDAWave.size()+3)&~3;  // Just in case, force it to be 4*N.
+		if(0==CDDAWaveSize)
+		{
+			d.CDDAState=CDDA_STOPPING;
+			continue;
+		}
+
+		// if(true==var.CDDAmute)
+		// {
+		// 	d.CDDAPlayPointer+=numSamples*4;
+		// }
+		// else
+		{
+			uint64_t writePtr=0;
+			for(uint64_t i=0; i<numSamples && d.CDDAPlayPointer+3<CDDAWaveSize; ++i)
+			{
+				int L=cpputil::GetSignedWord(waveBuf+writePtr);
+				int R=cpputil::GetSignedWord(waveBuf+writePtr+2);
+
+				L+=cpputil::GetSignedWord(d.CDDAWave.data()+d.CDDAPlayPointer);
+				R+=cpputil::GetSignedWord(d.CDDAWave.data()+d.CDDAPlayPointer+2);
+
+				L=std::max(std::min(L,32767),-32767);
+				R=std::max(std::min(R,32767),-32767);
+
+				cpputil::PutWord(waveBuf+writePtr,L);
+				cpputil::PutWord(waveBuf+writePtr+2,R);
+
+				writePtr+=4;
+				d.CDDAPlayPointer+=4;
+			}
+
+			if(CDDAWaveSize<=d.CDDAPlayPointer)
+			{
+				d.CDDAState=CDDA_STOPPING;
+			}
+		}
+	}
+}
+
+void TownsSCSI::ResumeCDDAAfterRestore(void)
+{
+	for(auto &d : state.dev)
+	{
+		if(SCSIDEVICE_CDROM==d.devType && (CDDA_PLAYING==d.CDDAState || CDDA_PAUSED==d.CDDAState))
+		{
+			d.CDDAWave=d.discImg.GetWave(d.CDDABeginTime,d.CDDAEndTime);
+			// state.CDDAPlayPointer should have already been set.
+		}
+	}
+}
+
 std::vector <std::string> TownsSCSI::GetStatusText(void) const
 {
 	std::vector <std::string> text;
@@ -1755,7 +1819,10 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 {
 	// Version 2:
 	//   lidClosed,lidLocked flags.
-	return 2;
+	// Version 3
+	//   CDDABeginTime,CDDAEndTime,CDDAState, CDDAPlayPointer=0;
+
+	return 3;
 }
 /* virtual */ void TownsSCSI::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1771,8 +1838,15 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 
 		if(SCSIDEVICE_CDROM==dev.devType)
 		{
+			// Version 2
 			PushBool(data,dev.lidClosed);
 			PushBool(data,dev.lidLocked);
+
+			// Version 3
+			PushUint32(data,dev.CDDAState);
+			PushUint32(data,dev.CDDABeginTime.ToHSG());
+			PushUint32(data,dev.CDDAEndTime.ToHSG());
+			PushUint32(data,dev.CDDAPlayPointer);
 		}
 	}
 
@@ -1877,6 +1951,21 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 		{
 			dev.lidClosed=true;
 			dev.lidLocked=false;
+		}
+
+		if(SCSIDEVICE_CDROM==dev.devType && 3<=version)
+		{
+			dev.CDDAState=ReadUint32(data);
+			dev.CDDABeginTime.FromHSG(ReadUint32(data));
+			dev.CDDAEndTime.FromHSG(ReadUint32(data));
+			dev.CDDAPlayPointer=ReadUint32(data);
+		}
+		else
+		{
+			dev.CDDAState=CDDA_IDLE;
+			dev.CDDABeginTime.FromHSG(0);
+			dev.CDDAEndTime.FromHSG(0);
+			dev.CDDAPlayPointer=0;
 		}
 	}
 

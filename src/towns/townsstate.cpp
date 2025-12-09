@@ -204,6 +204,7 @@ void FMTownsCommon::LoadStatePostProcess(void)
 	}
 
 	cdrom.ResumeCDDAAfterRestore();
+	scsi.ResumeCDDAAfterRestore();
 
 	var.justLoadedState=true;
 }

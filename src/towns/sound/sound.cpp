@@ -63,6 +63,10 @@ void TownsSound::SetCDROMPointer(class TownsCDROM *cdrom)
 {
 	this->cdrom=cdrom;
 }
+void TownsSound::SetSCSIPointer(TownsSCSI *scsi)
+{
+	this->scsi=scsi;
+}
 
 /* virtual */ void TownsSound::PowerOn(void)
 {
@@ -353,6 +357,7 @@ void TownsSound::ProcessSound(void)
 	    true==IsPCMRecording() ||
 	    true==IsHighResPCMPlaying() ||
 	    true==cdrom->CDDAIsPlaying() ||
+	    true==scsi->CDDAIsPlaying() ||
 	    townsPtr->state.townsTime<lastFMPCMWaveGenTime+RINGBUFFER_CLEAR_TIME) && 
 	    nullptr!=outside_world)
 	{
@@ -425,6 +430,11 @@ void TownsSound::ProcessSound(void)
 			if(true==cdrom->CDDAIsPlaying() && 0!=(state.audioFlag&64))
 			{
 				cdrom->AddWaveForNumSamples(nextFMPCMWave.data(),numSamplesPerWave,WAVE_OUT_SAMPLING_RATE);
+				wavGenerated=true;
+			}
+			if(true==scsi->CDDAIsPlaying())
+			{
+				scsi->AddWaveForNumSamples(nextFMPCMWave.data(),numSamplesPerWave,WAVE_OUT_SAMPLING_RATE);
 				wavGenerated=true;
 			}
 			if(true==IsPCMRecording())

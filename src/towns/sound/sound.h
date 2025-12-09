@@ -29,6 +29,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "yssimplesound.h"
 #include "outside_world.h"
 #include "cdrom.h"
+#include "scsi.h"
 
 class TownsSound : public Device
 {
@@ -86,6 +87,7 @@ public:
 	Variable var;
 	class Outside_World::Sound *outside_world=nullptr;
 	class TownsCDROM *cdrom=nullptr;
+	class TownsSCSI *scsi=nullptr;
 
 	// Since 2023/09/17, CDDA is played from the same channel as FM and PCM.
 	// Although the variables say FMPCM, it also includes CDDA.
@@ -112,7 +114,8 @@ public:
 
 	TownsSound(class FMTownsCommon *townsPtr);
 	void SetOutsideWorld(class Outside_World::Sound *outside_world);
-	void SetCDROMPointer(class TownsCDROM *cdrom);
+	void SetCDROMPointer(TownsCDROM *cdrom);
+	void SetSCSIPointer(TownsSCSI *scsi);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

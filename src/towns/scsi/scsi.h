@@ -247,10 +247,9 @@ public:
 		long long int imageSize=0;
 		DiscImage discImg;
 
-		bool CDDAWasPlaying=false; // Not saved in the machine state
-		DiscImage::MinSecFrm CDDAEndTime; // Make sure it is reported at least once.
-		int CDDAState=CDDA_IDLE; // Not saved in the machine state.
-		std::vector <uint8_t> CDDAWave; // Not saved in the machine state.
+		DiscImage::MinSecFrm CDDABeginTime,CDDAEndTime;
+		int CDDAState=CDDA_IDLE;
+		std::vector <uint8_t> CDDAWave;
 		size_t CDDAPlayPointer=0;
 
 		bool lidClosed,lidLocked; // For CD-ROM drive.
@@ -306,7 +305,7 @@ public:
 		return state.IMSK;
 	}
 
-	inline bool CDDAPlaying(void) const
+	inline bool CDDAIsPlaying(void) const
 	{
 		for(auto &d : state.dev)
 		{
@@ -317,6 +316,10 @@ public:
 		}
 		return false;
 	}
+	void AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate);
+	// Will be called from FMTownsCommon::LoadState
+	void ResumeCDDAAfterRestore(void);
+
 
 	void SetUpIO_MSG_CDfromPhase(void);
 	void EnterBusFreePhase(void);

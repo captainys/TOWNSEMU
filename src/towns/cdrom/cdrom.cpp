@@ -1844,8 +1844,6 @@ void TownsCDROM::SetSIRQ_IRR(void)
 
 void TownsCDROM::ResumeCDDAAfterRestore(void)
 {
-	unsigned int leftLinear=255;
-	unsigned int rightLinear=255;
 	if(CDDA_PLAYING==state.CDDAState || CDDA_PAUSED==state.CDDAState)
 	{
 		state.CDDAWave=state.GetDisc().GetWave(state.CDDAStartTime,state.CDDAEndTime);
