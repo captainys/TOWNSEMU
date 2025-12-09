@@ -76,7 +76,6 @@ void TownsThread::VMMainLoopTemplate(
 {
 	townsPtr->sound.SetOutsideWorld(sound);
 	townsPtr->sound.SetCDROMPointer(&townsPtr->cdrom);
-	townsPtr->scsi.SetOutsideWorld(sound);
 	sound->Start();
 
 	TownsRender render;

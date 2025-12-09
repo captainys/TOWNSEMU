@@ -167,6 +167,9 @@ void TownsSCSI::State::Reset(void)
 
 	for(auto &d : dev)
 	{
+		d.CDDAState=CDDA_IDLE;
+		d.CDDAWave.clear();
+		d.CDDAPlayPointer=0;
 		d.lidClosed=true;
 		d.lidLocked=false;
 	}
@@ -209,11 +212,6 @@ TownsSCSI::TownsSCSI(class FMTownsCommon *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_COPY_AND_VERIFY]=10;
 	commandLength[SCSICMD_MODE_SENSE]     =6;
 	commandLength[SCSICMD_MODE_SELECT]    =6;
-}
-
-void TownsSCSI::SetOutsideWorld(class Outside_World::Sound *ptr)
-{
-	this->outsideworld=ptr;
 }
 
 /* virtual */ void TownsSCSI::PowerOn(void)
@@ -796,10 +794,10 @@ void TownsSCSI::ExecSCSICommand(void)
 			auto end=DiscImage::MakeMSF(state.commandBuffer[6],state.commandBuffer[7],state.commandBuffer[8]);
 			start-=DiscImage::MakeMSF(0,2,0);
 			end-=DiscImage::MakeMSF(0,2,0);
-			if(nullptr!=outsideworld)
-			{
-				outsideworld->CDDAPlay(state.dev[state.selId].discImg,start,end,false,255,255); // There is no repeat.  Electric Volume not connected to SCSI CD.
-			}
+
+			state.dev[state.selId].CDDAWave=state.dev[state.selId].discImg.GetWave(start,end);
+			state.dev[state.selId].CDDAState=CDDA_PLAYING;
+
 			state.dev[state.selId].CDDAEndTime=end;
 			state.status=STATUSCODE_GOOD;
 			state.message=0; // What am I supposed to return?
@@ -832,10 +830,10 @@ void TownsSCSI::ExecSCSICommand(void)
 
 			start-=DiscImage::MakeMSF(0,2,0);
 			end-=DiscImage::MakeMSF(0,2,0);
-			if(nullptr!=outsideworld)
-			{
-				outsideworld->CDDAPlay(state.dev[state.selId].discImg,start,end,false,255,255); // There is no repeat.  Electric Volume not connected to SCSI CD.
-			}
+
+			state.dev[state.selId].CDDAWave=state.dev[state.selId].discImg.GetWave(start,end);
+			state.dev[state.selId].CDDAState=CDDA_PLAYING;
+
 			state.dev[state.selId].CDDAEndTime=end;
 			state.status=STATUSCODE_GOOD;
 			state.message=0; // What am I supposed to return?
@@ -855,12 +853,18 @@ void TownsSCSI::ExecSCSICommand(void)
 		{
 			if(state.commandBuffer[8]&1) // Resume
 			{
-				outsideworld->CDDAResume();
+				if(CDDA_PAUSED==state.dev[state.selId].CDDAState)
+				{
+					state.dev[state.selId].CDDAState=CDDA_PLAYING;
+				}
 			}
 			else
 			{
-				outsideworld->CDDAPause();
-				state.dev[state.selId].CDDAWasPlaying=false; // This flag is set only when all scheduled segment has been played.
+				if(CDDA_PLAYING==state.dev[state.selId].CDDAState)
+				{
+					state.dev[state.selId].CDDAState=CDDA_PAUSED;
+					state.dev[state.selId].CDDAWasPlaying=false; // This flag is set only when all scheduled segment has been played.
+				}
 			}
 			state.status=STATUSCODE_GOOD;
 			state.message=0; // What am I supposed to return?
@@ -1117,11 +1121,29 @@ void TownsSCSI::ExecSCSICommand(void)
 					// subQData[13]  Track relative CD Addr
 					// subQData[14]  Track relative CD Addr
 					// subQData[15]  Track relative CD Addr LSB
-					if(true==outsideworld->CDDAIsPlaying())
+					if(CDDA_PAUSED==state.dev[state.selId].CDDAState || CDDA_PLAYING==state.dev[state.selId].CDDAState)
 					{
-						subQData[1]=0x11;
+						if(CDDA_PLAYING==state.dev[state.selId].CDDAState)
+						{
+							subQData[1]=0x11;
+						}
+						else
+						{
+							subQData[1]=0x12;
+						}
 
-						auto discTime=outsideworld->CDDACurrentPosition();
+						uint64_t frm=state.dev[state.selId].CDDAPlayPointer*75;
+						frm/=DiscImage::AUDIO_SAMPLING_RATE;
+
+						auto sec=frm/75;
+						frm%=75;
+
+						auto min=sec/60;
+						sec%=60;
+
+						DiscImage::MinSecFrm discTime;
+						discTime.Set(min,sec,frm);
+
 						auto trackTime=state.dev[state.selId].discImg.DiscTimeToTrackTime(discTime);
 						discTime+=DiscImage::MakeMSF(0,2,0);
 

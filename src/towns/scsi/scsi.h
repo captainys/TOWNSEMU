@@ -29,7 +29,6 @@ class TownsSCSI : public Device
 {
 private:
 	class FMTownsCommon *townsPtr;
-	class Outside_World::Sound *outsideworld=nullptr;
 public:
 	virtual const char *DeviceName(void) const{return "SCSI";}
 
@@ -231,6 +230,14 @@ public:
 
 
 
+	enum
+	{
+		CDDA_IDLE,
+		CDDA_PLAYING,
+		CDDA_PAUSED,
+		CDDA_STOPPING,
+		CDDA_ENDED,
+	};
 
 	class SCSIDevice
 	{
@@ -242,6 +249,9 @@ public:
 
 		bool CDDAWasPlaying=false; // Not saved in the machine state
 		DiscImage::MinSecFrm CDDAEndTime; // Make sure it is reported at least once.
+		int CDDAState=CDDA_IDLE; // Not saved in the machine state.
+		std::vector <uint8_t> CDDAWave; // Not saved in the machine state.
+		size_t CDDAPlayPointer=0;
 
 		bool lidClosed,lidLocked; // For CD-ROM drive.
 	};
@@ -279,8 +289,6 @@ public:
 
 	TownsSCSI(class FMTownsCommon *townsPtr);
 
-	void SetOutsideWorld(class Outside_World::Sound *ptr);
-
 	virtual void PowerOn(void);
 	virtual void Reset(void);
 
@@ -296,6 +304,18 @@ public:
 		//    false: IRQ enabled
 		// It disagrees with the BIOS disassembly.
 		return state.IMSK;
+	}
+
+	inline bool CDDAPlaying(void) const
+	{
+		for(auto &d : state.dev)
+		{
+			if(SCSIDEVICE_CDROM==d.devType && CDDA_PLAYING==d.CDDAState)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	void SetUpIO_MSG_CDfromPhase(void);
