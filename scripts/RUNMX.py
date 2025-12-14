@@ -64,6 +64,7 @@ def Run(argv):
 		"16",
 		"-HIGHRES",
 		"-DEBUG",
+		"-AUTOSCALE",
 		#"-PAUSE",
 	]+argv).wait()
 
