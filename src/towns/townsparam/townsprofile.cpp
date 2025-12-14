@@ -339,6 +339,9 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back("CUSTMSTM ");
 	text.back()+=TownsCustomMouseCaptureTimingToStr(customMouseCaptureTiming);
 
+	text.push_back("DIFFMOUS ");
+	text.back()+=(differentialMouseIntegration ? "1" : "0");
+
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
@@ -832,6 +835,10 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		else if("CUSTMSTM"==argv[0] && 2<=argv.size())
 		{
 			customMouseCaptureTiming=TownsStrToCustomMouseCaptureTiming(argv[1]);
+		}
+		else if("DIFFMOUS"==argv[0] && 2<=argv.size())
+		{
+			differentialMouseIntegration=atoi(argv[1].c_str());
 		}
 		else
 		{

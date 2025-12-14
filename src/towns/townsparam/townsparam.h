@@ -119,6 +119,7 @@ public:
 	std::string customMouseX,customMouseY;
 	unsigned int customMouseCaptureTiming=TOWNS_CUSTOM_MOUSE_CAPTURE_NEVER;
 
+	bool differentialMouseIntegration=false;
 
 	std::vector <std::string> initCmd;
 

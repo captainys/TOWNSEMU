@@ -282,6 +282,8 @@ void FMTownsCommon::State::PowerOn(void)
 	towns.keyboard.SetBootKeyCombination(argv.bootKeyComb);
 	towns.gameport.SetBootKeyCombination(argv.bootKeyComb);
 
+	outside_world->differentialMouseIntegration=argv.differentialMouseIntegration;
+
 	towns.var.customMouseIntegration=argv.customMouseIntegration;
 	towns.var.customMouseX=argv.customMouseX;
 	towns.var.customMouseY=argv.customMouseY;

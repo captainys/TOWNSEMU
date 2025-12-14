@@ -1097,6 +1097,14 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			}
 			++i;
 		}
+		else if("-DIFFMOUSE"==ARG)
+		{
+			differentialMouseIntegration=true;
+		}
+		else if("-NODIFFMOUSE"==ARG)
+		{
+			differentialMouseIntegration=false;
+		}
 		else
 		{
 			if(1==i)
