@@ -19,6 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "towns.h"
 #include "townsdef.h"
 #include "tbiosid.h"
+#include "townscommandutil.h"
 
 // For Wing Commander 2 mouse integration.
 // Looks like DS is page aligned.
@@ -239,6 +240,13 @@ unsigned int FMTownsCommon::FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,u
 
 void FMTownsCommon::OnCRTC_HST_Write(void)
 {
+	if(true==var.customMouseIntegration &&
+	   TOWNS_CUSTOM_MOUSE_CAPTURE_CRTCIO==var.customMouseCaptureTiming)
+	{
+		CaptureCustomMouseCoordPointer();
+		return;
+	}
+
 	auto &cpu=CPU();
 	std::cout << "Write to CRTC-HST register." << std::endl;
 	if(0!=(cpu.state.GetCR(0)&i486DXCommon::CR0_PROTECTION_ENABLE))
@@ -424,6 +432,45 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 				std::cout << "  Current Location " << cpputil::Uitox(state.appSpecific_RudderPtr) << std::endl;
 			}
 			break;
+		}
+	}
+}
+
+void FMTownsCommon::CaptureCustomMouseCoordPointer(void)
+{
+	for(int i=0; i<2; ++i)
+	{
+		auto farPtr=cmdutil::MakeFarPointer(0==i ? var.customMouseX : var.customMouseY,CPU());
+
+		farPtr=CPU().TranslateFarPointer(farPtr);
+
+		uint32_t physAddr=0;
+		if(i486DXCommon::FarPointer::LINEAR_ADDR==farPtr.SEG)
+		{
+			unsigned int exceptionType,exceptionCode;
+			physAddr=CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,farPtr.OFFSET,mem);
+		}
+		else if(i486DXCommon::FarPointer::PHYS_ADDR==farPtr.SEG)
+		{
+			physAddr=farPtr.OFFSET;
+		}
+		else
+		{
+			i486DXCommon::SegmentRegister seg;
+			CPU().DebugLoadSegmentRegister(seg,farPtr.SEG,mem,CPU().state.mode);
+			auto linear=seg.baseLinearAddr+farPtr.OFFSET;
+
+			unsigned int exceptionType,exceptionCode;
+			physAddr=CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linear,mem);
+		}
+
+		if(0==i)
+		{
+			state.appSpecific_MousePtrX=physAddr;
+		}
+		else
+		{
+			state.appSpecific_MousePtrY=physAddr;
 		}
 	}
 }
@@ -870,6 +917,16 @@ bool FMTownsCommon::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) con
 		return true;
 	}
 	// Windows 3.1 <<
+
+	// Custom Mouse Integration >>
+	if(true==var.customMouseIntegration)
+	{
+		mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
+		my=(int)mem.FetchWord(state.appSpecific_MousePtrY);
+		return true;
+	}
+
+	// Custom Mouse Integration <<
 
 	if(true==state.mouseBIOSActive &&
 	   TOWNS_APPSPECIFIC_ULTIMAUNDERWORLD!=state.appSpecificSetting)

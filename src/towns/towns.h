@@ -508,7 +508,7 @@ public:
 
 	static bool Setup(FMTownsCommon &towns,Outside_World *outside_world,Outside_World::WindowInterface *windowInterface,const TownsStartParameters &argv);
 	void AppSpecificSetup(Outside_World *outside_world,const TownsStartParameters &argv);
-
+	void CaptureCustomMouseCoordPointer(void);
 
 	unsigned int MachineID(void) const;
 

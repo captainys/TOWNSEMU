@@ -817,6 +817,12 @@ void TownsGamePort::State::Reset(void)
 		}
 		break;
 	case TOWNSIO_GAMEPORT_B_INPUT://        0x4D2,
+		if(true==townsPtr->var.customMouseIntegration &&
+		   TOWNS_CUSTOM_MOUSE_CAPTURE_MOUSEIO==townsPtr->var.customMouseCaptureTiming &&
+		   MOUSESTATE_XHIGH==state.ports[1].state)
+		{
+			townsPtr->CaptureCustomMouseCoordPointer();
+		}
 		return state.ports[1].Read(townsPtr->state.townsTime);
 		break;
 	case TOWNSIO_GAMEPORT_OUTPUT://         0x4D6,
