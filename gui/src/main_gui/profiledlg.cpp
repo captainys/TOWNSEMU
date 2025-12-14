@@ -330,6 +330,8 @@ void ProfileDialog::Make(const UiText &ui)
 		AddStaticText(0,FSKEY_NULL,"MaxY:",YSFALSE);
 		mouseMaxYTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",5,YSFALSE);
 
+		diffMouseBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/gameport/diff_mouse_integ","Try this check box if mouse cursor does not move."),YSTRUE);
+
 		EndAddTabItem();
 	}
 
@@ -1467,6 +1469,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.RS232CtoTCPAddr=RS232CtoTCPTxt->GetString().c_str();
 
+	profile.differentialMouseIntegration=(YSTRUE==diffMouseBtn->GetCheck());
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -1730,6 +1734,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	CPUFidelityDrp->SelectByString(i486DXCommon::FidelityLevelToStr(profile.CPUFidelityLevel).c_str());
 
 	RS232CtoTCPTxt->SetText(profile.RS232CtoTCPAddr.c_str());
+
+	diffMouseBtn->SetCheck(profile.differentialMouseIntegration ? YSTRUE : YSFALSE);
 }
 
 void ProfileDialog::SetDefaultFMVolume(void)

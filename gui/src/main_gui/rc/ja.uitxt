@@ -175,6 +175,7 @@ UITXT
 +/profile/gameport/slow 遅い
 +/profile/gameport/fast 速い
 +/profile/gameport/considervramoffset VRAMオフセットを考慮する
++/profile/gameport/diff_mouse_integ マウスカーソルが動かないときはこのチェックボックスで直る鴨しれない
 
 +/profile/keyboard1 キーボード1
 +/profile/keyboard1/mode モード (TRANS1:ESC->ESC+BREAK, TRANS2:ESC->ESC, TRANS3:ESC->BREAK)
