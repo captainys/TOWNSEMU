@@ -174,6 +174,21 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  NUMPADMOUSE use NUMPAD number keys and /* keys for mouse cursor and buttons." << std::endl;
 	std::cout << "  PHYS0MOUSE,PHYS1MOUSE,PHYS2MOUSE,PHYS3MOUSE use physical game pad digital axis for mouse." << std::endl;
 	std::cout << "  ANA0MOUSE,ANA1MOUSE,ANA2MOUSE,ANA3MOUSE use physical game pad analog axis for mouse." << std::endl;
+	std::cout << "-CUSTOMMOS\n";
+	std::cout << "  Enable custom mouse integration.  It requires -MOSX and -MOSY options as well.\n";
+	std::cout << "-NOCUSTOMMOS\n";
+	std::cout << "  Cancels prior -CUSTOMMOS option.\n";
+	std::cout << "-MOSX seg:offset\n";
+	std::cout << "-MOSY seg:offset\n";
+	std::cout << "  Specify location in the memory where mouse x- and y-coordinates are stored.\n";
+	std::cout << "  If you know the exact physical address, you can say like PHYS:0172H.\n";
+	std::cout << "  If you know the segment/selector and offset, you can say like 0014:0172H.\n";
+	std::cout << "  Or, you can say DS:0172H. But, if you do not know the exact physical address, or\n";
+	std::cout << "  the physical address may vary, you also need to specify -MOSCAPTIME option.\n";
+	std::cout << "-MOSCAPTIME MOUSEIO/CRTCIO\n";
+	std::cout << "  If -MOSX and/or -MOSY uses the segment and offset (instead of PHYS:xxxx),\n";
+	std::cout << "  This option specifies when the physical addresses of the mouse x and y area\n";
+	std::cout << "  captured.  It can be when the CPU accesses mouse I/O or crtc I/O.\n";
 	std::cout << "-BUTTONHOLDTIME0 0|1 time_in_millisec" << std::endl;
 	std::cout << "-BUTTONHOLDTIME1 0|1 time_in_millisec" << std::endl;
 	std::cout << "  In some games, when you click on a menu or a button, you end up selecting the next menu" << std::endl;
@@ -1052,6 +1067,34 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-INITCMD"==ARG && i+1<argc)
 		{
 			initCmd.push_back(argv[i+1]);
+			++i;
+		}
+		else if("-CUSTOMMOS"==ARG)
+		{
+			customMouseIntegration=true;
+		}
+		else if("-NOCUSTOMMOS"==ARG)
+		{
+			customMouseIntegration=false;
+		}
+		else if("-MOSX"==ARG && i+1<argc)
+		{
+			customMouseX=argv[i+1];
+			++i;
+		}
+		else if("-MOSY"==ARG && i+1<argc)
+		{
+			customMouseY=argv[i+1];
+			++i;
+		}
+		else if("-MOSCAPTIME"==ARG && i+1<argc)
+		{
+			customMouseCaptureTiming=TownsStrToCustomMouseCaptureTiming(argv[i+1]);
+			if(TOWNS_CUSTOM_MOUSE_CAPTURE_NONE==customMouseCaptureTiming)
+			{
+				std::cout << "Undefined Mouse Capture Timing for " << argv[i] << std::endl;
+				return false;
+			}
 			++i;
 		}
 		else

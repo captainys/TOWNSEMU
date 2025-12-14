@@ -115,6 +115,10 @@ public:
 	float mouseByFlightstickScaleX=500.0F,mouseByFlightstickScaleY=400.0F;
 	long long int maxButtonHoldTime[2][2]={{0,0},{0,0}};
 
+	bool customMouseIntegration=false;
+	std::string customMouseX,customMouseY;
+	unsigned int customMouseCaptureTiming=TOWNS_CUSTOM_MOUSE_CAPTURE_NEVER;
+
 
 	std::vector <std::string> initCmd;
 

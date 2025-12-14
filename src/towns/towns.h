@@ -282,6 +282,10 @@ public:
 		*/
 		bool mouseIntegration=true;
 
+		bool customMouseIntegration=false;
+		std::string customMouseX,customMouseY;
+		unsigned int customMouseCaptureTiming=TOWNS_CUSTOM_MOUSE_CAPTURE_NEVER;
+
 		int mouseMinX=TownsStartParameters::DEFAULT_MOUSE_MINX;
 		int mouseMaxX=TownsStartParameters::DEFAULT_MOUSE_MAXX;
 		int mouseMinY=TownsStartParameters::DEFAULT_MOUSE_MINY;

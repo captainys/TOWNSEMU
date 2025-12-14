@@ -1061,6 +1061,19 @@ TOWNS_NUM_APPSPECIFIC
 	std::string TownsAppToStr(unsigned int i);
 #endif
 
+enum
+{
+	TOWNS_CUSTOM_MOUSE_CAPTURE_NONE,    // Undefined
+	TOWNS_CUSTOM_MOUSE_CAPTURE_NEVER,   // Do not capture.
+	TOWNS_CUSTOM_MOUSE_CAPTURE_MOUSEIO, // When accessed game port 1 I/O
+	TOWNS_CUSTOM_MOUSE_CAPTURE_CRTCIO,  // When accessed CRTC I/O
+};
+
+#ifdef __cplusplus
+	unsigned int TownsStrToCustomMouseCaptureTiming(std::string str);
+	std::string TownsCustomMouseCaptureTimingToStr(unsigned int i);
+#endif
+
 
 enum
 {

@@ -904,6 +904,37 @@ std::string TownsAppToStr(unsigned int i)
 	}
 }
 
+unsigned int TownsStrToCustomMouseCaptureTiming(std::string str)
+{
+	Capitalize(str);
+	if("MOUSEIO"==str || "04D2H"==str || "IO04D2H"==str)
+	{
+		return TOWNS_CUSTOM_MOUSE_CAPTURE_MOUSEIO;
+	}
+	else if("CRTCIO"==str)
+	{
+		return TOWNS_CUSTOM_MOUSE_CAPTURE_CRTCIO;
+	}
+	else if("NEVER"==str)
+	{
+		return TOWNS_CUSTOM_MOUSE_CAPTURE_NEVER;
+	}
+	return TOWNS_CUSTOM_MOUSE_CAPTURE_NONE;
+}
+std::string TownsCustomMouseCaptureTimingToStr(unsigned int i)
+{
+	switch(i)
+	{
+	default:
+	case TOWNS_CUSTOM_MOUSE_CAPTURE_NEVER:   // Do not capture.
+		return "NEVER";
+	case TOWNS_CUSTOM_MOUSE_CAPTURE_MOUSEIO: // When accessed game port 1 I/O
+		return "MOUSEIO";
+	case TOWNS_CUSTOM_MOUSE_CAPTURE_CRTCIO:  // When accessed CRTC I/O
+		return "CRTCIO";
+	}
+}
+
 std::string TownsKeyCodeToStr(unsigned int keyCode)
 {
 	static std::unordered_map <unsigned,std::string> map;

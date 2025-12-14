@@ -25,6 +25,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "render.h"
 #include "outside_world.h"
 #include "i486symtable.h"
+#include "townscommandutil.h"
 
 
 
@@ -281,6 +282,23 @@ void FMTownsCommon::State::PowerOn(void)
 	towns.keyboard.SetBootKeyCombination(argv.bootKeyComb);
 	towns.gameport.SetBootKeyCombination(argv.bootKeyComb);
 
+	towns.var.customMouseIntegration=argv.customMouseIntegration;
+	towns.var.customMouseX=argv.customMouseX;
+	towns.var.customMouseY=argv.customMouseY;
+	towns.var.customMouseCaptureTiming=argv.customMouseCaptureTiming;
+	if(true==towns.var.customMouseIntegration)
+	{
+		auto mouseXPtr=cmdutil::MakeFarPointer(towns.var.customMouseX,towns.CPU());
+		auto mouseYPtr=cmdutil::MakeFarPointer(towns.var.customMouseX,towns.CPU());
+		if((mouseXPtr.SEG&0xFFFF0000)==i486DXCommon::FarPointer::PHYS_ADDR)
+		{
+			towns.state.appSpecific_MousePtrX=mouseXPtr.OFFSET;
+		}
+		if((mouseYPtr.SEG&0xFFFF0000)==i486DXCommon::FarPointer::PHYS_ADDR)
+		{
+			towns.state.appSpecific_MousePtrY=mouseYPtr.OFFSET;
+		}
+	}
 
 	towns.state.mouseIntegrationSpeed=argv.mouseIntegrationSpeed;
 	towns.var.considerVRAMOffsetInMouseIntegration=argv.considerVRAMOffsetInMouseIntegration;

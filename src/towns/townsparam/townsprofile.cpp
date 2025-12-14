@@ -327,6 +327,18 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back("RS232TCP ");
 	text.back()+=RS232CtoTCPAddr;
 
+	text.push_back("CUSTMOUS ");
+	text.back()+=(customMouseIntegration ? "1" : "0");
+
+	text.push_back("CUSTMOSX ");
+	text.back()+=customMouseX;
+
+	text.push_back("CUSTMOSY ");
+	text.back()+=customMouseY;
+
+	text.push_back("CUSTMSTM ");
+	text.back()+=TownsCustomMouseCaptureTimingToStr(customMouseCaptureTiming);
+
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
@@ -804,6 +816,22 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			{
 				RS232CtoTCPAddr="";
 			}
+		}
+		else if("CUSTMOUS"==argv[0] && 2<=argv.size())
+		{
+			customMouseIntegration=atoi(argv[1].c_str());
+		}
+		else if("CUSTMOSX"==argv[0] && 2<=argv.size())
+		{
+			customMouseX=argv[1];
+		}
+		else if("CUSTMOSY"==argv[0] && 2<=argv.size())
+		{
+			customMouseY=argv[1];
+		}
+		else if("CUSTMSTM"==argv[0] && 2<=argv.size())
+		{
+			customMouseCaptureTiming=TownsStrToCustomMouseCaptureTiming(argv[1]);
 		}
 		else
 		{
