@@ -61,6 +61,7 @@ public:
 		std::vector <MouseEvent> mouseEvents;
 		unsigned char keyState[FSKEY_NUM_KEYCODE];
 		MouseEvent lastKnownMouse;
+		int mouseMoveXY[2]={0,0};
 
 		std::vector <struct YsGamePadReading> gamePads;
 
@@ -83,6 +84,8 @@ public:
 			keyCode.clear();
 			charCode.clear();
 			mouseEvents.clear();
+			mouseMoveXY[0]=0;
+			mouseMoveXY[1]=0;
 		}
 	};
 

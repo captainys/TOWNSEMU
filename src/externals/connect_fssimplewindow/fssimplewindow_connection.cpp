@@ -1729,12 +1729,20 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 	}
 	for(;;)
 	{
+		int lastXY[2]={winThrEx.primary.lastKnownMouse.mx,winThrEx.primary.lastKnownMouse.my};
+
 		winThrEx.primary.lastKnownMouse.Read();
 		if(FSMOUSEEVENT_NONE==winThrEx.primary.lastKnownMouse.evt)
 		{
 			break;
 		}
 		winThrEx.primary.mouseEvents.push_back(winThrEx.primary.lastKnownMouse);
+
+		int newXY[2]={winThrEx.primary.lastKnownMouse.mx,winThrEx.primary.lastKnownMouse.my};
+		int diffXY[2]={newXY[0]-lastXY[0],newXY[1]-lastXY[1]};
+
+		winThrEx.primary.mouseMoveXY[0]+=diffXY[0];
+		winThrEx.primary.mouseMoveXY[1]+=diffXY[1];
 	}
 
 	PollGamePads();
