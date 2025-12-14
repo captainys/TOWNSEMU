@@ -702,6 +702,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "    1064h in TownsOS V1.1 L20" << std::endl;
 	std::cout << "    0FC0h in TownsOS V1.1 L30" << std::endl;
 	std::cout << "    1679h in TownsOS V2.1 L20" << std::endl;
+	std::cout << "  Type DOSSEG AUTO to automatically find DOS segment by searching for the keyword 'BUG'.\n";
 	std::cout << "SAVEKEYMAP filename.txt" << std::endl;
 	std::cout << "LOADKEYMAP filename.txt" << std::endl;
 	std::cout << "  Save/Load key-mapping in a text file." << std::endl;
@@ -1771,12 +1772,35 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 	case CMD_DOSSEG:
 		if(2<=cmd.argv.size())
 		{
-			towns.state.DOSSEG=cpputil::Xtoi(cmd.argv[1].c_str());
+			auto argv1=cmd.argv[1];
+			cpputil::Capitalize(argv1);
+			if("AUTO"!=argv1)
+			{
+				towns.state.DOSSEG=cpputil::Xtoi(cmd.argv[1].c_str());
+			}
+			else
+			{
+				uint32_t foundBUGAt=0;
+				for(unsigned int addr=0; addr+3<=0xC0000; ++addr)
+				{
+					if(true==cpputil::Match(3,(const unsigned char *)"BUG",towns.physMem.state.RAM.data()+addr))
+					{
+						foundBUGAt=addr;
+						break;
+					}
+				}
+				if(0==foundBUGAt)
+				{
+					std::cout << "Keyword 'BUG' not found.\n";
+					break;
+				}
+				towns.state.DOSSEG=foundBUGAt/0x10;
+			}
 			std::cout << "Set DOSSEG=" << cpputil::Uitox(towns.state.DOSSEG) << "h" << std::endl;
 		}
 		else
 		{
-			PrintError(ERROR_TOO_FEW_ARGS);
+			std::cout << "DOSSEG=" << cpputil::Uitox(towns.state.DOSSEG) << "h" << std::endl;
 		}
 		break;
 
