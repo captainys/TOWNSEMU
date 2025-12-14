@@ -1358,8 +1358,8 @@ std::string FsSimpleWindowConnection::GetProgramResourceDirectory(void) const
 			}
 			else
 			{
-				int wid,hei;
-				FsGetWindowSize(wid,hei);
+				int wid=windowEvent.winWid;
+				int hei=windowEvent.winHei;
 				if(mx<0)
 				{
 					mx=0;
