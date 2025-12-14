@@ -1381,7 +1381,16 @@ std::string FsSimpleWindowConnection::GetProgramResourceDirectory(void) const
 					mx=mx*100/scalingX;
 					my=my*100/scalingY;
 				}
-				this->ProcessMouse(towns,lb,mb,rb,mx,my);
+				if(true!=differentialMouseIntegration)
+				{
+					this->ProcessMouse(towns,lb,mb,rb,mx,my);
+				}
+				else
+				{
+					int dx=windowEvent.mouseMoveXY[0];
+					int dy=windowEvent.mouseMoveXY[1];
+					this->ProcessMouseDifferential(towns,lb,mb,rb,dx,dy,wid/2,hei/2);
+				}
 			}
 		}
 	}
@@ -1755,6 +1764,15 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 		{
 			sharedEx.readyToSend=winThrEx.primary;
 			winThrEx.primary.CleanUpEvents();
+
+			if(true==shared.differentialMouseIntegration)
+			{
+				int mx=winThrEx.primary.winWid/2;
+				int my=winThrEx.primary.winHei/2;
+				winThrEx.primary.lastKnownMouse.mx=mx;
+				winThrEx.primary.lastKnownMouse.my=my;
+				FsSetMousePosition(mx,my);
+			}
 		}
 	}
 }
@@ -1978,6 +1996,7 @@ void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 
 		shared.gamePadsNeedUpdate=outside_world->gamePadsNeedUpdate;
 		shared.showMouseCursor=outside_world->showMouseCursor;
+		shared.differentialMouseIntegration=outside_world->differentialMouseIntegration;
 
 		outside_world->closeWindow=closeWindow;
 	}

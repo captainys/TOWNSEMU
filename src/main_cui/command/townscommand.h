@@ -259,6 +259,7 @@ public:
 		ENABLE_CAPTURE_DOS_STDOUT,
 		ENABLE_TGDRV_MONITOR,
 		ENABLE_MOUSE_MONITOR,
+		ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION,
 	};
 
 	enum
@@ -390,8 +391,8 @@ public:
 	*/
 	void Execute(TownsThread &thr,FMTownsCommon &towns,class Outside_World *outside_world,class Outside_World::Sound *sound,Command &cmd);
 
-	void Execute_Enable(FMTownsCommon &towns,Command &cmd);
-	void Execute_Disable(FMTownsCommon &towns,Command &cmd);
+	void Execute_Enable(FMTownsCommon &towns,Command &cmd,class Outside_World *outside_world);
+	void Execute_Disable(FMTownsCommon &towns,Command &cmd,class Outside_World *outside_world);
 
 	void Execute_AddBreakPoint(FMTownsCommon &towns,Command &cmd);
 	void Execute_AddBreakPointWithPassCount(FMTownsCommon &towns,Command &cmd);

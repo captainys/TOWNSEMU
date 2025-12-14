@@ -59,6 +59,8 @@ public:
 	};
 	bool mouseIntegrationActive=false;
 	int lastMx,lastMy,mouseStationaryCount=MOUSE_STATIONARY_COUNT;
+	bool differentialMouseIntegration=false;
+	int differentialMouseSensitivity=32,differentialMouseLeftOver[2]={0,0};
 
 	// Wing Commander and Strike Commander series can be configured to use mouse as joystick.
 	bool mouseByFlightstickAvailable=false;
@@ -197,6 +199,10 @@ public:
 	*/
 	void ProcessMouse(class FMTownsCommon &towns,int lb,int mb,int rb,int mx,int my);
 
+	/*!
+	*/
+	void ProcessMouseDifferential(class FMTownsCommon &towns,int lb,int mb,int rb,int dx,int dy,int refX,int refY);
+
 	/*! Right now it updates mouse neutral position for Wing Commander 1 if app-specific augumentation is enabled.
 	*/
 	void ProcessAppSpecific(class FMTownsCommon &towns);
@@ -248,6 +254,7 @@ public:
 			bool VMClosedFromVMThread=false;  // Written from the VM Thread.
 			std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
 			bool showMouseCursor=true;
+			bool differentialMouseIntegration=false;
 
 			// Managed by renderingLock
 			unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)

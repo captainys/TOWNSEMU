@@ -280,6 +280,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["CAPDOSSTDOUT"]=ENABLE_CAPTURE_DOS_STDOUT;
 	featureMap["TGDRVMON"]=ENABLE_TGDRV_MONITOR;
 	featureMap["MOUSEMON"]=ENABLE_MOUSE_MONITOR;
+	featureMap["DIFFMOUSE"]=ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -1134,10 +1135,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		break;
 
 	case CMD_ENABLE:
-		Execute_Enable(towns,cmd);
+		Execute_Enable(towns,cmd,outside_world);
 		break;
 	case CMD_DISABLE:
-		Execute_Disable(towns,cmd);
+		Execute_Disable(towns,cmd,outside_world);
 		break;
 
 	case CMD_DUMP:
@@ -1938,7 +1939,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 	}
 }
 
-void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd,Outside_World *outside_world)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -2084,10 +2085,14 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd)
 			towns.gameport.state.ports[1].monitorMouse=true;
 			std::cout << "Enabled mouse monitor.\n";
 			break;
+		case ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION:
+			outside_world->differentialMouseIntegration=true;
+			std::cout << "Enabled differential mouse integration\n";
+			break;
 		}
 	}
 }
-void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd,Outside_World *outside_world)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -2212,6 +2217,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd)
 			towns.gameport.state.ports[0].monitorMouse=false;
 			towns.gameport.state.ports[1].monitorMouse=false;
 			std::cout << "Disabled mouse monitor.\n";
+			break;
+		case ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION:
+			outside_world->differentialMouseIntegration=false;
+			std::cout << "Disabled differential mouse integration\n";
 			break;
 		}
 	}

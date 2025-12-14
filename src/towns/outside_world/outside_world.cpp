@@ -1375,6 +1375,49 @@ void Outside_World::ProcessMouse(class FMTownsCommon &towns,int lb,int mb,int rb
 	lastMx=mx;
 	lastMy=my;
 }
+
+void Outside_World::ProcessMouseDifferential(class FMTownsCommon &towns,int lb,int mb,int rb,int dx,int dy,int refX,int refY)
+{
+	towns.SetMouseButtonState((0!=lb),(0!=rb));
+	if(true==mouseIntegrationActive)
+	{
+		int DX=dx+differentialMouseLeftOver[0];
+		int DY=dy+differentialMouseLeftOver[1];
+
+		int countX=DX/differentialMouseSensitivity;
+		int countY=DY/differentialMouseSensitivity;
+
+		differentialMouseLeftOver[0]=DX%differentialMouseSensitivity;
+        differentialMouseLeftOver[1]=DY%differentialMouseSensitivity;
+
+		towns.SetMouseMotion(1,-dx,-dy); // Why was I giving the port ID in this case?
+
+		if(-1<=dx && dx<=1 && -1<=dy && dy<=1) // Added tolerance.
+		{
+			--mouseStationaryCount;
+			if(mouseStationaryCount<=0)
+			{
+				mouseIntegrationActive=false;
+				// std::cout << "Mouse Integration Paused" << std::endl;
+			}
+		}
+		else
+		{
+			mouseStationaryCount=MOUSE_STATIONARY_COUNT;
+		}
+	}
+	else
+	{
+		if(dx<-1 || 1<dx || dy<-1 || 1<dy)
+		{
+			// std::cout << "Mouse Integration Active" << std::endl;
+			mouseIntegrationActive=true;
+			mouseStationaryCount=MOUSE_STATIONARY_COUNT;
+		}
+		towns.DontControlMouse();
+	}
+}
+
 void Outside_World::ProcessAppSpecific(class FMTownsCommon &towns)
 {
 	if(TOWNS_APPSPECIFIC_WINGCOMMANDER1==towns.state.appSpecificSetting)
