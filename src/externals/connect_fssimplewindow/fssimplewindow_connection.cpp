@@ -1709,9 +1709,10 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 
 	FsPollDevice();
 
-	if(shared.showMouseCursor!=(FsIsMouseCursorVisible()!=0))
+	bool mouseCursorVisible=(true!=shared.differentialMouseIntegration && true==shared.showMouseCursor);
+	if(mouseCursorVisible!=(FsIsMouseCursorVisible()!=0))
 	{
-		if(true==shared.showMouseCursor)
+		if(true==mouseCursorVisible)
 		{
 			FsShowMouseCursor(1);
 		}
