@@ -97,16 +97,26 @@ void TownsThread::VMMainLoopTemplate(
 		switch(runMode)
 		{
 		case RUNMODE_PAUSE:
-			outside_world->UpdateStatusBarInfo(*townsPtr);
-			// Do not call window->Communicate(outwide_world); here because townsPtr->ForceRender will call it inside.
-			townsPtr->ForceRender(render,*outside_world,*window);
-			outside_world->DevicePolling(*townsPtr);
-			if(true==outside_world->PauseKeyPressed())
 			{
-				runMode=RUNMODE_RUN;
-				townsPtr->debugger.stop=false;
+				auto saveDiffMouseFlag=outside_world->differentialMouseIntegration;
+				outside_world->differentialMouseIntegration=false;
+				// Temporarily disable differential mouse integration.
+				// ForceRender will call window->Communicate, where the flag is copied to the window thread.
+
+				outside_world->UpdateStatusBarInfo(*townsPtr);
+				// Do not call window->Communicate(outwide_world); here because townsPtr->ForceRender will call it inside.
+				townsPtr->ForceRender(render,*outside_world,*window);
+
+				outside_world->differentialMouseIntegration=saveDiffMouseFlag; // Restore differential mouse integration.
+
+				outside_world->DevicePolling(*townsPtr);
+				if(true==outside_world->PauseKeyPressed())
+				{
+					runMode=RUNMODE_RUN;
+					townsPtr->debugger.stop=false;
+				}
+				townsPtr->sound.ProcessSilence();
 			}
-			townsPtr->sound.ProcessSilence();
 			break;
 		case RUNMODE_RUN:
 			clockTicking=true;

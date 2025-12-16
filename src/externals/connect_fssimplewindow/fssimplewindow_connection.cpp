@@ -1709,19 +1709,6 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 
 	FsPollDevice();
 
-	bool mouseCursorVisible=(true!=shared.differentialMouseIntegration && true==shared.showMouseCursor);
-	if(mouseCursorVisible!=(FsIsMouseCursorVisible()!=0))
-	{
-		if(true==mouseCursorVisible)
-		{
-			FsShowMouseCursor(1);
-		}
-		else
-		{
-			FsShowMouseCursor(0);
-		}
-	}
-
 	FsGetWindowSize(winThrEx.primary.winWid,winThrEx.primary.winHei);
 
 	int code;
@@ -1759,6 +1746,20 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 
 	{
 		std::lock_guard <std::mutex> lock(deviceStateLock);
+
+		bool mouseCursorVisible=(true!=shared.differentialMouseIntegration && true==shared.showMouseCursor);
+		if(mouseCursorVisible!=(FsIsMouseCursorVisible()!=0))
+		{
+			if(true==mouseCursorVisible)
+			{
+				FsShowMouseCursor(1);
+			}
+			else
+			{
+				FsShowMouseCursor(0);
+			}
+		}
+
 		winThr.VMClosed=shared.VMClosedFromVMThread;
 		winThr.gamePadsNeedUpdate=shared.gamePadsNeedUpdate;
 		if(true==sharedEx.readyToSend.EventEmpty())
