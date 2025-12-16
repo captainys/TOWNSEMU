@@ -446,6 +446,10 @@ to
 and returns the expanded file/directory name.
 */
 std::string ExpandFileName(std::string src,const std::map <std::string,std::string> &dict);
+
+inline void Toggle(bool &flag){flag=(flag==false);}
+
+inline std::string BoolToOnOffStr(bool flag){return (flag ? "ON" : "OFF");}
 };
 
 

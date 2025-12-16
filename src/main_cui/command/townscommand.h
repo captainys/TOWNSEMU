@@ -70,6 +70,7 @@ public:
 		CMD_DISABLE,
 		// ENABLE CMDLOG
 		// DISABLE CMDLOG
+		CMD_TOGGLE,
 
 		CMD_DUMP,
 		CMD_MEMDUMP,
@@ -393,6 +394,7 @@ public:
 
 	void Execute_Enable(FMTownsCommon &towns,Command &cmd,class Outside_World *outside_world);
 	void Execute_Disable(FMTownsCommon &towns,Command &cmd,class Outside_World *outside_world);
+	void Execute_Toggle(FMTownsCommon &towns,Command &cmd,class Outside_World *outside_world);
 
 	void Execute_AddBreakPoint(FMTownsCommon &towns,Command &cmd);
 	void Execute_AddBreakPointWithPassCount(FMTownsCommon &towns,Command &cmd);

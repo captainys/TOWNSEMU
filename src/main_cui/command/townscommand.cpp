@@ -58,6 +58,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["ENA"]=CMD_ENABLE;
 	primaryCmdMap["DISABLE"]=CMD_DISABLE;
 	primaryCmdMap["DIS"]=CMD_DISABLE;
+	primaryCmdMap["TOGGLE"]=CMD_TOGGLE;
 	primaryCmdMap["PRINT"]=CMD_DUMP;
 	primaryCmdMap["PRI"]=CMD_DUMP;
 	primaryCmdMap["P"]=CMD_DUMP;
@@ -563,6 +564,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Enable a feature." << std::endl;
 	std::cout << "DIS feature|DISABLE feature" << std::endl;
 	std::cout << "  Disable a feature." << std::endl;
+	std::cout << "TOGGLE feature\n";
+	std::cout << "  Enable or disable a feature.\n";
 	std::cout << "PRINT info|PRI info|P info" << std::endl;
 	std::cout << "DUMP info|DM info" << std::endl;
 	std::cout << "  Print/Dump information." << std::endl;
@@ -1140,6 +1143,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		break;
 	case CMD_DISABLE:
 		Execute_Disable(towns,cmd,outside_world);
+		break;
+	case CMD_TOGGLE:
+		Execute_Toggle(towns,cmd,outside_world);
 		break;
 
 	case CMD_DUMP:
@@ -1977,6 +1983,9 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd,O
 	{
 		switch(iter->second)
 		{
+		default:
+			std::cout << "Enable what?\n";
+			break;
 		case ENABLE_CMDLOG:
 			break;
 		case ENABLE_DISASSEMBLE_EVERY_INST:
@@ -2018,6 +2027,7 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd,O
 			break;
 		case ENABLE_SCSICMDMONITOR:
 			towns.scsi.monitorSCSICmd=true;
+			std::cout << "SCSI command monitor is ON.";
 			break;
 		case ENABLE_EVENTLOG:
 			towns.eventLog.BeginRecording(towns.state.townsTime);
@@ -2130,6 +2140,9 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd,
 	{
 		switch(iter->second)
 		{
+		default:
+			std::cout << "Disable what?\n";
+			break;
 		case ENABLE_CMDLOG:
 			break;
 		case ENABLE_DISASSEMBLE_EVERY_INST:
@@ -2166,6 +2179,7 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd,
 			break;
 		case ENABLE_SCSICMDMONITOR:
 			towns.scsi.monitorSCSICmd=false;
+			std::cout << "SCSI command monitor is OFF.";
 			break;
 		case ENABLE_EVENTLOG:
 			towns.eventLog.mode=TownsEventLog::MODE_NONE;
@@ -2245,6 +2259,108 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd,
 		case ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION:
 			outside_world->differentialMouseIntegration=false;
 			std::cout << "Disabled differential mouse integration\n";
+			break;
+		}
+	}
+}
+
+void TownsCommandInterpreter::Execute_Toggle(FMTownsCommon &towns,Command &cmd,class Outside_World *outside_world)
+{
+	if(cmd.argv.size()<2)
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+	auto argv1=cmd.argv[1];
+	cpputil::Capitalize(argv1);
+	auto iter=featureMap.find(argv1);
+	if(featureMap.end()!=iter)
+	{
+		switch(iter->second)
+		{
+		default:
+			std::cout << "Toggle what?\n";
+			break;
+		case ENABLE_CMDLOG:
+			break;
+		case ENABLE_DISASSEMBLE_EVERY_INST:
+		case ENABLE_DISASSEMBLE_EVERY_INST_WITH_REG:
+			cpputil::Toggle(towns.debugger.disassembleEveryStep);
+			std::cout << "Disassemble_Every_Step is ";
+			std::cout << cpputil::BoolToOnOffStr(towns.debugger.disassembleEveryStep) << ".\n";
+			break;
+		case ENABLE_IOMONITOR:
+			std::cout << "Toggle not supported for this feature.\n";
+			break;
+		case ENABLE_SCSICMDMONITOR:
+			cpputil::Toggle(towns.scsi.monitorSCSICmd);
+			std::cout << "SCSI command monitor is ";
+			std::cout << cpputil::BoolToOnOffStr(towns.scsi.monitorSCSICmd) << ".\n";
+			break;
+		case ENABLE_EVENTLOG:
+			std::cout << "Toggle not supported for this feature.\n";
+			break;
+		case ENABLE_DEBUGGER:
+			std::cout << "Toggle not supported for this feature.\n";
+			break;
+		case ENABLE_AUTO_ANNOTATE_VXDCALL:
+			std::cout << "Toggle not supported for this feature.\n";
+			break;
+		case ENABLE_MOUSEINTEGRATION:
+			std::cout << "Toggle not supported for this feature.\n";
+			break;
+		case ENABLE_YM2612_LOG:
+			std::cout << "Toggle not supported for this feature.\n";
+			break;
+		case ENABLE_FPU:
+			std::cout << "Toggle not supported for this feature.\n";
+			break;
+		case ENABLE_FDCMONITOR:
+			cpputil::Toggle(towns.fdc.fdcMonitor);
+			std::cout << "FDC Monitor is ";
+			std::cout << cpputil::BoolToOnOffStr(towns.fdc.fdcMonitor) << ".\n";
+			break;
+		case ENABLE_CDCMONITOR:
+			cpputil::Toggle(towns.cdrom.var.debugMonitorCommandWrite);
+			std::cout << "CDC Monitor is ";
+			std::cout << cpputil::BoolToOnOffStr(towns.cdrom.var.debugMonitorCommandWrite) << ".\n";
+			break;
+		case ENABLE_VXDMONITOR:
+			std::cout << "Toggle not supported for this feature.\n";
+			break;
+		case ENABLE_CRTC2MONITOR:
+			cpputil::Toggle(towns.crtc.monitorCRTC2);
+			std::cout << "High-Res CRTC Monitor is ";
+			std::cout << cpputil::BoolToOnOffStr(towns.crtc.monitorCRTC2) << ".\n";
+			break;
+		case ENABLE_AUTOQSS:
+			std::cout << "Toggle not supported for this feature.\n";
+			break;
+		case ENABLE_MIDI0:
+			cpputil::Toggle(towns.midi.state.cards[0].enabled);
+			std::cout << "MIDI 0 is ";
+			std::cout << cpputil::BoolToOnOffStr(towns.midi.state.cards[0].enabled) << ".\n";
+			break;
+		case ENABLE_MIDIMONITOR:
+			cpputil::Toggle(towns.midi.midiMonitor);
+			std::cout << "MIDI Monitor is ";
+			std::cout << cpputil::BoolToOnOffStr(towns.midi.midiMonitor) << ".\n";
+			break;
+		case ENABLE_CAPTURE_DOS_STDOUT:
+			std::cout << "Toggle not supported for this feature.\n";
+			break;
+		case ENABLE_TGDRV_MONITOR:
+			cpputil::Toggle(towns.tgdrv.monitor);
+			std::cout << "TGDRV monitor is ";
+			std::cout << cpputil::BoolToOnOffStr(towns.tgdrv.monitor) << ".\n";
+			break;
+		case ENABLE_MOUSE_MONITOR:
+			std::cout << "Toggle not supported for this feature.\n";
+			break;
+		case ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION:
+			cpputil::Toggle(outside_world->differentialMouseIntegration);
+			std::cout << "Differential mouse integration is";
+			std::cout << cpputil::BoolToOnOffStr(outside_world->differentialMouseIntegration) << ".\n";
 			break;
 		}
 	}
