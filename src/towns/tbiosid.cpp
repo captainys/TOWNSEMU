@@ -778,6 +778,21 @@ bool FMTownsCommon::ControlMouseByDiff(int diffX,int diffY,unsigned int tbiosid,
 	return true;
 }
 
+bool FMTownsCommon::ControlMouseByDiffDirect(int diffX,int diffY)
+{
+	diffX=std::max(std::min(diffX,127),-127);
+	diffY=std::max(std::min(diffY,127),-127);
+
+	for(auto &p : gameport.state.ports)
+	{
+		if(p.device==TownsGamePort::MOUSE)
+		{
+			p.mouseMotion.Set(-diffX,-diffY);
+		}
+	}
+	return true;
+}
+
 void FMTownsCommon::DontControlMouse(void)
 {
 	for(auto &p : gameport.state.ports)

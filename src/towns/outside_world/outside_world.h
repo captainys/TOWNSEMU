@@ -60,7 +60,6 @@ public:
 	bool mouseIntegrationActive=false;
 	int lastMx,lastMy,mouseStationaryCount=MOUSE_STATIONARY_COUNT;
 	bool differentialMouseIntegration=false;
-	int differentialMouseSensitivity=32,differentialMouseLeftOver[2]={0,0};
 
 	// Wing Commander and Strike Commander series can be configured to use mouse as joystick.
 	bool mouseByFlightstickAvailable=false;

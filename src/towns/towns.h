@@ -570,6 +570,8 @@ public:
 
 	bool ControlMouseByDiff(int diffX,int diffY,unsigned int tbiosid,int slowDownRange=0);
 
+	bool ControlMouseByDiffDirect(int diffX,int diffY);
+
 
 	/*! Get Wing Commander set-speed and max-speed.
 	    Only available when App-Specific augmentation is turned on.

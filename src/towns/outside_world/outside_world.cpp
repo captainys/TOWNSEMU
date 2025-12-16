@@ -1381,16 +1381,7 @@ void Outside_World::ProcessMouseDifferential(class FMTownsCommon &towns,int lb,i
 	towns.SetMouseButtonState((0!=lb),(0!=rb));
 	if(true==mouseIntegrationActive)
 	{
-		int DX=dx+differentialMouseLeftOver[0];
-		int DY=dy+differentialMouseLeftOver[1];
-
-		int countX=DX/differentialMouseSensitivity;
-		int countY=DY/differentialMouseSensitivity;
-
-		differentialMouseLeftOver[0]=DX%differentialMouseSensitivity;
-        differentialMouseLeftOver[1]=DY%differentialMouseSensitivity;
-
-		towns.SetMouseMotion(1,-dx,-dy); // Why was I giving the port ID in this case?
+		towns.ControlMouseByDiffDirect(dx,dy);
 
 		if(-1<=dx && dx<=1 && -1<=dy && dy<=1) // Added tolerance.
 		{
