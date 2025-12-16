@@ -202,6 +202,11 @@ std::string FsSimpleWindowConnection::GetProgramResourceDirectory(void) const
 				this->pauseKey=true;
 			}
 		}
+
+		if(FSMOUSEEVENT_MBUTTONDOWN==mos.evt)
+		{
+			this->commandQueue.push("TOGGLE DIFFMOUSE");
+		}
 	}
 
 	int lb=windowEvent.lastKnownMouse.lb;
