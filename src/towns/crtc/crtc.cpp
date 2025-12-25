@@ -496,6 +496,9 @@ Vec2i TownsCRTC::GetLowResPageOriginOnMonitor(unsigned char page) const
 	case 863:
 		STD_H=156;
 		break;
+	case 895: // for Super Real Mahjang P2 & P3
+		STD_H=160;
+		break;
 	case 1559: // 15KHz Non-interlaced mode
 		STD_H=231;
 		break;
