@@ -393,7 +393,7 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			{
 				int drive=cpputil::Atoi(argv[1]);
 				int fileNum=cpputil::Atoi(argv[2]);
-				if(0<=drive && drive<NUM_FDDRIVES && 0<=fileNum && fileNum)
+				if(0<=drive && drive<NUM_FDDRIVES && 0<=fileNum && 0==fileNum)
 				{
 					fdImgFName[drive]=argv[3].c_str();
 				}
