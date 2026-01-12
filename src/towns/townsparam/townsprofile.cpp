@@ -824,13 +824,19 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			customMouseIntegration=atoi(argv[1].c_str());
 		}
-		else if("CUSTMOSX"==argv[0] && 2<=argv.size())
+		else if("CUSTMOSX"==argv[0])
 		{
-			customMouseX=argv[1];
+			if(2<=argv.size()) // Can be empty.
+			{
+				customMouseX=argv[1];
+			}
 		}
-		else if("CUSTMOSY"==argv[0] && 2<=argv.size())
+		else if("CUSTMOSY"==argv[0])
 		{
-			customMouseY=argv[1];
+			if(2<=argv.size()) // Can be empty.
+			{
+				customMouseY=argv[1];
+			}
 		}
 		else if("CUSTMSTM"==argv[0] && 2<=argv.size())
 		{
