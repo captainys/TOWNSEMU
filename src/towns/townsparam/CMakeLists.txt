@@ -10,3 +10,9 @@ target_include_directories(townsoptions PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(townsprofile townsprofile.cpp townsprofile.h)
 target_include_directories(townsprofile PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(townsprofile townsdef townsparam cpputil)
+
+add_executable(townsparam_serialize_test serialize_test.cpp)
+target_link_libraries(townsparam_serialize_test townsprofile)
+add_test(
+  NAME TownsParam_Serialize
+  COMMAND townsparam_serialize_test "${CMAKE_CURRENT_BINARY_DIR}/test.Tsugaru")
