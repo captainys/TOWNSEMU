@@ -33,6 +33,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "filesys.h"
 #include "miscutil.h"
 #include "townslineparser.h"
+#include "townsmap.h"
 
 
 
@@ -339,6 +340,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["HIRESPCM"]=DUMP_HIGHRES_PCM;
 	dumpableMap["SAVESTATEM"]=DUMP_SAVESTATEM;
 	dumpableMap["TGDRV"]=DUMP_TGDRV;
+	dumpableMap["IO"]=DUMP_IOLIST;
+	dumpableMap["IOLIST"]=DUMP_IOLIST;
 
 
 	breakEventMap["ICW1"]=   BREAK_ON_PIC_IWC1;
@@ -886,7 +889,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "SAVESTATEM" << std::endl;
 	std::cout << "  List of memory-saved states." << std::endl;
 	std::cout << "TGDRV\n";
-	std::cout << "  TG drive shared directories\n";
+	std::cout << "  TG drive shared directories.\n";
+	std::cout << "IO\n";
+	std::cout << "  List of known IO ports.\n";
+	std::cout << "IO portnumber-in-hexadecimal\n";
+	std::cout << "  Show short explanation of the IO port.\n";
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Event that can break >>" << std::endl;
@@ -2943,6 +2950,35 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			for(auto str : towns.tgdrv.GetStatusText())
 			{
 				std::cout << str << "\n";
+			}
+			break;
+		case DUMP_IOLIST:
+			{
+				unsigned int iomin=0,iomax=0xffff;
+				if(3<=cmd.argv.size())
+				{
+					iomin=cpputil::Xtoi(cmd.argv[2]);
+					iomax=iomin;
+					if(4<=cmd.argv.size())
+					{
+						iomax=cpputil::Xtoi(cmd.argv[3]);
+					}
+				}
+				bool foundAtLeastOne=false;
+				auto ioLabel=FMTownsIOMap();;
+				for(auto io=iomin; io<=iomax; ++io)
+				{
+					auto found=ioLabel.find(io);
+					if(ioLabel.end()!=found)
+					{
+						std::cout << cpputil::Ustox(io) << ":" << found->second << "\n";
+						foundAtLeastOne=true;
+					}
+				}
+				if(true!=foundAtLeastOne)
+				{
+					std::cout << "No known io in this range.\n";
+				}
 			}
 			break;
 		}

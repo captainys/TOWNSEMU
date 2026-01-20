@@ -312,6 +312,7 @@ public:
 		DUMP_HIGHRES_PCM,
 		DUMP_SAVESTATEM,
 		DUMP_TGDRV,
+		DUMP_IOLIST,
 	};
 
 	enum
