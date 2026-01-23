@@ -145,71 +145,78 @@ void TownsThread::VMMainLoopTemplate(
 					townsPtr->RunScheduledTasks();
 					townsPtr->RunFastDevicePolling();
 
-					if(true==townsPtr->CheckDebugBreak())
+					if(0!=townsPtr->GetStopFlags())
 					{
-						if(true==townsPtr->debugger.lastBreakPointInfo.ShouldBreak() &&
-						   townsPtr->CPU().state.CS().value==townsPtr->var.powerOffAt.SEG &&
-						   townsPtr->CPU().state.EIP==townsPtr->var.powerOffAt.OFFSET)
+						if(true==townsPtr->CheckAbort())
 						{
-							std::cout << "Break at the power-off point." << std::endl;
-							std::cout << "Normal termination of a unit testing." << std::endl;
-							townsPtr->var.powerOff=true;
 							break;
 						}
-
-						if(""!=townsPtr->debugger.lastBreakPointInfo.saveState)
+						if(true==townsPtr->CheckDebugBreak())
 						{
-							if(true!=townsPtr->debugger.lastBreakPointInfo.saveStateMem)
+							if(true==townsPtr->debugger.lastBreakPointInfo.ShouldBreak() &&
+							   townsPtr->CPU().state.CS().value==townsPtr->var.powerOffAt.SEG &&
+							   townsPtr->CPU().state.EIP==townsPtr->var.powerOffAt.OFFSET)
 							{
-								if(true!=townsPtr->SaveState(townsPtr->debugger.lastBreakPointInfo.saveState))
+								std::cout << "Break at the power-off point." << std::endl;
+								std::cout << "Normal termination of a unit testing." << std::endl;
+								townsPtr->var.powerOff=true;
+								break;
+							}
+
+							if(""!=townsPtr->debugger.lastBreakPointInfo.saveState)
+							{
+								if(true!=townsPtr->debugger.lastBreakPointInfo.saveStateMem)
 								{
-									std::cout << "Error Saving " << townsPtr->debugger.lastBreakPointInfo.saveState << std::endl;
+									if(true!=townsPtr->SaveState(townsPtr->debugger.lastBreakPointInfo.saveState))
+									{
+										std::cout << "Error Saving " << townsPtr->debugger.lastBreakPointInfo.saveState << std::endl;
+									}
+									else
+									{
+										std::cout << "Saved " << townsPtr->debugger.lastBreakPointInfo.saveState << std::endl;
+									}
 								}
 								else
 								{
-									std::cout << "Saved " << townsPtr->debugger.lastBreakPointInfo.saveState << std::endl;
+									unsigned int slot=0;
+									slot=cpputil::Atoi(townsPtr->debugger.lastBreakPointInfo.saveState.data());
+									FMTownsCommon::Variable::MemoryStateSave state;
+									state.data=townsPtr->SaveStateMem();
+									state.CSEIP.SEG=townsPtr->CPU().state.CS().value;
+									state.CSEIP.OFFSET=townsPtr->CPU().state.EIP;
+									state.townsTime=townsPtr->state.townsTime;
+									townsPtr->var.memoryStateSave[slot]=state;
+									std::cout << "Saved state to memory slot:" << slot << std::endl;
 								}
+							}
+
+							if(true!=townsPtr->debugger.lastBreakPointInfo.ShouldBreak())
+							{
+								if(0!=(townsPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_MONITOR_ONLY) ||
+								   0==(townsPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_SILENT_UNTIL_BREAK))
+								{
+									if(0==(i486Debugger::BRKPNT_FLAG_SHORT_FORMAT&townsPtr->debugger.lastBreakPointInfo.flags))
+									{
+										std::cout << "Passed " << townsPtr->debugger.lastBreakPointInfo.passedCount << " times." << std::endl;
+										PrintStatus(*townsPtr);
+									}
+									else
+									{
+										townsPtr->PrintDisassembly();
+									}
+								}
+								townsPtr->debugger.ClearStopFlag();
+								this->SetRunMode(RUNMODE_RUN);
 							}
 							else
 							{
-								unsigned int slot=0;
-								slot=cpputil::Atoi(townsPtr->debugger.lastBreakPointInfo.saveState.data());
-								FMTownsCommon::Variable::MemoryStateSave state;
-								state.data=townsPtr->SaveStateMem();
-								state.CSEIP.SEG=townsPtr->CPU().state.CS().value;
-								state.CSEIP.OFFSET=townsPtr->CPU().state.EIP;
-								state.townsTime=townsPtr->state.townsTime;
-								townsPtr->var.memoryStateSave[slot]=state;
-								std::cout << "Saved state to memory slot:" << slot << std::endl;
+								std::cout << "Passed " << townsPtr->debugger.lastBreakPointInfo.passedCount << " times." << std::endl;
+								PrintStatus(*townsPtr);
+								std::cout << ">";
+								runMode=RUNMODE_PAUSE;
 							}
+							break;
 						}
-
-						if(true!=townsPtr->debugger.lastBreakPointInfo.ShouldBreak())
-						{
-							if(0!=(townsPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_MONITOR_ONLY) ||
-							   0==(townsPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_SILENT_UNTIL_BREAK))
-							{
-								if(0==(i486Debugger::BRKPNT_FLAG_SHORT_FORMAT&townsPtr->debugger.lastBreakPointInfo.flags))
-								{
-									std::cout << "Passed " << townsPtr->debugger.lastBreakPointInfo.passedCount << " times." << std::endl;
-									PrintStatus(*townsPtr);
-								}
-								else
-								{
-									townsPtr->PrintDisassembly();
-								}
-							}
-							townsPtr->debugger.ClearStopFlag();
-							this->SetRunMode(RUNMODE_RUN);
-						}
-						else
-						{
-							std::cout << "Passed " << townsPtr->debugger.lastBreakPointInfo.passedCount << " times." << std::endl;
-							PrintStatus(*townsPtr);
-							std::cout << ">";
-							runMode=RUNMODE_PAUSE;
-						}
-						break;
 					}
 
 					CheckRenderingTimer(*townsPtr,*window,outside_world->ImageNeedsFlip());
