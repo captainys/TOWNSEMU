@@ -16,6 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <fstream>
 #include <stdint.h>
 
+#include "vmbase.h"
 #include "i486.h"
 #include "i486inst.h"
 #include "i486debug.h"
@@ -137,7 +138,7 @@ const std::map <unsigned int,std::string> &i486Debugger::GetIOTable(void) const
 void i486Debugger::CleanUp(void)
 {
 	breakPoints.clear();
-	stop=false;
+	vmPtr->SetDebugBreakFlag(false);
 	ClearBreakOnINT();
 	monitorIO=false;
 	for(auto &b : monitorIOports)
@@ -333,7 +334,7 @@ void i486Debugger::BeforeRunOneInstruction(i486DXCommon &cpu,Memory &mem,InOut &
 
 				if(BRKPNT_FLAG_MONITOR_ONLY!=breakOrMonitorOnVxDCall)
 				{
-					stop=true;
+					vmPtr->SetDebugBreakFlag(true);
 					externalBreakReason=msg;
 				}
 				else
@@ -463,14 +464,14 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DXCommon
 	inInstruction=false;
 
 	specialDebugInfo->AfterRunOneInstruction(*this,clocksPassed,cpu,mem,io,inst);
-	if(true!=stop && true!=cpu.state.exception)
+	if(0==vmPtr->GetStopFlags() && true!=cpu.state.exception)
 	{
 		CheckForBreakPoints(cpu);
 		if(true==breakOnVM86Mode)
 		{
 			if(i486DXCommon::MODE_VM86!=prevMode && i486DXCommon::MODE_VM86==cpu.state.mode)
 			{
-				stop=true;
+				vmPtr->SetDebugBreakFlag(true);
 				externalBreakReason="Entered VM86 Mode";
 			}
 		}
@@ -478,7 +479,7 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DXCommon
 		{
 			if(i486DXCommon::MODE_REAL==prevMode && i486DXCommon::MODE_REAL!=cpu.state.mode)
 			{
-				stop=true;
+				vmPtr->SetDebugBreakFlag(true);
 				externalBreakReason="Entered Protected Mode";
 			}
 		}
@@ -486,7 +487,7 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DXCommon
 		{
 			if(i486DXCommon::MODE_REAL!=prevMode && i486DXCommon::MODE_REAL==cpu.state.mode)
 			{
-				stop=true;
+				vmPtr->SetDebugBreakFlag(true);
 				externalBreakReason="Entered Real Mode";
 			}
 		}
@@ -538,7 +539,7 @@ void i486Debugger::CheckForBreakPoints(i486DXCommon &cpu)
 		auto found=breakPoints.find(cseip);
 		if(found!=breakPoints.end())
 		{
-			stop=(0==(found->second.flags&BRKPNT_FLAG_DONT_STOP));
+			vmPtr->SetDebugBreakFlag(0==(found->second.flags&BRKPNT_FLAG_DONT_STOP));
 			found->second.SteppedOn();
 			if(0!=(found->second.flags&BRKPNT_FLAG_CAPTURE_WIN_APIENTRY))
 			{
@@ -558,11 +559,11 @@ void i486Debugger::CheckForBreakPoints(i486DXCommon &cpu)
 	}
 	if(breakOnCS[cseip.SEG])
 	{
-		stop=true;
+		vmPtr->SetDebugBreakFlag(true);
 	}
 	if(oneTimeBreakPoint==cseip)
 	{
-		stop=true;
+		vmPtr->SetDebugBreakFlag(true);
 		oneTimeBreakPoint.Nullify();
 	}
 }
@@ -769,14 +770,14 @@ std::vector <std::string> i486Debugger::GetCallStackText(const i486DXCommon &cpu
 
 void i486Debugger::ExternalBreak(const std::string &reason)
 {
-	stop=true;
+	vmPtr->SetDebugBreakFlag(true);
 	externalBreakReason=reason;
 	lastBreakPointInfo.Clear();
 }
 
 void i486Debugger::MonitorButDoNotStop(const std::string &reason)
 {
-	stop=true;
+	vmPtr->SetDebugBreakFlag(true); // Why true? VM main loop should break at least once to check if it really should pause, or unpause and go.
 	externalBreakReason=reason;
 	lastBreakPointInfo.Clear();
 	lastBreakPointInfo.flags|=BRKPNT_FLAG_MONITOR_ONLY;
@@ -784,7 +785,7 @@ void i486Debugger::MonitorButDoNotStop(const std::string &reason)
 
 void i486Debugger::ClearStopFlag(void)
 {
-	stop=false;
+	vmPtr->SetDebugBreakFlag(false);
 	externalBreakReason="";
 	additionalDisasm="";
 	lastBreakPointInfo.Clear();

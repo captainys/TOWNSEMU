@@ -227,7 +227,6 @@ public:
 		std::set <uint64_t> CSEIP;
 	};
 	BreakOnINTCondition breakOnINT[BreakOnINTCondition::NUM_INTERRUPTS];
-	mutable bool stop;
 	bool monitorIO;
 	bool monitorIOports[65536];
 	bool disassembleEveryStep=false,regDumpEveryStep=false;;

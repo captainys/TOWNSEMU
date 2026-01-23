@@ -72,12 +72,13 @@ public:
 	}
 	void ClearAbortFlag(void);
 
-	void DebugBreak(void);
+	void DebugBreak(void) const; // Stopflags is mutable.
+	void SetDebugBreakFlag(bool flag) const; // For smoother transition from stop=true/false.  Stopflags is mutable.
 	inline bool CheckDebugBreak(void) const
 	{
 		return (stopFlags & STOP_DEBUG_BREAK);
 	}
-	void ClearDebugBreakFlag(void);
+	void ClearDebugBreakFlag(void) const; // Stopflags is mutable.
 
 	inline unsigned char GetStopFlags(void) const
 	{

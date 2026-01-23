@@ -1036,24 +1036,24 @@ bool FMTownsCommon::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) con
 		{
 		case TOWNS_APPSPECIFIC_ULTIMAUNDERWORLD:
 			{
-				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
+				auto debugStop=CheckDebugBreak(); // FetchWord may break due to MEMR.
 				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
 				my=399-(int)mem.FetchWord(state.appSpecific_MousePtrY)*2;
-				debugger.stop=debugStop;
+				SetDebugBreakFlag(debugStop);
 			}
 			return true;
 		case TOWNS_APPSPECIFIC_RASHINBAN:
 		case TOWNS_APPSPECIFIC_WINGCOMMANDER1:
 			{
-				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
+				auto debugStop=CheckDebugBreak(); // FetchWord may break due to MEMR.
 				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
 				my=(int)mem.FetchWord(state.appSpecific_MousePtrY);
-				debugger.stop=debugStop;
+				SetDebugBreakFlag(debugStop);
 			}
 			return true;
 		case TOWNS_APPSPECIFIC_WINGCOMMANDER2:
 			{
-				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
+				auto debugStop=CheckDebugBreak(); // FetchWord may break due to MEMR.
 				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
 				my=(int)mem.FetchWord(state.appSpecific_MousePtrY);
 
@@ -1087,38 +1087,40 @@ bool FMTownsCommon::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) con
 					}
 				}
 
-				debugger.stop=debugStop;
+				SetDebugBreakFlag(debugStop);
 			}
 			return true;
 		case TOWNS_APPSPECIFIC_STRIKECOMMANDER:
 			{
-				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
+				auto debugStop=CheckDebugBreak(); // FetchWord may break due to MEMR.
 				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX)/2;
 				my=(int)mem.FetchWord(state.appSpecific_MousePtrY);
-				debugger.stop=debugStop;
+				SetDebugBreakFlag(debugStop);
 			}
 			return true;
 		case TOWNS_APPSPECIFIC_LEMMINGS:
 		case TOWNS_APPSPECIFIC_LEMMINGS2:
 			{
-				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
+				auto debugStop=CheckDebugBreak(); // FetchWord may break due to MEMR.
 				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
 				my=(int)mem.FetchWord(state.appSpecific_MousePtrY);
-				debugger.stop=debugStop;
+				SetDebugBreakFlag(debugStop);
 			}
 			return true;
 		case TOWNS_APPSPECIFIC_BRANDISH:
 			{
+				auto debugStop=CheckDebugBreak(); // FetchWord may break due to MEMR.
 				mx=mem.FetchWord(0x30000+0x40E6);
 				my=mem.FetchWord(0x30000+0x40E8);
+				SetDebugBreakFlag(debugStop);
 			}
 			return true;
 		case TOWNS_APPSPECIFIC_OPERATIONWOLF:
 			{
-				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
+				auto debugStop=CheckDebugBreak(); // FetchWord may break due to MEMR.
 				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
 				my=(int)mem.FetchWord(state.appSpecific_MousePtrY);
-				debugger.stop=debugStop;
+				SetDebugBreakFlag(debugStop);
 			}
 			return true;
 		case TOWNS_APPSPECIFIC_AMARANTH3:
@@ -1146,10 +1148,10 @@ bool FMTownsCommon::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) con
 					if(signature[0]==mem.FetchDword(addr+0x44E) &&
 					   signature[1]==mem.FetchDword(addr+0x452))
 					{
-						auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
+						auto debugStop=CheckDebugBreak(); // FetchWord may break due to MEMR.
 						mx=(int)mem.FetchWord(int(addr+0x44E)+physAddrOffset);
 						my=(int)mem.FetchWord(int(addr+0x44E)+physAddrOffset+2);
-						debugger.stop=debugStop;
+						SetDebugBreakFlag(debugStop);
 						return true;
 					}
 				}
@@ -1162,6 +1164,8 @@ bool FMTownsCommon::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) con
 
 void FMTownsCommon::GetWingCommanderSetSpeedMaxSpeed(unsigned int &setSpeed,unsigned int &maxSpeed)
 {
+	auto debugStop=CheckDebugBreak(); // FetchWord may break due to MEMR.
 	setSpeed=mem.FetchByte(state.appSpecific_WC_setSpeedPtr);
 	maxSpeed=mem.FetchByte(state.appSpecific_WC_maxSpeedPtr);
+	SetDebugBreakFlag(debugStop);
 }

@@ -19,6 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <string>
 
+#include "vmbase.h"
 #include "device.h"
 #include "i486.h"
 #include "i486debug.h"
@@ -218,7 +219,7 @@ public:
 				state.i8259A[chip].FireIRQ(cpu,mem,INTToGo);
 				// The second condition is needed for stopping when IRQ handler happens to be monitor point.
 				// Otherwise, lastBreakPoint flags will be overwritten and won't break.
-				if(nullptr!=cpu.debuggerPtr && true!=cpu.debuggerPtr->stop)
+				if(nullptr!=cpu.debuggerPtr && true!=vmPtr->CheckDebugBreak())
 				{
 					cpu.debuggerPtr->CheckForBreakPoints(cpu);
 				}

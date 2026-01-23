@@ -1413,17 +1413,17 @@ void Outside_World::ProcessAppSpecific(class FMTownsCommon &towns)
 {
 	if(TOWNS_APPSPECIFIC_WINGCOMMANDER1==towns.state.appSpecificSetting)
 	{
-		auto debugStop=towns.debugger.stop; // FetchWord may break due to MEMR.
+		auto debugStop=towns.CheckDebugBreak(); // FetchWord may break due to MEMR.
 		this->mouseByFlightstickCenterX=2*(int)towns.mem.FetchWord(towns.state.appSpecific_MousePtrX+4);
 		this->mouseByFlightstickCenterY=2*(int)towns.mem.FetchWord(towns.state.appSpecific_MousePtrY+4);
-		towns.debugger.stop=debugStop;
+		towns.SetDebugBreakFlag(debugStop);
 	}
 	else if(TOWNS_APPSPECIFIC_WINGCOMMANDER2==towns.state.appSpecificSetting)
 	{
-		auto debugStop=towns.debugger.stop; // FetchWord may break due to MEMR.
+		auto debugStop=towns.CheckDebugBreak(); // FetchWord may break due to MEMR.
 		this->mouseByFlightstickCenterX=2*(int)towns.mem.FetchWord(towns.state.appSpecific_MousePtrX+8);
 		this->mouseByFlightstickCenterY=2*(int)towns.mem.FetchWord(towns.state.appSpecific_MousePtrY+8);
-		towns.debugger.stop=debugStop;
+		towns.SetDebugBreakFlag(debugStop);
 	}
 }
 

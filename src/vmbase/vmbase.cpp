@@ -91,11 +91,22 @@ void VMBase::ClearAbortFlag(void)
 {
 	stopFlags&=~STOP_ABORT;
 }
-void VMBase::DebugBreak(void)
+void VMBase::SetDebugBreakFlag(bool flag) const
+{
+	if(true==flag)
+	{
+		DebugBreak();
+	}
+	else
+	{
+		ClearDebugBreakFlag();
+	}
+}
+void VMBase::DebugBreak(void) const
 {
 	stopFlags|=STOP_DEBUG_BREAK;
 }
-void VMBase::ClearDebugBreakFlag(void)
+void VMBase::ClearDebugBreakFlag(void) const
 {
 	stopFlags&=~STOP_DEBUG_BREAK;
 }

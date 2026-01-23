@@ -113,7 +113,7 @@ void TownsThread::VMMainLoopTemplate(
 				if(true==outside_world->PauseKeyPressed())
 				{
 					runMode=RUNMODE_RUN;
-					townsPtr->debugger.stop=false;
+					townsPtr->SetDebugBreakFlag(false);
 				}
 				townsPtr->sound.ProcessSilence();
 			}
@@ -131,7 +131,7 @@ void TownsThread::VMMainLoopTemplate(
 				{
 					// With the inner-loop, it saves one 64-bit comparison + conditional jump per instruction for RunFastDevicePolling.
 					while(townsPtr->state.townsTime<=townsPtr->state.nextFastDevicePollingTime &&
-					      true!=townsPtr->debugger.stop) // Same check, except one timer check
+					      0==townsPtr->GetStopFlags()) // Same check, except one timer check
 					{
 						townsPtr->RunOneInstruction();
 						townsPtr->pic.ProcessIRQ(townsPtr->CPU(),townsPtr->mem);
@@ -145,7 +145,7 @@ void TownsThread::VMMainLoopTemplate(
 					townsPtr->RunScheduledTasks();
 					townsPtr->RunFastDevicePolling();
 
-					if(true==townsPtr->debugger.stop)
+					if(true==townsPtr->CheckDebugBreak())
 					{
 						if(true==townsPtr->debugger.lastBreakPointInfo.ShouldBreak() &&
 						   townsPtr->CPU().state.CS().value==townsPtr->var.powerOffAt.SEG &&
@@ -226,7 +226,7 @@ void TownsThread::VMMainLoopTemplate(
 				outside_world->DevicePolling(*townsPtr);
 				sound->Polling();
 				townsPtr->state.nextDevicePollingTime=townsPtr->state.townsTime+FMTownsCommon::DEVICE_POLLING_INTERVAL;
-				if(true==townsPtr->debugger.stop)
+				if(true==townsPtr->CheckDebugBreak())
 				{
 					// ExternalBreak may be sent from a device.  Stop flag is cleared at the beginning of RUNMODE_RUN.
 					// Must change to RUNMODE_PAUSE here.
