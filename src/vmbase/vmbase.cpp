@@ -82,9 +82,22 @@ void VMBase::CacheDeviceIndex(void)
 
 void VMBase::Abort(std::string devName,std::string abortReason)
 {
-	vmAbort=true;
+	stopFlags|=STOP_ABORT;
 	vmAbortDeviceName=devName;
 	vmAbortReason=abortReason;
+}
+
+void VMBase::ClearAbortFlag(void)
+{
+	stopFlags&=~STOP_ABORT;
+}
+void VMBase::DebugBreak(void)
+{
+	stopFlags|=STOP_DEBUG_BREAK;
+}
+void VMBase::ClearDebugBreakFlag(void)
+{
+	stopFlags&=~STOP_DEBUG_BREAK;
 }
 
 std::vector <std::string> VMBase::GetScheduledTasksText(void) const
@@ -105,9 +118,4 @@ std::vector <std::string> VMBase::GetScheduledTasksText(void) const
 		text.back()+="(ms)";
 	}
 	return text;
-}
-
-void VMBase::ClearAbortFlag(void)
-{
-	vmAbort=false;
 }
