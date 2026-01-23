@@ -585,6 +585,7 @@ std::string FMTownsCommon::Variable::ExpandFileName(std::string incoming) const
 
 FMTownsCommon::FMTownsCommon() : 
 	Device(this),
+	debugger(this),
 	physMem(this,&mem,&sound.state.rf5c68),
 	keyboard(this,&pic),
 	crtc(this,&sprite),

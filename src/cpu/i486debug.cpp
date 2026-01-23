@@ -89,8 +89,9 @@ void i486Debugger::SpecialDebugInfo::IORead(i486Debugger &debugger,const i486DXC
 ////////////////////////////////////////////////////////////
 
 
-i486Debugger::i486Debugger()
+i486Debugger::i486Debugger(VMBase *vmPtr)
 {
+	this->vmPtr=vmPtr;
 	specialDebugInfo=new SpecialDebugInfo;
 	symTablePtr=new i486SymbolTable;
 	breakOnIORead.resize(i486DXCommon::I486_NUM_IOPORT);

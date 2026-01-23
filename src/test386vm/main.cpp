@@ -83,7 +83,7 @@ int main(int ac,char *av[])
 	TesterVM vm;
 	std::unique_ptr <Memory> memPtr(new Memory);
 	std::unique_ptr <i486DXHighFidelity> cpuPtr(new i486DXHighFidelity(&vm));
-	std::unique_ptr <i486Debugger> debuggerPtr(new i486Debugger);
+	std::unique_ptr <i486Debugger> debuggerPtr(new i486Debugger(&vm));
 	std::unique_ptr <ROMAccess> ROM(new ROMAccess);
 	std::unique_ptr <RAMAccess> RAM(new RAMAccess);
 	std::unique_ptr <InOut> io(new InOut);

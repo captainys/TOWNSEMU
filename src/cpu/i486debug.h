@@ -134,6 +134,8 @@ public:
 
 	typedef i486DXCommon::FarPointer CS_EIP;
 
+	VMBase *vmPtr=nullptr;
+
 	std::map <CS_EIP,BreakPointInfo> breakPoints;
 	BreakPointInfo lastBreakPointInfo;
 	bool breakOnCS[65536];
@@ -233,7 +235,7 @@ public:
 	CS_EIP lastDisassembleAddr;
 
 
-	i486Debugger();
+	i486Debugger(VMBase *vm);
 	~i486Debugger();
 	void CleanUp(void);
 
