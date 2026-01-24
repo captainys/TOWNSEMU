@@ -1359,14 +1359,14 @@ void FMTownsCommon::EnableDebugger(void)
 {
 	auto &cpu=CPU();
 	cpu.AttachDebugger(&debugger);
-	debugger.stop=false;
+	SetDebugBreakFlag(false);
 	cpu.enableCallStack=true;
 }
 void FMTownsCommon::DisableDebugger(void)
 {
 	auto &cpu=CPU();
 	cpu.DetachDebugger();
-	debugger.stop=false;
+	SetDebugBreakFlag(false);
 	cpu.enableCallStack=false;
 }
 
