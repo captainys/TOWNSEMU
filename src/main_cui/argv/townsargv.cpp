@@ -1110,6 +1110,23 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			differentialMouseIntegration=false;
 		}
+		else if("-VMFLAG"==ARG && i+1<argc)
+		{
+			std::string flagStr=argv[i+1];
+			cpputil::Capitalize(flagStr);
+			if("CONSOUT"==flagStr)
+			{
+				VMFlags|=TOWNS_VMFLAGS_CONSOLE;
+			}
+			else
+			{
+				std::cout << "Undefined VMFlag " << argv[i+1] <<"\n";
+				std::cout << "  Acceptable flags are:\n";
+				std::cout << "    CONSOUT\n";
+				return false;
+			}
+			++i;
+		}
 		else
 		{
 			if(1==i)
