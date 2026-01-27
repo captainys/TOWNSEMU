@@ -45,6 +45,8 @@ void FMTownsCommon::State::PowerOn(void)
 {
 	bool result=true;
 
+	towns.var.VMFlags=argv.VMFlags;
+
 	if(true==argv.verbose)
 	{
 		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";

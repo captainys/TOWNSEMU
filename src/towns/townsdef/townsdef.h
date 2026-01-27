@@ -977,6 +977,13 @@ enum	// Commands written to I/O TOWNSIO_VM_HOST_IF_CMD_STATUS=0x2386
 
 	TOWNS_VMIF_CMD_CAPTURE_FM_FNUM=0x0C, // Capture F-Number of YM2612 Ch0.
 	TOWNS_VMIF_CMD_CAPTURE_FM_TL  =0x0D, // Capture TL of YM2612 Ch0 Slot 4
+
+	TOWNS_VMIF_CMD_GET_VMFLAGS    =0x0E, // Capture VM control flags in EAX.
+};
+
+enum
+{
+	TOWNS_VMFLAGS_CONSOLE=1,  // In Tsugaru OS, CONDEV writes character output to I/O E9h.
 };
 
 enum

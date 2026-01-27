@@ -111,6 +111,10 @@ void FMTownsCommon::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int param
 		std::cout << "\n";
 		std::cout << "\t0x" << cpputil::Ubtox(sound.state.ym2612.state.channels[0].slots[3].TL) << ",\n";
 		break;
+
+	case TOWNS_VMIF_CMD_GET_VMFLAGS:
+		cpu.state.EAX()=var.VMFlags;
+		break;
 	}
 }
 void FMTownsCommon::VMHostFileTransfer(void)

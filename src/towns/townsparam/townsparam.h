@@ -8,6 +8,7 @@
 #include <vector>
 #include <unordered_map>
 #include <utility>
+#include <stdint.h>
 #include "townsdef.h"
 #include "i486.h" // Need FidelityLevel.
 
@@ -43,6 +44,8 @@ public:
 		bool ctrl,shift;
 		std::string cmdStr;
 	};
+
+	uint32_t VMFlags=0;
 
 	bool verbose=false;
 

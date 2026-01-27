@@ -258,6 +258,15 @@ public:
 	public:
 		unsigned int freeRunTimerShift;
 
+		uint32_t VMFlags=0;
+		/*!
+		VMFlags
+		  Used for communicating with the guest OS.
+		  Copied to EAX when TOWNS_VMIF_CMD_GET_VMFLAGS(0x0E) is written to I/O TOWNSIO_VM_HOST_IF_CMD_STATUS(0x2386).
+		  bit 0:  FreeTOWNSOS (Tsugaru OS)'s IO.SYS will check this flag, and will write console output to I/O 0E9h if set.
+		*/
+
+
 		uint64_t nextTimeSync; // Used from TownsThread.
 
 		bool powerOff=false;

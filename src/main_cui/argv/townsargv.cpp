@@ -302,6 +302,11 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  !!CAUTION!! DO NOT SEND SENSITIVE AND/OR PERSONAL INFORMATION OVER TCP/IP FORWARDING!!!!\n" << std::endl;
 	std::cout << "  !!CAUTION!! I WILL NOT TAKE RESPONSIBILITY FOR ANY DAMAGE CAUSED BY COMPROMISED INFORMATION!!!!" << std::endl;
 
+	std::cout << "-VMFLAG flag\n";
+	std::cout << "  Set VMFlags.  Flag can be:\n";
+	std::cout << "    CONSOUT: Free TOWNS OS (Tsugaru OS)'s IO.SYS checks this flag, and send console\n";
+	std::cout << "    output to host terminal if set.\n";
+
 	std::cout << "-VERBOSE\n";
 	std::cout << "  Additional console output.\n";
 }
