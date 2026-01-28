@@ -500,7 +500,7 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 				}
 				--nFifoFilled;
 
-				while(nFifoFilled+1<FIFO_BUF_LEN && 0<autoType.size())
+				while(0==nFifoFilled && 0<autoType.size())
 				{
 					unsigned char byteData[2];
 					if(0<TranslateChar(byteData,autoType[0]))
