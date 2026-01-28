@@ -77,6 +77,10 @@ void Headless_Mode::NoWindowConnection::Stop(void)
 void Headless_Mode::NoWindowConnection::Interval(void)
 {
 	BaseInterval();
+	{
+		std::lock_guard <std::mutex> lock(deviceStateLock);
+		winThr.VMClosed=shared.VMClosedFromVMThread; // At least this update is needed.
+	}
 }
 
 /*! Called from the Window thread.

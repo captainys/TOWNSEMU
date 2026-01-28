@@ -72,6 +72,7 @@ add_subdirectory(discimg)
 add_subdirectory(diskimg)
 
 add_subdirectory(main_cui)
+add_subdirectory(main_headless)
 
 
 #externals
