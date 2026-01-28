@@ -979,6 +979,7 @@ enum	// Commands written to I/O TOWNSIO_VM_HOST_IF_CMD_STATUS=0x2386
 	TOWNS_VMIF_CMD_CAPTURE_FM_TL  =0x0D, // Capture TL of YM2612 Ch0 Slot 4
 
 	TOWNS_VMIF_CMD_GET_VMFLAGS    =0x0E, // Capture VM control flags in EAX.
+	TOWNS_VMIF_CMD_RELEASE_CONSOLE_CMD=0x0F,  // Send console command to auto-typing.
 };
 
 enum

@@ -46,6 +46,7 @@ void FMTownsCommon::State::PowerOn(void)
 	bool result=true;
 
 	towns.var.VMFlags=argv.VMFlags;
+	towns.var.consoleCmd=argv.consoleCmd;
 
 	if(true==argv.verbose)
 	{

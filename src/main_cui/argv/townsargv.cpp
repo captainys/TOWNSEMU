@@ -306,6 +306,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Set VMFlags.  Flag can be:\n";
 	std::cout << "    CONSOUT: Free TOWNS OS (Tsugaru OS)'s IO.SYS checks this flag, and send console\n";
 	std::cout << "    output to host terminal if set.\n";
+	std::cout << "-CONSCMD command\n";
+	std::cout << "  Add a command to run in Free TOWNS OS (Tsugaru OS).\n";
+	std::cout << "  The command will be executed when YAMAND.COM is ready to accept a command.\n";
 
 	std::cout << "-VERBOSE\n";
 	std::cout << "  Additional console output.\n";
@@ -1125,6 +1128,13 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 				std::cout << "    CONSOUT\n";
 				return false;
 			}
+			++i;
+		}
+		else if("-CONSCMD"==ARG && i+1<argc)
+		{
+			std::string cmd=argv[i+1];
+			cmd.push_back(0x0D);
+			consoleCmd.push_back(cmd);
 			++i;
 		}
 		else

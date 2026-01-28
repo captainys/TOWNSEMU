@@ -115,6 +115,13 @@ void FMTownsCommon::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int param
 	case TOWNS_VMIF_CMD_GET_VMFLAGS:
 		cpu.state.EAX()=var.VMFlags;
 		break;
+	case TOWNS_VMIF_CMD_RELEASE_CONSOLE_CMD:
+		if(0<var.consoleCmd.size())
+		{
+			keyboard.SetAutoType(var.consoleCmd[0]);
+			var.consoleCmd.erase(var.consoleCmd.begin());
+		}
+		break;
 	}
 }
 void FMTownsCommon::VMHostFileTransfer(void)

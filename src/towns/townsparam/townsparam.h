@@ -46,6 +46,7 @@ public:
 	};
 
 	uint32_t VMFlags=0;
+	std::vector <std::string> consoleCmd;
 
 	bool verbose=false;
 
