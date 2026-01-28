@@ -20,6 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <chrono>
 
 #include "towns.h"
+#include "townsdef.h"
 #include "townsthread.h"
 #include "townscommand.h"
 #include "townsargv.h"
@@ -238,6 +239,10 @@ int main(int ac,char *av[])
 	{
 		return 1;
 	}
+
+
+	// In the headless mode, always set VMFLAGS_CONSOLE.
+	argv.VMFlags|=TOWNS_VMFLAGS_CONSOLE;
 
 
 	auto *outside_world=new Headless_Mode;
