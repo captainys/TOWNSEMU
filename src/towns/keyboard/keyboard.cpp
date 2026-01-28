@@ -37,12 +37,12 @@ TownsKeyboard::TownsKeyboard(FMTownsCommon *townsPtr,TownsPIC *picPtr) : Device(
 
 void TownsKeyboard::SetAutoType(std::string str)
 {
-	while(nFifoFilled+1<FIFO_BUF_LEN && 0<str.size())
+	if(nFifoFilled+12<FIFO_BUF_LEN && 0<str.size())
 	{
 		unsigned char byteData[2];
 		if(0<TranslateChar(byteData,str[0]))
 		{
-			TypeToFifo(byteData);
+			TypeToFifo(byteData); // This triggers Keyboard IRQ and initiates auto-typing.
 		}
 		str.erase(str.begin());
 	}
