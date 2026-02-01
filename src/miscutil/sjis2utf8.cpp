@@ -11402,7 +11402,17 @@ std::string ShiftJIS_UTF8::SJIStoUTF8(std::string from) const
 		}
 		else
 		{
-			to.push_back(from[i]);
+			auto found=_SJIStoUTF8.find(uc[i]); // Hankaku Kana?
+			if(found!=_SJIStoUTF8.end())
+			{
+				to.push_back(found->second[0]);
+				to.push_back(found->second[1]);
+				to.push_back(found->second[2]);
+			}
+			else
+			{
+				to.push_back(from[i]);
+			}
 		}
 	}
 	return to;
