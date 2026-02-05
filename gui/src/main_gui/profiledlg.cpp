@@ -1046,14 +1046,21 @@ YsString ProfileDialog::GetDefaultStateFileName(void)    const
 YsString ProfileDialog::GetDefaultFDImageFileName(int i) const
 {
 	YsString str;
-	for(auto txt : FDImgTxt)
+	if(i<TownsProfile::NUM_FDDRIVES && nullptr!=FDImgTxt[i])
 	{
-		if(nullptr!=txt)
+		str=FDImgTxt[i]->GetString();
+	}
+	if(0==str.Strcmp(""))
+	{
+		for(auto txt : FDImgTxt)
 		{
-			str=txt->GetString();
-			if(0!=str.Strcmp(""))
+			if(nullptr!=txt)
 			{
-				break;
+				str=txt->GetString();
+				if(0!=str.Strcmp(""))
+				{
+					break;
+				}
 			}
 		}
 	}

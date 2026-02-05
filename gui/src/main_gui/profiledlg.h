@@ -28,90 +28,108 @@ public:
 
 	UiText ui;
 
-	FsGuiTabControl *tab;
+	FsGuiTabControl *tab=nullptr;
 
-	FsGuiStatic *profileFNameTxt;
+	FsGuiStatic *profileFNameTxt=nullptr;
 
-	FsGuiButton *ROMDirBtn,*CMOSFileBtn,*CDImgBtn,*FDImgBtn[TownsProfile::NUM_FDDRIVES],*HDImgBtn[TownsProfile::MAX_NUM_SCSI_DEVICES];
-	FsGuiButton *fastSCSIBtn;
-	FsGuiButton *FDWriteProtBtn[TownsProfile::NUM_FDDRIVES];
-	FsGuiButton *scanLineEffectIn15KHzBtn;
-	FsGuiButton *damperWireLineBtn;
-	FsGuiTextBox *ROMDirTxt,*CMOSFileTxt,*CDImgTxt,*FDImgTxt[TownsProfile::NUM_FDDRIVES],*HDImgTxt[TownsProfile::MAX_NUM_SCSI_DEVICES];
-	FsGuiDropList *CDSpeedDrp;
+	FsGuiButton *ROMDirBtn=nullptr;
+	FsGuiButton *CMOSFileBtn=nullptr;
+	FsGuiButton *CDImgBtn=nullptr;
+	FsGuiButton *FDImgBtn[TownsProfile::NUM_FDDRIVES]={nullptr,nullptr,nullptr,nullptr,};
+	FsGuiButton *HDImgBtn[TownsProfile::MAX_NUM_SCSI_DEVICES]={nullptr};
+	FsGuiButton *fastSCSIBtn=nullptr;
+	FsGuiButton *FDWriteProtBtn[TownsProfile::NUM_FDDRIVES]={nullptr};
+	FsGuiButton *scanLineEffectIn15KHzBtn=nullptr;
+	FsGuiButton *damperWireLineBtn=nullptr;
+	FsGuiTextBox *ROMDirTxt=nullptr;
+	FsGuiTextBox *CMOSFileTxt=nullptr;
+	FsGuiTextBox *CDImgTxt=nullptr;
+	FsGuiTextBox *FDImgTxt[TownsProfile::NUM_FDDRIVES]={nullptr};
+	FsGuiTextBox *HDImgTxt[TownsProfile::MAX_NUM_SCSI_DEVICES]={nullptr};
+	FsGuiDropList *CDSpeedDrp=nullptr;
 	FsGuiDropList *gamePortDrp[2]; // None, Pad0, Pad1, Keybord Emulation, Mouse,
-	FsGuiSlider *mouseIntegSpdSlider;
-	FsGuiButton *mouseIntegConsiderVRAMOffsetBtn,*diffMouseBtn;
-	FsGuiTextBox *mouseMinXTxt,*mouseMinYTxt,*mouseMaxXTxt,*mouseMaxYTxt;
-	FsGuiTextBox *maxButtonHoldTimeTxt[2][2];
+	FsGuiSlider *mouseIntegSpdSlider=nullptr;
+	FsGuiButton *mouseIntegConsiderVRAMOffsetBtn=nullptr;
+	FsGuiButton *diffMouseBtn=nullptr;
+	FsGuiTextBox *mouseMinXTxt=nullptr;
+	FsGuiTextBox *mouseMinYTxt=nullptr;
+	FsGuiTextBox *mouseMaxXTxt=nullptr;
+	FsGuiTextBox *mouseMaxYTxt=nullptr;
+	FsGuiTextBox *maxButtonHoldTimeTxt[2][2]={{nullptr,nullptr},{nullptr,nullptr}};
 
-	FsGuiButton *bootKeyBtn[17];
-	FsGuiTextBox *scrnScaleTxt;
-	FsGuiButton *scrnAutoScaleBtn,*scrnMaintainAspectBtn;
-	FsGuiDropList *scrnModeDrp;
-	FsGuiButton *autoStartBtn;
-	FsGuiTextBox *CPUFreqTxt,*RAMSizeTxt;
-	FsGuiDropList *CPUFidelityDrp;
-	FsGuiButton *CPUFidelityHelpBtn;
-	FsGuiButton *FPUBtn;
-	FsGuiButton *catchUpRealTimeBtn;
-	FsGuiButton *runBtn;
-	FsGuiButton *separateProcBtn;
-	FsGuiDropList *townsTypeDrp;
-	FsGuiButton *pretend386DXBtn;
-	FsGuiButton *startUpStateFNameBtn;
-	FsGuiTextBox *startUpStateFNameTxt;
+	FsGuiButton *bootKeyBtn[17]={nullptr};
+	FsGuiTextBox *scrnScaleTxt=nullptr;
+	FsGuiButton *scrnAutoScaleBtn=nullptr;
+	FsGuiButton *scrnMaintainAspectBtn=nullptr;
+	FsGuiDropList *scrnModeDrp=nullptr;
+	FsGuiButton *autoStartBtn=nullptr;
+	FsGuiTextBox *CPUFreqTxt=nullptr;
+	FsGuiTextBox *RAMSizeTxt=nullptr;
+	FsGuiDropList *CPUFidelityDrp=nullptr;
+	FsGuiButton *CPUFidelityHelpBtn=nullptr;
+	FsGuiButton *FPUBtn=nullptr;
+	FsGuiButton *catchUpRealTimeBtn=nullptr;
+	FsGuiButton *runBtn=nullptr;
+	FsGuiButton *separateProcBtn=nullptr;
+	FsGuiDropList *townsTypeDrp=nullptr;
+	FsGuiButton *pretend386DXBtn=nullptr;
+	FsGuiButton *startUpStateFNameBtn=nullptr;
+	FsGuiTextBox *startUpStateFNameTxt=nullptr;
 
-	FsGuiButton *flightMouseEnableBtn;
-	FsGuiDropList *flightMousePhysIdDrp;
-	FsGuiTextBox *flightMouseCenterXTxt;
-	FsGuiTextBox *flightMouseCenterYTxt;
-	FsGuiTextBox *flightMouseScaleXTxt;
-	FsGuiTextBox *flightMouseScaleYTxt;
-	FsGuiTextBox *flightMouseDeadZoneTxt;
-	FsGuiButton *flightMouseWC1,*flightMouseWC2,*flightMouseSTCM;
+	FsGuiButton *flightMouseEnableBtn=nullptr;
+	FsGuiDropList *flightMousePhysIdDrp=nullptr;
+	FsGuiTextBox *flightMouseCenterXTxt=nullptr;
+	FsGuiTextBox *flightMouseCenterYTxt=nullptr;
+	FsGuiTextBox *flightMouseScaleXTxt=nullptr;
+	FsGuiTextBox *flightMouseScaleYTxt=nullptr;
+	FsGuiTextBox *flightMouseDeadZoneTxt=nullptr;
+	FsGuiButton *flightMouseWC1=nullptr;
+	FsGuiButton *flightMouseWC2=nullptr;
+	FsGuiButton *flightMouseSTCM=nullptr;
 
-	FsGuiButton *strikeCommanderThrottleEnableBtn;
-	FsGuiDropList *strikeCommanderThrottlePhysIdDrp;
-	FsGuiDropList *strikeCommanderThrottleAxisDrp;
-
-
-	FsGuiDropList *keyboardModeDrp;
-	FsGuiDropList *virtualKeyTownsKeyDrp[TownsProfile::MAX_NUM_VIRTUALKEYS];
-	FsGuiDropList *virtualKeyPhysIdDrp[TownsProfile::MAX_NUM_VIRTUALKEYS];
-	FsGuiDropList *virtualKeyButtonDrp[TownsProfile::MAX_NUM_VIRTUALKEYS];
-
-	FsGuiTextBox *keyMapFileTxt;
-	FsGuiButton *selectKeyMapFileBtn;
+	FsGuiButton *strikeCommanderThrottleEnableBtn=nullptr;
+	FsGuiDropList *strikeCommanderThrottlePhysIdDrp=nullptr;
+	FsGuiDropList *strikeCommanderThrottleAxisDrp=nullptr;
 
 
-	FsGuiStatic *fmVolumeText,*pcmVolumeText;
-	FsGuiButton *fmVolumeDefaultBtn,*pcmVolumeDefaultBtn;
-	FsGuiSlider *fmVolumeSlider,*pcmVolumeSlider;
-	FsGuiButton *maxSoundDoubldBufBtn;
+	FsGuiDropList *keyboardModeDrp=nullptr;
+	FsGuiDropList *virtualKeyTownsKeyDrp[TownsProfile::MAX_NUM_VIRTUALKEYS]={nullptr};
+	FsGuiDropList *virtualKeyPhysIdDrp[TownsProfile::MAX_NUM_VIRTUALKEYS]={nullptr};
+	FsGuiDropList *virtualKeyButtonDrp[TownsProfile::MAX_NUM_VIRTUALKEYS]={nullptr};
+
+	FsGuiTextBox *keyMapFileTxt=nullptr;
+	FsGuiButton *selectKeyMapFileBtn=nullptr;
+
+
+	FsGuiStatic *fmVolumeText,*pcmVolumeText=nullptr;
+	FsGuiButton *fmVolumeDefaultBtn=nullptr;
+	FsGuiButton *pcmVolumeDefaultBtn=nullptr;
+	FsGuiSlider *fmVolumeSlider=nullptr;
+	FsGuiSlider *pcmVolumeSlider=nullptr;
+	FsGuiButton *maxSoundDoubldBufBtn=nullptr;
 	FsGuiDropList *numMidiCardsDrp=nullptr;
 
 
-	FsGuiDropList *hostShortCutKeyLabelDrp[MAX_NUM_HOST_SHORTCUT];
-	FsGuiButton *hostShortCutKeyCtrlBtn[MAX_NUM_HOST_SHORTCUT];
-	FsGuiButton *hostShortCutKeyShiftBtn[MAX_NUM_HOST_SHORTCUT];
-	FsGuiDropList *hostShortCutFunctionDrp[MAX_NUM_HOST_SHORTCUT];
-	FsGuiButton *quickSsDirBtn;
-	FsGuiTextBox *quickSsDirTxt;
+	FsGuiDropList *hostShortCutKeyLabelDrp[MAX_NUM_HOST_SHORTCUT]={nullptr};
+	FsGuiButton *hostShortCutKeyCtrlBtn[MAX_NUM_HOST_SHORTCUT]={nullptr};
+	FsGuiButton *hostShortCutKeyShiftBtn[MAX_NUM_HOST_SHORTCUT]={nullptr};
+	FsGuiDropList *hostShortCutFunctionDrp[MAX_NUM_HOST_SHORTCUT]={nullptr};
+	FsGuiButton *quickSsDirBtn=nullptr;
+	FsGuiTextBox *quickSsDirTxt=nullptr;
 
-	FsGuiButton *quickStateSaveFNameBtn;
-	FsGuiTextBox *quickStateSaveFNameTxt;
+	FsGuiButton *quickStateSaveFNameBtn=nullptr;
+	FsGuiTextBox *quickStateSaveFNameTxt=nullptr;
 
-	FsGuiDropList *pauseResumeKeyDrp;
+	FsGuiDropList *pauseResumeKeyDrp=nullptr;
 
-	FsGuiDropList *appSpecificAugDrp;
-	FsGuiStatic *appSpecificExplanation;
+	FsGuiDropList *appSpecificAugDrp=nullptr;
+	FsGuiStatic *appSpecificExplanation=nullptr;
 
-	FsGuiButton *browseShareDirBtn[MAX_NUM_SHARED_DIR];
-	FsGuiTextBox *shareDirTxt[MAX_NUM_SHARED_DIR];
+	FsGuiButton *browseShareDirBtn[MAX_NUM_SHARED_DIR]={nullptr};
+	FsGuiTextBox *shareDirTxt[MAX_NUM_SHARED_DIR]={nullptr};
 
-	FsGuiTextBox *scrnShotCropTxt[4];
-	FsGuiTextBox *mapXYExpressionTxt[2];
+	FsGuiTextBox *scrnShotCropTxt[4]={nullptr};
+	FsGuiTextBox *mapXYExpressionTxt[2]={nullptr};
 
 	FsGuiTextBox *RS232CtoTCPTxt=nullptr;
 
