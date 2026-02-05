@@ -349,6 +349,12 @@ endif()
 
 
 
+set_target_properties(${TARGET_NAME} PROPERTIES
+    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist
+)
+
+
+
 if(UNIX)
 	# Not supposed to be needed.
 	# Is g++ broken again?
