@@ -596,6 +596,8 @@ enum
 	TOWNS_QUICK_DEBUG_STATE=      0xEB,  // Writing to this I/O port will show the VM state, not break.
 
 	TOWNSIO_HOST_CONSOLE=         0xE9,  // Direct console input/output to the host.  Apparently DOS emulators use this I/O for this purpose.
+	TOWNSIO_STEAL_CONSOLE=        0xEC,  // Used for overriding CON device.  Write:From CON dev (MOV BX,0 -> OUT 0ECh,AL)  Read:INT 29H (PUSH CS POP SS -> IN AL,0ECh)
+	TOWNSIO_STEAL_CONSOLE_DOS6=   0xED,  // Used for overriding CON device in DOS6.  Write:From CON dev  Read: INT 29H
 
 	TOWNSIO_LAN_REX3586_TX_STATUS=	0x7000,
 	TOWNSIO_LAN_REX3586_RX_STATUS=	0x7001,

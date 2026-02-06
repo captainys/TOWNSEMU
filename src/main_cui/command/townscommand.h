@@ -262,6 +262,7 @@ public:
 		ENABLE_MOUSE_MONITOR,
 		ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION,
 		ENABLE_DIRECT_TYPE_MODE,
+		ENABLE_CONSOLE_STEAL,
 	};
 
 	enum
@@ -398,6 +399,8 @@ public:
 	void Execute_Enable(FMTownsCommon &towns,Command &cmd,class Outside_World *outside_world);
 	void Execute_Disable(FMTownsCommon &towns,Command &cmd,class Outside_World *outside_world);
 	void Execute_Toggle(FMTownsCommon &towns,Command &cmd,class Outside_World *outside_world);
+
+	void Enable_Disable_ConsoleSteal(FMTownsCommon &towns,bool enable);
 
 	void Execute_AddBreakPoint(FMTownsCommon &towns,Command &cmd);
 	void Execute_AddBreakPointWithPassCount(FMTownsCommon &towns,Command &cmd);

@@ -73,6 +73,32 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 			std::cout << c;
 		}
 		break;
+	case TOWNSIO_STEAL_CONSOLE:
+		{
+			// Write from CON device.
+
+			// To be perfect, ES and BX should be found by analyzing Strategy function.
+			// But, practically, Interrupt is called immediately after Strategy.
+			// ES and BX are unlikely to change in between.
+			auto ES=CPU().state.ES();
+			auto BX=CPU().GetBX();
+
+			auto req=CPU().DebugFetchByte(16,ES,BX+2,mem);
+
+			if(8==req || // Write
+			   9==req)   // Write with verify
+			{
+				auto seg=CPU().DebugFetchWord(16,ES,BX+0x10,mem);
+				auto off=CPU().DebugFetchWord(16,ES,BX+0x0E,mem);
+				auto linear=seg*0x10+off;
+				StealConsole(CPU().DebugFetchByteByLinearAddress(mem,linear));
+			}
+
+			CPU().SetBX(0);
+		}
+		break;
+	case TOWNSIO_STEAL_CONSOLE_DOS6:
+		break;
 
 	case TOWNSIO_VM_HOST_IF_CMD_STATUS:
 		ProcessVMToHostCommand(data,var.nVM2HostParam,var.VM2HostParam);
@@ -260,6 +286,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 			data|=(state.eleVol[1][state.eleVolChLatch[1]].C32 ? 16 : 0);
 			return data;
 		}
+		break;
+
+	case TOWNSIO_STEAL_CONSOLE:
+		// Read from INT 29H except DOS6.
+		{
+			StealConsole(CPU().GetAL());
+		}
+		CPU().state.SS()=CPU().state.CS();
+		return CPU().GetAL(); // IN 0ECh,AL -> AL no change.
+	case TOWNSIO_STEAL_CONSOLE_DOS6:
 		break;
 	}
 	return 0xff;

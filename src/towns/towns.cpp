@@ -723,6 +723,8 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(this,TOWNSIO_VRAMWAIT); //                0x5E6,
 	io.AddDevice(this,TOWNSIO_FASTMODE); //                0x5EC, // [2] pp.794
 	io.AddDevice(this,TOWNSIO_HOST_CONSOLE);  // 0xE9
+	io.AddDevice(this,TOWNSIO_STEAL_CONSOLE);  // 0xEC
+	io.AddDevice(this,TOWNSIO_STEAL_CONSOLE_DOS6);  // 0xED
 
 
 
@@ -1946,4 +1948,23 @@ void FMTownsCommon::ApplicationSpecificScreenshotOverride(class TownsRender &ren
 	case TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2:
 		return Daikoukaijidai2_ScreenshotOverride(render,palette);
 	}
+}
+
+unsigned int FMTownsCommon::FindDOSSEG(void) const
+{
+	uint32_t foundBUGAt=0;
+	for(unsigned int addr=0; addr+3<=0xC0000; ++addr)
+	{
+		if(true==cpputil::Match(3,(const unsigned char *)"BUG",physMem.state.RAM.data()+addr))
+		{
+			foundBUGAt=addr;
+			break;
+		}
+	}
+	return foundBUGAt/0x10;
+}
+
+void FMTownsCommon::StealConsole(char c) const
+{
+	std::cout << c;
 }

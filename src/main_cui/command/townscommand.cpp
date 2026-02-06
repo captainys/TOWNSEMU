@@ -285,6 +285,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["DIFFMOUSE"]=ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION;
 	featureMap["DIRTYPE"]=ENABLE_DIRECT_TYPE_MODE;
 	featureMap["DIRECTTYPE"]=ENABLE_DIRECT_TYPE_MODE;
+	featureMap["CONSOUT"]=ENABLE_CONSOLE_STEAL;
+	featureMap["CONSSTEAL"]=ENABLE_CONSOLE_STEAL;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -802,6 +804,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Monitor mouse integration.\n";
 	std::cout << "DIRTYPE / DIRECTTYPE\n";
 	std::cout << "  Direct-type mode.\n";
+	std::cout << "CONSOUT / CONSSTEAL\n";
+	std::cout << "  Override CON and INT 29H to redirect output to the host terminal.\n";
 
 
 	std::cout << "<< Information that can be printed >>" << std::endl;
@@ -1812,21 +1816,11 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 			}
 			else
 			{
-				uint32_t foundBUGAt=0;
-				for(unsigned int addr=0; addr+3<=0xC0000; ++addr)
+				towns.state.DOSSEG=towns.FindDOSSEG();
+				if(0==towns.state.DOSSEG)
 				{
-					if(true==cpputil::Match(3,(const unsigned char *)"BUG",towns.physMem.state.RAM.data()+addr))
-					{
-						foundBUGAt=addr;
-						break;
-					}
+					std::cout << "Could not find keyword BUG (signature of DOSSEG for DOS 3.x)\n";
 				}
-				if(0==foundBUGAt)
-				{
-					std::cout << "Keyword 'BUG' not found.\n";
-					break;
-				}
-				towns.state.DOSSEG=foundBUGAt/0x10;
 			}
 			std::cout << "Set DOSSEG=" << cpputil::Uitox(towns.state.DOSSEG) << "h" << std::endl;
 		}
@@ -2156,6 +2150,9 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd,O
 			std::cout << "  To type a VM command, type ! and then command.\n";
 			std::cout << "  To come back to the normal mode, type !DIS DIRTYPE\n";
 			break;
+		case ENABLE_CONSOLE_STEAL:
+			Enable_Disable_ConsoleSteal(towns,true);
+			break;
 		}
 	}
 }
@@ -2297,7 +2294,23 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd,
 			directTypeMode=false;
 			std::cout << "Disabled direct-type mode.\n";
 			break;
+		case ENABLE_CONSOLE_STEAL:
+			Enable_Disable_ConsoleSteal(towns,false);
+			break;
 		}
+	}
+}
+
+void TownsCommandInterpreter::Enable_Disable_ConsoleSteal(FMTownsCommon &towns,bool enable)
+{
+	unsigned int DOSSEG=towns.state.DOSSEG;
+	if(0==DOSSEG)
+	{
+		DOSSEG=towns.FindDOSSEG();
+	}
+	if(0==DOSSEG)
+	{
+		std::cout << "Could not find DOSSEG.\n";
 	}
 }
 
@@ -3083,6 +3096,20 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTownsCommon &towns,Command 
 {
 	if(3<=cmd.argv.size())
 	{
+		if(0==towns.state.DOSSEG)
+		{
+			towns.state.DOSSEG=towns.FindDOSSEG();
+			if(0==towns.state.DOSSEG)
+			{
+				std::cout << "DOSSEG is not set.\n";
+				return;
+			}
+			else
+			{
+				std::cout << "DOSSEG found at " << cpputil::Ustox(towns.state.DOSSEG) << "\n";
+			}
+		}
+
 		// IO.SYS of Towns OS loads MSDOS.SYS at 1679H segment.
 		const uint32_t DOSADDR=towns.state.DOSSEG*0x10; // Physical Address
 

@@ -197,7 +197,7 @@ public:
 		unsigned int MOS_pulsePerPixelH=8,MOS_pulsePerPixelV=8;
 		int mouseIntegrationSpeed=256;
 
-		unsigned short DOSSEG=TOWNS_DOS_SEG; // for V2.1 L20 IO.SYS
+		unsigned short DOSSEG=0;
 		unsigned short DOSVER=0;
 		unsigned short DOSLOLOFF=0;
 		unsigned short DOSLOLSEG=0;
@@ -545,6 +545,12 @@ public:
 	/*! Identifies TBIOS version.  (In tbiosid.cpp)
 	*/
 	unsigned int IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const;
+
+
+	unsigned int FindDOSSEG(void) const;
+
+
+	void StealConsole(char c) const;
 
 
 	unsigned int FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigned int biosPhysicalBaseAddr) const;
