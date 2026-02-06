@@ -2303,6 +2303,15 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd,
 
 void TownsCommandInterpreter::Enable_Disable_ConsoleSteal(FMTownsCommon &towns,bool enable)
 {
+	if(true==enable)
+	{
+		towns.var.VMFlags|=TOWNS_VMFLAGS_CONSOLE;
+	}
+	else
+	{
+		towns.var.VMFlags&=~TOWNS_VMFLAGS_CONSOLE;
+	}
+
 	unsigned int DOSSEG=towns.state.DOSSEG;
 	if(0==DOSSEG)
 	{
@@ -2311,6 +2320,135 @@ void TownsCommandInterpreter::Enable_Disable_ConsoleSteal(FMTownsCommon &towns,b
 	if(0==DOSSEG)
 	{
 		std::cout << "Could not find DOSSEG.\n";
+		return;
+	}
+
+	// Need to find CON device.
+	uint32_t ofs=towns.mem.FetchWord(DOSSEG*0x10+TOWNS_DOS_CON_DEV_PTR);
+	uint32_t seg=towns.mem.FetchWord(DOSSEG*0x10+TOWNS_DOS_CON_DEV_PTR+2);
+	std::cout << "CONDEV   " << cpputil::Ustox(seg) << ":" << cpputil::Ustox(ofs) << std::endl;
+
+	unsigned int CONDEV=seg*0x10+ofs;
+	if('C'!=towns.mem.FetchByte(CONDEV+10) ||
+	   'O'!=towns.mem.FetchByte(CONDEV+11) ||
+	   'N'!=towns.mem.FetchByte(CONDEV+12))
+	{
+		std::cout << "Not CON.\n";
+		return;
+	}
+	std::cout << "Verified CON.\n";
+
+	uint32_t int_ptr=towns.mem.FetchWord(CONDEV+8);
+	uint32_t int_movbx0=0,int_e6ec90=0;
+	for(uint32_t i=8; 0<i; --i)
+	{
+		if(0xBB==towns.mem.FetchByte(seg*0x10+int_ptr+i) &&
+		      0==towns.mem.FetchByte(seg*0x10+int_ptr+i+1) &&
+		      0==towns.mem.FetchByte(seg*0x10+int_ptr+i+2))
+		{
+			int_movbx0=i;
+			std::cout << "Found MOV BX,0 in CON Interrupt.\n";
+			break;
+		}
+		if(0xE6==towns.mem.FetchByte(seg*0x10+int_ptr+i) &&
+		   TOWNSIO_STEAL_CONSOLE==towns.mem.FetchByte(seg*0x10+int_ptr+i+1) &&
+		   0x90==towns.mem.FetchByte(seg*0x10+int_ptr+i+2))
+		{
+			int_e6ec90=i;
+			std::cout << "Found OUT 0ECh,AL / NOP in CON Interrupt.\n";
+			break;
+		}
+	}
+	if((0==int_movbx0 && true==enable) ||
+	   (0==int_e6ec90 && true!=enable))
+	{
+		std::cout << "Expected instruction not found.\n";
+		return;
+	}
+
+
+	// Have one.  Next find INT 29H.
+	uint32_t int29ofs=towns.mem.FetchWord(0x29*4);
+	uint32_t int29seg=towns.mem.FetchWord(0x29*4+2);
+	uint32_t int29movbx0=0,int29cstoss=0,int29e4ec=0,int29e4ed90=0;
+	for(uint32_t i=0x1f; 0<i; --i)
+	{
+		if(0xBB==towns.mem.FetchByte(int29seg*0x10+int29ofs+i) &&
+		      0==towns.mem.FetchByte(int29seg*0x10+int29ofs+i+1) &&
+		      0==towns.mem.FetchByte(int29seg*0x10+int29ofs+i+2))
+		{
+			int29movbx0=i;
+			std::cout << "Found MOV BX,0 in INT 29H handler.\n";
+			break;
+		}
+		if(0x0e==towns.mem.FetchByte(int29seg*0x10+int29ofs+i) && // PUSH CS
+		   0x17==towns.mem.FetchByte(int29seg*0x10+int29ofs+i+1)) // POP SS
+		{
+			int29cstoss=i;
+			std::cout << "Found PUSH CS/POP SS in INT 29H handler.\n";
+			break;
+		}
+
+		if(0xE4==towns.mem.FetchByte(int29seg*0x10+int29ofs+i) && // IN AL,TOWNSIO_STEAL_CONSOLE
+		   TOWNSIO_STEAL_CONSOLE==towns.mem.FetchByte(int29seg*0x10+int29ofs+i+1))
+		{
+			std::cout << "Found IN AL,0ECh in INT 29H handler.\n";
+			int29e4ec=i;
+			break;
+		}
+
+		if(0xE4==towns.mem.FetchByte(int29seg*0x10+int29ofs+i) && // IN AL,TOWNSIO_STEAL_CONSOLE_DOS6
+		   TOWNSIO_STEAL_CONSOLE_DOS6==towns.mem.FetchByte(int29seg*0x10+int29ofs+i+1) &&
+		   0x90==towns.mem.FetchByte(int29seg*0x10+int29ofs+i+2))
+		{
+			int29e4ed90=i;
+			std::cout << "Found IN AL,0EDh / NOP in INT 29H handler.\n";
+			break;
+		}
+	}
+
+	if((0==int29movbx0 && 0==int29cstoss && true==enable) ||
+	   (0==int29e4ec && 0==int29e4ed90 && true!=enable))
+	{
+		std::cout << "Expected instruction(s) not found in INT 29H handler.\n";
+		return;
+	}
+
+	if(true==enable)
+	{
+		towns.mem.StoreByte(seg*0x10+int_ptr+int_movbx0  ,0xE6); // OUT TOWNSIO_STEAL_CONSOLE,AL
+		towns.mem.StoreByte(seg*0x10+int_ptr+int_movbx0+1,TOWNSIO_STEAL_CONSOLE); // 
+		towns.mem.StoreByte(seg*0x10+int_ptr+int_movbx0+2,0x90); // NOP
+		if(0!=int29cstoss)
+		{
+			towns.mem.StoreByte(int29seg*0x10+int29ofs+int29cstoss  ,0xE4); // IN AL,TOWNSIO_STEAL_CONSOLE
+			towns.mem.StoreByte(int29seg*0x10+int29ofs+int29cstoss+1,TOWNSIO_STEAL_CONSOLE); // 
+		}
+		else if(0!=int29movbx0)
+		{
+			towns.mem.StoreByte(int29seg*0x10+int29ofs+int29movbx0  ,0xE4); // IN AL,TOWNSIO_STEAL_CONSOLE_DOS6
+			towns.mem.StoreByte(int29seg*0x10+int29ofs+int29movbx0+1,TOWNSIO_STEAL_CONSOLE_DOS6); // 
+			towns.mem.StoreByte(int29seg*0x10+int29ofs+int29movbx0+2,0x90); // NOP
+		}
+		std::cout << "Enabled Console Steal.\n";
+	}
+	if(true!=enable)
+	{
+		towns.mem.StoreByte(seg*0x10+int_ptr+int_e6ec90  ,0xBB); // MOV BX,0
+		towns.mem.StoreByte(seg*0x10+int_ptr+int_e6ec90+1,0); // 
+		towns.mem.StoreByte(seg*0x10+int_ptr+int_e6ec90+2,0); //
+		if(0!=int29e4ec)
+		{
+			towns.mem.StoreByte(int29seg*0x10+int29ofs+int29e4ec  ,0x0E); // PUSH CS
+			towns.mem.StoreByte(int29seg*0x10+int29ofs+int29e4ec+1,0x17); // POP SS
+		}
+		else if(0!=int29e4ed90)
+		{
+			towns.mem.StoreByte(int29seg*0x10+int29ofs+int29e4ed90  ,0xBB); // MOV BX,0
+			towns.mem.StoreByte(int29seg*0x10+int29ofs+int29e4ed90+1,0);
+			towns.mem.StoreByte(int29seg*0x10+int29ofs+int29e4ed90+2,0);
+		}
+		std::cout << "Disabled Console Steal.\n";
 	}
 }
 

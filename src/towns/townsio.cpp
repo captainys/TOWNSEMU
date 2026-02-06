@@ -290,13 +290,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 	case TOWNSIO_STEAL_CONSOLE:
 		// Read from INT 29H except DOS6.
-		{
-			StealConsole(CPU().GetAL());
-		}
+		StealConsole(CPU().GetAL());
 		CPU().state.SS()=CPU().state.CS();
 		return CPU().GetAL(); // IN 0ECh,AL -> AL no change.
 	case TOWNSIO_STEAL_CONSOLE_DOS6:
-		break;
+		StealConsole(CPU().GetAL());
+		CPU().SetBX(0); // IN 0ECh,AL / NOP replaced MOV BX,0
+		return CPU().GetAL(); // IN 0ECh,AL -> AL no change.
 	}
 	return 0xff;
 }
