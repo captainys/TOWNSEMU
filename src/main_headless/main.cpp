@@ -58,6 +58,8 @@ public:
 
 /* virtual */ void TownsCUIThread::Main(TownsThread &townsThread,FMTownsCommon &towns,const TownsARGV &argv,Outside_World &outside_world)
 {
+	cmdInterpreter.directTypeMode=true;
+
 	for(auto &ftfr : argv.toSend)
 	{
 		towns.var.ftfr.AddHostToVM(ftfr.hostFName,ftfr.vmFName);
@@ -69,15 +71,6 @@ public:
 		{
 			std::string cmdline;
 			std::getline(std::cin,cmdline);
-
-			if('!'==cmdline[0])
-			{
-				cmdline.erase(cmdline.begin());
-			}
-			else
-			{
-				cmdline="TYPE "+cmdline;
-			}
 
 			uiLock.lock();
 			this->cmdline=cmdline;

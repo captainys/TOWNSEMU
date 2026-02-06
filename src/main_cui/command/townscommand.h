@@ -261,6 +261,7 @@ public:
 		ENABLE_TGDRV_MONITOR,
 		ENABLE_MOUSE_MONITOR,
 		ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION,
+		ENABLE_DIRECT_TYPE_MODE,
 	};
 
 	enum
@@ -379,7 +380,8 @@ public:
 		int primaryCmd;
 	};
 
-	bool waitVM;
+	bool waitVM=false;
+	bool directTypeMode=false;
 
 	TownsCommandInterpreter();
 

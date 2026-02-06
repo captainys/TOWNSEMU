@@ -283,6 +283,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["TGDRVMON"]=ENABLE_TGDRV_MONITOR;
 	featureMap["MOUSEMON"]=ENABLE_MOUSE_MONITOR;
 	featureMap["DIFFMOUSE"]=ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION;
+	featureMap["DIRTYPE"]=ENABLE_DIRECT_TYPE_MODE;
+	featureMap["DIRECTTYPE"]=ENABLE_DIRECT_TYPE_MODE;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -798,6 +800,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Monitor file sharing with TGDRV.\n";
 	std::cout << "MOUSEMON\n";
 	std::cout << "  Monitor mouse integration.\n";
+	std::cout << "DIRTYPE / DIRECTTYPE\n";
+	std::cout << "  Direct-type mode.\n";
 
 
 	std::cout << "<< Information that can be printed >>" << std::endl;
@@ -1008,8 +1012,23 @@ TownsCommandInterpreter::Command TownsCommandInterpreter::Interpret(const std::s
 {
 	Command cmd;
 
-	cmd.cmdline=cmdline;
-	cmd.argv=cpputil::Parser(cmdline.c_str());
+	if(true==directTypeMode)
+	{
+		if('!'==cmdline[0])
+		{
+			cmd.cmdline=cmdline.data()+1;
+		}
+		else
+		{
+			cmd.cmdline="TYPE "+cmdline;
+		}
+	}
+	else
+	{
+		cmd.cmdline=cmdline;
+	}
+
+	cmd.argv=cpputil::Parser(cmd.cmdline.c_str());
 	cmd.primaryCmd=CMD_NONE;
 
 	if(0<cmd.argv.size())
@@ -2130,6 +2149,13 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd,O
 			outside_world->differentialMouseIntegration=true;
 			std::cout << "Enabled differential mouse integration\n";
 			break;
+		case ENABLE_DIRECT_TYPE_MODE:
+			directTypeMode=true;
+			std::cout << "Enabled direct-type mode.\n";
+			std::cout << "  Text typed on the terminal is directly sent to the VM.\n";
+			std::cout << "  To type a VM command, type ! and then command.\n";
+			std::cout << "  To come back to the normal mode, type !DIS DIRTYPE\n";
+			break;
 		}
 	}
 }
@@ -2266,6 +2292,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd,
 		case ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION:
 			outside_world->differentialMouseIntegration=false;
 			std::cout << "Disabled differential mouse integration\n";
+			break;
+		case ENABLE_DIRECT_TYPE_MODE:
+			directTypeMode=false;
+			std::cout << "Disabled direct-type mode.\n";
 			break;
 		}
 	}
