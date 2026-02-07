@@ -337,7 +337,7 @@ private:
 	void VM_Reset(FsGuiPopUpMenuItem *);
 	void VM_PowerOff(FsGuiPopUpMenuItem *);
 	void VM_PowerOffConfirm(FsGuiDialog *dlg,int returnCode);
-	void VM_Pause(FsGuiPopUpMenuItem *);
+	// void VM_Pause(FsGuiPopUpMenuItem *);  Turned out this menu was not doing anything.
 	void VM_Resume(FsGuiPopUpMenuItem *);
 
 	void VM_1MHz(FsGuiPopUpMenuItem *);

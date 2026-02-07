@@ -453,7 +453,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		subMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/startandclosegui","Start and Close GUI"))->BindCallBack(&THISCLASS::VM_StartAndCloseGUI,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/reset","Reset Virtual Machine"))->BindCallBack(&THISCLASS::VM_Reset,this);
 		subMenu->AddTextItem(0,FSKEY_Q,ui("/towns/poweroff","Power Off"))->BindCallBack(&THISCLASS::VM_PowerOff,this);
-		subMenu->AddTextItem(0,FSKEY_P,ui("/towns/pause","Pause"))->BindCallBack(&THISCLASS::VM_Pause,this);
+		// subMenu->AddTextItem(0,FSKEY_P,ui("/towns/pause","Pause"))->BindCallBack(&THISCLASS::VM_Pause,this);  Realized PAUSE menu was not doing anything.
 		subMenu->AddTextItem(0,FSKEY_R,ui("/towns/resume","Resume"))->BindCallBack(&THISCLASS::VM_Resume,this);
 
 		{
@@ -2318,17 +2318,17 @@ void FsGuiMainCanvas::VM_Reset(FsGuiPopUpMenuItem *)
 		VM_Not_Running_Error();
 	}
 }
-void FsGuiMainCanvas::VM_Pause(FsGuiPopUpMenuItem *)
-{
-	if(true==IsVMRunning())
-	{
-		SendVMCommand("PAU\n");
-	}
-	else
-	{
-		VM_Not_Running_Error();
-	}
-}
+// void FsGuiMainCanvas::VM_Pause(FsGuiPopUpMenuItem *)
+// {
+// 	if(true==IsVMRunning())
+// 	{
+// 		SendVMCommand("PAU\n");
+// 	}
+// 	else
+// 	{
+// 		VM_Not_Running_Error();
+// 	}
+// }
 void FsGuiMainCanvas::VM_Resume(FsGuiPopUpMenuItem *)
 {
 	if(true==IsVMRunning())
