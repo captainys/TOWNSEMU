@@ -624,7 +624,7 @@ void FsGuiMainCanvas::OnInterval(void)
 		int key;
 		while(FSKEY_NULL!=(key=FsInkey()))
 		{
-			if(pauseResumeKey==key)
+			if(pauseResumeKey==key && true==IsVMRunning())
 			{
 				VM_Resume(nullptr);
 			}
