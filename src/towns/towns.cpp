@@ -26,6 +26,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "outside_world.h"
 #include "i486symtable.h"
 #include "townscommandutil.h"
+#include "sjis2utf8.h"
 
 
 
@@ -1966,5 +1967,33 @@ unsigned int FMTownsCommon::FindDOSSEG(void) const
 
 void FMTownsCommon::StealConsole(char c) const
 {
-	std::cout << c;
+	static ShiftJIS_UTF8 *su=nullptr;
+	if(nullptr==su)
+	{
+		su=ShiftJIS_UTF8::Singleton();
+	}
+
+	if(0!=var.lastConsoleSteal)
+	{
+		std::string s;
+		s.push_back(var.lastConsoleSteal);
+		s.push_back(c);
+
+		std::string u=su->SJIStoUTF8(s);
+		std::cout << u;
+
+		var.lastConsoleSteal=0;
+	}
+	else
+	{
+		unsigned char C=c;
+		if((0x81<=C && C<=0x9f) || (0xE0<=C && C<=0xFC))
+		{
+			var.lastConsoleSteal=c;
+		}
+		else
+		{
+			std::cout << c;
+		}
+	}
 }

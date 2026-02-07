@@ -15,6 +15,8 @@ public:
 	ShiftJIS_UTF8();
 	std::string SJIStoUTF8(std::string from) const;
 	std::string UTF8toSJIS(std::string from) const;
+
+	static ShiftJIS_UTF8 *Singleton(void);
 };
 
 #endif

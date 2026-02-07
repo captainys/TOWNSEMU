@@ -273,6 +273,7 @@ public:
 		*/
 		std::vector <std::string> consoleCmd;
 
+		mutable char lastConsoleSteal=0;
 
 		uint64_t nextTimeSync; // Used from TownsThread.
 

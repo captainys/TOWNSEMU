@@ -1,4 +1,5 @@
 #include "sjis2utf8.h"
+#include <mutex>
 
 struct ShiftJISToUTF8Table
 {
@@ -11454,3 +11455,19 @@ std::string ShiftJIS_UTF8::UTF8toSJIS(std::string from) const
 	}
 	return to;
 }
+
+ShiftJIS_UTF8 *ShiftJIS_UTF8::Singleton(void)
+{
+	std::mutex mtx;
+	static ShiftJIS_UTF8 *su=nullptr;
+
+	mtx.lock();
+	if(nullptr==su)
+	{
+		su=new ShiftJIS_UTF8;
+	}
+	mtx.unlock();
+
+	return su;
+}
+
