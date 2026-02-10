@@ -204,6 +204,7 @@ public:
 
 			void DiskChanged(uint64_t vmTime);
 			void CancelDiskChanged(void);
+			void DiskEjected(void);
 		};
 
 		Drive drive[NUM_DRIVES];

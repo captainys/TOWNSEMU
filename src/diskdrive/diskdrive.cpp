@@ -800,6 +800,15 @@ void DiskDrive::State::Drive::DiskChanged(uint64_t vmTime)
 	pretendDriveNotReadyUntil=vmTime+DISK_CHANGE_TIME;
 }
 
+void DiskDrive::State::Drive::DiskEjected(void)
+{
+	// Based on the observation of real FM TOWNS II MX.
+	// As soon as the disk is ejected, DSKCHG flag is set.
+	// And, once set, it won't be cleared until it is powered off.
+	// Even the reset button does not clear the DSKCHG flag.
+	diskChange=true;
+}
+
 void DiskDrive::State::Drive::CancelDiskChanged(void)
 {
 	diskChange=false;
@@ -933,6 +942,7 @@ void DiskDrive::Eject(unsigned int driveNum)
 	state.drive[driveNum].imgFileNum=-1;
 	state.drive[driveNum].diskIndex=-1;
 	state.drive[driveNum].mediaType=MEDIA_UNKNOWN;
+	state.drive[driveNum].DiskEjected();
 }
 
 DiskDrive::ImageFile *DiskDrive::GetDriveImageFile(int driveNum)

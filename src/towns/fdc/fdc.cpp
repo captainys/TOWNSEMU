@@ -664,6 +664,12 @@ void TownsFDC::MakeReady(void)
 		break;
 	case TOWNSIO_FDC_DRIVE_STATUS_CONTROL:// 0x208, // [2] pp.253
 		data=(true==state.drive[DriveSelect()].diskChange ? 1 : 0); // DSKCHG [2] pp.773
+
+		// Verdict on DSKCHG flag.  (Tested on the real FM TOWNS II MX)
+		// (1) If I power on with floppy-disk set, DSKCHG flag is clear, and never set until the disk is removed.
+		// (2) If I power on with floppy-disk drive empty, DSKCHG flag is set and never clear.  Even the reset button does not clear.
+		// (3) Once I remove the disk (regardless of the power-on condition), DSKCHG flag is set and never clear.  Even the reset button does not clear.
+
 		// Disk BIOS reads FD status like:
 		// 0421:00000BE0 BA0802                    MOV     DX,0208H
 		// 0421:00000BE3 EC                        IN      AL,DX
