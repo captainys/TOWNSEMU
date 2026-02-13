@@ -202,6 +202,13 @@ public:
 
 	/*!
 	*/
+	bool SetSubPathModifiedDateTime(
+		std::string subPath,
+		unsigned int year,unsigned int month,unsigned int date,
+		unsigned int hour,unsigned int min,unsigned int sec);
+
+	/*!
+	*/
 	bool DeleteSubPathFile(std::string subPath);
 
 	/*!
@@ -231,6 +238,10 @@ public:
 	static bool Chdir(std::string str);
 	static bool Mkdir(std::string str);
 	static bool Rmdir(std::string str);
+	static bool SetModifiedDateTime(
+		std::string subPath,
+		unsigned int year,unsigned int month,unsigned int date,
+		unsigned int hour,unsigned int min,unsigned int sec);
 
 	/*! Template="FILENAMEEXT" 11-letter format
 	*/

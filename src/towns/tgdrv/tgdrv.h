@@ -145,6 +145,7 @@ public:
 	unsigned int FetchDeviceInfoFromSFT(const class i486DXCommon::SegmentRegister &seg,uint32_t offset) const;
 	std::string FetchCString(uint32_t physAddr) const;
 	std::string FetchCString(const class i486DXCommon::SegmentRegister &seg,uint32_t offset) const;
+	uint32_t FetchDOSDateTimeFromSFT(const class i486DXCommon::SegmentRegister &seg,uint32_t offset) const;
 
 	uint8_t FetchByte(uint32_t linearAddr) const;
 	uint16_t FetchWord(uint32_t linearAddr) const;

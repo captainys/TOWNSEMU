@@ -311,3 +311,36 @@ FileSys::DirectoryEntry FileSys::GetFileAttrib(std::string fileName) const
 	}
 	return false;
 }
+bool FileSys::SetModifiedDateTime(
+	std::string fName,
+	unsigned int year,unsigned int month,unsigned int date,
+	unsigned int hour,unsigned int min,unsigned int sec)
+{
+	HANDLE hFile=CreateFileA(fName.c_str(),GENERIC_READ|GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
+	if(INVALID_HANDLE_VALUE!=hFile)
+	{
+		// What to do with the time zone?
+
+		SYSTEMTIME sysTime;
+		FILETIME fileTime;
+
+		sysTime.wYear=year;// Realized Windows has a year 30828 problem.  See reference of SystemTimeToFileTime Win32 function.
+		sysTime.wMonth=month;
+		sysTime.wDayOfWeek=0; // Not used by SystemTimeToFileTime.
+		sysTime.wDay=date;
+		sysTime.wHour=hour;
+		sysTime.wMinute=min;
+		sysTime.wSecond=sec;
+		sysTime.wMilliseconds=0;
+
+		SystemTimeToFileTime(&sysTime,&fileTime);
+		SetFileTime(hFile,NULL,NULL,&fileTime);
+
+		CloseHandle(hFile);
+	}
+	else
+	{
+		std::cout << "Failed to update last-modified date/time.\n";
+	}
+	return false;
+}

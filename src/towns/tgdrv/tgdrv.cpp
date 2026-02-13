@@ -303,6 +303,9 @@ bool TownsTgDrv::Int2F_1106_CloseRemoteFile(void)
 		   hostSFTIdx<FileSys::MAX_NUM_OPEN_FILE &&
 		   true==sharedDir[sharedDirIdx].sft[hostSFTIdx].IsOpen())
 		{
+			auto hostFName=sharedDir[sharedDirIdx].sft[hostSFTIdx].fName;
+			auto mode=sharedDir[sharedDirIdx].sft[hostSFTIdx].mode;
+
 			auto refCount=FetchSFTReferenceCount(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
 			if(refCount<=1)
 			{
@@ -313,6 +316,29 @@ bool TownsTgDrv::Int2F_1106_CloseRemoteFile(void)
 			{
 				--refCount;
 			}
+
+			uint32_t dosTime=FetchDOSDateTimeFromSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
+			uint32_t dosDate=(dosTime>>16);
+			dosTime&=0xFFFF;
+
+			uint32_t humanYear=1980+(dosDate>>9);
+			uint32_t humanMonth=(dosDate>>5)&0x0F;
+			uint32_t humanDate=(dosDate&0x1F);
+			uint32_t humanHour=(dosTime>>11);
+			uint32_t humanMin=(dosTime>>5)&0x3F;
+			uint32_t humanSec=(dosTime&0x1F)*2;
+			if(FileSys::OPENMODE_WRITE==mode || FileSys::OPENMODE_RW==mode)
+			{
+				sharedDir[sharedDirIdx].SetSubPathModifiedDateTime(
+					hostFName,
+					humanYear,humanMonth,humanDate,
+					humanHour,humanMin,humanSec);
+			}
+			if(true==monitor)
+			{
+				std::cout << "Date/Time " << humanYear << "/" << humanMonth << "/" << humanDate << " " << humanHour << ":" << humanMin <<":" << humanSec <<"\n";
+			}
+
 			townsPtr->CPU().RedirectStoreWord(
 				townsPtr->mem,
 				townsPtr->CPU().state.CS().addressSize,
@@ -1399,6 +1425,14 @@ unsigned int TownsTgDrv::FetchDeviceInfoFromSFT(const class i486DXCommon::Segmen
 		townsPtr->CPU().state.CS().addressSize,
 		seg,
 		offset+0x05,
+		townsPtr->mem);
+}
+uint32_t TownsTgDrv::FetchDOSDateTimeFromSFT(const class i486DXCommon::SegmentRegister &seg,uint32_t offset) const
+{
+	return townsPtr->CPU().RedirectFetchDword(
+		townsPtr->CPU().state.CS().addressSize,
+		seg,
+		offset+0x0D,
 		townsPtr->mem);
 }
 std::string TownsTgDrv::FetchCString(uint32_t physAddr) const

@@ -218,7 +218,7 @@ int FileSys::OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int 
 		{
 			return -1;
 		}
-std::cout << fullPath << std::endl;
+
 		auto dirent=GetFileAttrib(subPath);  // subPath in Shift-JIS
 
 		sft[sftIdx].fName=subPath;
@@ -441,6 +441,15 @@ bool FileSys::RenameSubPath(std::string subPathFrom,std::string subPathTo)
 	auto fullPathFrom=cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPathFrom));
 	auto fullPathTo=cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPathTo));
 	return 0==rename(fullPathFrom.c_str(),fullPathTo.c_str());
+}
+bool FileSys::SetSubPathModifiedDateTime(
+	std::string subPath,
+	unsigned int year,unsigned int month,unsigned int date,
+	unsigned int hour,unsigned int min,unsigned int sec)
+{
+	BackSlashToSlash(subPath);
+	auto fullPath=cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPath));
+	return SetModifiedDateTime(fullPath,year,month,date,hour,min,sec);
 }
 bool FileSys::DeleteSubPathFile(std::string subPath)
 {

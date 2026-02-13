@@ -207,3 +207,10 @@ FileSys::DirectoryEntry FileSys::FindNext(FindContext *context)
 	}
 	return false;
 }
+bool FileSys::SetModifiedDateTime(
+	std::string fName,
+	unsigned int year,unsigned int month,unsigned int date,
+	unsigned int hour,unsigned int min,unsigned int sec)
+{
+	return false;
+}
