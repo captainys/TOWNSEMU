@@ -319,10 +319,8 @@ bool FileSys::SetModifiedDateTime(
 	HANDLE hFile=CreateFileA(fName.c_str(),GENERIC_READ|GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
 	if(INVALID_HANDLE_VALUE!=hFile)
 	{
-		// What to do with the time zone?
-
 		SYSTEMTIME sysTime;
-		FILETIME fileTime;
+		FILETIME localFileTime,UTCFileTime;
 
 		sysTime.wYear=year;// Realized Windows has a year 30828 problem.  See reference of SystemTimeToFileTime Win32 function.
 		sysTime.wMonth=month;
@@ -333,8 +331,14 @@ bool FileSys::SetModifiedDateTime(
 		sysTime.wSecond=sec;
 		sysTime.wMilliseconds=0;
 
-		SystemTimeToFileTime(&sysTime,&fileTime);
-		SetFileTime(hFile,NULL,NULL,&fileTime);
+		SystemTimeToFileTime(&sysTime,&localFileTime);
+
+		// What to do with the time zone?  Making it to local time, but may not be correct.
+		// Especially if the file is from before year 2000ish, it may be in Japan time.
+		LocalFileTimeToFileTime(&localFileTime,&UTCFileTime);
+
+		SetFileTime(hFile,NULL,NULL,&UTCFileTime);
+
 
 		CloseHandle(hFile);
 	}
