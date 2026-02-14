@@ -205,7 +205,7 @@ void FileSys::FindClose(FindContext *find)
 	find->Close();
 }
 
-FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *find)
+FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *find) const
 {
 	find->Close();
 
@@ -233,7 +233,7 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *find
 	}
 	return ent;
 }
-FileSys::DirectoryEntry FileSys::FindNext(FindContext *find)
+FileSys::DirectoryEntry FileSys::FindNext(FindContext *find) const
 {
 	DirectoryEntry ent;
 	if(INVALID_HANDLE_VALUE==find->hFind)

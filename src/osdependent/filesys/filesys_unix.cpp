@@ -118,7 +118,7 @@ void FileSys::FindClose(FindContext *find)
 {
 	find->Close();
 }
-FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *context)
+FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *context) const
 {
 	std::string path=MakeHostPath(ToHostEncoding(subPath));
 	DirectoryEntry ent;
@@ -160,7 +160,7 @@ FileSys::DirectoryEntry FileSys::GetFileAttrib(std::string fileName) const
 
 	return ent;
 }
-FileSys::DirectoryEntry FileSys::FindNext(FindContext *context)
+FileSys::DirectoryEntry FileSys::FindNext(FindContext *context) const
 {
 	DirectoryEntry ent;
 	ent=context->Read(hostPath);

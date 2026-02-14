@@ -28,6 +28,32 @@ private:
 public:
 	class FindContext;
 
+	class AutoFindContext
+	{
+	private:
+		AutoFindContext(const AutoFindContext &);
+		AutoFindContext &operator=(const AutoFindContext &);
+
+		FindContext *ctx=nullptr;
+	public:
+		AutoFindContext()
+		{
+			ctx=FileSys::CreateFindContext();
+		}
+		~AutoFindContext()
+		{
+			if(nullptr!=ctx)
+			{
+				FileSys::DeleteFindContext(ctx);
+				ctx=nullptr;
+			}
+		}
+		FindContext *operator*(void) const
+		{
+			return ctx;
+		}
+	};
+
 	bool linked=false;
 	std::string hostPath;
 
@@ -135,9 +161,9 @@ public:
 
 		subPath is in the Shift-JIS encoding.
 	*/
-	DirectoryEntry FindFirst(std::string subPath,FindContext *find);
+	DirectoryEntry FindFirst(std::string subPath,FindContext *find) const;
 
-	DirectoryEntry FindNext(FindContext *find);
+	DirectoryEntry FindNext(FindContext *find) const;
 
 	/*! Returns file attribute in directory entry.
 	    If file not found, endOfDir member will be true.
@@ -254,6 +280,10 @@ public:
 	static bool DOSAttrMatch(unsigned int sAttr,unsigned int fAttr);
 
 	std::string MakeHostPath(const std::string &subPath) const;
+
+	bool AdjustSubPathForLongFileName(std::string &subPath) const;
+
+	static bool MatchLongFileNameToShortFileName(std::string longName,std::string shortName);
 };
 
 

@@ -1,4 +1,6 @@
 #include <iostream>
+#include <vector>
+#include <ctype.h>
 #include "filesys.h"
 #include "cpputil.h"
 
@@ -575,4 +577,135 @@ void FileSys::BackSlashToSlash(std::string &src)
 			c='/';
 		}
 	}
+}
+
+bool FileSys::AdjustSubPathForLongFileName(std::string &subPath) const
+{
+	bool lastNameHasWildcard=false;
+	std::string newSubPath,lastName,matchingName;
+
+	AutoFindContext findCtx;
+	for(size_t i=0; i<subPath.size(); ++i)
+	{
+		auto c=subPath[i];
+		if('/'==c || '\\'==c || i+1==subPath.size())
+		{
+			int nMatch=0;
+
+			if(i+1==subPath.size() && '/'!=c && '\\'!=c)
+			{
+				lastName.push_back(c);
+			}
+			for(auto ent=FindFirst(newSubPath,*findCtx); true!=ent.endOfDir ; ent=FindNext(*findCtx))
+			{
+				if(true==MatchLongFileNameToShortFileName(ent.fName,lastName))
+				{
+					++nMatch;
+					matchingName=ent.fName;
+				}
+			}
+
+			bool doesMatch=false;
+			if(i+1==hostPath.size() && true==lastNameHasWildcard)
+			{
+				// If the last part has wild card, don't replace even if there is a match.
+				doesMatch=true;
+			}
+			else if(1==nMatch)
+			{
+				doesMatch=true;
+			}
+			else // If multiple matches, that is dangerous, too.
+			{
+				// std::cout << "No match.\n";
+				return false;
+			}
+
+			if(true==doesMatch)
+			{
+				if(""==newSubPath)
+				{
+					newSubPath=matchingName;
+				}
+				else
+				{
+					newSubPath=cpputil::MakeFullPathName(newSubPath,matchingName);
+				}
+				lastName.clear();
+				lastNameHasWildcard=false;
+			}
+		}
+		else
+		{
+			lastName.push_back(c);
+			if('?'==c || '*'==c)
+			{
+				lastNameHasWildcard=true;
+			}
+		}
+	}
+
+	// std::cout << "Experiment from " << subPath << " to " << newSubPath << "\n";
+	return true;
+}
+
+bool FileSys::MatchLongFileNameToShortFileName(std::string longName,std::string shortName)
+{
+	// std::cout << shortName << "|" << longName << "\n";
+
+	size_t i=0;
+	for(i=0; i<8; ++i)
+	{
+		auto s=toupper(shortName[i]);
+		auto l=toupper(longName[i]);
+
+		if(('.'==s && '.'==l) || (0==s && 0==l))
+		{
+			// Name part matched.
+			break;
+		}
+		if(s!=l)
+		{
+			return false;
+		}
+	}
+
+	// At this point, either first 8 letters or the name part matched.
+	if(0==shortName[i] && 0==longName[i])
+	{
+		// That's the end.  All matched.
+		return true;
+	}
+
+	size_t is=i,il=i;
+	if(8==i && '.'!=longName[i])
+	{
+		for(auto j=i; j<longName.size(); ++j)
+		{
+			if('.'==longName[j])
+			{
+				il=j;
+			}
+		}
+	}
+
+	for(i=0; i<3; ++i)
+	{
+		auto s=toupper(shortName[is]);
+		auto l=toupper(longName[il]);
+
+		if(0==s && 0==l)
+		{
+			// Extension matched.
+			return true;
+		}
+		if(s!=l)
+		{
+			return false;
+		}
+
+		++il;
+		++is;
+	}
+	return true;
 }
