@@ -327,7 +327,8 @@ bool TownsTgDrv::Int2F_1106_CloseRemoteFile(void)
 			uint32_t humanHour=(dosTime>>11);
 			uint32_t humanMin=(dosTime>>5)&0x3F;
 			uint32_t humanSec=(dosTime&0x1F)*2;
-			if(FileSys::OPENMODE_WRITE==mode || FileSys::OPENMODE_RW==mode)
+			// Actually do it only if it was overwritten.
+			if(0 && (FileSys::OPENMODE_WRITE==mode || FileSys::OPENMODE_RW==mode))
 			{
 				sharedDir[sharedDirIdx].SetSubPathModifiedDateTime(
 					hostFName,
