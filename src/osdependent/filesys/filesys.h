@@ -54,6 +54,7 @@ public:
 		}
 	};
 
+	bool monitor=false;
 	bool linked=false;
 	std::string hostPath;
 
@@ -283,7 +284,7 @@ public:
 
 	bool AdjustSubPathForLongFileName(std::string &subPath) const;
 
-	static bool MatchLongFileNameToShortFileName(std::string longName,std::string shortName);
+	bool MatchLongFileNameToShortFileName(std::string longName,std::string shortName) const;
 };
 
 

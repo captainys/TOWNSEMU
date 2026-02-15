@@ -2131,7 +2131,7 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd,O
 			std::cout << "Start DOS-Stdout Capture." << std::endl;
 			break;
 		case ENABLE_TGDRV_MONITOR:
-			towns.tgdrv.monitor=true;
+			towns.tgdrv.SetMonitor(true);
 			std::cout << "Enabled TGDRV monitor.\n";
 			break;
 		case ENABLE_MOUSE_MONITOR:
@@ -2278,7 +2278,7 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd,
 			std::cout << "Stop DOS-Stdout Capture." << std::endl;
 			break;
 		case ENABLE_TGDRV_MONITOR:
-			towns.tgdrv.monitor=true;
+			towns.tgdrv.SetMonitor(false);
 			std::cout << "Disabled TGDRV monitor.\n";
 			break;
 		case ENABLE_MOUSE_MONITOR:
@@ -2538,9 +2538,9 @@ void TownsCommandInterpreter::Execute_Toggle(FMTownsCommon &towns,Command &cmd,c
 			std::cout << "Toggle not supported for this feature.\n";
 			break;
 		case ENABLE_TGDRV_MONITOR:
-			cpputil::Toggle(towns.tgdrv.monitor);
+			towns.tgdrv.SetMonitor(false==towns.tgdrv.GetMonitor());
 			std::cout << "TGDRV monitor is ";
-			std::cout << cpputil::BoolToOnOffStr(towns.tgdrv.monitor) << ".\n";
+			std::cout << cpputil::BoolToOnOffStr(towns.tgdrv.GetMonitor()) << ".\n";
 			break;
 		case ENABLE_MOUSE_MONITOR:
 			std::cout << "Toggle not supported for this feature.\n";

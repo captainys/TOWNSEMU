@@ -209,6 +209,8 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *find
 {
 	find->Close();
 
+	AdjustSubPathForLongFileName(subPath);
+
 	auto path=MakeHostPath(ToHostEncoding(subPath));
 	if(""==path || (path.back()!='/' && path.back()!='\\'))
 	{
@@ -260,6 +262,8 @@ FileSys::DirectoryEntry FileSys::FindNext(FindContext *find) const
 }
 FileSys::DirectoryEntry FileSys::GetFileAttrib(std::string fileName) const
 {
+	AdjustSubPathForLongFileName(fileName);
+
 	auto path=MakeHostPath(ToHostEncoding(fileName));
 	WIN32_FIND_DATAA fd;
 	auto hFind=FindFirstFileA(path.c_str(),&fd);

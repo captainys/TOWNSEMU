@@ -27,6 +27,20 @@ void TownsTgDrv::State::Reset(void)
 {
 }
 
+void TownsTgDrv::SetMonitor(bool monitor)
+{
+	this->monitor=monitor;
+	for(auto &d : sharedDir)
+	{
+		d.monitor=monitor;
+	}
+}
+
+bool TownsTgDrv::GetMonitor(void) const
+{
+	return monitor;
+}
+
 TownsTgDrv::TownsTgDrv(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
@@ -1985,6 +1999,12 @@ std::string TownsTgDrv::FullPathToSubDir(std::string fn) const
 		// Q: format
 		i0=2;
 	}
+
+	if('/'==fn[i0] || '\\'==fn[i0])
+	{
+		++i0;
+	}
+
 	// Assume after last slash is find template.
 	int lastSlash=0;
 	for(int i=i0; i<fn.size(); ++i)

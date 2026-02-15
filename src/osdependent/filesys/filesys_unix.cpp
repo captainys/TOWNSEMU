@@ -143,6 +143,8 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *cont
 }
 FileSys::DirectoryEntry FileSys::GetFileAttrib(std::string fileName) const
 {
+	AdjustSubPathForLongFileName(fileName);
+
 	std::string path=MakeHostPath(ToHostEncoding(fileName));
 
 	DirectoryEntry ent;

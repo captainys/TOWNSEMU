@@ -202,6 +202,7 @@ uint32_t FileSys::SystemFileTable::Write(const std::vector <unsigned char> &data
 }
 bool FileSys::SubPathIsDirectory(std::string subPath) // subPath is in Shift-JIS
 {
+	AdjustSubPathForLongFileName(subPath);
 	BackSlashToSlash(subPath);
 	auto findContext=CreateFindContext();
 	auto dirent=FindFirst(subPath,findContext); // subPath in FindFirst is in Shift-JIS.
@@ -213,6 +214,8 @@ int FileSys::OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int 
 	auto sftIdx=FindAvailableSFT();
 	if(0<=sftIdx)
 	{
+		AdjustSubPathForLongFileName(subPath);
+
 		BackSlashToSlash(subPath);
 
 		auto fullPath=cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPath));
@@ -252,6 +255,8 @@ int FileSys::OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned i
 	auto sftIdx=FindAvailableSFT();
 	if(0<=sftIdx)
 	{
+		AdjustSubPathForLongFileName(subPath);
+
 		BackSlashToSlash(subPath);
 
 		auto fullPath=cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPath));
@@ -294,6 +299,8 @@ int FileSys::OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int 
 	auto sftIdx=FindAvailableSFT();
 	if(0<=sftIdx)
 	{
+		AdjustSubPathForLongFileName(subPath);
+
 		BackSlashToSlash(subPath);
 
 		auto fullPath=cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPath));
@@ -478,6 +485,7 @@ int FileSys::FindAvailableSFT(void) const
 			return i;
 		}
 	}
+	std::cout << "Exhausted all host-side SFT.\n";
 	return -1;
 }
 void FileSys::CloseAllForPSP(unsigned int PSP)
@@ -584,6 +592,11 @@ bool FileSys::AdjustSubPathForLongFileName(std::string &subPath) const
 	bool lastNameHasWildcard=false;
 	std::string newSubPath,lastName,matchingName;
 
+	if(true==monitor)
+	{
+		std::cout << "Adjust for host file name: " << subPath << "\n";
+	}
+
 	AutoFindContext findCtx;
 	for(size_t i=0; i<subPath.size(); ++i)
 	{
@@ -645,13 +658,20 @@ bool FileSys::AdjustSubPathForLongFileName(std::string &subPath) const
 		}
 	}
 
-	// std::cout << "Experiment from " << subPath << " to " << newSubPath << "\n";
+	if(true==monitor)
+	{
+		std::cout << "From Guest Name " << subPath << " to Host Name " << newSubPath << "\n";
+	}
+	subPath=newSubPath;
 	return true;
 }
 
-bool FileSys::MatchLongFileNameToShortFileName(std::string longName,std::string shortName)
+bool FileSys::MatchLongFileNameToShortFileName(std::string longName,std::string shortName) const
 {
-	// std::cout << shortName << "|" << longName << "\n";
+	if(true==monitor)
+	{
+		std::cout << shortName << "|" << longName << "\n";
+	}
 
 	size_t i=0;
 	for(i=0; i<8; ++i)
@@ -674,6 +694,20 @@ bool FileSys::MatchLongFileNameToShortFileName(std::string longName,std::string 
 	if(0==shortName[i] && 0==longName[i])
 	{
 		// That's the end.  All matched.
+		return true;
+	}
+
+	if(0==shortName[i]) // There is no extension.
+	{
+		while(0!=longName[i])
+		{
+			if('.'==longName[i]) // Short name has no extension, but long name has one.
+			{
+				return false;
+			}
+			++i;
+		}
+		// No extention in both long and short names.
 		return true;
 	}
 
