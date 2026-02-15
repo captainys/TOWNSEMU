@@ -68,7 +68,10 @@ void FileSys::FindContext::Close(void)
 	std::string longPath=cpputil::MakeFullPathName(dir,name);
 
 	std::vector <char> shortPath;
-	shortPath.resize(longPath.size()+1);
+	shortPath.resize(longPath.size()*2+1); // <- Buffer should be long enough because...
+	// Short name can be longer than long(?) name.
+	// WIN3.1.H0 (9 chars) will be assigned WIN31~1.H0(10 chars).
+	// 1.2.TXT (7 chars) may be assigned 1265B4~1.TXT (12 chars).
 	if(0==GetShortPathNameA(longPath.data(),shortPath.data(),shortPath.size()))
 	{
 		return "";
