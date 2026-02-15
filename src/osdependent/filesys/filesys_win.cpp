@@ -214,7 +214,7 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *find
 	{
 		path.push_back('/');
 	}
-	path+="*.*";
+	path+="*.*"; // This is problematic.
 
 	WIN32_FIND_DATAA fd;
 	find->hFind=FindFirstFileA(path.c_str(),&fd);
@@ -229,7 +229,7 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *find
 		ent.endOfDir=false;
 		find->subPath=subPath;
 		find->DirEntFromFd(ent,fd);
-		find->ConvertDirEntToSJIS(ent,ToHostEncoding(subPath));
+		find->ConvertDirEntToSJIS(ent,path);
 	}
 	return ent;
 }
@@ -243,6 +243,12 @@ FileSys::DirectoryEntry FileSys::FindNext(FindContext *find) const
 	}
 	else
 	{
+		auto path=MakeHostPath(ToHostEncoding(find->subPath));
+		if(""==path || (path.back()!='/' && path.back()!='\\'))
+		{
+			path.push_back('/');
+		}
+
 		WIN32_FIND_DATAA fd;
 		if(TRUE!=FindNextFileA(find->hFind,&fd))
 		{
@@ -253,7 +259,7 @@ FileSys::DirectoryEntry FileSys::FindNext(FindContext *find) const
 		{
 			ent.endOfDir=false;
 			find->DirEntFromFd(ent,fd);
-			find->ConvertDirEntToSJIS(ent,ToHostEncoding(find->subPath));
+			find->ConvertDirEntToSJIS(ent,path);
 		}
 	}
 	return ent;
@@ -275,7 +281,7 @@ FileSys::DirectoryEntry FileSys::GetFileAttrib(std::string fileName) const
 	{
 		ent.endOfDir=false;
 		FindContext::DirEntFromFd(ent,fd);
-		FindContext::ConvertDirEntToSJIS(ent,path);
+		FindContext::ConvertDirEntToSJIS(ent,ToHostEncoding(hostPath));
 		::FindClose(hFind);
 	}
 	return ent;
