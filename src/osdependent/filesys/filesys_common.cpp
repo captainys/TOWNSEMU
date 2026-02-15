@@ -36,8 +36,9 @@ void FileSys::HasTimeStamp::CopyTimeStampFrom(const HasTimeStamp &incoming)
 	minutes=incoming.minutes;
 	seconds=incoming.seconds;
 }
-int FileSys::FindFirst(DirectoryEntry &ent,unsigned int PSP,const std::string &subPath)
+int FileSys::FindFirst(DirectoryEntry &ent,unsigned int PSP,std::string subPath)
 {
+	AdjustSubPathForLongFileName(subPath);
 	auto fsIdx=FindAvailableFindStruct(subPath);
 	if(0<=fsIdx)
 	{
@@ -598,6 +599,40 @@ bool FileSys::AdjustSubPathForLongFileName(std::string &subPath) const
 	}
 
 	AutoFindContext findCtx;
+	{
+		bool hasWildcard=false;
+		for(auto c : subPath)
+		{
+			if('?'==c || '*'==c)
+			{
+				hasWildcard=true;
+				break;
+			}
+		}
+		bool exactMatch=false;
+		if(true!=hasWildcard)
+		{
+			int count=0;
+			for(auto ent=FindFirst(subPath,*findCtx); true!=ent.endOfDir; ent=FindNext(*findCtx))
+			{
+				++count;
+				if(2<=count)
+				{
+					break;
+				}
+			}
+			if(1==count)
+			{
+				exactMatch=true;
+			}
+			FindClose(*findCtx);
+		}
+		if(true==exactMatch)
+		{
+			return true; // Exact match.  No further comparison required.
+		}
+	}
+
 	for(size_t i=0; i<subPath.size(); ++i)
 	{
 		auto c=subPath[i];
@@ -617,6 +652,7 @@ bool FileSys::AdjustSubPathForLongFileName(std::string &subPath) const
 					matchingName=ent.fName;
 				}
 			}
+			FindClose(*findCtx);
 
 			bool doesMatch=false;
 			if(i+1==hostPath.size() && true==lastNameHasWildcard)

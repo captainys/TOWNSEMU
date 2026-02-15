@@ -128,7 +128,7 @@ public:
 
 		subPath is in the Shift-JIS encoding.
 	*/
-	int FindFirst(DirectoryEntry &ent,unsigned int PSP,const std::string &subPath);
+	int FindFirst(DirectoryEntry &ent,unsigned int PSP,std::string subPath);
 
 	DirectoryEntry FindNext(int findStructIdx);
 

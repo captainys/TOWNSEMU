@@ -209,8 +209,6 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *find
 {
 	find->Close();
 
-	AdjustSubPathForLongFileName(subPath);
-
 	auto path=MakeHostPath(ToHostEncoding(subPath));
 	if(""==path || (path.back()!='/' && path.back()!='\\'))
 	{
