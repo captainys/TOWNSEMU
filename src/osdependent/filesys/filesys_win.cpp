@@ -14,7 +14,7 @@ public:
 
 	static void DirEntFromFd(DirectoryEntry &ent,WIN32_FIND_DATAA &fd);
 	static std::string MakeShortPath(std::string dir,std::string name);
-	static void ConvertDirEntToSJIS(DirectoryEntry &ent,std::string hostPath);
+	static void ConvertDirEntToSJISShortPath(DirectoryEntry &ent,std::string hostPath);
 
 	static bool IsSJISFirstKanjiByte(unsigned char c);
 	static bool SJISNameFitsWithin8dot3(std::string sjis);
@@ -81,7 +81,7 @@ void FileSys::FindContext::Close(void)
 /*!
    path needs to be in the host encoding.
 */
-/* static */ void FileSys::FindContext::ConvertDirEntToSJIS(DirectoryEntry &ent,std::string hostPath)
+/* static */ void FileSys::FindContext::ConvertDirEntToSJISShortPath(DirectoryEntry &ent,std::string hostPath)
 {
 	auto sjis=ToSJISEncoding(ent.fName);
 	if(true==SJISNameFitsWithin8dot3(sjis))
@@ -229,7 +229,7 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *find
 		ent.endOfDir=false;
 		find->subPath=subPath;
 		find->DirEntFromFd(ent,fd);
-		find->ConvertDirEntToSJIS(ent,path);
+		find->ConvertDirEntToSJISShortPath(ent,path);
 	}
 	return ent;
 }
@@ -259,7 +259,7 @@ FileSys::DirectoryEntry FileSys::FindNext(FindContext *find) const
 		{
 			ent.endOfDir=false;
 			find->DirEntFromFd(ent,fd);
-			find->ConvertDirEntToSJIS(ent,path);
+			find->ConvertDirEntToSJISShortPath(ent,path);
 		}
 	}
 	return ent;
@@ -281,7 +281,7 @@ FileSys::DirectoryEntry FileSys::GetFileAttrib(std::string fileName) const
 	{
 		ent.endOfDir=false;
 		FindContext::DirEntFromFd(ent,fd);
-		FindContext::ConvertDirEntToSJIS(ent,ToHostEncoding(hostPath));
+		FindContext::ConvertDirEntToSJISShortPath(ent,ToHostEncoding(hostPath));
 		::FindClose(hFind);
 	}
 	return ent;

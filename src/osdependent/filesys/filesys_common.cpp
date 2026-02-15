@@ -590,6 +590,10 @@ void FileSys::BackSlashToSlash(std::string &src)
 
 bool FileSys::AdjustSubPathForLongFileName(std::string &subPath) const
 {
+#ifdef _WIN32
+	// Windows can use short path.  Also there is no distinction between capital and small letters.
+	return false;
+#else
 	bool lastNameHasWildcard=false;
 	std::string newSubPath,lastName,matchingName;
 
@@ -700,6 +704,7 @@ bool FileSys::AdjustSubPathForLongFileName(std::string &subPath) const
 	}
 	subPath=newSubPath;
 	return true;
+#endif
 }
 
 bool FileSys::MatchLongFileNameToShortFileName(std::string longName,std::string shortName) const
