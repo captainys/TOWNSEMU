@@ -62,9 +62,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		break;
 
 	case TOWNS_QUICK_DEBUG_BREAK: //        0xEA,  // Writing to this I/O port will break the VM.
-		debugger.ExternalBreak("Break Request from VM");
+		debugger.ExternalBreak("Break Request from VM (0x"+cpputil::Ubtox(data)+")");
 		break;
 	case TOWNS_QUICK_DEBUG_STATE: //        0xEB,  // Writing to this I/O port will show the VM state, not break.
+		std::cout << "Status Request from VM (0x"+cpputil::Ubtox(data)+")" << "\n";
 		PrintStatus();
 		break;
 	case TOWNSIO_HOST_CONSOLE:
@@ -166,10 +167,30 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 }
 /* virtual */ void FMTownsCommon::IOWriteWord(unsigned int ioport,unsigned int data)
 {
+	switch(ioport)
+	{
+	case TOWNS_QUICK_DEBUG_BREAK: //        0xEA,  // Writing to this I/O port will break the VM.
+		debugger.ExternalBreak("Break Request from VM (0x"+cpputil::Ustox(data)+")");
+		return;
+	case TOWNS_QUICK_DEBUG_STATE: //        0xEB,  // Writing to this I/O port will show the VM state, not break.
+		std::cout << "Status Request from VM (0x"+cpputil::Ustox(data)+")" << "\n";
+		PrintStatus();
+		return;
+	}
 	Device::IOWriteWord(ioport,data);
 }
 /* virtual */ void FMTownsCommon::IOWriteDword(unsigned int ioport,unsigned int data)
 {
+	switch(ioport)
+	{
+	case TOWNS_QUICK_DEBUG_BREAK: //        0xEA,  // Writing to this I/O port will break the VM.
+		debugger.ExternalBreak("Break Request from VM (0x"+cpputil::Uitox(data)+")");
+		return;
+	case TOWNS_QUICK_DEBUG_STATE: //        0xEB,  // Writing to this I/O port will show the VM state, not break.
+		std::cout << "Status Request from VM (0x"+cpputil::Uitox(data)+")" << "\n";
+		PrintStatus();
+		return;
+	}
 	Device::IOWriteDword(ioport,data);
 }
 /* virtual */ unsigned int FMTownsCommon::IOReadByte(unsigned int ioport)
