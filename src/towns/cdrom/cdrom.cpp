@@ -313,6 +313,10 @@ bool TownsCDROM::CanOpenCloseFromCommand(void) const
 		data|=(state.DTSF ? 0x10 : 0);
 		data|=(0<state.statusQueue.size() ? 2 : 0);
 		data|=(state.DRY  ?    1 : 0);
+		if(true==var.virtuallyRemoved)
+		{
+			data&=0xFE; // Virtually keep ready signal low.
+		}
 		return data;
 	case TOWNSIO_CDROM_COMMAND_STATUS://    0x4C2, // [2] pp.224
 		if(0<state.statusQueue.size())

@@ -143,6 +143,8 @@ void FMTownsCommon::State::PowerOn(void)
 		towns.physMem.SetUpMemoryAccess(argv.townsType,towns.TownsTypeToCPUType(argv.townsType));
 	}
 
+	towns.cdrom.var.virtuallyRemoved=argv.removeInternalCD;
+
 	towns.cdrom.searchPaths=argv.cdSearchPaths;
 	if(""!=argv.cdImgFName)
 	{

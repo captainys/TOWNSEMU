@@ -297,6 +297,8 @@ public:
 		i486DXCommon::FarPointer lastCmdIssuedAt;
 		i486DXCommon::FarPointer lastParamWrittenAt;
 
+		bool virtuallyRemoved=false; // If true, ready signal (b0 of I/O 4C0H) is kept low.
+
 		bool CDEleVolUpdate=false;
 		bool CDDAmute=false;
 

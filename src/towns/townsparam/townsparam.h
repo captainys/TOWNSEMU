@@ -76,6 +76,8 @@ public:
 	bool damperWireLine=true;
 	bool scanLineEffectIn15KHz=false;
 
+	bool removeInternalCD=false;
+
 	// If not "", VM starts from this saved state.
 	std::string startUpStateFName;
 

@@ -154,6 +154,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Repeat -CDPATH path1 -CDPATH path2 ... to specify multipl paths." << std::endl;
 	std::cout << "-CDSPEED N" << std::endl;
 	std::cout << "  Set CD speed.  CD speed will be set to Nx." << std::endl;
+	std::cout << " -NOINTCD\n";
+	std::cout << "  Virtually remove internal CD drive (Keep ready signal on I/O 4C0h zero.)\n";
 	std::cout << "-ICM image-file-name" << std::endl;
 	std::cout << "  IC Memory Card image file name." << std::endl;
 	std::cout << "-JEIDA4 image-file-name" << std::endl;
@@ -714,6 +716,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			cdSpeed=cpputil::Atoi(argv[i+1]);
 			++i;
+		}
+		else if("-NOINTCD"==ARG)
+		{
+			removeInternalCD=true;
 		}
 		else if("-CD"==ARG && i+1<argc)
 		{
