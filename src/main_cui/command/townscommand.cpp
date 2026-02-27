@@ -5387,7 +5387,7 @@ void TownsCommandInterpreter::Execute_Search_ByteSequence(FMTownsCommon &towns,c
 		PrintError(ERROR_NO_DATA_GIVEN);
 		return;
 	}
-	std::cout << "Search is limited in the main RAM and VRAM only." << std::endl;
+	std::cout << "Search is limited in the main RAM, sprite RAM, and VRAM only." << std::endl;
 
 	int maxCount=100;
 	for(unsigned int addr=0; addr+bytes.size()<=towns.physMem.state.RAM.size(); ++addr)
@@ -5395,6 +5395,17 @@ void TownsCommandInterpreter::Execute_Search_ByteSequence(FMTownsCommon &towns,c
 		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.physMem.state.RAM.data()+addr))
 		{
 			FoundAt(towns,addr);
+		}
+	}
+	for(unsigned int addr=0; addr+bytes.size()<=TOWNSADDR_SPRITERAM_END-TOWNSADDR_SPRITERAM_BASE; ++addr)
+	{
+		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.physMem.state.spriteRAM+addr))
+		{
+			FoundAt(towns,TOWNSADDR_SPRITERAM_BASE+addr);
+			if(--maxCount<=0)
+			{
+				std::cout << "Reached maximum count." << std::endl;
+			}
 		}
 	}
 	for(unsigned int addr=0; addr+bytes.size()<=towns.physMem.GetVRAMSize(); ++addr)

@@ -54,6 +54,9 @@ void TownsHighResPCM::State::Reset(void)
 	peakLevel=0;
 
 	interrupt=NO_INTERRUPT;
+
+	balance=0;
+	dataBuffer.clear();
 }
 
 ////////////////////////////////////////////////////////////
@@ -709,6 +712,7 @@ void TownsHighResPCM::DropWaveForNumSamples(unsigned int nSamples,unsigned int W
 		SND format;
 		used=format.BytesPerTimeStep()*nSamples*state.freq/WAVE_OUT_SAMPLING_RATE;
 	}
+	used=std::max<unsigned int>(used,state.dataBuffer.size());
 	state.dataBuffer.erase(state.dataBuffer.begin(),state.dataBuffer.begin()+used);
 }
 void TownsHighResPCM::AddWaveForNumSamples(uint8_t output[],unsigned int nSamples,unsigned int WAVE_OUT_SAMPLING_RATE)
