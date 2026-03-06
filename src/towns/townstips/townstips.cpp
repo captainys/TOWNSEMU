@@ -88,6 +88,26 @@ std::vector <std::string> TownsTips::GetTips(void)
 		"until 2024.\n"
 	);
 
+	tips.push_back(
+		"Did you know that you can select boot device by holding down:\n"
+		"C+D keys or Pad A button for CD\n"
+		"F+0 keys or Pad B button for Floppy Drive 0\n"
+		"F+1 keys for Floppy Drive 1\n"
+		"H+0 keys for SCSI Drive 0\n"
+		"H+1 keys for SCSI Drive 1\n"
+		"H+2 keys for SCSI Drive 2\n"
+		"H+3 keys for SCSI Drive 3\n"
+		"H+4 keys for SCSI Drive 4\n"
+		"I+C+M keys for IC Memory Card\n"
+		"?"
+		"You can also use temporary boot-device menu by holding down\n"
+		"Pad A+B buttons.\n"
+		"Also D+E+B+U+G keys will open the debug menu.\n"
+		"Valid after FM TOWNS II CX and later models."
+		"In Tsugaru, you can use this feature from the BOOT tab in the GUI\n"
+		"or -BOOTKEY option in the CUI.\n"
+	);
+
 	return tips;
 }
 
