@@ -139,6 +139,146 @@ O 0
 X 
 /end
 /begin0
+T 0
+* 00000010:00000B5E
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 1
+X 
+/end
+/begin0
+T 2
+* 00000010:00000B63
+# 
+R 
+L Check Boot Key Combination Loop
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000B79
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000BC5
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000BE5
+# A button is pressed.
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000BE9
+# Same as first key-combination
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000BEE
+# EAX=80H
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000C09
+# B button is pressed
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000C12
+# EAX=20H
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00000010:00000C2B
+# 
+R 
+L No Pad button, or Both buttons held down
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
 T 1
 * 00000010:00000D03
 # 
@@ -185,7 +325,7 @@ T 1
 * 00000010:00001415
 # 
 R 
-L (Almost certain)Draw Icon from ESI at FMR VRAM address EDI
+L Draw Icon from ESI at FMR VRAM address EDI()
 P 
 % 0
 M 0
@@ -200,6 +340,20 @@ T 0
 # Is it a crap CPU?  I mean, 386SX?
 R 
 L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00001740
+# 
+R 
+L Boot Key Combination Table
 P 
 % 0
 M 0
@@ -325,7 +479,7 @@ T 1
 * 00000010:00001F32
 # 
 R 
-L (Almost certain)Draw font.  Text info in ESI
+L Draw font.  Text info in ESI()
 P 
 % 0
 M 0

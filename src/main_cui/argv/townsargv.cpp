@@ -279,7 +279,7 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  It affects the return value from I/O 0030H." << std::endl;
 	std::cout << "  Also selection of UX and UG (386SX models) will affect memory mappings." << std::endl;
 	std::cout << "-BOOTKEY key_combination\n";
-	std::cout << "  Specify boot-key combination.\n";
+	std::cout << "  Emulate boot-key combination.\n";
 	std::cout << "    CD    Boot from Internal CD (C+D keys)\n";
 	std::cout << "    F0    Boot from Floppy Disk Drive 0 (F+0 keys)\n";
 	std::cout << "    F1    Boot from Floppy Disk Drive 1 (F+1 keys)\n";
@@ -292,8 +292,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "    H4    Boot from SCSI ID 4 (H+4 keys)\n";
 	std::cout << "    ICM   Boot from IC Memory Card (I+C+M keys)\n";
 	std::cout << "    DEBUG Boot into debug menu (D+E+B+U+G keys)\n";
-	std::cout << "    PADA  (TownsPAD A button)\n";
-	std::cout << "    PADB  (TownsPAD B button)\n";
+	std::cout << "    PADA  Boot from Internal CD (TownsPAD A button)\n";
+	std::cout << "    PADB  Boot from Floopy Disk Drive 0 (TownsPAD B button)\n";
 	std::cout << "    PADAB Select Temporary Boot Device (TownsPAD A+B buttons)\n";
 	std::cout << "    FAST  Boot in the FAST mode (T key)\n";
 	std::cout << "    SLOW  Boot in the SLOW mode (N key)\n";
