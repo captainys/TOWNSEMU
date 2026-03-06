@@ -126,6 +126,216 @@ X
 /end
 /begin0
 T 0
+* 00000010:00000AF2
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00000D03
+# 
+R 
+L Pad A+B
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000D56
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:0000136C
+# 
+R 
+L Read PAD0 to AL, and mask direction-key bits, leaving button bits
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00001415
+# 
+R 
+L (Almost certain)Draw Icon from ESI at FMR VRAM address EDI
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0000142D
+# Is it a crap CPU?  I mean, 386SX?
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00001D41
+# 
+R 
+L Read Key Combination to EBX
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00001DB1
+# 
+R 
+L Disable Keyboard IRQ
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00001DB5
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00001DC1
+# 
+R 
+L Write A0,A1 to Keyboard CMD, Read 2-byte key data to AX
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00001E26
+# 
+R 
+L Write AL to Keyboard Command I/O 602H
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00001E41
+# 
+R 
+L Read Key Data
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00001E81
+# 
+R 
+L Convert Key Code to boot-key bits
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00001EFF
+# 
+R 
+L Wait by FREERUN TIMER for ECX times.
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00001F32
+# 
+R 
+L (Almost certain)Draw font.  Text info in ESI
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
 * 0000005D:00000268
 # 
 R 

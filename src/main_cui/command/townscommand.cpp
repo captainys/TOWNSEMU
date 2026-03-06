@@ -166,6 +166,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["CRTCPAGE"]=CMD_CRTC_PAGE;
 	primaryCmdMap["CRTCSWAPFMR"]=CMD_CRTC_SWAP_FMRGVRAMPAGE;
+	primaryCmdMap["CRTCVRAMOFFSET"]=CMD_CRTC_VRAMOFFSET;
 	primaryCmdMap["CMOSLOAD"]=CMD_CMOSLOAD;
 	primaryCmdMap["CMOSSAVE"]=CMD_CMOSSAVE;
 	primaryCmdMap["CDLOAD"]=CMD_CDLOAD;
@@ -649,6 +650,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Turn on/off display page." << std::endl;
 	std::cout << "CRTCSWAPFMR" << std::endl;
 	std::cout << "  Swap FMR GVRAM Page." << std::endl;
+	std::cout << "CRTCVRAMOFFSET page offset\n";
+	std::cout << "  Set VRAM offset.\n";
 	std::cout << "CMOSLOAD filename" << std::endl;
 	std::cout << "  Load CMOS." << std::endl;
 	std::cout << "CMOSSAVE filename" << std::endl;
@@ -1586,6 +1589,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		break;
 	case CMD_CRTC_SWAP_FMRGVRAMPAGE:
 		Execute_CRTC_SwapFMRGVRAMPage(towns,cmd);
+		break;
+	case CMD_CRTC_VRAMOFFSET:
+		Execute_CRTCVRAMOffset(towns,cmd);
 		break;
 	case CMD_CMOSLOAD:
 		Execute_CMOSLoad(towns,cmd);
@@ -5120,6 +5126,49 @@ void TownsCommandInterpreter::Execute_CRTCPage(FMTownsCommon &towns,Command &cmd
 		{
 			towns.crtc.state.highResCrtcReg[TownsCRTC::HIGHRES_REG_DISPPAGE]&=~0x200;
 		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+
+void TownsCommandInterpreter::Execute_CRTCVRAMOffset(FMTownsCommon &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size() && true==towns.crtc.InSinglePageMode())
+	{
+		uint32_t offset=cpputil::Xtoi(cmd.argv[1].c_str());
+		switch(towns.crtc.GetPageBitsPerPixel(0))
+		{
+		case 4:
+			offset/=4;
+			break;
+		case 8:
+			offset/=8;
+			break;
+		case 16:
+			offset/=8;
+			break;
+		}
+		towns.crtc.state.crtcReg[TownsCRTC::REG_FA0]=offset;
+	}
+	else if(3<=cmd.argv.size() && true!=towns.crtc.InSinglePageMode())
+	{
+		uint32_t page=1&cpputil::Xtoi(cmd.argv[1].c_str());
+		uint32_t offset=cpputil::Xtoi(cmd.argv[2].c_str());
+		switch(towns.crtc.GetPageBitsPerPixel(page))
+		{
+		case 4:
+			offset/=4;
+			break;
+		case 8:
+			offset/=8;
+			break;
+		case 16:
+			offset/=4;
+			break;
+		}
+		towns.crtc.state.crtcReg[TownsCRTC::REG_FA0+page*4]=offset;
 	}
 	else
 	{

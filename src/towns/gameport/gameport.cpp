@@ -719,6 +719,7 @@ void TownsGamePort::SetBootKeyCombination(unsigned int keyComb)
 {
 	if(BOOT_KEYCOMB_PAD_A==keyComb ||
 	   BOOT_KEYCOMB_PAD_B==keyComb ||
+	   BOOT_KEYCOMB_PAD_AB==keyComb ||
 	   BOOT_KEYCOMB_NONE==keyComb)
 	{
 		state.bootKeyComb=keyComb;
@@ -796,6 +797,10 @@ void TownsGamePort::State::Reset(void)
 		else if(BOOT_KEYCOMB_PAD_B==state.bootKeyComb)
 		{
 			return 0x1F;
+		}
+		else if(BOOT_KEYCOMB_PAD_AB==state.bootKeyComb)
+		{
+			return 0x0F;
 		}
 		else if(TOWNS_APPSPECIFIC_ROCKETRANGER==townsPtr->state.appSpecificSetting && true==state.ports[0].run)
 		{
