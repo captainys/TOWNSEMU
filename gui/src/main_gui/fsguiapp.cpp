@@ -452,6 +452,24 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		subMenu->AddTextItem(0,FSKEY_S,ui("/towns/start","Start Virtual Machine"))->BindCallBack(&THISCLASS::VM_Start,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/startandclosegui","Start and Close GUI"))->BindCallBack(&THISCLASS::VM_StartAndCloseGUI,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/reset","Reset Virtual Machine"))->BindCallBack(&THISCLASS::VM_Reset,this);
+		{
+			auto *rebootSubMenu=subMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom","Reboot Virtual Machine From:"))->AddSubMenu();
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/cd","Internal CD"))->BindCallBack(&THISCLASS::VM_RebootFromCD,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/f0","FD0"))->BindCallBack(&THISCLASS::VM_RebootFromFD0,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/f1","FD0"))->BindCallBack(&THISCLASS::VM_RebootFromFD1,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/f2","FD0"))->BindCallBack(&THISCLASS::VM_RebootFromFD2,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/f3","FD0"))->BindCallBack(&THISCLASS::VM_RebootFromFD3,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/h0","SCSI ID 0"))->BindCallBack(&THISCLASS::VM_RebootFromSCSI0,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/h1","SCSI ID 1"))->BindCallBack(&THISCLASS::VM_RebootFromSCSI1,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/h2","SCSI ID 2"))->BindCallBack(&THISCLASS::VM_RebootFromSCSI2,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/h3","SCSI ID 3"))->BindCallBack(&THISCLASS::VM_RebootFromSCSI3,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/h4","SCSI ID 4"))->BindCallBack(&THISCLASS::VM_RebootFromSCSI4,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/icm","IC Memory Card"))->BindCallBack(&THISCLASS::VM_RebootFromICM,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/debug","DEBUG mode"))->BindCallBack(&THISCLASS::VM_RebootDEBUG,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/pada","Internal CD (by PAD A)"))->BindCallBack(&THISCLASS::VM_RebootFromPADA,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/padb","FD0 (by PAD B)"))->BindCallBack(&THISCLASS::VM_RebootFromPADA,this);
+			rebootSubMenu->AddTextItem(0,FSKEY_NULL,ui("/towns/rebootfrom/padab","BOOT MENU"))->BindCallBack(&THISCLASS::VM_RebootFromPADAB,this);
+		}
 		subMenu->AddTextItem(0,FSKEY_Q,ui("/towns/poweroff","Power Off"))->BindCallBack(&THISCLASS::VM_PowerOff,this);
 		// subMenu->AddTextItem(0,FSKEY_P,ui("/towns/pause","Pause"))->BindCallBack(&THISCLASS::VM_Pause,this);  Realized PAUSE menu was not doing anything.
 		subMenu->AddTextItem(0,FSKEY_R,ui("/towns/resume","Resume"))->BindCallBack(&THISCLASS::VM_Resume,this);
@@ -2318,6 +2336,95 @@ void FsGuiMainCanvas::VM_Reset(FsGuiPopUpMenuItem *)
 		VM_Not_Running_Error();
 	}
 }
+
+void FsGuiMainCanvas::VM_RebootFromCD(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("CD");
+}
+
+void FsGuiMainCanvas::VM_RebootFromFD0(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("F0");
+}
+
+void FsGuiMainCanvas::VM_RebootFromFD1(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("F1");
+}
+
+void FsGuiMainCanvas::VM_RebootFromFD2(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("F2");
+}
+
+void FsGuiMainCanvas::VM_RebootFromFD3(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("F3");
+}
+
+void FsGuiMainCanvas::VM_RebootFromSCSI0(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("H0");
+}
+
+void FsGuiMainCanvas::VM_RebootFromSCSI1(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("H1");
+}
+
+void FsGuiMainCanvas::VM_RebootFromSCSI2(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("H2");
+}
+
+void FsGuiMainCanvas::VM_RebootFromSCSI3(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("H3");
+}
+
+void FsGuiMainCanvas::VM_RebootFromSCSI4(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("H4");
+}
+
+void FsGuiMainCanvas::VM_RebootFromICM(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("ICM");
+}
+
+void FsGuiMainCanvas::VM_RebootDEBUG(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("DEBUG");
+}
+
+void FsGuiMainCanvas::VM_RebootFromPADA(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("PADA");
+}
+
+void FsGuiMainCanvas::VM_RebootFromPADB(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("PADB");
+}
+
+void FsGuiMainCanvas::VM_RebootFromPADAB(FsGuiPopUpMenuItem *)
+{
+	VM_RebootFrom("PADAB");
+}
+
+void FsGuiMainCanvas::VM_RebootFrom(std::string bootKey)
+{
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("RESET "+bootKey+"\n");
+		VMMustResume=YSTRUE;
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+
 // void FsGuiMainCanvas::VM_Pause(FsGuiPopUpMenuItem *)
 // {
 // 	if(true==IsVMRunning())

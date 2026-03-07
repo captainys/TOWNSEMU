@@ -68,6 +68,22 @@ UITXT
 +/towns/start FM TOWNS起動!
 +/towns/startandclosegui FM TOWNS起動してGUIをクローズ
 +/towns/reset リセット
++/towns/rebootfrom 指定デバイスから再起動
++/towns/rebootfrom/cd 内蔵CD
++/towns/rebootfrom/f0 フロッピーディスク0
++/towns/rebootfrom/f1 フロッピーディスク1
++/towns/rebootfrom/f2 フロッピーディスク2
++/towns/rebootfrom/f3 フロッピーディスク3
++/towns/rebootfrom/h0 SCSI ID 0
++/towns/rebootfrom/h1 SCSI ID 1
++/towns/rebootfrom/h2 SCSI ID 2
++/towns/rebootfrom/h3 SCSI ID 3
++/towns/rebootfrom/h4 SCSI ID 4
++/towns/rebootfrom/icm ICメモリカード
++/towns/rebootfrom/debug デバッグモード
++/towns/rebootfrom/pada 内蔵CD(Pad Aボタン)
++/towns/rebootfrom/padb フロッピーディスク1(Pad Bボタン)
++/towns/rebootfrom/padab 起動メニュー
 +/towns/poweroff 電源オフ
 +/towns/pause 一時停止
 +/towns/resume 一時停止解除

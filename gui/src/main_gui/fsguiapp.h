@@ -335,6 +335,22 @@ private:
 	void VM_Start(FsGuiPopUpMenuItem *);
 	void VM_StartAndCloseGUI(FsGuiPopUpMenuItem *);
 	void VM_Reset(FsGuiPopUpMenuItem *);
+	void VM_RebootFromCD(FsGuiPopUpMenuItem *);
+	void VM_RebootFromFD0(FsGuiPopUpMenuItem *);
+	void VM_RebootFromFD1(FsGuiPopUpMenuItem *);
+	void VM_RebootFromFD2(FsGuiPopUpMenuItem *);
+	void VM_RebootFromFD3(FsGuiPopUpMenuItem *);
+	void VM_RebootFromSCSI0(FsGuiPopUpMenuItem *);
+	void VM_RebootFromSCSI1(FsGuiPopUpMenuItem *);
+	void VM_RebootFromSCSI2(FsGuiPopUpMenuItem *);
+	void VM_RebootFromSCSI3(FsGuiPopUpMenuItem *);
+	void VM_RebootFromSCSI4(FsGuiPopUpMenuItem *);
+	void VM_RebootFromICM(FsGuiPopUpMenuItem *);
+	void VM_RebootDEBUG(FsGuiPopUpMenuItem *);
+	void VM_RebootFromPADA(FsGuiPopUpMenuItem *);
+	void VM_RebootFromPADB(FsGuiPopUpMenuItem *);
+	void VM_RebootFromPADAB(FsGuiPopUpMenuItem *);
+	void VM_RebootFrom(std::string bootKey);
 	void VM_PowerOff(FsGuiPopUpMenuItem *);
 	void VM_PowerOffConfirm(FsGuiDialog *dlg,int returnCode);
 	// void VM_Pause(FsGuiPopUpMenuItem *);  Turned out this menu was not doing anything.
