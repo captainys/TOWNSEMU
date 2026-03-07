@@ -46,8 +46,10 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["H"]=CMD_HELP;
 	primaryCmdMap["QUIT"]=CMD_QUIT;
 	primaryCmdMap["Q"]=CMD_QUIT;
+	primaryCmdMap["POFF"]=CMD_QUIT;
 	primaryCmdMap["FORCEQUIT"]=CMD_FORCE_QUIT;
 	primaryCmdMap["RESET"]=CMD_RESET;
+	primaryCmdMap["REIPL"]=CMD_RESET;
 	primaryCmdMap["?"]=CMD_HELP;
 	primaryCmdMap["RUN"]=CMD_RUN;
 	primaryCmdMap["PAUSE"]=CMD_PAUSE;
@@ -397,7 +399,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "QUIT|Q" << std::endl;
 	std::cout << "  Quit." << std::endl;
 	std::cout << "RESET" << std::endl;
+	std::cout << "RESET key-combination\n";
 	std::cout << "  Reset the virtual machine." << std::endl;
+	std::cout << "  Can specify boot key combination CD,F0,F1,F2,F3,H0,H1,H2,H3,H4,ICM,DEBUG,PADA,PADB, or PADAB.\n";
 	std::cout << "RUN|RUN EIP|RUN CS:EIP" << std::endl;
 	std::cout << "  Run.  Can specify temporary break point." << std::endl;
 	std::cout << "FREQ frequency_in_MHz" << std::endl;
