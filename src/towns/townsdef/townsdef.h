@@ -608,8 +608,16 @@ enum
 	TOWNSIO_CMOS_SINGLE_DRIVE_MODE= 0x328C, // Evil single-drive mode.
 	TOWNSIO_CMOS_ALLOC_DICT_AREA=   0x32B2,
 	TOWNSIO_CMOS_CHECKSUM_ADJUST=   0x33CE,
+	TOWNSIO_CMOS_SAVE_SP_LOW=       0x3A64, // SP is saved when switching to the protected mode.
+	TOWNSIO_CMOS_SAVE_SP_HIGH=      0x3A66, // SP is saved when switching to the protected mode.
+	TOWNSIO_CMOS_SAVE_SS_LOW=       0x3A68, // SS is saved when switching to the protected mode.
+	TOWNSIO_CMOS_SAVE_SS_HIGH=      0x3A6A, // SS is saved when switching to the protected mode.
+	TOWNSIO_CMOS_SAVE_PIC1=         0x3A6C, // PIC2 setting is saved when switching to the protected mode.
+	TOWNSIO_CMOS_SAVE_PIC2=         0x3A6E, // PIC2 setting is saved when switching to the protected mode.
+	TOWNSIO_CMOS_SAVE_TIMER_INT=    0x3A70, // Timer INT Ctrl (60H) is saved when switching to the protected mode.
 	TOWNSIO_CMOS_SCSI_DETECT=       0x3AC4,
 	TOWNSIO_CMOS_TBIOS_PHYSADDR=    0x3B90,
+	TOWNSIO_CMOS_SAVE_NMI_MASK=     0x3C16, // NMI Mask (I/O 28H) is saved when switching to the protected mode.
 	TOWNSIO_CMOS_FAST_PWRON_MEMTEST=0x3C1A,
 	TOWNSIO_CMOS_BOOT_DEV=          0x3C28, // 80H:CD 20H-23H:FD 10H-14H:SCSI 4AH:ICM
 	TOWNSIO_CMOS_FAST_MODE=         0x3c2A,

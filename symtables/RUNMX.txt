@@ -98,6 +98,20 @@ X
 /end
 /begin0
 T 0
+* 00000010:0000012B
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
 * 00000010:00000A34
 # 
 R 
@@ -175,6 +189,34 @@ L
 P 
 % 0
 M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000B80
+# Icon offset from Icon data in the ROM
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000BAC
+# Check FASTMODE I/O is valid.
+R 
+L 
+P 
+% 0
+M 0
 B 0
 A 0
 O 0
@@ -279,6 +321,34 @@ O 0
 X 
 /end
 /begin0
+T 0
+* 00000010:00000C7F
+# Draw FM TOWNS Logo.  It may draw a blue frame if serial ROM bit 252-255 is non zero.  May be prepared for OEM TOWNS?
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000CC5
+# Is it a crap CPU?  I mean, 386SX?
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
 T 1
 * 00000010:00000D03
 # 
@@ -301,6 +371,160 @@ L
 P 
 % 0
 M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:000010B3
+# 
+R 
+L If N key, set up SLOW mode.
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:000010FF
+# 
+R 
+L IF F key, set up FAST mode.
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00001299
+# 
+R 
+L Set up main RAM wait and clock (AH=1 FAST mode  AH=0 SLOW mode).
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:000012AE
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:000012B5
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:000012BE
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:000012C5
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:000012D0
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:000012E4
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00001309
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0000130E
+# Is FASTMODE I/O valid?
+R 
+L 
+P 
+% 0
+M 0
 B 0
 A 0
 O 0
@@ -340,6 +564,62 @@ T 0
 # Is it a crap CPU?  I mean, 386SX?
 R 
 L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0000145F
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0000148D
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:000015C0
+# 
+R 
+L Draw FM TOWNS logo.
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00001650
+# 
+R 
+L Read Serial ROM
 P 
 % 0
 M 0
@@ -2631,6 +2911,104 @@ O 0
 X 
 /end
 /begin0
+T 0
+* 0000FC00:0000042A
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 0000FC00:00000473
+# 
+R 
+L Skip ROM,DMAC,PIT tests
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:00000489
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:00000786
+# 
+R 
+L Wait
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:00000D4F
+# 
+R 
+L Prepare to Switch to Protected Mode.
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 0000FC00:00000DBD
+# 
+R 
+L Return from the Protected Mode
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:00000F7A
+# 
+R 
+L (Prob)Print message
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
 T 1
 * 0000FC00:00002898
 # 
@@ -3409,6 +3787,20 @@ L SYSROM:Disable (mask) SCSI DMA Channel
 P 
 % 0
 M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:00002ED2
+# 
+R 
+L Wait by Free-run timer.
+P 
+% 0
+M 0
 B 0
 A 0
 O 0

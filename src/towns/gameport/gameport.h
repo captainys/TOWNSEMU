@@ -44,7 +44,8 @@ public:
 
 	enum
 	{
-		MAX_NUM_BUTTONS=32
+		MAX_NUM_BUTTONS=32,
+		MAX_BOOTKEY_READ=16, // MX's system ROM only reads pad twice during the boot process.  If it is read 16 times, should be safe to disarm boot key mode.
 	};
 
 	enum
@@ -145,7 +146,14 @@ public:
 		void Reset(void);
 	};
 
+	class Variable
+	{
+	public:
+		int bootKeyReadCount=0;
+	};
+
 	State state;
+	Variable var;
 
 	static unsigned int EmulationTypeToDeviceType(unsigned int emulationType);
 

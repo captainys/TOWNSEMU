@@ -723,6 +723,7 @@ void TownsGamePort::SetBootKeyCombination(unsigned int keyComb)
 	   BOOT_KEYCOMB_NONE==keyComb)
 	{
 		state.bootKeyComb=keyComb;
+		var.bootKeyReadCount=MAX_BOOTKEY_READ;
 	}
 }
 
@@ -790,6 +791,14 @@ void TownsGamePort::State::Reset(void)
 	switch(ioport)
 	{
 	case TOWNSIO_GAMEPORT_A_INPUT://        0x4D0,
+		if(0<var.bootKeyReadCount)
+		{
+			if(0==(--var.bootKeyReadCount))
+			{
+				state.bootKeyComb=BOOT_KEYCOMB_NONE;
+			}
+		}
+
 		if(BOOT_KEYCOMB_PAD_A==state.bootKeyComb)
 		{
 			return 0x2F;
