@@ -111,6 +111,146 @@ O 0
 X 
 /end
 /begin0
+T 1
+* 00000010:0000031A
+# 
+R 
+L Memory Test
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000323
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000336
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0000038F
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:000003BF
+# Diagnostic Mode 2
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:000004F9
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00000503
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:000005B8
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:000005C1
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00000607
+# 
+R 
+L Print Message (SI=Message ID)
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
 T 0
 * 00000010:00000A34
 # 
@@ -2911,6 +3051,300 @@ O 0
 X 
 /end
 /begin0
+T 1
+* 0000FC00:000001E8
+# 
+R 
+L SYSROM START POWER-ON
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:000001EC
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:000001F7
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:00000230
+# POFF bit.  (1:Power Off Reset)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:0000026E
+# SHUTDOWN bit. (1:Shut down by CPU exception)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:000002BA
+# SOFT bit (1:Reset by Software)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:000002BE
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:000002C6
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:000002CC
+# Disable CPU Cache if CMOS 31B0H is non-zero.
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:000002E1
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:000002EA
+# Unpublished I/O 610H
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:000002F0
+# Unpublished I/O 479H (Something to do with CRTC2?)
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:000002F8
+# Unpublished I/O 47AH (Something to do with CRTC2?)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:000002FF
+# Unpublished I/O 47CH (Something to do with CRTC2?)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:0000030A
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:00000310
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:00000316
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:00000328
+# Clear CVRAM
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:0000032E
+# Jump if FM-R50/60/70 (Inifinite Loop)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:0000033E
+# 
+R 
+L AH=20H:Test Check Sum
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:00000340
+# First CMOS Check-Sum Test.
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
 T 0
 * 0000FC00:0000042A
 # 
@@ -2968,6 +3402,48 @@ X
 /end
 /begin0
 T 1
+* 0000FC00:00000796
+# 
+R 
+L Initialize PIC
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:000007DD
+# 
+R 
+L Wait 3us
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:000007E4
+# 
+R 
+L Write 0FEH to CMOS 31A8H and 05H to 31AAH
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
 * 0000FC00:00000D4F
 # 
 R 
@@ -3000,6 +3476,160 @@ T 1
 # 
 R 
 L (Prob)Print message
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:0000117E
+# 
+R 
+L CMOS RAM BIOS
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:000016A9
+# Signature 4179H.  Why 4179H?
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:0000172E
+# 
+R 
+L DX=AX=inAL*10, BL=10
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:00001735
+# 
+R 
+L Read CMOS Pos=AL*10+8 (3000H+2*AL*10+8) 16bit->CX, CMOS Pos=AL*10+6 (3000H+2*AL+10+6) 16bit->AX
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:00001773
+# 
+R 
+L Read CMOS from addr 0 16bit at a time and sum up 52H times (00H to 147H/3000H to 3146H)-> AX
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:0000178C
+# 
+R 
+L Twisted CMOS checksum calculation.
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:000017DB
+# 
+R 
+L Read I/O if(DX>=1985){3000H+((inDX-1985)%2048)*2;}else{3000H+inDX*2;}
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:000017E7
+# 
+R 
+L Read 2 bytes from CMOS -> AX (DX is position in CMOS, not 3xxxH I/O address)
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:00001807
+# 
+R 
+L if(DX>=1985){AX=1+(inDX-1985)/2048;DX=3000H+((inDX-1985)%2048)*2;}else{AX=0;DX=3000H+inDX*2;}
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:0000180C
+# 7C1H=1985
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:00001885
+# 
+R 
+L Return CL=Ioread(3F82H+AX*2)
 P 
 % 0
 M 0

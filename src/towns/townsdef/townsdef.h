@@ -603,11 +603,25 @@ enum
 	TOWNSIO_CMOS_BOOT_DEV_FLAG=     0x3180, // Usage unknown
 	TOWNSIO_CMOS_DEF_BOOT_DEV_TYPE= 0x3182, // 1:HD 2:FD 8:CD
 	TOWNSIO_CMOS_DEF_BOOT_DEV_UNIT= 0x3184,
-	TOWNSIO_CMOS_FUJITSU_IN_SJIS=   0x3184, // Fujitsu in Shift-JIS Kanji
+	TOWNSIO_CMOS_16BIT_CHKSUM_3000H_TO_3146H_LOW=0x3148,
+	TOWNSIO_CMOS_16BIT_CHKSUM_3000H_TO_3146H_HIGH=0x314A,
+	TOWNSIO_CMOS_MEMSIZE_IN_MBx16_MINUS_1_HIGH=0x3188,
+	TOWNSIO_CMOS_MEMSIZE_IN_MBx16_MINUS_1_LOW=0x318A,
+	// 0x314C,0x314E MX's SYSROM compares values against 79h,41h
+	// 0x319C,0x319E used for saving SS by SYSROM
+	// 0x31A0,0x31A2 used for saving SP by SYSROM
+	// 0x31A4,0x31A6 used for saving AX by SYSROM
+	// 0x31A8 MX's SYSROM writes 0FEh
+	// 0x31AA MX's SYSROM writes 005h
+	TOWNSIO_CMOS_DISABLE_CPU_CACHE= 0x31B0, // If non-zero, MX's SYSROM disables 80486 cache.
+	TOWNSIO_CMOS_RESET_REASON=      0x31B8, // SYSROM saves I/O 20H Reset Reason.
+	// 0x31CC MX's SYSROM writes zero on power-on.
+	TOWNSIO_CMOS_FUJITSU_IN_SJIS=   0x31D0, // Fujitsu in Shift-JIS Kanji
 	TOWNSIO_CMOS_DRIVE_ASSIGN=      0x31DC, // Type (0:FD 5:ROM 2:SCSI) and Unit
 	TOWNSIO_CMOS_SINGLE_DRIVE_MODE= 0x328C, // Evil single-drive mode.
 	TOWNSIO_CMOS_ALLOC_DICT_AREA=   0x32B2,
 	TOWNSIO_CMOS_CHECKSUM_ADJUST=   0x33CE,
+	TOWNSIO_CMOS_MEMORY_SIZE_IN_MB= 0x3A5C, // Low 7 bits of I/O 05E8h is copied to this byte.
 	TOWNSIO_CMOS_SAVE_SP_LOW=       0x3A64, // SP is saved when switching to the protected mode.
 	TOWNSIO_CMOS_SAVE_SP_HIGH=      0x3A66, // SP is saved when switching to the protected mode.
 	TOWNSIO_CMOS_SAVE_SS_LOW=       0x3A68, // SS is saved when switching to the protected mode.
@@ -618,7 +632,9 @@ enum
 	TOWNSIO_CMOS_SCSI_DETECT=       0x3AC4,
 	TOWNSIO_CMOS_TBIOS_PHYSADDR=    0x3B90,
 	TOWNSIO_CMOS_SAVE_NMI_MASK=     0x3C16, // NMI Mask (I/O 28H) is saved when switching to the protected mode.
-	TOWNSIO_CMOS_FAST_PWRON_MEMTEST=0x3C1A,
+	TOWNSIO_CMOS_FAST_PWRON_MEMTEST=0x3C1A, // b0:Skip majority of memory test if set  b2:Memory Diagnostic Mode 2  b7:Test ROM,DMAC,PIT
+	TOWNSIO_CMOS_CPU_INIT_DH=       0x3C24, // Saves initial value of DH on power-on.
+	TOWNSIO_CMOS_CPU_INIT_DL=       0x3C26, // Saves initial value of DL on power-on.
 	TOWNSIO_CMOS_BOOT_DEV=          0x3C28, // 80H:CD 20H-23H:FD 10H-14H:SCSI 4AH:ICM
 	TOWNSIO_CMOS_FAST_MODE=         0x3c2A,
 
