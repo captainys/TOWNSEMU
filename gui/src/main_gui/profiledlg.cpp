@@ -1030,7 +1030,7 @@ YsString ProfileDialog::GetDefaultCDImageFileName(void)  const
 	YsString str=CDImgTxt->GetString();
 	if(0==str.Strcmp(""))
 	{
-		str=MakeUpAnyImageFileName("*.CUE");
+		str=MakeUpAnyImageFileName("default.MDS");
 	}
 	return str;
 }
@@ -1039,7 +1039,7 @@ YsString ProfileDialog::GetDefaultStateFileName(void)    const
 	YsString str=startUpStateFNameTxt->GetString();
 	if(0==str.Strcmp(""))
 	{
-		str=MakeUpAnyImageFileName("*.tstate");
+		str=MakeUpAnyImageFileName("default.tstate");
 	}
 	return str;
 }
@@ -1066,7 +1066,7 @@ YsString ProfileDialog::GetDefaultFDImageFileName(int i) const
 	}
 	if(0==str.Strcmp(""))
 	{
-		str=MakeUpAnyImageFileName("*.D77");
+		str=MakeUpAnyImageFileName("default.D77");
 	}
 	return str;
 }
@@ -1086,7 +1086,7 @@ YsString ProfileDialog::GetDefaultHDImageFileName(int i) const
 	}
 	if(0==str.Strcmp(""))
 	{
-		str=MakeUpAnyImageFileName("*.H0");
+		str=MakeUpAnyImageFileName("default.H0");
 	}
 	return str;
 }
