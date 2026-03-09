@@ -463,7 +463,7 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			if(3<=argv.size())
 			{
 				int port=cpputil::Atoi(argv[1]);
-				if(port || 1==port)
+				if(0==port || 1==port)
 				{
 					gamePort[port]=TownsStrToGamePortEmu(argv[2].c_str());
 				}
@@ -476,7 +476,10 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				int port=cpputil::Atoi(argv[1])&1;
 				int btn=cpputil::Atoi(argv[2])&1;
 				int nanosec=cpputil::Atoi(argv[3]);
-				maxButtonHoldTime[port][btn]=nanosec;
+				if(0==port || 1==port)
+				{
+					maxButtonHoldTime[port][btn]=nanosec;
+				}
 			}
 		}
 		else if(argv[0]=="SCALING_")
