@@ -3062,6 +3062,17 @@ public:
 	bool REPCheckA16(unsigned int &clocksForRep,unsigned int instPrefix);
 	bool REPCheckA32(unsigned int &clocksForRep,unsigned int instPrefix);
 
+	/*!
+	*/
+	inline unsigned int REPCounterA16(void) const
+	{
+		return GetCX();
+	}
+	inline unsigned int REPCounterA32(void) const
+	{
+		return GetECX();
+	}
+
 	/*! Check for REPE or REPNE.
 	    It returns true if the operation should be continued to the next iteration.
 	    This check must be after performing a string operation because [1] pp.26-246

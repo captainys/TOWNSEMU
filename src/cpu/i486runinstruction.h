@@ -6621,13 +6621,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					if(true!=state.exception)\
 					{\
 						UpdateESIandEDIAfterStringOpO8A##addrSize();\
-						if(INST_PREFIX_REP==prefix)\
+						if(INST_PREFIX_REP!=prefix)\
 						{\
-							EIPIncrement=0;\
-						}\
-						else\
-						{\
-							EIPIncrement=inst.numBytes;\
 							break;\
 						}\
 					}\
@@ -6639,7 +6634,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						break;\
 					}\
 					ECX=state.ECX();\
+				}\
+				if(INST_PREFIX_REP==prefix && 0!=REPCounterA##addrSize())\
+				{\
+					EIPIncrement=0;\
 				}
+
 
 			if(16==inst.addressSize)
 			{
@@ -6664,13 +6664,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					if(true!=state.exception) \
 					{ \
 						(UpdateFunc)(); \
-						if(INST_PREFIX_REP==prefix) \
+						if(INST_PREFIX_REP!=prefix) \
 						{ \
-							EIPIncrement=0; \
-						} \
-						else \
-						{ \
-							EIPIncrement=inst.numBytes; \
 							break; \
 						} \
 					} \
@@ -6682,6 +6677,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						break; \
 					} \
 					ECX=state.ECX(); \
+				}\
+				if(INST_PREFIX_REP==prefix && 0!=REPCounterA##addrSize())\
+				{\
+					EIPIncrement=0;\
 				}
 
 			clocksPassed=7;
@@ -8237,13 +8236,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					if(true!=state.exception)\
 					{\
 						UpdateDIorEDIAfterStringOpO8A##addrSize();\
-						if(INST_PREFIX_REP==prefix)\
+						if(INST_PREFIX_REP!=prefix)\
 						{\
-							EIPIncrement=0;\
-						}\
-						else\
-						{\
-							EIPIncrement=inst.numBytes;\
 							break;\
 						}\
 					}\
@@ -8255,6 +8249,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						break;\
 					}\
 					ECX=state.ECX();\
+				}\
+				if(INST_PREFIX_REP==prefix && 0!=REPCounterA##addrSize())\
+				{\
+					EIPIncrement=0;\
 				}
 
 			if(16==inst.addressSize)
@@ -8281,13 +8279,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					if(true!=state.exception) \
 					{ \
 						(UpdateFunc)(); \
-						if(INST_PREFIX_REP==prefix) \
+						if(INST_PREFIX_REP!=prefix) \
 						{ \
-							EIPIncrement=0; \
-						} \
-						else \
-						{ \
-							EIPIncrement=inst.numBytes; \
 							break; \
 						} \
 					} \
@@ -8299,6 +8292,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						break; \
 					} \
 					ECX=state.ECX(); \
+				}\
+				if(INST_PREFIX_REP==prefix && 0!=REPCounterA##addrSize())\
+				{\
+					EIPIncrement=0;\
 				}
 
 
