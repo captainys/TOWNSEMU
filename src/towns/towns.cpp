@@ -473,6 +473,11 @@ void FMTownsCommon::State::PowerOn(void)
 		}
 	}
 
+	for(int i=0; i<TOWNS_NUM_COM_PORTS; ++i)
+	{
+		towns.serialport.state.COM[i].valid=argv.COMPortEnabled[i];
+	}
+
 	if(true==argv.verbose)
 	{
 		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";
@@ -835,8 +840,42 @@ FMTownsCommon::FMTownsCommon() :
 
 	io.AddDevice(&serialport,TOWNSIO_RS232C_STATUS_COMMAND); // 0xA02, // [2] pp.269
 	io.AddDevice(&serialport,TOWNSIO_RS232C_DATA); //           0xA00, // [2] pp.274
+	io.AddDevice(&serialport,TOWNSIO_RS232C_STATUS2);
 	io.AddDevice(&serialport,TOWNSIO_RS232C_INT_REASON); //     0xA06, // [2] pp.275
 	io.AddDevice(&serialport,TOWNSIO_RS232C_INT_CONTROL); //    0xA08, // [2] pp.276
+
+	io.AddDevice(&serialport,TOWNSIO_COM1_STATUS_COMMAND);
+	io.AddDevice(&serialport,TOWNSIO_COM1_DATA);
+	io.AddDevice(&serialport,TOWNSIO_COM1_STATUS2);
+	io.AddDevice(&serialport,TOWNSIO_COM1_INT_REASON);
+	io.AddDevice(&serialport,TOWNSIO_COM1_INT_CONTROL);
+	io.AddDevice(&serialport,TOWNSIO_COM1_TIMER_COUNT);
+	io.AddDevice(&serialport,TOWNSIO_COM1_COM2_TIMER_CONTROL);
+
+	io.AddDevice(&serialport,TOWNSIO_COM2_STATUS_COMMAND);
+	io.AddDevice(&serialport,TOWNSIO_COM2_DATA);
+	io.AddDevice(&serialport,TOWNSIO_COM2_STATUS2);
+	io.AddDevice(&serialport,TOWNSIO_COM2_INT_REASON);
+	io.AddDevice(&serialport,TOWNSIO_COM2_INT_CONTROL);
+	io.AddDevice(&serialport,TOWNSIO_COM2_TIMER_COUNT);
+
+	io.AddDevice(&serialport,TOWNSIO_COM3_STATUS_COMMAND);
+	io.AddDevice(&serialport,TOWNSIO_COM3_DATA);
+	io.AddDevice(&serialport,TOWNSIO_COM3_STATUS2);
+	io.AddDevice(&serialport,TOWNSIO_COM3_INT_REASON);
+	io.AddDevice(&serialport,TOWNSIO_COM3_INT_CONTROL);
+	io.AddDevice(&serialport,TOWNSIO_COM3_TIMER_COUNT);
+	io.AddDevice(&serialport,TOWNSIO_COM3_COM4_TIMER_CONTROL);
+
+	io.AddDevice(&serialport,TOWNSIO_COM4_STATUS_COMMAND);
+	io.AddDevice(&serialport,TOWNSIO_COM4_DATA);
+	io.AddDevice(&serialport,TOWNSIO_COM4_STATUS2);
+	io.AddDevice(&serialport,TOWNSIO_COM4_INT_REASON);
+	io.AddDevice(&serialport,TOWNSIO_COM4_INT_CONTROL);
+	io.AddDevice(&serialport,TOWNSIO_COM4_TIMER_COUNT);
+
+	io.AddDevice(&serialport,TOWNSIO_COM1_4_UNKNOWN);
+
 
 	io.AddDevice(&vndrv,TOWNSIO_VNDRV_APICHECK);//       0x2F10,
 	io.AddDevice(&vndrv,TOWNSIO_VNDRV_ENABLE);//         0x2F12,

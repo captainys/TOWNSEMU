@@ -5574,7 +5574,7 @@ void TownsCommandInterpreter::Execute_XMODEMtoVM(FMTownsCommon &towns,Command &c
 		}
 		else
 		{
-			if(towns.serialport.state.intel8251.clientPtr==&towns.serialport.defaultClient)
+			if(towns.serialport.state.COM[0].intel8251.clientPtr==&towns.serialport.defaultClient)
 			{
 				towns.serialport.defaultClient.SetUpXMODEMtoVM(dat,packetLength);
 				std::cout << "Ready to send " << cmd.argv[1] << std::endl;
@@ -5595,7 +5595,7 @@ void TownsCommandInterpreter::Execute_XMODEMfromVM(FMTownsCommon &towns,Command 
 {
 	if(2<=cmd.argv.size())
 	{
-		if(towns.serialport.state.intel8251.clientPtr==&towns.serialport.defaultClient)
+		if(towns.serialport.state.COM[0].intel8251.clientPtr==&towns.serialport.defaultClient)
 		{
 			towns.serialport.defaultClient.SetUpXMODEMfromVM(towns.var.ExpandFileName(cmd.argv[1]));
 			std::cout << "Ready to receive " << cmd.argv[1] << std::endl;
@@ -5616,7 +5616,7 @@ void TownsCommandInterpreter::Execute_XMODEMCRCfromVM(FMTownsCommon &towns,Comma
 {
 	if(2<=cmd.argv.size())
 	{
-		if(towns.serialport.state.intel8251.clientPtr==&towns.serialport.defaultClient)
+		if(towns.serialport.state.COM[0].intel8251.clientPtr==&towns.serialport.defaultClient)
 		{
 			towns.serialport.defaultClient.SetUpXMODEMCRCfromVM(towns.var.ExpandFileName(cmd.argv[1]));
 			std::cout << "Ready to receive " << cmd.argv[1] << std::endl;

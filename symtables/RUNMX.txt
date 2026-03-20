@@ -994,6 +994,20 @@ X
 /end
 /begin0
 T 1
+* 000007C3:00000951
+# 
+R 
+L Reset i8251
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
 * 000007C3:000009E0
 # 
 R 
@@ -1030,6 +1044,90 @@ P
 % 0
 M 0
 B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 000007C3:00000A1A
+# 
+R 
+L Reset and Detect i8251
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000A26
+# TxE|TxRDY
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000A38
+# TxE=1, TxRDY=0
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 000007C3:00000A5A
+# 
+R 
+L Write Data to i8251, wait 10us, and read i8251 Status to AL and AH
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 000007C3:00000A65
+# 
+R 
+L Read from i8251 Status Register (0??2H) -> AL and AH
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 000007C3:00000A6C
+# 
+R 
+L Write AL to i8251 Command Register
+P 
+% 0
+M 0
+B 0
 A 0
 O 0
 X 

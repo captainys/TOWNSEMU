@@ -6,6 +6,7 @@
 #include "i8251.h"
 #include "i8251tosocket.h"
 #include "device.h"
+#include "townsdef.h"
 
 
 
@@ -36,12 +37,19 @@ public:
 		INTENABLE_CI=0x10,
 	};
 
-	class State
+	class COMPort
 	{
 	public:
+		bool valid=false;
 		i8251 intel8251;
 		unsigned char INTEnableBits=0;
 		bool INTbyTxRDY_RxRDY_SYNDET=false;
+	};
+
+	class State
+	{
+	public:
+		COMPort COM[TOWNS_NUM_COM_PORTS];
 
 		void PowerOn(void);
 		void Reset(void);
