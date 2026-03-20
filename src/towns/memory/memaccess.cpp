@@ -738,6 +738,8 @@ TownsWaveRAMAccess::TownsWaveRAMAccess(class FMTownsCommon *townsPtr,class RF5C6
 
 /* virtual */ unsigned int TownsMartyEXROMAccess::FetchByte(unsigned int physAddr) const
 {
+	auto townsPtr=physMemPtr->townsPtr;
+	townsPtr->NotifyDiskRead();
 	return physMemPtr->martyRom[physAddr-TOWNSADDR_MARTY_ROM0_BASE];
 }
 /* virtual */ void TownsMartyEXROMAccess::StoreByte(unsigned int physAddr,unsigned char data)

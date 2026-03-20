@@ -3584,6 +3584,48 @@ X
 /end
 /begin0
 T 1
+* 0000FC00:000016CE
+# 
+R 
+L CMOS Check
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000FC00:000016D0
+# Tentative CMOS Check Error=0
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 0000FC00:000016D3
+# 
+R 
+L CMOS Check Loop for(AX=0; AX<0x10; ++AX)
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
 * 0000FC00:0000172E
 # 
 R 
