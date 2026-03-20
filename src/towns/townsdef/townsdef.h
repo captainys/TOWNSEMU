@@ -483,6 +483,41 @@ enum
 	TOWNSIO_SCSI_STATUS_CONTROL= 0xC32, // [2] pp.262
 	TOWNSIO_SCSI_WORD_TFR_AVAIL= 0xC34, // [2] pp.801
 
+	TOWNSIO_COM1_STATUS_COMMAND=0xC82, // Equivalent to [2] pp.269
+	TOWNSIO_COM1_DATA=          0xC80, // Equivalent to [2] pp.274
+	TOWNSIO_COM1_STATUS2=       0xC84, // Equivalent to FM TOWNS Techincal Databook p.20
+	TOWNSIO_COM1_INT_REASON=    0xC86, // Equivalent to [2] pp.275
+	TOWNSIO_COM1_INT_CONTROL=   0xC88, // Equivalent to [2] pp.276
+	TOWNSIO_COM1_TIMER_COUNT=   0xCA0,
+	TOWNSIO_COM1_TIMER_CONTROL= 0xCA6,
+
+	TOWNSIO_COM2_STATUS_COMMAND=0xC92, // Equivalent to [2] pp.269
+	TOWNSIO_COM2_DATA=          0xC90, // Equivalent to [2] pp.274
+	TOWNSIO_COM2_STATUS2=       0xC94, // Equivalent to FM TOWNS Techincal Databook p.20
+	TOWNSIO_COM2_INT_REASON=    0xC96, // Equivalent to [2] pp.275
+	TOWNSIO_COM2_INT_CONTROL=   0xC98, // Equivalent to [2] pp.276
+	TOWNSIO_COM2_TIMER_COUNT=   0xCA2,
+	TOWNSIO_COM2_TIMER_CONTROL= 0xCA6,
+
+	TOWNSIO_COM3_STATUS_COMMAND=0xCC2, // Equivalent to [2] pp.269
+	TOWNSIO_COM3_DATA=          0xCC0, // Equivalent to [2] pp.274
+	TOWNSIO_COM3_STATUS2=       0xCC4, // Equivalent to FM TOWNS Techincal Databook p.20
+	TOWNSIO_COM3_INT_REASON=    0xCC6, // Equivalent to [2] pp.275
+	TOWNSIO_COM3_INT_CONTROL=   0xCC8, // Equivalent to [2] pp.276
+	TOWNSIO_COM3_TIMER_COUNT=   0xCE0,
+	TOWNSIO_COM3_TIMER_CONTROL= 0xCE6,
+
+	TOWNSIO_COM4_STATUS_COMMAND=0xCD2, // Equivalent to [2] pp.269
+	TOWNSIO_COM4_DATA=          0xCD0, // Equivalent to [2] pp.274
+	TOWNSIO_COM4_STATUS2=       0xCD4, // Equivalent to FM TOWNS Techincal Databook p.20
+	TOWNSIO_COM4_INT_REASON=    0xCD6, // Equivalent to [2] pp.275
+	TOWNSIO_COM4_INT_CONTROL=   0xCD8, // Equivalent to [2] pp.276
+	TOWNSIO_COM4_TIMER_COUNT=   0xCE2,
+	TOWNSIO_COM4_TIMER_CONTROL= 0xCE6,
+
+	TOWNSIO_COM1_4_UNKNOWN=     0xCB0,
+
+
 
 	TOWNSIO_MIDI_CARD1_DATREG1=0x0E50,         // MIDI card(MT-402 or 403) No.1 Out port 1 datReg1 (from Linux source)
 	TOWNSIO_MIDI_CARD1_CMDREG1=0x0E51,         // MIDI card(MT-402 or 403) No.1 cmdReg1 (Linux source)
