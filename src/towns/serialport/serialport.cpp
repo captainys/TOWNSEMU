@@ -441,13 +441,13 @@ void TownsSerialPort::UpdatePIC(void)
 		port=&state.COM[1];
 		break;
 	case 0xC90:
-		port=&state.COM[1];
+		port=&state.COM[2];
 		break;
 	case 0xCC0:
-		port=&state.COM[1];
+		port=&state.COM[3];
 		break;
 	case 0xCD0:
-		port=&state.COM[1];
+		port=&state.COM[4];
 		break;
 	}
 
@@ -522,13 +522,13 @@ void TownsSerialPort::UpdatePIC(void)
 		port=&state.COM[1];
 		break;
 	case 0xC90:
-		port=&state.COM[1];
+		port=&state.COM[2];
 		break;
 	case 0xCC0:
-		port=&state.COM[1];
+		port=&state.COM[3];
 		break;
 	case 0xCD0:
-		port=&state.COM[1];
+		port=&state.COM[4];
 		break;
 	}
 

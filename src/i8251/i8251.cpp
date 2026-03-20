@@ -146,7 +146,7 @@ unsigned char i8251::VMPeekData(void) const
 void i8251::Update(long long int newVMTime)
 {
 	// TBIOS expects TxEMPTY to be 1 10us after writing data.
-	if(true==state.TxEN && state.lastTxTime+TXE_TIME_NANOSEC<newVMTime)
+	if(state.lastTxTime+TXE_TIME_NANOSEC<newVMTime)
 	{
 		state.TxEMPTY=true;
 	}
@@ -174,7 +174,7 @@ bool i8251::TxRDY(void) const
 	{
 		return state.TxRDY && clientPtr->TxRDY();
 	}
-	return false;
+	return state.TxRDY;
 }
 bool i8251::TxEMPTY(void) const
 {
