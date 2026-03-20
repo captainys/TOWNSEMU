@@ -979,6 +979,76 @@ O 0
 X 
 /end
 /begin0
+T 1
+* 000007C3:0000002A
+# 
+R 
+L RS232C BIOS
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 000007C3:000009E0
+# 
+R 
+L (Prob)RS232C BIOS Initialization
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 000007C3:000009E5
+# 
+R 
+L RS232C Detection Loop
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:000009ED
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000DAE:00000022
+# 
+R 
+L RS232C BIOS Port Table
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
 T 0
 * 00000F45:0000005A
 # IO.SYS:Initialize Real-Mode INT Vector
