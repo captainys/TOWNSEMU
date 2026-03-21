@@ -410,6 +410,17 @@ void TownsSerialPort::UpdatePIC(void)
 {
 	// It is not known which IRQ is used for expanded serial ports yet.
 	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_RS232C,state.COM[0].INTbyTxRDY_RxRDY_SYNDET);
+
+	bool extRSINT=false;
+	for(size_t i=1; i<TOWNS_NUM_COM_PORTS; ++i)
+	{
+		if(state.COM[i].INTbyTxRDY_RxRDY_SYNDET)
+		{
+			extRSINT=true;
+			break;
+		}
+	}
+	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_EXT_RS232C,extRSINT);
 }
 /* virtual */ void TownsSerialPort::PowerOn(void)
 {
@@ -421,12 +432,33 @@ void TownsSerialPort::UpdatePIC(void)
 }
 /* virtual */ void TownsSerialPort::RunScheduledTask(unsigned long long int townsTime)
 {
-	state.COM[0].intel8251.Update(townsTime);
+	bool repeatSchedule=false;
+	uint64_t nearFuture=~0LL;
+	for(auto &port : state.COM)
+	{
+		if(true==port.valid)
+		{
+			port.intel8251.Update(townsTime);
+			if(0!=(port.INTEnableBits&(INTENABLE_TXRDY|INTENABLE_RXRDY|INTENABLE_SYNDET)))
+			{
+				auto schedTime=townsTime+port.intel8251.state.nanoSecondsPerByte;
+				if(true!=repeatSchedule)
+				{
+					nearFuture=schedTime;
+				}
+				else
+				{
+					nearFuture=std::min(schedTime,nearFuture);
+				}
+				repeatSchedule=true;
+			}
+		}
+	}
 	state.UpdateINTState();
 	UpdatePIC();
-	if(0!=(state.COM[0].INTEnableBits&(INTENABLE_TXRDY|INTENABLE_RXRDY|INTENABLE_SYNDET)))
+	if(true==repeatSchedule)
 	{
-		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+state.COM[0].intel8251.state.nanoSecondsPerByte);
+		townsPtr->ScheduleDeviceCallBack(*this,nearFuture);
 	}
 }
 /* virtual */ void TownsSerialPort::IOWriteByte(unsigned int ioport,unsigned int data)
@@ -567,7 +599,7 @@ void TownsSerialPort::UpdatePIC(void)
 		{
 			state.UpdateINTState();
 			uint8_t data=0xF8;
-			if(0!=port->INTbyTxRDY_RxRDY_SYNDET)
+			if(true==port->INTbyTxRDY_RxRDY_SYNDET)
 			{
 				data|=1;
 			}
@@ -587,7 +619,21 @@ void TownsSerialPort::UpdatePIC(void)
 	case TOWNSIO_COM3_TIMER_COUNT: //   0xCE0,
 	case TOWNSIO_COM4_TIMER_COUNT: //   0xCE2,
 	case TOWNSIO_COM3_COM4_TIMER_CONTROL: // 0xCE6,
+		break;
+
 	case TOWNSIO_COM1_4_INT_SOURCE: //     0xCB0,
+		{
+			uint8_t data=0xFF,xorPattern=1;
+			for(int i=1; i<TOWNS_NUM_COM_PORTS; ++i)
+			{
+				if(true==state.COM[i].valid && true==state.COM[i].INTbyTxRDY_RxRDY_SYNDET)
+				{
+					data^=xorPattern;
+				}
+				xorPattern<<=1;
+			}
+			return data;
+		}
 		break;
 	}
 	return 0xff;
