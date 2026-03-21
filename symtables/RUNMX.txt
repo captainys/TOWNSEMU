@@ -994,6 +994,20 @@ X
 /end
 /begin0
 T 1
+* 000007C3:00000697
+# 
+R 
+L Handle COM1-COM4 INT (SI=port info)
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
 * 000007C3:00000951
 # 
 R 
@@ -1133,11 +1147,333 @@ O 0
 X 
 /end
 /begin0
+T 0
+* 000007C3:00000AE0
+# AL=COM INT Reason (I/O 0??6H)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000AE5
+# Jump if CI,CS,RSINT are all zero.
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000AEC
+# Jump if not RSINT
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000AF1
+# AL=RS232C Status (0??2H)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000AF2
+# SYNDET?
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000AFE
+# RxRDY?
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 000007C3:00000BAB
+# 
+R 
+L Handle COM1-4 Interrupt
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BB0
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BB6
+# Bit Shift because b0 is for COM0
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BBC
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BC3
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BCA
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BD5
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BDC
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BE1
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BE6
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BEB
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BF0
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
 T 1
 * 00000DAE:00000022
 # 
 R 
 L RS232C BIOS Port Table
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000DAE:0000002D
+# 
+R 
+L COM0 Info
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000DAE:00000072
+# 
+R 
+L COM1 Info
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000DAE:000000B7
+# 
+R 
+L COM2 Info
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000DAE:000000FC
+# 
+R 
+L COM3 Info
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000DAE:00000141
+# 
+R 
+L COM4 Info
 P 
 % 0
 M 0
@@ -2569,6 +2905,20 @@ L Getting info from SysService INT AFH AH=FCH
 P 
 % 0
 M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000040CA:00000DFE
+# 
+R 
+L 
+P 
+% 0
+M 1
 B 0
 A 0
 O 0

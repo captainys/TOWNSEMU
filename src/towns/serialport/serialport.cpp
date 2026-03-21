@@ -506,7 +506,7 @@ void TownsSerialPort::UpdatePIC(void)
 	case TOWNSIO_COM3_TIMER_COUNT: //   0xCE0,
 	case TOWNSIO_COM4_TIMER_COUNT: //   0xCE2,
 	case TOWNSIO_COM3_COM4_TIMER_CONTROL: // 0xCE6,
-	case TOWNSIO_COM1_4_UNKNOWN: //     0xCB0,
+	case TOWNSIO_COM1_4_INT_SOURCE: //     0xCB0,
 		break;
 	}
 }
@@ -563,6 +563,16 @@ void TownsSerialPort::UpdatePIC(void)
 	case TOWNSIO_COM2_INT_REASON: //    0xC86, // Equivalent to [2] pp.275
 	case TOWNSIO_COM3_INT_REASON: //    0xC86, // Equivalent to [2] pp.275
 	case TOWNSIO_COM4_INT_REASON: //    0xC86, // Equivalent to [2] pp.275
+		if(nullptr!=port && true==port->valid)
+		{
+			state.UpdateINTState();
+			uint8_t data=0xF8;
+			if(0!=port->INTbyTxRDY_RxRDY_SYNDET)
+			{
+				data|=1;
+			}
+			return data;
+		}
 		break;
 	case TOWNSIO_RS232C_INT_CONTROL:
 	case TOWNSIO_COM1_INT_CONTROL: //   0xC88, // Equivalent to [2] pp.276
@@ -577,7 +587,7 @@ void TownsSerialPort::UpdatePIC(void)
 	case TOWNSIO_COM3_TIMER_COUNT: //   0xCE0,
 	case TOWNSIO_COM4_TIMER_COUNT: //   0xCE2,
 	case TOWNSIO_COM3_COM4_TIMER_CONTROL: // 0xCE6,
-	case TOWNSIO_COM1_4_UNKNOWN: //     0xCB0,
+	case TOWNSIO_COM1_4_INT_SOURCE: //     0xCB0,
 		break;
 	}
 	return 0xff;

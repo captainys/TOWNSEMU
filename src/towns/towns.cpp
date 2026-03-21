@@ -874,7 +874,7 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(&serialport,TOWNSIO_COM4_INT_CONTROL);
 	io.AddDevice(&serialport,TOWNSIO_COM4_TIMER_COUNT);
 
-	io.AddDevice(&serialport,TOWNSIO_COM1_4_UNKNOWN);
+	io.AddDevice(&serialport,TOWNSIO_COM1_4_INT_SOURCE);
 
 
 	io.AddDevice(&vndrv,TOWNSIO_VNDRV_APICHECK);//       0x2F10,
