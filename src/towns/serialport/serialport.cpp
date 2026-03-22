@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 #include <ctype.h>
 #include <iostream>
+#include <algorithm>
 
 #include "serialport.h"
 #include "townsdef.h"
@@ -452,7 +453,7 @@ void TownsSerialPort::UpdatePIC(void)
 				}
 				else
 				{
-					nearFuture=std::min(schedTime,nearFuture);
+					nearFuture=std::min<uint64_t>(schedTime,nearFuture);
 				}
 				repeatSchedule=true;
 			}
