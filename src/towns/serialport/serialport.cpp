@@ -358,11 +358,15 @@ TownsSerialPort::TownsSerialPort(class FMTownsCommon *townsPtr) : Device(townsPt
 {
 	this->townsPtr=townsPtr;
 	state.COM[0].valid=true;
-	state.COM[0].intel8251.clientPtr=&defaultClient;
+	state.COM[0].intel8251.clientPtr=&defaultClient[0];
 	state.COM[1].valid=false;
+	state.COM[1].intel8251.clientPtr=&defaultClient[1];
 	state.COM[2].valid=false;
+	state.COM[2].intel8251.clientPtr=&defaultClient[2];
 	state.COM[3].valid=false;
+	state.COM[3].intel8251.clientPtr=&defaultClient[3];
 	state.COM[4].valid=false;
+	state.COM[4].intel8251.clientPtr=&defaultClient[4];
 }
 bool TownsSerialPort::ConnectSocketClient(std::string serverAddr)
 {
@@ -403,7 +407,7 @@ void TownsSerialPort::DisconnectSocketClient(void)
 	{
 		socketClient.Disconnect();
 		socketClient.Terminate();
-		state.COM[0].intel8251.clientPtr=&defaultClient;
+		state.COM[0].intel8251.clientPtr=&defaultClient[0];
 	}
 }
 void TownsSerialPort::UpdatePIC(void)

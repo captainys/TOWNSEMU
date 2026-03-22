@@ -98,7 +98,7 @@ public:
 	};
 
 	State state;
-	DefaultClient defaultClient;
+	DefaultClient defaultClient[TOWNS_NUM_COM_PORTS];
 	i8251toSocketClient socketClient;
 
 	TownsSerialPort(class FMTownsCommon *townsPtr);
