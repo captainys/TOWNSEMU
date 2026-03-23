@@ -210,6 +210,12 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["XMODEMFROMVM"]=CMD_XMODEM_FROM_VM;
 	primaryCmdMap["XMODEMCRCFROMVM"]=CMD_XMODEMCRC_FROM_VM;
 
+	primaryCmdMap["XMCLR"]=CMD_XMODEM_CLEAR;
+	primaryCmdMap["XMSEND"]=CMD_XMODEM_TO_VM;
+	primaryCmdMap["XM1KSEND"]=CMD_XMODEM1K_TO_VM;
+	primaryCmdMap["XMRECV"]=CMD_XMODEM_FROM_VM;
+	primaryCmdMap["XMCRCRECV"]=CMD_XMODEMCRC_FROM_VM;
+
 	primaryCmdMap["RSTCP"]=CMD_RS232C_TO_TCP;
 	primaryCmdMap["DRSTCP"]=CMD_DISCONNECT_TCP;
 
@@ -459,18 +465,22 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Disconnect RS232C (COM0) to TCP/IP forwading." << std::endl;
 
 	std::cout << "XMODEMTOVM filename" << std::endl;
+	std::cout << "XMSEND filename\n";
 	std::cout << "  File transfer to the VM with XMODEM.  Type this command first," << std::endl;
 	std::cout << "  then start XMODEM in FM TOWNS application." << std::endl;
 	std::cout << "  You can add -COM0, -COM1, ..., -COM4 to specify the port number after the filename\n";
 	std::cout << "XMODEMFROMVM filename" << std::endl;
+	std::cout << "XMRECV filename\n";
 	std::cout << "  File transfer from the VM with XMODEM (CheckSum).  Start XMODEM in FM TOWNS application," << std::endl;
 	std::cout << "  and then type this command." << std::endl;
 	std::cout << "  You can add -COM0, -COM1, ..., -COM4 to specify the port number after the filename\n";
 	std::cout << "XMODEMCRCFROMVM filename" << std::endl;
+	std::cout << "XMCRCRECV filename\n";
 	std::cout << "  File transfer from the VM with XMODEM (CRC).  Start XMODEM in FM TOWNS application," << std::endl;
 	std::cout << "  and then type this command." << std::endl;
 	std::cout << "  You can add -COM0, -COM1, ..., -COM4 to specify the port number after the filename\n";
 	std::cout << "XMODEMCLR" << std::endl;
+	std::cout << "XMCLR\n";
 	std::cout << "  Cancel XMODEM file transfer." << std::endl;
 
 	std::cout << "T" << std::endl;
@@ -5592,6 +5602,7 @@ void TownsCommandInterpreter::Execute_XMODEMtoVM(FMTownsCommon &towns,Command &c
 		{
 			if(towns.serialport.state.COM[port].intel8251.clientPtr==&towns.serialport.defaultClient[port])
 			{
+				towns.serialport.defaultClient[port].ClearXMODEM();
 				towns.serialport.defaultClient[port].SetUpXMODEMtoVM(dat,packetLength);
 				std::cout << "Ready to send " << cmd.argv[1] << std::endl;
 				std::cout << "Start XMODEM in FM TOWNS!" << std::endl;
@@ -5623,7 +5634,10 @@ void TownsCommandInterpreter::Execute_XMODEMfromVM(FMTownsCommon &towns,Command 
 		}
 		if(towns.serialport.state.COM[port].intel8251.clientPtr==&towns.serialport.defaultClient[port])
 		{
+			towns.serialport.defaultClient[port].ClearXMODEM();
 			towns.serialport.defaultClient[port].SetUpXMODEMfromVM(towns.var.ExpandFileName(cmd.argv[1]));
+			towns.serialport.state.UpdateINTState();
+			towns.serialport.UpdatePIC();
 			std::cout << "Ready to receive " << cmd.argv[1] << std::endl;
 			std::cout << "(XMODEM upload must be started before this command in FM TOWNS)" << std::endl;
 		}
@@ -5655,6 +5669,8 @@ void TownsCommandInterpreter::Execute_XMODEMCRCfromVM(FMTownsCommon &towns,Comma
 		if(towns.serialport.state.COM[port].intel8251.clientPtr==&towns.serialport.defaultClient[port])
 		{
 			towns.serialport.defaultClient[port].SetUpXMODEMCRCfromVM(towns.var.ExpandFileName(cmd.argv[1]));
+			towns.serialport.state.UpdateINTState();
+			towns.serialport.UpdatePIC();
 			std::cout << "Ready to receive " << cmd.argv[1] << std::endl;
 			std::cout << "(XMODEM upload must be started before this command in FM TOWNS)" << std::endl;
 		}
