@@ -4200,6 +4200,20 @@ X
 /end
 /begin0
 T 1
+* 0000FC00:00001EB8
+# 
+R 
+L Disk BIOS Equivalent
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
 * 0000FC00:00002898
 # 
 R 
