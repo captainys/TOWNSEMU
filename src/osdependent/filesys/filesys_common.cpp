@@ -210,7 +210,7 @@ bool FileSys::SubPathIsDirectory(std::string subPath) // subPath is in Shift-JIS
 	DeleteFindContext(findContext);
 	return 0!=(dirent.attr&ATTR_DIR);
 }
-int FileSys::OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int openMode)
+int FileSys::OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int openMode,uint16_t DOSSFTSEG,uint16_t DOSSFTOFF)
 {
 	auto sftIdx=FindAvailableSFT();
 	if(0<=sftIdx)
@@ -230,6 +230,9 @@ int FileSys::OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int 
 		sft[sftIdx].fName=subPath;
 		sft[sftIdx].mode=openMode;
 		sft[sftIdx].PSP=PSP;
+		sft[sftIdx].DOSSFTSEG=DOSSFTSEG;
+		sft[sftIdx].DOSSFTOFF=DOSSFTOFF;
+		sft[sftIdx].subPath=subPath;
 		switch(openMode)
 		{
 		case OPENMODE_READ:
@@ -251,7 +254,7 @@ int FileSys::OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int 
 	}
 	return -1;
 }
-int FileSys::OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned int openMode)
+int FileSys::OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned int openMode,uint16_t DOSSFTSEG,uint16_t DOSSFTOFF)
 {
 	auto sftIdx=FindAvailableSFT();
 	if(0<=sftIdx)
@@ -272,6 +275,9 @@ int FileSys::OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned i
 		sft[sftIdx].fName=subPath;
 		sft[sftIdx].mode=openMode;
 		sft[sftIdx].PSP=PSP;
+		sft[sftIdx].DOSSFTSEG=DOSSFTSEG;
+		sft[sftIdx].DOSSFTOFF=DOSSFTOFF;
+		sft[sftIdx].subPath=subPath;
 		switch(openMode)
 		{
 		case OPENMODE_READ:
@@ -290,7 +296,7 @@ int FileSys::OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned i
 	}
 	return -1;
 }
-int FileSys::OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int openMode)
+int FileSys::OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int openMode,uint16_t DOSSFTSEG,uint16_t DOSSFTOFF)
 {
 	if(OPENMODE_READ==openMode)
 	{
@@ -316,7 +322,10 @@ int FileSys::OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int 
 		sft[sftIdx].fName=subPath;
 		sft[sftIdx].mode=openMode;
 		sft[sftIdx].PSP=PSP;
+		sft[sftIdx].DOSSFTSEG=DOSSFTSEG;
+		sft[sftIdx].DOSSFTOFF=DOSSFTOFF;
 		sft[sftIdx].fp.open(fullPath,std::ios::in|std::ios::out|std::ios::trunc|std::ios::binary);
+		sft[sftIdx].subPath=subPath;
 
 		if(true==sft[sftIdx].fp.is_open())
 		{

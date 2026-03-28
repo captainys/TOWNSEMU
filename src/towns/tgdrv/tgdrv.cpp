@@ -807,10 +807,12 @@ bool TownsTgDrv::Int2F_1116_OpenExistingFile(void)
 		{
 			mode=FileSys::OPENMODE_RW;
 		}
-		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenExistingFile(FetchPSP(),subPath,mode);
+		auto &ES=townsPtr->CPU().state.ES();
+		auto DI=townsPtr->CPU().state.DI();
+		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenExistingFile(FetchPSP(),subPath,mode,ES.value,DI);
 		if(0<=hostSFTIdx)
 		{
-			MakeVMSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
+			MakeVMSFT(ES,DI,driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
 			townsPtr->CPU().SetCF(false);
 		}
 		else
@@ -850,10 +852,12 @@ bool TownsTgDrv::Int2F_1117_CreateOrTruncate(void)
 		// Cannot figure the meaning of high-byte of mode.
 		//   0000=Normal Create and 0100=Truncate?  What's the difference?
 
-		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenFileTruncate(FetchPSP(),subPath,FileSys::OPENMODE_RW);
+		auto &ES=townsPtr->CPU().state.ES();
+		auto DI=townsPtr->CPU().state.DI();
+		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenFileTruncate(FetchPSP(),subPath,FileSys::OPENMODE_RW,ES.value,DI);
 		if(0<=hostSFTIdx)
 		{
-			MakeVMSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
+			MakeVMSFT(ES,DI,driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
 			townsPtr->CPU().SetCF(false);
 		}
 
@@ -1044,6 +1048,27 @@ bool TownsTgDrv::Int2F_111D_CloseAll(void)
 	auto PSP=FetchPSP();
 	for(auto &fs : sharedDir)
 	{
+		for(auto &sft : fs.sft)
+		{
+			if(true==sft.fp.is_open() && PSP==sft.PSP)
+			{
+				if(true==monitor)
+				{
+					std::cout << "Close " << sft.subPath << "\n";
+				}
+				i486DXCommon::SegmentRegister ES;
+				townsPtr->CPU().DebugLoadSegmentRegister(ES,
+					sft.DOSSFTSEG,
+					townsPtr->mem,
+					townsPtr->CPU().state.mode);
+				townsPtr->CPU().RedirectStoreWord(
+				    townsPtr->mem,
+				    townsPtr->CPU().state.CS().addressSize,
+				    ES,
+				    sft.DOSSFTOFF,
+				    0);
+			}
+		}
 		fs.CloseAllForPSP(PSP);
 	}
 	return false; // Must continue to the next INT 2F device.  Don't take the ownership.
@@ -1076,6 +1101,8 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 	if(0<=sharedDirIdx)
 	{
 		townsPtr->CPU().SetCF(true); // Tentative
+		auto &ES=townsPtr->CPU().state.ES();
+		auto DI=townsPtr->CPU().state.DI();
 
 		// This function is not supposed to be called from DOS 3.x
 
@@ -1148,7 +1175,7 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 			}
 			else if(0x10==(openAction&0xF0))
 			{
-				hostSFTIdx=sharedDir[sharedDirIdx].OpenFileNotTruncate(FetchPSP(),subPath,openMode&7);
+				hostSFTIdx=sharedDir[sharedDirIdx].OpenFileNotTruncate(FetchPSP(),subPath,openMode&7,ES.value,DI);
 				CX=2;
 			}
 			else
@@ -1171,12 +1198,12 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 			}
 			else if(1==(openAction&0x0F))
 			{
-				hostSFTIdx=sharedDir[sharedDirIdx].OpenExistingFile(FetchPSP(),subPath,openMode&7);
+				hostSFTIdx=sharedDir[sharedDirIdx].OpenExistingFile(FetchPSP(),subPath,openMode&7,ES.value,DI);
 				CX=1;
 			}
 			else if(2==(openAction&0x0F))
 			{
-				hostSFTIdx=sharedDir[sharedDirIdx].OpenFileTruncate(FetchPSP(),subPath,openMode&7);
+				hostSFTIdx=sharedDir[sharedDirIdx].OpenFileTruncate(FetchPSP(),subPath,openMode&7,ES.value,DI);
 				CX=3;
 			}
 			else
@@ -1188,7 +1215,7 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 
 		if(0<=hostSFTIdx)
 		{
-			MakeVMSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
+			MakeVMSFT(ES,DI,driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
 			ReturnCX(CX);
 			townsPtr->CPU().SetCF(false);
 		}
