@@ -1384,7 +1384,7 @@ void TownsTgDrv::MakeVMSFT(const class i486DXCommon::SegmentRegister &seg,uint32
 		cpu.RedirectStoreByte(mem,CS.addressSize,seg,offset+0x20+i,eleven[i]);
 	}
 
-	cpu.RedirectStoreByte(mem,CS.addressSize,seg,offset+0x31,FetchPSP());
+	cpu.RedirectStoreWord(mem,CS.addressSize,seg,offset+0x31,FetchPSP());
 }
 void TownsTgDrv::MakeDOSDirEnt(uint32_t DTABuffer,const FileSys::DirectoryEntry &dirent)
 {
