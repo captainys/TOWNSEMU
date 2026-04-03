@@ -189,7 +189,9 @@ public:
 	public:
 		unsigned int mode=0;
 		unsigned int PSP=0;
+		unsigned int DOSSFTSEG,DOSSFTOFF;
 		std::fstream fp;
+		std::string subPath;
 		bool IsOpen(void) const;
 		const uint32_t GetFileSize(void); // Can't be const.  seekg is a modifier.
 		const uint32_t GetFilePointer(void); // Can't be const.  tellg is a modifier.  Seriously?
@@ -206,9 +208,9 @@ public:
 	    subPath is relative to the virtual drive in the VM,
 	    relative to the shared directory in the host.
 	*/
-	int OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int openMode);
-	int OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned int openMode);
-	int OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int openMode);
+	int OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int openMode,uint16_t DOSSFTSEG,uint16_t DOSSFTOFF);
+	int OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned int openMode,uint16_t DOSSFTSEG,uint16_t DOSSFTOFF);
+	int OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int openMode,uint16_t DOSSFTSEG,uint16_t DOSSFTOFF);
 
 	bool CheckFileExist(std::string subPath);
 

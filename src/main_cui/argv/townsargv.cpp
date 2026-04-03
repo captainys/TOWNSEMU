@@ -166,6 +166,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-ICMUP" << std::endl;
 	std::cout << "-JEIDA4UP" << std::endl;
 	std::cout << "  Write un-protect memory card." << std::endl;
+	std::cout << "-COMn\n";
+	std::cout << "  Enable COMn.  COM0 is enabled by default. 1<=n<=4\n";
 	std::cout << "-GAMEPORT0 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "-GAMEPORT1 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "  Specify game-port emulation.  By keyboard (Arrow,Z,X,A,S), or physical gamepad." << std::endl;
@@ -1119,6 +1121,26 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			customMouseY=argv[i+1];
 			++i;
+		}
+		else if("-COM0"==ARG)
+		{
+			// Do nothing.
+		}
+		else if("-COM1"==ARG)
+		{
+			COMPortEnabled[1]=true;
+		}
+		else if("-COM2"==ARG)
+		{
+			COMPortEnabled[2]=true;
+		}
+		else if("-COM3"==ARG)
+		{
+			COMPortEnabled[3]=true;
+		}
+		else if("-COM4"==ARG)
+		{
+			COMPortEnabled[4]=true;
 		}
 		else if("-MOSCAPTIME"==ARG && i+1<argc)
 		{

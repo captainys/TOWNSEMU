@@ -129,6 +129,8 @@ public:
 
 	std::vector <std::string> initCmd;
 
+	bool COMPortEnabled[TOWNS_NUM_COM_PORTS]={true,false,false,false,false};
+
 
 	// When adding a throttle control for an app, also update Outside_World::CacheGamePadIndicesThatNeedUpdates.
 	int throttlePhysicalId=-1;

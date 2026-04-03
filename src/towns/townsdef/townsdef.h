@@ -489,7 +489,7 @@ enum
 	TOWNSIO_COM1_INT_REASON=    0xC86, // Equivalent to [2] pp.275
 	TOWNSIO_COM1_INT_CONTROL=   0xC88, // Equivalent to [2] pp.276
 	TOWNSIO_COM1_TIMER_COUNT=   0xCA0,
-	TOWNSIO_COM1_TIMER_CONTROL= 0xCA6,
+	TOWNSIO_COM1_COM2_TIMER_CONTROL= 0xCA6,
 
 	TOWNSIO_COM2_STATUS_COMMAND=0xC92, // Equivalent to [2] pp.269
 	TOWNSIO_COM2_DATA=          0xC90, // Equivalent to [2] pp.274
@@ -497,7 +497,6 @@ enum
 	TOWNSIO_COM2_INT_REASON=    0xC96, // Equivalent to [2] pp.275
 	TOWNSIO_COM2_INT_CONTROL=   0xC98, // Equivalent to [2] pp.276
 	TOWNSIO_COM2_TIMER_COUNT=   0xCA2,
-	TOWNSIO_COM2_TIMER_CONTROL= 0xCA6,
 
 	TOWNSIO_COM3_STATUS_COMMAND=0xCC2, // Equivalent to [2] pp.269
 	TOWNSIO_COM3_DATA=          0xCC0, // Equivalent to [2] pp.274
@@ -505,7 +504,7 @@ enum
 	TOWNSIO_COM3_INT_REASON=    0xCC6, // Equivalent to [2] pp.275
 	TOWNSIO_COM3_INT_CONTROL=   0xCC8, // Equivalent to [2] pp.276
 	TOWNSIO_COM3_TIMER_COUNT=   0xCE0,
-	TOWNSIO_COM3_TIMER_CONTROL= 0xCE6,
+	TOWNSIO_COM3_COM4_TIMER_CONTROL= 0xCE6,
 
 	TOWNSIO_COM4_STATUS_COMMAND=0xCD2, // Equivalent to [2] pp.269
 	TOWNSIO_COM4_DATA=          0xCD0, // Equivalent to [2] pp.274
@@ -513,9 +512,8 @@ enum
 	TOWNSIO_COM4_INT_REASON=    0xCD6, // Equivalent to [2] pp.275
 	TOWNSIO_COM4_INT_CONTROL=   0xCD8, // Equivalent to [2] pp.276
 	TOWNSIO_COM4_TIMER_COUNT=   0xCE2,
-	TOWNSIO_COM4_TIMER_CONTROL= 0xCE6,
 
-	TOWNSIO_COM1_4_UNKNOWN=     0xCB0,
+	TOWNSIO_COM1_4_INT_SOURCE=  0xCB0, // Active-Low  b0:COM1 b1:COM2 b2:COM3 b4:COM4
 
 
 
@@ -656,6 +654,8 @@ enum
 	TOWNSIO_CMOS_SINGLE_DRIVE_MODE= 0x328C, // Evil single-drive mode.
 	TOWNSIO_CMOS_ALLOC_DICT_AREA=   0x32B2,
 	TOWNSIO_CMOS_CHECKSUM_ADJUST=   0x33CE,
+	TOWNSIO_CMOS_VERBOSE_INIT_MSG_R=    0x3A34, // Writing 'R' and 'A' to these I/O will enable verbose initialization message during boot.
+	TOWNSIO_CMOS_VERBOSE_INIT_MSG_A=    0x3A36,
 	TOWNSIO_CMOS_MEMORY_SIZE_IN_MB= 0x3A5C, // Low 7 bits of I/O 05E8h is copied to this byte.
 	TOWNSIO_CMOS_SAVE_SP_LOW=       0x3A64, // SP is saved when switching to the protected mode.
 	TOWNSIO_CMOS_SAVE_SP_HIGH=      0x3A66, // SP is saved when switching to the protected mode.
@@ -667,7 +667,7 @@ enum
 	TOWNSIO_CMOS_SCSI_DETECT=       0x3AC4,
 	TOWNSIO_CMOS_TBIOS_PHYSADDR=    0x3B90,
 	TOWNSIO_CMOS_SAVE_NMI_MASK=     0x3C16, // NMI Mask (I/O 28H) is saved when switching to the protected mode.
-	TOWNSIO_CMOS_FAST_PWRON_MEMTEST=0x3C1A, // b0:Skip majority of memory test if set  b2:Memory Diagnostic Mode 2  b7:Test ROM,DMAC,PIT
+	TOWNSIO_CMOS_FAST_PWRON_MEMTEST=0x3C1A, // b0:Skip majority of memory test if set  b1:Skip ALL memory test if set  b2:Memory Diagnostic Mode 2  b7:Test ROM,DMAC,PIT
 	TOWNSIO_CMOS_CPU_INIT_DH=       0x3C24, // Saves initial value of DH on power-on.
 	TOWNSIO_CMOS_CPU_INIT_DL=       0x3C26, // Saves initial value of DL on power-on.
 	TOWNSIO_CMOS_BOOT_DEV=          0x3C28, // 80H:CD 20H-23H:FD 10H-14H:SCSI 4AH:ICM
@@ -1271,6 +1271,8 @@ enum
 {
 	TOWNS_CMOSRAM_FASTMODE_FLAG     =0x615, // I/O 3C2Ah
 };
+
+#define TOWNS_NUM_COM_PORTS 5
 
 /* } */
 #endif

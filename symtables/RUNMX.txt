@@ -994,6 +994,34 @@ X
 /end
 /begin0
 T 1
+* 000007C3:00000697
+# 
+R 
+L Handle COM1-COM4 INT (SI=port info)
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 000007C3:00000951
+# 
+R 
+L Reset i8251
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
 * 000007C3:000009E0
 # 
 R 
@@ -1036,10 +1064,416 @@ X
 /end
 /begin0
 T 1
+* 000007C3:00000A1A
+# 
+R 
+L Reset and Detect i8251
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000A26
+# TxE|TxRDY
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000A38
+# TxE=1, TxRDY=0
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 000007C3:00000A5A
+# 
+R 
+L Write Data to i8251, wait 10us, and read i8251 Status to AL and AH
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 000007C3:00000A65
+# 
+R 
+L Read from i8251 Status Register (0??2H) -> AL and AH
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 000007C3:00000A6C
+# 
+R 
+L Write AL to i8251 Command Register
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000AE0
+# AL=COM INT Reason (I/O 0??6H)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000AE5
+# Jump if CI,CS,RSINT are all zero.
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000AEC
+# Jump if not RSINT
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000AF1
+# AL=RS232C Status (0??2H)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000AF2
+# SYNDET?
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000AFE
+# RxRDY?
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 000007C3:00000BAB
+# 
+R 
+L Handle COM1-4 Interrupt
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BB0
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BB6
+# Bit Shift because b0 is for COM0
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BBC
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BC3
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BCA
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BD5
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BDC
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BE1
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BE6
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BEB
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 000007C3:00000BF0
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
 * 00000DAE:00000022
 # 
 R 
 L RS232C BIOS Port Table
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000DAE:0000002D
+# 
+R 
+L COM0 Info
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000DAE:00000072
+# 
+R 
+L COM1 Info
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000DAE:000000B7
+# 
+R 
+L COM2 Info
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000DAE:000000FC
+# 
+R 
+L COM3 Info
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000DAE:00000141
+# 
+R 
+L COM4 Info
 P 
 % 0
 M 0
@@ -2477,6 +2911,20 @@ O 0
 X 
 /end
 /begin0
+T 0
+* 000040CA:00000DFE
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
 T 2
 * 0000AF37:00000512
 # 
@@ -3742,6 +4190,20 @@ T 1
 # 
 R 
 L Return CL=Ioread(3F82H+AX*2)
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000FC00:00001EB8
+# 
+R 
+L Disk BIOS Equivalent
 P 
 % 0
 M 0

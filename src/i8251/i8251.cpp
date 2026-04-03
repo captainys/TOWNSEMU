@@ -66,6 +66,10 @@ void i8251::VMWriteCommnand(unsigned char data)
 				clientPtr->SetDataLength(state.dataLength);
 			}
 		}
+
+		// TBIOS expects, TxE=1 and TxRDY=1 immeidately after reset.
+		state.TxEMPTY=true;
+		state.TxRDY=true;
 	}
 	else
 	{
@@ -141,6 +145,11 @@ unsigned char i8251::VMPeekData(void) const
 }
 void i8251::Update(long long int newVMTime)
 {
+	// TBIOS expects TxEMPTY to be 1 10us after writing data.
+	if(state.lastTxTime+TXE_TIME_NANOSEC<newVMTime)
+	{
+		state.TxEMPTY=true;
+	}
 	if(true==state.TxEN && state.lastTxTime+state.nanoSecondsPerByte<newVMTime)
 	{
 		state.TxRDY=true;
@@ -165,7 +174,7 @@ bool i8251::TxRDY(void) const
 	{
 		return state.TxRDY && clientPtr->TxRDY();
 	}
-	return false;
+	return state.TxRDY;
 }
 bool i8251::TxEMPTY(void) const
 {

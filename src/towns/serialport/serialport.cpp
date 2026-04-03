@@ -13,6 +13,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <ctype.h>
+#include <iostream>
+#include <algorithm>
 
 #include "serialport.h"
 #include "townsdef.h"
@@ -322,20 +324,29 @@ unsigned int TownsSerialPort::DefaultClient::XMODEM_CRC(unsigned char ptr[],unsi
 
 void TownsSerialPort::State::Reset(void)
 {
-	intel8251.Reset();
-	INTEnableBits=0;
+	for(auto &port : COM)
+	{
+		port.intel8251.Reset();
+		port.INTEnableBits=0;
+	}
 }
 void TownsSerialPort::State::PowerOn(void)
 {
-	intel8251.Reset();
-	INTEnableBits=0;
+	for(auto &port : COM)
+	{
+		port.intel8251.Reset();
+		port.INTEnableBits=0;
+	}
 }
 void TownsSerialPort::State::UpdateINTState(void)
 {
-	INTbyTxRDY_RxRDY_SYNDET=
-		(0!=(INTEnableBits&INTENABLE_TXRDY) && intel8251.TxRDY()) ||
-		(0!=(INTEnableBits&INTENABLE_RXRDY) && intel8251.RxRDY()) ||
-		(0!=(INTEnableBits&INTENABLE_SYNDET) && intel8251.SYNDET());
+	for(auto &port : COM)
+	{
+		port.INTbyTxRDY_RxRDY_SYNDET=
+			(0!=(port.INTEnableBits&INTENABLE_TXRDY) &&  port.intel8251.TxRDY()) ||
+			(0!=(port.INTEnableBits&INTENABLE_RXRDY) &&  port.intel8251.RxRDY()) ||
+			(0!=(port.INTEnableBits&INTENABLE_SYNDET) && port.intel8251.SYNDET());
+	}
 }
 
 
@@ -347,7 +358,16 @@ void TownsSerialPort::State::UpdateINTState(void)
 TownsSerialPort::TownsSerialPort(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
-	state.intel8251.clientPtr=&defaultClient;
+	state.COM[0].valid=true;
+	state.COM[0].intel8251.clientPtr=&defaultClient[0];
+	state.COM[1].valid=false;
+	state.COM[1].intel8251.clientPtr=&defaultClient[1];
+	state.COM[2].valid=false;
+	state.COM[2].intel8251.clientPtr=&defaultClient[2];
+	state.COM[3].valid=false;
+	state.COM[3].intel8251.clientPtr=&defaultClient[3];
+	state.COM[4].valid=false;
+	state.COM[4].intel8251.clientPtr=&defaultClient[4];
 }
 bool TownsSerialPort::ConnectSocketClient(std::string serverAddr)
 {
@@ -376,7 +396,7 @@ bool TownsSerialPort::ConnectSocketClient(std::string serverAddr)
 		if(YSOK==socketClient.Start(port) &&
 		   YSTRUE==socketClient.Connect(ipAddr.c_str()))
 		{
-			state.intel8251.clientPtr=&socketClient;
+			state.COM[0].intel8251.clientPtr=&socketClient;
 			return true;
 		}
 	}
@@ -388,12 +408,24 @@ void TownsSerialPort::DisconnectSocketClient(void)
 	{
 		socketClient.Disconnect();
 		socketClient.Terminate();
-		state.intel8251.clientPtr=&defaultClient;
+		state.COM[0].intel8251.clientPtr=&defaultClient[0];
 	}
 }
 void TownsSerialPort::UpdatePIC(void)
 {
-	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_RS232C,state.INTbyTxRDY_RxRDY_SYNDET);
+	// It is not known which IRQ is used for expanded serial ports yet.
+	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_RS232C,state.COM[0].INTbyTxRDY_RxRDY_SYNDET);
+
+	bool extRSINT=false;
+	for(size_t i=1; i<TOWNS_NUM_COM_PORTS; ++i)
+	{
+		if(state.COM[i].INTbyTxRDY_RxRDY_SYNDET)
+		{
+			extRSINT=true;
+			break;
+		}
+	}
+	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_EXT_RS232C,extRSINT);
 }
 /* virtual */ void TownsSerialPort::PowerOn(void)
 {
@@ -405,60 +437,208 @@ void TownsSerialPort::UpdatePIC(void)
 }
 /* virtual */ void TownsSerialPort::RunScheduledTask(unsigned long long int townsTime)
 {
-	state.intel8251.Update(townsTime);
+	bool repeatSchedule=false;
+	uint64_t nearFuture=~0LL;
+	for(auto &port : state.COM)
+	{
+		if(true==port.valid)
+		{
+			port.intel8251.Update(townsTime);
+			if(0!=(port.INTEnableBits&(INTENABLE_TXRDY|INTENABLE_RXRDY|INTENABLE_SYNDET)))
+			{
+				auto schedTime=townsTime+port.intel8251.state.nanoSecondsPerByte;
+				if(true!=repeatSchedule)
+				{
+					nearFuture=schedTime;
+				}
+				else
+				{
+					nearFuture=std::min<uint64_t>(schedTime,nearFuture);
+				}
+				repeatSchedule=true;
+			}
+		}
+	}
 	state.UpdateINTState();
 	UpdatePIC();
-	if(0!=(state.INTEnableBits&(INTENABLE_TXRDY|INTENABLE_RXRDY|INTENABLE_SYNDET)))
+	if(true==repeatSchedule)
 	{
-		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+state.intel8251.state.nanoSecondsPerByte);
+		townsPtr->ScheduleDeviceCallBack(*this,nearFuture);
 	}
 }
 /* virtual */ void TownsSerialPort::IOWriteByte(unsigned int ioport,unsigned int data)
 {
+	COMPort *port=nullptr;
+	switch(ioport&0xFF0)
+	{
+	case 0xA00:
+		port=&state.COM[0];
+		break;
+	case 0xC80:
+		port=&state.COM[1];
+		break;
+	case 0xC90:
+		port=&state.COM[2];
+		break;
+	case 0xCC0:
+		port=&state.COM[3];
+		break;
+	case 0xCD0:
+		port=&state.COM[4];
+		break;
+	}
+
 	switch(ioport)
 	{
 	case TOWNSIO_RS232C_STATUS_COMMAND://=0xA02, // [2] pp.269
-		state.intel8251.Update(townsPtr->state.townsTime);
-		state.intel8251.VMWriteCommnand(data);
-		UpdatePIC();
+	case TOWNSIO_COM1_STATUS_COMMAND: //0xC82, // Equivalent to [2] pp.269
+	case TOWNSIO_COM2_STATUS_COMMAND: //0xC82, // Equivalent to [2] pp.269
+	case TOWNSIO_COM3_STATUS_COMMAND: //0xC82, // Equivalent to [2] pp.269
+	case TOWNSIO_COM4_STATUS_COMMAND: //0xC82, // Equivalent to [2] pp.269
+		if(nullptr!=port && true==port->valid)
+		{
+			port->intel8251.Update(townsPtr->state.townsTime);
+			port->intel8251.VMWriteCommnand(data);
+			UpdatePIC();
+		}
 		break;
 	case TOWNSIO_RS232C_DATA://=          0xA00, // [2] pp.274
-		state.intel8251.VMWriteData(data,townsPtr->state.townsTime);
-		state.UpdateINTState();
-		UpdatePIC();
+	case TOWNSIO_COM1_DATA: //          0xC80, // Equivalent to [2] pp.274
+	case TOWNSIO_COM2_DATA: //          0xC80, // Equivalent to [2] pp.274
+	case TOWNSIO_COM3_DATA: //          0xC80, // Equivalent to [2] pp.274
+	case TOWNSIO_COM4_DATA: //          0xC80, // Equivalent to [2] pp.274
+		if(nullptr!=port && true==port->valid)
+		{
+			port->intel8251.VMWriteData(data,townsPtr->state.townsTime);
+			state.UpdateINTState();
+			UpdatePIC();
+		}
 		break;
 	case TOWNSIO_RS232C_INT_REASON:
+	case TOWNSIO_COM1_INT_REASON: //    0xC86, // Equivalent to [2] pp.275
+	case TOWNSIO_COM2_INT_REASON: //    0xC86, // Equivalent to [2] pp.275
+	case TOWNSIO_COM3_INT_REASON: //    0xC86, // Equivalent to [2] pp.275
+	case TOWNSIO_COM4_INT_REASON: //    0xC86, // Equivalent to [2] pp.275
 		break;
 	case TOWNSIO_RS232C_INT_CONTROL:
-		state.INTEnableBits=data;
-		state.UpdateINTState();
-		UpdatePIC();
-		if(0!=(data&(INTENABLE_TXRDY|INTENABLE_RXRDY|INTENABLE_SYNDET)))
+	case TOWNSIO_COM1_INT_CONTROL: //   0xC88, // Equivalent to [2] pp.276
+	case TOWNSIO_COM2_INT_CONTROL: //   0xC88, // Equivalent to [2] pp.276
+	case TOWNSIO_COM3_INT_CONTROL: //   0xC88, // Equivalent to [2] pp.276
+	case TOWNSIO_COM4_INT_CONTROL: //   0xC88, // Equivalent to [2] pp.276
+		if(nullptr!=port && true==port->valid)
 		{
-			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+state.intel8251.state.nanoSecondsPerByte);
+			port->INTEnableBits=data;
+			state.UpdateINTState();
+			UpdatePIC();
+			if(0!=(data&(INTENABLE_TXRDY|INTENABLE_RXRDY|INTENABLE_SYNDET)))
+			{
+				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+port->intel8251.state.nanoSecondsPerByte);
+			}
 		}
+		break;
+
+	case TOWNSIO_COM1_TIMER_COUNT: //   0xCA0,
+	case TOWNSIO_COM2_TIMER_COUNT: //   0xCA2,
+	case TOWNSIO_COM1_COM2_TIMER_CONTROL: // 0xCA6,
+	case TOWNSIO_COM3_TIMER_COUNT: //   0xCE0,
+	case TOWNSIO_COM4_TIMER_COUNT: //   0xCE2,
+	case TOWNSIO_COM3_COM4_TIMER_CONTROL: // 0xCE6,
+	case TOWNSIO_COM1_4_INT_SOURCE: //     0xCB0,
 		break;
 	}
 }
 /* virtual */ unsigned int TownsSerialPort::IOReadByte(unsigned int ioport)
 {
+	COMPort *port=nullptr;
+	switch(ioport&0xFF0)
+	{
+	case 0xA00:
+		port=&state.COM[0];
+		break;
+	case 0xC80:
+		port=&state.COM[1];
+		break;
+	case 0xC90:
+		port=&state.COM[2];
+		break;
+	case 0xCC0:
+		port=&state.COM[3];
+		break;
+	case 0xCD0:
+		port=&state.COM[4];
+		break;
+	}
+
 	switch(ioport)
 	{
 	case TOWNSIO_RS232C_STATUS_COMMAND://=0xA02, // [2] pp.269
+	case TOWNSIO_COM1_STATUS_COMMAND: //0xC82, // Equivalent to [2] pp.269
+	case TOWNSIO_COM2_STATUS_COMMAND: //0xC82, // Equivalent to [2] pp.269
+	case TOWNSIO_COM3_STATUS_COMMAND: //0xC82, // Equivalent to [2] pp.269
+	case TOWNSIO_COM4_STATUS_COMMAND: //0xC82, // Equivalent to [2] pp.269
+		if(nullptr!=port && true==port->valid)
 		{
-			state.intel8251.Update(townsPtr->state.townsTime);
-			auto data=state.intel8251.VMReadState();
+			port->intel8251.Update(townsPtr->state.townsTime);
+			auto data=port->intel8251.VMReadState();
 			state.UpdateINTState();
 			UpdatePIC();
 			return data;
 		}
 		break;
 	case TOWNSIO_RS232C_DATA://=          0xA00, // [2] pp.274
-		return state.intel8251.VMReadData(townsPtr->state.townsTime);
+	case TOWNSIO_COM1_DATA: //          0xC80, // Equivalent to [2] pp.274
+	case TOWNSIO_COM2_DATA: //          0xC80, // Equivalent to [2] pp.274
+	case TOWNSIO_COM3_DATA: //          0xC80, // Equivalent to [2] pp.274
+	case TOWNSIO_COM4_DATA: //          0xC80, // Equivalent to [2] pp.274
+		if(nullptr!=port && true==port->valid)
+		{
+			return port->intel8251.VMReadData(townsPtr->state.townsTime);
+		}
 		break;
 	case TOWNSIO_RS232C_INT_REASON:
+	case TOWNSIO_COM1_INT_REASON: //    0xC86, // Equivalent to [2] pp.275
+	case TOWNSIO_COM2_INT_REASON: //    0xC86, // Equivalent to [2] pp.275
+	case TOWNSIO_COM3_INT_REASON: //    0xC86, // Equivalent to [2] pp.275
+	case TOWNSIO_COM4_INT_REASON: //    0xC86, // Equivalent to [2] pp.275
+		if(nullptr!=port && true==port->valid)
+		{
+			state.UpdateINTState();
+			uint8_t data=0xF8;
+			if(true==port->INTbyTxRDY_RxRDY_SYNDET)
+			{
+				data|=1;
+			}
+			return data;
+		}
 		break;
 	case TOWNSIO_RS232C_INT_CONTROL:
+	case TOWNSIO_COM1_INT_CONTROL: //   0xC88, // Equivalent to [2] pp.276
+	case TOWNSIO_COM2_INT_CONTROL: //   0xC88, // Equivalent to [2] pp.276
+	case TOWNSIO_COM3_INT_CONTROL: //   0xC88, // Equivalent to [2] pp.276
+	case TOWNSIO_COM4_INT_CONTROL: //   0xC88, // Equivalent to [2] pp.276
+		break;
+
+	case TOWNSIO_COM1_TIMER_COUNT: //   0xCA0,
+	case TOWNSIO_COM2_TIMER_COUNT: //   0xCA2,
+	case TOWNSIO_COM1_COM2_TIMER_CONTROL: // 0xCA6,
+	case TOWNSIO_COM3_TIMER_COUNT: //   0xCE0,
+	case TOWNSIO_COM4_TIMER_COUNT: //   0xCE2,
+	case TOWNSIO_COM3_COM4_TIMER_CONTROL: // 0xCE6,
+		break;
+
+	case TOWNSIO_COM1_4_INT_SOURCE: //     0xCB0,
+		{
+			uint8_t data=0xFF,xorPattern=1;
+			for(int i=1; i<TOWNS_NUM_COM_PORTS; ++i)
+			{
+				if(true==state.COM[i].valid && true==state.COM[i].INTbyTxRDY_RxRDY_SYNDET)
+				{
+					data^=xorPattern;
+				}
+				xorPattern<<=1;
+			}
+			return data;
+		}
 		break;
 	}
 	return 0xff;
@@ -471,77 +651,77 @@ void TownsSerialPort::UpdatePIC(void)
 }
 /* virtual */ void TownsSerialPort::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
-	PushInt64(data,state.intel8251.state.lastTxTime);
-	PushInt64(data,state.intel8251.state.lastRxTime);
+	PushInt64(data,state.COM[0].intel8251.state.lastTxTime);
+	PushInt64(data,state.COM[0].intel8251.state.lastRxTime);
 
-	PushBool(data,state.intel8251.state.immediatelyAfterReset);
+	PushBool(data,state.COM[0].intel8251.state.immediatelyAfterReset);
 
-	PushUint32(data,state.intel8251.state.nanoSecondsPerByte);
+	PushUint32(data,state.COM[0].intel8251.state.nanoSecondsPerByte);
 
-	PushUint32(data,state.intel8251.state.baudRate);
+	PushUint32(data,state.COM[0].intel8251.state.baudRate);
 
-	PushUint16(data,state.intel8251.state.stopBits);
-	PushUint16(data,state.intel8251.state.preScale);
+	PushUint16(data,state.COM[0].intel8251.state.stopBits);
+	PushUint16(data,state.COM[0].intel8251.state.preScale);
 
-	PushBool(data,state.intel8251.state.SCS);
-	PushBool(data,state.intel8251.state.ESD);
+	PushBool(data,state.COM[0].intel8251.state.SCS);
+	PushBool(data,state.COM[0].intel8251.state.ESD);
 
-	PushUint16(data,state.intel8251.state.dataLength);
-	PushBool(data,state.intel8251.state.evenParity);
-	PushBool(data,state.intel8251.state.parityEnabled);
+	PushUint16(data,state.COM[0].intel8251.state.dataLength);
+	PushBool(data,state.COM[0].intel8251.state.evenParity);
+	PushBool(data,state.COM[0].intel8251.state.parityEnabled);
 
-	PushBool(data,state.intel8251.state.RxEN);
-	PushBool(data,state.intel8251.state.TxEN);
-	PushBool(data,state.intel8251.state.RxRDY);
-	PushBool(data,state.intel8251.state.TxRDY);
-	PushBool(data,state.intel8251.state.SYNDET);
-	PushBool(data,state.intel8251.state.FE);
-	PushBool(data,state.intel8251.state.OE);
-	PushBool(data,state.intel8251.state.PE);
-	PushBool(data,state.intel8251.state.TxEMPTY);
-	PushBool(data,state.intel8251.state.RTS);
-	PushBool(data,state.intel8251.state.DTR);
-	PushBool(data,state.intel8251.state.BREAK);
+	PushBool(data,state.COM[0].intel8251.state.RxEN);
+	PushBool(data,state.COM[0].intel8251.state.TxEN);
+	PushBool(data,state.COM[0].intel8251.state.RxRDY);
+	PushBool(data,state.COM[0].intel8251.state.TxRDY);
+	PushBool(data,state.COM[0].intel8251.state.SYNDET);
+	PushBool(data,state.COM[0].intel8251.state.FE);
+	PushBool(data,state.COM[0].intel8251.state.OE);
+	PushBool(data,state.COM[0].intel8251.state.PE);
+	PushBool(data,state.COM[0].intel8251.state.TxEMPTY);
+	PushBool(data,state.COM[0].intel8251.state.RTS);
+	PushBool(data,state.COM[0].intel8251.state.DTR);
+	PushBool(data,state.COM[0].intel8251.state.BREAK);
 
-	PushUint16(data,state.INTEnableBits);
-	PushBool(data,state.INTbyTxRDY_RxRDY_SYNDET);
+	PushUint16(data,state.COM[0].INTEnableBits);
+	PushBool(data,state.COM[0].INTbyTxRDY_RxRDY_SYNDET);
 }
 /* virtual */ bool TownsSerialPort::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
-	state.intel8251.state.lastTxTime=ReadInt64(data);
-	state.intel8251.state.lastRxTime=ReadInt64(data);
+	state.COM[0].intel8251.state.lastTxTime=ReadInt64(data);
+	state.COM[0].intel8251.state.lastRxTime=ReadInt64(data);
 
-	state.intel8251.state.immediatelyAfterReset=ReadBool(data);
+	state.COM[0].intel8251.state.immediatelyAfterReset=ReadBool(data);
 
-	state.intel8251.state.nanoSecondsPerByte=ReadUint32(data);
+	state.COM[0].intel8251.state.nanoSecondsPerByte=ReadUint32(data);
 
-	state.intel8251.state.baudRate=ReadUint32(data);
+	state.COM[0].intel8251.state.baudRate=ReadUint32(data);
 
-	state.intel8251.state.stopBits=ReadUint16(data);
-	state.intel8251.state.preScale=ReadUint16(data);
+	state.COM[0].intel8251.state.stopBits=ReadUint16(data);
+	state.COM[0].intel8251.state.preScale=ReadUint16(data);
 
-	state.intel8251.state.SCS=ReadBool(data);
-	state.intel8251.state.ESD=ReadBool(data);
+	state.COM[0].intel8251.state.SCS=ReadBool(data);
+	state.COM[0].intel8251.state.ESD=ReadBool(data);
 
-	state.intel8251.state.dataLength=ReadUint16(data);
-	state.intel8251.state.evenParity=ReadBool(data);
-	state.intel8251.state.parityEnabled=ReadBool(data);
+	state.COM[0].intel8251.state.dataLength=ReadUint16(data);
+	state.COM[0].intel8251.state.evenParity=ReadBool(data);
+	state.COM[0].intel8251.state.parityEnabled=ReadBool(data);
 
-	state.intel8251.state.RxEN=ReadBool(data);
-	state.intel8251.state.TxEN=ReadBool(data);
-	state.intel8251.state.RxRDY=ReadBool(data);
-	state.intel8251.state.TxRDY=ReadBool(data);
-	state.intel8251.state.SYNDET=ReadBool(data);
-	state.intel8251.state.FE=ReadBool(data);
-	state.intel8251.state.OE=ReadBool(data);
-	state.intel8251.state.PE=ReadBool(data);
-	state.intel8251.state.TxEMPTY=ReadBool(data);
-	state.intel8251.state.RTS=ReadBool(data);
-	state.intel8251.state.DTR=ReadBool(data);
-	state.intel8251.state.BREAK=ReadBool(data);
+	state.COM[0].intel8251.state.RxEN=ReadBool(data);
+	state.COM[0].intel8251.state.TxEN=ReadBool(data);
+	state.COM[0].intel8251.state.RxRDY=ReadBool(data);
+	state.COM[0].intel8251.state.TxRDY=ReadBool(data);
+	state.COM[0].intel8251.state.SYNDET=ReadBool(data);
+	state.COM[0].intel8251.state.FE=ReadBool(data);
+	state.COM[0].intel8251.state.OE=ReadBool(data);
+	state.COM[0].intel8251.state.PE=ReadBool(data);
+	state.COM[0].intel8251.state.TxEMPTY=ReadBool(data);
+	state.COM[0].intel8251.state.RTS=ReadBool(data);
+	state.COM[0].intel8251.state.DTR=ReadBool(data);
+	state.COM[0].intel8251.state.BREAK=ReadBool(data);
 
-	state.INTEnableBits=ReadUint16(data);
-	state.INTbyTxRDY_RxRDY_SYNDET=ReadBool(data);
+	state.COM[0].INTEnableBits=ReadUint16(data);
+	state.COM[0].INTbyTxRDY_RxRDY_SYNDET=ReadBool(data);
 
 	return true;
 }

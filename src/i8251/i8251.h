@@ -45,6 +45,9 @@ public:
 		STATUS_READ_FE=    0x20,
 		STATUS_READ_SYNDET=0x40,
 		STATUS_READ_DSR=   0x80,
+
+
+		TXE_TIME_NANOSEC=5000,
 	};
 
 	enum
