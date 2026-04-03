@@ -13,6 +13,7 @@ target_link_libraries(${TARGET_NAME}
 	townsargv
 	townsrender 
 	outside_world
+	osinit
 	fssimplewindow_connection
 )
 
