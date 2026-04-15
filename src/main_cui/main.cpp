@@ -26,6 +26,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "i486symtable.h"
 #include "cpputil.h"
 #include "discimg.h"
+#include "osinit.h"
 
 #include "fssimplewindow_connection.h"
 
@@ -216,6 +217,7 @@ int main(int ac,char *av[])
 		return 1;
 	}
 
+	OSInit();
 
 	TownsARGV argv;
 	if(true!=argv.AnalyzeCommandParameter(ac,av))

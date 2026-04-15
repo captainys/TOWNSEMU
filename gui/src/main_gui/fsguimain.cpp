@@ -42,6 +42,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ysfontrenderer.h>
 #endif
 
+#include "osinit.h"
 #include "fsguiapp.h"
 
 
@@ -81,6 +82,7 @@ FsLazyWindowApplication::~FsLazyWindowApplication()
 
 /* virtual */ void FsLazyWindowApplication::BeforeEverything(int,char *[])
 {
+	OSInit();
 }
 
 /* virtual */ void FsLazyWindowApplication::GetOpenWindowOption(FsOpenWindowOption &opt) const
