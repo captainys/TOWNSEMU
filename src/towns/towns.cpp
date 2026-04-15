@@ -339,6 +339,10 @@ void FMTownsCommon::State::PowerOn(void)
 		towns.debugger.AddBreakPoint(towns.var.powerOffAt,info);
 	}
 
+	towns.debugger.powerOffOnIOW=argv.powerOffOnIOW;
+	towns.debugger.powerOffOnIOWPort=argv.powerOffOnIOWPort;
+	towns.debugger.powerOffOnIOWValue=argv.powerOffOnIOWValue;
+
 	std::cout << "Loaded ROM Images.\n";
 
 	towns.Reset();
