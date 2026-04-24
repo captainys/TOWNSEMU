@@ -165,6 +165,7 @@ public:
 		WindowThreadVariables winThrEx;
 		VMThreadVariables VMThrEx;
 		int diffMouseXY[2]={0,0}; // Needs to be polled separately.  See comments in Interval(void).
+		int diffMouseNoMotionCount=0;
 
 		// Potential problems in implementing differential mouse integration.
 		// (1) If the host system is keeping track of sub-pixel movement.  If mouse is moved back to window center,
