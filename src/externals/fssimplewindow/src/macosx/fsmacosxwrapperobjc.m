@@ -1751,9 +1751,19 @@ void FsSetMousePositionC(int mx,int my)
 {
 	if([ysWnd isKeyWindow])
 	{
+		CGEventSourceRef source=CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
+		CFTimeInterval oldInterval=0;
+
 		NSPoint newPos;
 
 		NSRect rect;
+
+		if(source)
+		{
+			oldInterval=CGEventSourceGetLocalEventsSuppressionInterval(source);
+			CGEventSourceSetLocalEventsSuppressionInterval(source,0.0);
+		}
+
 		rect=[ysView frame];
 		my=rect.size.height-1-my;
 
@@ -1769,6 +1779,12 @@ void FsSetMousePositionC(int mx,int my)
 		newPos.y=scrnRect.size.height-1-newPos.y;
 
 		CGWarpMouseCursorPosition(newPos);
+
+		if(source)
+		{
+			CGEventSourceSetLocalEventsSuppressionInterval(source,oldInterval);
+			CFRelease(source);
+		}
 	}
 }
 
