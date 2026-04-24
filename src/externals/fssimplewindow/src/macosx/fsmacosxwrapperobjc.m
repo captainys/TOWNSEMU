@@ -27,6 +27,10 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //////////////////////////////////////////////////////////// */
 
+#ifndef GL_SILENCE_DEPRECATION
+	#define GL_SILENCE_DEPRECATION
+#endif
+
 #import <Cocoa/Cocoa.h>
 #include <OpenGL/OpenGL.h>
 
@@ -1751,18 +1755,9 @@ void FsSetMousePositionC(int mx,int my)
 {
 	if([ysWnd isKeyWindow])
 	{
-		CGEventSourceRef source=CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
-		CFTimeInterval oldInterval=0;
-
 		NSPoint newPos;
 
 		NSRect rect;
-
-		if(source)
-		{
-			oldInterval=CGEventSourceGetLocalEventsSuppressionInterval(source);
-			CGEventSourceSetLocalEventsSuppressionInterval(source,0.0);
-		}
 
 		rect=[ysView frame];
 		my=rect.size.height-1-my;
@@ -1778,13 +1773,13 @@ void FsSetMousePositionC(int mx,int my)
 		NSRect scrnRect=ysWnd.screen.frame;
 		newPos.y=scrnRect.size.height-1-newPos.y;
 
-		CGWarpMouseCursorPosition(newPos);
+		// Without CGSetLocalEventsSuppressionInterval, mouse cursor sticks 0.25 seconds after moving.
+		// Utterly stupid.
+		// Zero lag should be default because the application is not asking for it.
+		// It should be an option that the application can choose to set non-zero lag.
+		CGSetLocalEventsSuppressionInterval(0);
 
-		if(source)
-		{
-			CGEventSourceSetLocalEventsSuppressionInterval(source,oldInterval);
-			CFRelease(source);
-		}
+		CGWarpMouseCursorPosition(newPos);
 	}
 }
 
