@@ -51,6 +51,8 @@ extern "C" int FsPassedTimeC(void);
 extern "C" long long int FsSubSecondTimerC(void);
 extern "C" void FsMouseC(int *lb,int *mb,int *rb,int *mx,int *my);
 extern "C" void FsSetMousePositionC(int mx,int my);
+extern "C" void FsShowMouseCursorC(int sw);
+extern "C" int FsIsMouseCoursorVisibleC(void);
 extern "C" int FsGetMouseEventC(int *lb,int *mb,int *rb,int *mx,int *my);
 extern "C" void FsSwapBufferC(void);
 extern "C" int FsInkeyC(void);
@@ -315,10 +317,11 @@ int FsGetNativeTextInputEvent(void)
 
 void FsShowMouseCursor(int showFlag)
 {
+	FsShowMouseCursorC(showFlag);
 }
 int FsIsMouseCursorVisible(void)
 {
-	return 1;
+	return FsIsMouseCoursorVisibleC();
 }
 int FsOnCloseButton(void)
 {

@@ -1772,6 +1772,26 @@ void FsSetMousePositionC(int mx,int my)
 	}
 }
 
+static int cursorVisible=1; // Duck it.
+
+void FsShowMouseCursorC(int sw)
+{
+//	if(0!=cursorVisible && 0==sw)
+//	{
+//		CGDisplayHideCursor(kCGDirectMainDisplay);
+//	}
+//	else if(0==cursorVisible && 0!=sw)
+//	{
+//		CGDisplayShowCursor(kCGDirectMainDisplay);
+//	}
+//	cursorVisible=sw;
+}
+
+int FsIsMouseCoursorVisibleC(void)
+{
+//	return cursorVisible;
+}
+
 int FsGetMouseEventC(int *lb,int *mb,int *rb,int *mx,int *my)
 {
 	if(0<nMosBufUsed)
