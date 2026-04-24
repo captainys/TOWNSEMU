@@ -166,6 +166,17 @@ public:
 		VMThreadVariables VMThrEx;
 		int diffMouseXY[2]={0,0}; // Needs to be polled separately.  See comments in Interval(void).
 
+		// Potential problems in implementing differential mouse integration.
+		// (1) If the host system is keeping track of sub-pixel movement.  If mouse is moved back to window center,
+		//     it may never detect more than 1 pixel movement.
+		// (2) If the guest os is not consuming mouse movement before the next polling in the host,
+		//     the mouse motion sent to the host is zeroed in the second polling, and the guest rarely sees
+		//     the mouse motion.
+		// Fix:  Have separate mouse-coordinate cache.
+		//       Let mouse cursor move in some area instead of fixing the mouse cursor at the center of the window.
+		//       If the guest has not consumed previous mouse movement, add the motion instead of overwrite.
+
+
 		// Constants that do not change.
 		GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
 
