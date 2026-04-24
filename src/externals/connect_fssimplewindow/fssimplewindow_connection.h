@@ -164,6 +164,7 @@ public:
 		SharedVariables sharedEx;
 		WindowThreadVariables winThrEx;
 		VMThreadVariables VMThrEx;
+		int diffMouseXY[2]={0,0}; // Needs to be polled separately.  See comments in Interval(void).
 
 		// Constants that do not change.
 		GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;

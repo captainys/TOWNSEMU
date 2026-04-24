@@ -180,7 +180,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		switch(state)
 		{
 		case MOUSESTATE_XHIGH:
-			if(true==monitorMouse)
+			if(true==monitorMouse && (0!=mouseMotion.x() || 0!=mouseMotion.y()))
 			{
 				std::cout << "Motion " << mouseMotion.x() << " " << mouseMotion.y() << "\n";
 			}

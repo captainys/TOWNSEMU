@@ -1731,20 +1731,43 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 	}
 	for(;;)
 	{
-		int lastXY[2]={winThrEx.primary.lastKnownMouse.mx,winThrEx.primary.lastKnownMouse.my};
-
 		winThrEx.primary.lastKnownMouse.Read();
 		if(FSMOUSEEVENT_NONE==winThrEx.primary.lastKnownMouse.evt)
 		{
 			break;
 		}
 		winThrEx.primary.mouseEvents.push_back(winThrEx.primary.lastKnownMouse);
+	}
 
-		int newXY[2]={winThrEx.primary.lastKnownMouse.mx,winThrEx.primary.lastKnownMouse.my};
-		int diffXY[2]={newXY[0]-lastXY[0],newXY[1]-lastXY[1]};
+	if(true==shared.differentialMouseIntegration)
+	{
+		int lb,mb,rb,mx,my;
+		FsGetMouseState(lb,mb,rb,mx,my);
+		// Next FsGetMouseEvent may lag from FsSetMousePosition if more events are in the queue.
+		// Therefore mouse position for differentialMouseIntegration should be polled separately.
 
-		winThrEx.primary.mouseMoveXY[0]+=diffXY[0];
-		winThrEx.primary.mouseMoveXY[1]+=diffXY[1];
+		winThrEx.primary.mouseMoveXY[0]+=mx-diffMouseXY[0];
+		winThrEx.primary.mouseMoveXY[1]+=my-diffMouseXY[1];
+
+		diffMouseXY[0]=mx;
+		diffMouseXY[1]=my;
+
+		int minX=winThrEx.primary.winWid/4;
+		int minY=winThrEx.primary.winHei/4;
+		int maxX=winThrEx.primary.winWid*3/4;
+		int maxY=winThrEx.primary.winHei*3/4;
+
+		if(mx<minX || my<minY ||
+           maxX<mx || maxY<my)
+        {
+			int cx=winThrEx.primary.winWid/2;
+			int cy=winThrEx.primary.winHei/2;
+
+			diffMouseXY[0]=cx;
+			diffMouseXY[1]=cy;
+
+			FsSetMousePosition(cx,cy);
+		}
 	}
 
 	PollGamePads();
@@ -1771,15 +1794,6 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 		{
 			sharedEx.readyToSend=winThrEx.primary;
 			winThrEx.primary.CleanUpEvents();
-
-			if(true==shared.differentialMouseIntegration)
-			{
-				int mx=winThrEx.primary.winWid/2;
-				int my=winThrEx.primary.winHei/2;
-				winThrEx.primary.lastKnownMouse.mx=mx;
-				winThrEx.primary.lastKnownMouse.my=my;
-				FsSetMousePosition(mx,my);
-			}
 		}
 	}
 }
