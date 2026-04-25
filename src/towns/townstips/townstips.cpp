@@ -61,8 +61,10 @@ std::vector <std::string> TownsTips::GetTips(void)
 	);
 
 	tips.push_back(
-		"When mouse cursor does not move, or mouse goes crazy, you can stabilize\n"
-		"it by controlling mouse by keyboard arrow keys, or a USB game pad.\n"
+		"If the mouse does not work, or jumping around, or uncontrollable, try differential\n"
+		"mouse integration.  It is enabled when you press mouse middle button, and disabled"
+		"when you press the middle button again.\n"
+		"Also you can control mouse by keyboard arrow keys, or a USB game pad.\n"
 		"Go to Game-Port options, and select appropriate mouse mode.\n"
 	);
 
@@ -106,6 +108,12 @@ std::vector <std::string> TownsTips::GetTips(void)
 		"Valid after FM TOWNS II CX and later models."
 		"In Tsugaru, you can use this feature from the BOOT tab in the GUI\n"
 		"or -BOOTKEY option in the CUI.\n"
+	);
+
+	tips.push_back(
+		"Tsugaru does not recognize a raw floppy disk image unless the disk image size is\n"
+		"exactly 1232KB (1261568 bytes), 1440KB (1474560 bytes), 640KB (655360 bytes), or\n"
+		"720KB (737280 bytes).  If the size is different by 1 byte, it does not recognize it.\n"
 	);
 
 	return tips;
