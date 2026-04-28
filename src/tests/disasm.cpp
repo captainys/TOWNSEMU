@@ -21,18 +21,75 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-class MemoryForDisassemble : public MemoryAccess
+////////////////////////////////////////////////////////////////
+
+uint8_t RAM[0x1000000];
+uint32_t CSStart=0x1000;
+
+Memory::Memory()
 {
-public:
-	unsigned char ram[256];
-	virtual unsigned int FetchByte(unsigned int physAddr) const
-	{
-		return ram[physAddr-0x1000];
-	}
-	virtual void StoreByte(unsigned int physAddr,unsigned char data)
-	{
-	}
-};
+}
+
+void Memory::CleanUp(void)
+{
+}
+unsigned int Memory::FetchByte(unsigned int physAddr) const
+{
+	return RAM[physAddr-CSStart];
+}
+
+unsigned int Memory::FetchWord(unsigned int physAddr) const
+{
+	return FetchByte(physAddr)|(FetchByte(physAddr+1)<<8);
+}
+
+unsigned int Memory::FetchDword(unsigned int physAddr) const
+{
+	return FetchWord(physAddr)|(FetchWord(physAddr+2)<<16);
+}
+
+MemoryAccess::ConstMemoryWindow Memory::GetConstMemoryWindow(unsigned int physAddr) const
+{
+	MemoryAccess::ConstMemoryWindow window;
+	window.ptr=nullptr;
+	return window;
+}
+MemoryAccess::MemoryWindow Memory::GetMemoryWindow(unsigned int physAddr)
+{
+	MemoryAccess::MemoryWindow window;
+	window.ptr=nullptr;
+	return window;
+}
+
+void Memory::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	RAM[physAddr-CSStart]=data;
+}
+
+unsigned int Memory::FetchByteDMA(unsigned int physAddr) const
+{
+	return FetchByte(physAddr);
+}
+
+void Memory::StoreByteDMA(unsigned int physAddr,unsigned char data)
+{
+	StoreByte(physAddr,data);
+}
+
+void Memory::StoreWord(unsigned int physAddr,unsigned int data)
+{
+	StoreByte(physAddr  ,data);
+	StoreByte(physAddr+1,data>>8);
+}
+
+void Memory::StoreDword(unsigned int physAddr,unsigned int data)
+{
+	StoreWord(physAddr,data);
+	StoreWord(physAddr+2,data>>16);
+}
+
+////////////////////////////////////////////////////////////////
+
 
 bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long int instLen,const unsigned char instByte[],const std::string &correctDisasm)
 {
@@ -40,9 +97,6 @@ bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long
 	cpu.Reset();
 
 	Memory mem;
-	MemoryForDisassemble memAccess;
-
-	mem.AddAccess(&memAccess,0,0xffffff);
 
 	cpu.state.CS().value=0;
 	cpu.state.CS().baseLinearAddr=0;
@@ -74,7 +128,7 @@ bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long
 
 	for(unsigned int i=0; i<instLen; ++i)
 	{
-		memAccess.ram[i]=instByte[i];
+		RAM[i]=instByte[i];
 	}
 
 	i486DXCommon::InstructionAndOperand instOp;
