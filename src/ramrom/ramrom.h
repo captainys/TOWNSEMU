@@ -67,7 +67,7 @@ public:
 		/*! Reads a byte and move the pointer forward by one.
 		    It does not check length.  Calling function is responsible for checking it.
 		*/
-		inline unsigned char FetchByte(void)
+		unsigned char FetchByte(void)
 		{
 			auto byteData=*ptr;
 			++ptr;
@@ -77,7 +77,7 @@ public:
 		/*! Reads two bytes.
 		    It does not check length.  Calling function is responsible for checking it.
 		*/
-		inline void FetchTwoBytes(unsigned char buf[2])
+		void FetchTwoBytes(unsigned char buf[2])
 		{
 			cpputil::CopyWord(buf,ptr);
 			ptr+=2;
@@ -86,7 +86,7 @@ public:
 		/*! Reads two bytes.
 		    It does not check length.  Calling function is responsible for checking it.
 		*/
-		inline void FetchFourBytes(unsigned char buf[4])
+		void FetchFourBytes(unsigned char buf[4])
 		{
 			cpputil::CopyDword(buf,ptr);
 			ptr+=4;
@@ -94,12 +94,12 @@ public:
 		}
 		/*! Reads a byte.
 		*/
-		inline unsigned char PeekByte(void) const
+		unsigned char PeekByte(void) const
 		{
 			return *ptr;
 		}
 
-		inline void Clear(void)
+		void Clear(void)
 		{
 			length=0;
 			ptr=nullptr;
@@ -131,13 +131,13 @@ public:
 		*/
 		const unsigned char *ptr=nullptr;
 
-		inline void CleanUp(void)
+		void CleanUp(void)
 		{
 			_linearBaseAddr=~0;
 			ptr=nullptr;
 		}
 
-		inline void UpdateLinearBaseAddress(unsigned int addr)
+		void UpdateLinearBaseAddress(unsigned int addr)
 		{
 			if(nullptr!=ptr)
 			{
@@ -149,7 +149,7 @@ public:
 			}
 		}
 
-		inline bool IsLinearAddressInRange(unsigned int addr) const
+		bool IsLinearAddressInRange(unsigned int addr) const
 		{
 			return (addr&~(MEMORY_WINDOW_SIZE-1))==_linearBaseAddr;
 		}
@@ -158,7 +158,7 @@ public:
 		    In this case, physical or linear doesn't matter.
 		    Higher than 12th bit will be masked anyway.
 		*/
-		inline ConstPointer GetReadAccessPointer(unsigned int addr) const
+		ConstPointer GetReadAccessPointer(unsigned int addr) const
 		{
 			ConstPointer ptr;
 			if(nullptr!=this->ptr)
@@ -199,13 +199,13 @@ public:
 		*/
 		unsigned char *ptr=nullptr;
 
-		inline void CleanUp(void)
+		void CleanUp(void)
 		{
 			linearBaseAddr=~0;
 			ptr=nullptr;
 		}
 
-		inline void UpdateLinearBaseAddress(unsigned int addr)
+		void UpdateLinearBaseAddress(unsigned int addr)
 		{
 			if(nullptr!=ptr)
 			{
@@ -217,7 +217,7 @@ public:
 			}
 		}
 
-		inline bool IsLinearAddressInRange(unsigned int addr) const
+		bool IsLinearAddressInRange(unsigned int addr) const
 		{
 			return (addr&~(MEMORY_WINDOW_SIZE-1))==linearBaseAddr;
 		}
@@ -241,9 +241,16 @@ public:
 };
 
 
-/*! Memory class organizes MemoryAccess objects.
-    Fetch and store requests will be directed to memory-access objects based on the 
-    pointers stored in the 4KB slots.
+/*! Memory class needs to be implemented for each VM.
+    Sub class it, and do like:
+
+	unsigned int Memory::FetchByte(unsigned int physAddr) const
+	{
+		TownsMemory *townsMem=(TownsMemory *)this;
+		return townsMem->FetchByte(physAddr);
+	}
+
+	if TownsMemory is the true identity of the Memory.
 */
 class Memory
 {
@@ -291,64 +298,16 @@ public:
 	MemoryAccess *GetAccessObject(unsigned int physAddr);
 
 
-	inline unsigned int FetchByte(unsigned int physAddr) const
-	{
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->FetchByte(physAddr);
-	}
-
-	inline unsigned int FetchWord(unsigned int physAddr) const
-	{
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->FetchWord(physAddr);
-	}
-
-	inline unsigned int FetchDword(unsigned int physAddr) const
-	{
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->FetchDword(physAddr);
-	}
-
-	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const
-	{
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->GetConstMemoryWindow(physAddr);
-	}
-	inline MemoryAccess::MemoryWindow GetMemoryWindow(unsigned int physAddr)
-	{
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->GetMemoryWindow(physAddr);
-	}
-
-	inline void StoreByte(unsigned int physAddr,unsigned char data)
-	{
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		memAccess->StoreByte(physAddr,data);
-	}
-
-	inline unsigned int FetchByteDMA(unsigned int physAddr) const
-	{
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->FetchByteDMA(physAddr);
-	}
-
-	inline void StoreByteDMA(unsigned int physAddr,unsigned char data)
-	{
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		memAccess->StoreByteDMA(physAddr,data);
-	}
-
-	inline void StoreWord(unsigned int physAddr,unsigned int data)
-	{
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		memAccess->StoreWord(physAddr,data);
-	}
-
-	inline void StoreDword(unsigned int physAddr,unsigned int data)
-	{
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		memAccess->StoreDword(physAddr,data);
-	}
+	unsigned int FetchByte(unsigned int physAddr) const;
+	unsigned int FetchWord(unsigned int physAddr) const;
+	unsigned int FetchDword(unsigned int physAddr) const;
+	MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
+	MemoryAccess::MemoryWindow GetMemoryWindow(unsigned int physAddr);
+	void StoreByte(unsigned int physAddr,unsigned char data);
+	unsigned int FetchByteDMA(unsigned int physAddr) const;
+	void StoreByteDMA(unsigned int physAddr,unsigned char data);
+	void StoreWord(unsigned int physAddr,unsigned int data);
+	void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
 

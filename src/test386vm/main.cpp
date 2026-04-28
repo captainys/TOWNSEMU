@@ -52,40 +52,95 @@ public:
 	}
 };
 
-class ROMAccess : public MemoryAccess
+class TestVMMemory : public Memory
 {
 public:
 	uint8_t ROM[65536];
-	virtual unsigned int FetchByte(unsigned int physAddr) const
-	{
-		return ROM[(physAddr&0xFFFF)];
-	}
-	virtual void StoreByte(unsigned int,unsigned char)
-	{
-	}
-};
-class RAMAccess : public MemoryAccess
-{
-public:
 	uint8_t RAM[0x1000000];
-	virtual unsigned int FetchByte(unsigned int physAddr) const
-	{
-		return RAM[physAddr&0xFFFFFF];
-	}
-	virtual void StoreByte(unsigned int physAddr,unsigned char dat)
-	{
-		RAM[physAddr&0xFFFFFF]=dat;
-	}
 };
+
+Memory::Memory()
+{
+}
+
+void Memory::CleanUp(void)
+{
+}
+unsigned int Memory::FetchByte(unsigned int physAddr) const
+{
+	const TestVMMemory *realThis=(TestVMMemory *)this;
+	if(physAddr<=0x000F0000)
+	{
+		return realThis->RAM[physAddr];
+	}
+	else if(physAddr<0x00100000 || 0xFFFF0000<=physAddr)
+	{
+		return realThis->ROM[(physAddr&0xFFFF)];
+	}
+	return 0xFF;
+}
+
+unsigned int Memory::FetchWord(unsigned int physAddr) const
+{
+	return FetchByte(physAddr)|(FetchByte(physAddr+1)<<8);
+}
+
+unsigned int Memory::FetchDword(unsigned int physAddr) const
+{
+	return FetchWord(physAddr)|(FetchWord(physAddr+2)<<16);
+}
+
+MemoryAccess::ConstMemoryWindow Memory::GetConstMemoryWindow(unsigned int physAddr) const
+{
+	MemoryAccess::ConstMemoryWindow window;
+	window.ptr=nullptr;
+	return window;
+}
+MemoryAccess::MemoryWindow Memory::GetMemoryWindow(unsigned int physAddr)
+{
+	MemoryAccess::MemoryWindow window;
+	window.ptr=nullptr;
+	return window;
+}
+
+void Memory::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	TestVMMemory *realThis=(TestVMMemory *)this;
+	if(physAddr<=0x000F0000)
+	{
+		realThis->RAM[physAddr]=data;
+	}
+}
+
+unsigned int Memory::FetchByteDMA(unsigned int physAddr) const
+{
+	return FetchByte(physAddr);
+}
+
+void Memory::StoreByteDMA(unsigned int physAddr,unsigned char data)
+{
+	StoreByte(physAddr,data);
+}
+
+void Memory::StoreWord(unsigned int physAddr,unsigned int data)
+{
+	StoreByte(physAddr  ,data);
+	StoreByte(physAddr+1,data>>8);
+}
+
+void Memory::StoreDword(unsigned int physAddr,unsigned int data)
+{
+	StoreWord(physAddr,data);
+	StoreWord(physAddr+2,data>>16);
+}
+
 
 int main(int ac,char *av[])
 {
 	TesterVM vm;
-	std::unique_ptr <Memory> memPtr(new Memory);
+	std::unique_ptr <TestVMMemory> memPtr(new TestVMMemory);
 	std::unique_ptr <i486DXHighFidelity> cpuPtr(new i486DXHighFidelity(&vm));
 	std::unique_ptr <i486Debugger> debuggerPtr(new i486Debugger(&vm));
-	std::unique_ptr <ROMAccess> ROM(new ROMAccess);
-	std::unique_ptr <RAMAccess> RAM(new RAMAccess);
 	std::unique_ptr <InOut> io(new InOut);
 
 	auto &cpu=*cpuPtr;
@@ -95,10 +150,6 @@ int main(int ac,char *av[])
 	io->AddDevice(&vm,IO_LPT1);
 	io->AddDevice(&vm,IO_LPT2);
 
-
-	memPtr->AddAccess(RAM.get(),0x00000000,0x000EFFFF);
-	memPtr->AddAccess(ROM.get(),0x000F0000,0x000FFFFF);
-	memPtr->AddAccess(ROM.get(),0xFFFF0000,0xFFFFFFFF);
 
 	printf("This VM is for runnint TEST386.\n");
 	printf("test386.bin was built from the source https://github.com/barotto/test386.asm.git\n");
@@ -117,7 +168,7 @@ int main(int ac,char *av[])
 	}
 	for(int i=0; i<65536; ++i)
 	{
-		ROM->ROM[i]=rom[i];
+		memPtr->ROM[i]=rom[i];
 	}
 
 	int ctr=0,noMove=0;
