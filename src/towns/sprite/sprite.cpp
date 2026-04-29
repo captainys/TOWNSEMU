@@ -47,7 +47,7 @@ TownsSprite::TownsSprite(class FMTownsCommon *townsPtr,TownsPhysicalMemory *phys
 
 unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
 {
-	auto *spriteRAM=townsPtr->physMem.state.spriteRAM;
+	auto *spriteRAM=townsPtr->mem.state.spriteRAM;
 
 	unsigned int nDraw=0;
 	auto xOffset=HOffset(),yOffset=VOffset();

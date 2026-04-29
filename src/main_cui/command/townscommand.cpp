@@ -2900,7 +2900,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			}
 			break;
 		case DUMP_MEMORY:
-			for(auto str : towns.physMem.GetStatusText())
+			for(auto str : towns.mem.GetStatusText())
 			{
 				std::cout << str << std::endl;
 			}
@@ -2916,7 +2916,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 					for(int i=0; i<length; ++i)
 					{
 						// RAM.push_back((unsigned char)towns.ioRAM.state.RAM[addr+i]);
-						RAM.push_back(towns.physMem.state.CMOSRAM[addr+i]);
+						RAM.push_back(towns.mem.state.CMOSRAM[addr+i]);
 					}
 					for(auto str : cpputil::MakeDump(addr,RAM.size(),RAM.data()))
 					{
@@ -2987,7 +2987,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			}
 			break;
 		case DUMP_SPRITE:
-			for(auto str : towns.sprite.GetStatusText(towns.physMem.state.spriteRAM))
+			for(auto str : towns.sprite.GetStatusText(towns.mem.state.spriteRAM))
 			{
 				std::cout << str << std::endl;
 			}
@@ -2997,7 +2997,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			{
 				auto x=cpputil::Atoi(cmd.argv[2].c_str());
 				auto y=cpputil::Atoi(cmd.argv[3].c_str());
-				for(auto str : towns.sprite.GetStatusTextSpriteAt(towns.physMem.state.spriteRAM,x,y))
+				for(auto str : towns.sprite.GetStatusTextSpriteAt(towns.mem.state.spriteRAM,x,y))
 				{
 					std::cout << str << std::endl;
 				}
@@ -3011,7 +3011,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			if(3<=cmd.argv.size())
 			{
 				auto palIdx=cpputil::Atoi(cmd.argv[2].c_str());
-				for(auto str : towns.sprite.GetPaletteText(palIdx,towns.physMem.state.spriteRAM))
+				for(auto str : towns.sprite.GetPaletteText(palIdx,towns.mem.state.spriteRAM))
 				{
 					std::cout << str << std::endl;
 				}
@@ -3025,7 +3025,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			if(3<=cmd.argv.size())
 			{
 				auto palIdx=cpputil::Atoi(cmd.argv[2].c_str());
-				for(auto str : towns.sprite.GetPattern4BitText(palIdx,towns.physMem.state.spriteRAM))
+				for(auto str : towns.sprite.GetPattern4BitText(palIdx,towns.mem.state.spriteRAM))
 				{
 					std::cout << str << std::endl;
 				}
@@ -3039,7 +3039,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			if(3<=cmd.argv.size())
 			{
 				auto palIdx=cpputil::Atoi(cmd.argv[2].c_str());
-				for(auto str : towns.sprite.GetPattern16BitText(palIdx,towns.physMem.state.spriteRAM))
+				for(auto str : towns.sprite.GetPattern16BitText(palIdx,towns.mem.state.spriteRAM))
 				{
 					std::cout << str << std::endl;
 				}
@@ -3076,7 +3076,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			break;
 		case DUMP_MEMORY_FILTER:
 			{
-				towns.physMem.PrintMemFilter();
+				towns.mem.PrintMemFilter();
 			}
 			break;
 		case DUMP_FPU:
@@ -3885,16 +3885,16 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd,
 				}
 				break;
 			case BREAK_ON_CVRAM_READ:
-				towns.physMem.FMRVRAMAccess.breakOnCVRAMRead=true;
+				towns.mem.FMRVRAMAccess.breakOnCVRAMRead=true;
 				break;
 			case BREAK_ON_CVRAM_WRITE:
-				towns.physMem.FMRVRAMAccess.breakOnCVRAMWrite=true;
+				towns.mem.FMRVRAMAccess.breakOnCVRAMWrite=true;
 				break;
 			case BREAK_ON_FMRVRAM_READ:
-				towns.physMem.FMRVRAMAccess.breakOnFMRVRAMRead=true;
+				towns.mem.FMRVRAMAccess.breakOnFMRVRAMRead=true;
 				break;
 			case BREAK_ON_FMRVRAM_WRITE:
-				towns.physMem.FMRVRAMAccess.breakOnFMRVRAMWrite=true;
+				towns.mem.FMRVRAMAccess.breakOnFMRVRAMWrite=true;
 				break;
 			case BREAK_ON_IOREAD:
 				if(4<=cmd.argv.size())
@@ -4159,16 +4159,16 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTownsCommon &towns,Command 
 			}
 			break;
 		case BREAK_ON_FMRVRAM_READ:
-			towns.physMem.FMRVRAMAccess.breakOnFMRVRAMRead=false;
+			towns.mem.FMRVRAMAccess.breakOnFMRVRAMRead=false;
 			break;
 		case BREAK_ON_FMRVRAM_WRITE:
-			towns.physMem.FMRVRAMAccess.breakOnFMRVRAMWrite=false;
+			towns.mem.FMRVRAMAccess.breakOnFMRVRAMWrite=false;
 			break;
 		case BREAK_ON_CVRAM_READ:
-			towns.physMem.FMRVRAMAccess.breakOnCVRAMRead=false;
+			towns.mem.FMRVRAMAccess.breakOnCVRAMRead=false;
 			break;
 		case BREAK_ON_CVRAM_WRITE:
-			towns.physMem.FMRVRAMAccess.breakOnCVRAMWrite=false;
+			towns.mem.FMRVRAMAccess.breakOnCVRAMWrite=false;
 			break;
 		case BREAK_ON_IOREAD:
 			if(4<=cmd.argv.size())
@@ -5218,7 +5218,7 @@ void TownsCommandInterpreter::Execute_CMOSLoad(FMTownsCommon &towns,Command &cmd
 		{
 			PrintError(ERROR_INCORRECT_FILE_SIZE);
 		}
-		towns.physMem.SetCMOS(dat);
+		towns.mem.SetCMOS(dat);
 		std::cout << "Loaded CMOS." << std::endl;
 	}
 	else
@@ -5233,7 +5233,7 @@ void TownsCommandInterpreter::Execute_CMOSSave(FMTownsCommon &towns,Command &cmd
 		if(true!=cpputil::WriteBinaryFile(
 		    towns.var.ExpandFileName(cmd.argv[1]),
 		    TOWNS_CMOS_SIZE,
-		    towns.physMem.state.CMOSRAM))
+		    towns.mem.state.CMOSRAM))
 		{
 			PrintError(ERROR_CANNOT_SAVE_FILE);
 		}
@@ -5321,13 +5321,13 @@ void TownsCommandInterpreter::Execute_MakeMemoryFilter(FMTownsCommon &towns,Comm
 {
 	if(2<=cmd.argv.size())
 	{
-		towns.physMem.BeginMemFilter(unit);
-		auto N=towns.physMem.ApplyMemFilter(cpputil::Xtoi(cmd.argv[1].c_str()));
+		towns.mem.BeginMemFilter(unit);
+		auto N=towns.mem.ApplyMemFilter(cpputil::Xtoi(cmd.argv[1].c_str()));
 		std::cout << N << " occurrences" << std::endl;
 	}
 	else
 	{
-		towns.physMem.BeginMemFilter(unit);
+		towns.mem.BeginMemFilter(unit);
 	}
 }
 void TownsCommandInterpreter::Execute_UpdateMemoryFilter(FMTownsCommon &towns,Command &cmd)
@@ -5339,27 +5339,27 @@ void TownsCommandInterpreter::Execute_UpdateMemoryFilter(FMTownsCommon &towns,Co
 
 		if("INCREASE"==cond || "INC"==cond)
 		{
-			auto N=towns.physMem.ApplyMemFilterIncrease();
+			auto N=towns.mem.ApplyMemFilterIncrease();
 			std::cout << N << " occurrences" << std::endl;
 		}
 		else if("DECREASE"==cond || "DEC"==cond)
 		{
-			auto N=towns.physMem.ApplyMemFilterDecrease();
+			auto N=towns.mem.ApplyMemFilterDecrease();
 			std::cout << N << " occurrences" << std::endl;
 		}
 		else if("DIFFERENT"==cond || "DIFF"==cond)
 		{
-			auto N=towns.physMem.ApplyMemFilterDifferent();
+			auto N=towns.mem.ApplyMemFilterDifferent();
 			std::cout << N << " occurrences" << std::endl;
 		}
 		else if("SAME"==cond || "EQUAL"==cond || "EQU"==cond)
 		{
-			auto N=towns.physMem.ApplyMemFilterEqual();
+			auto N=towns.mem.ApplyMemFilterEqual();
 			std::cout << N << " occurrences" << std::endl;
 		}
 		else
 		{
-			auto N=towns.physMem.ApplyMemFilter(cpputil::Xtoi(cmd.argv[1].c_str()));
+			auto N=towns.mem.ApplyMemFilter(cpputil::Xtoi(cmd.argv[1].c_str()));
 			std::cout << N << " occurrences" << std::endl;
 		}
 	}
@@ -5459,16 +5459,16 @@ void TownsCommandInterpreter::Execute_Search_ByteSequence(FMTownsCommon &towns,c
 	std::cout << "Search is limited in the main RAM, sprite RAM, and VRAM only." << std::endl;
 
 	int maxCount=100;
-	for(unsigned int addr=0; addr+bytes.size()<=towns.physMem.state.RAM.size(); ++addr)
+	for(unsigned int addr=0; addr+bytes.size()<=towns.mem.state.RAM.size(); ++addr)
 	{
-		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.physMem.state.RAM.data()+addr))
+		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.mem.state.RAM.data()+addr))
 		{
 			FoundAt(towns,addr);
 		}
 	}
 	for(unsigned int addr=0; addr+bytes.size()<=TOWNSADDR_SPRITERAM_END-TOWNSADDR_SPRITERAM_BASE; ++addr)
 	{
-		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.physMem.state.spriteRAM+addr))
+		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.mem.state.spriteRAM+addr))
 		{
 			FoundAt(towns,TOWNSADDR_SPRITERAM_BASE+addr);
 			if(--maxCount<=0)
@@ -5477,9 +5477,9 @@ void TownsCommandInterpreter::Execute_Search_ByteSequence(FMTownsCommon &towns,c
 			}
 		}
 	}
-	for(unsigned int addr=0; addr+bytes.size()<=towns.physMem.GetVRAMSize(); ++addr)
+	for(unsigned int addr=0; addr+bytes.size()<=towns.mem.GetVRAMSize(); ++addr)
 	{
-		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.physMem.state.VRAM+addr))
+		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.mem.state.VRAM+addr))
 		{
 			FoundAt(towns,TOWNSADDR_VRAM0_BASE+addr);
 			if(--maxCount<=0)

@@ -140,7 +140,7 @@ std::vector <const Device *> FMTownsCommon::DevicesToSaveState(void) const
 	allDevices.push_back(&cpu);
 	allDevices.push_back(&pic);
 	allDevices.push_back(&dmac);
-	allDevices.push_back(&physMem);
+	allDevices.push_back(&mem);
 	allDevices.push_back(&crtc);
 	allDevices.push_back(&sprite);
 	allDevices.push_back(&fdc);
@@ -168,7 +168,7 @@ std::vector <Device *> FMTownsCommon::DevicesToLoadState(void)
 	allDevices.push_back(&cpu);
 	allDevices.push_back(&pic);
 	allDevices.push_back(&dmac);
-	allDevices.push_back(&physMem);
+	allDevices.push_back(&mem);
 	allDevices.push_back(&crtc);
 	allDevices.push_back(&sprite);
 	allDevices.push_back(&fdc);

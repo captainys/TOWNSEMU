@@ -144,19 +144,19 @@ void FMTownsCommon::VMHostFileTransfer(void)
 			file.bin=cpputil::ReadBinaryFile(file.hostFName);
 			auto fSize=file.bin.size();
 
-			for(auto &d : physMem.state.spriteRAM)
+			for(auto &d : mem.state.spriteRAM)
 			{
 				d=0;
 			}
-			physMem.state.spriteRAM[0]=TOWNS_VMIF_TFR_HOST_TO_VM;
-			physMem.state.spriteRAM[4]=( fSize     &255);
-			physMem.state.spriteRAM[5]=((fSize>> 8)&255);
-			physMem.state.spriteRAM[6]=((fSize>>16)&255);
-			physMem.state.spriteRAM[7]=((fSize>>24)&255);
+			mem.state.spriteRAM[0]=TOWNS_VMIF_TFR_HOST_TO_VM;
+			mem.state.spriteRAM[4]=( fSize     &255);
+			mem.state.spriteRAM[5]=((fSize>> 8)&255);
+			mem.state.spriteRAM[6]=((fSize>>16)&255);
+			mem.state.spriteRAM[7]=((fSize>>24)&255);
 
 			for(int i=0; i<260 && i<file.vmFName.size(); ++i)
 			{
-				physMem.state.spriteRAM[64+i]=file.vmFName[i];
+				mem.state.spriteRAM[64+i]=file.vmFName[i];
 			}
 		}
 		else
@@ -169,7 +169,7 @@ void FMTownsCommon::VMHostFileTransfer(void)
 
 			for(unsigned int i=0; i<batchSize; ++i)
 			{
-				physMem.state.spriteRAM[i]=file.bin[file.offset+i];
+				mem.state.spriteRAM[i]=file.bin[file.offset+i];
 			}
 
 			file.offset+=batchSize;
@@ -194,34 +194,34 @@ void FMTownsCommon::VMHostFileTransfer(void)
 			//   [8..63] Unused(Zero)
 			//   [64..]  File name in VM
 
-			for(auto &d : physMem.state.spriteRAM)
+			for(auto &d : mem.state.spriteRAM)
 			{
 				d=0;
 			}
-			physMem.state.spriteRAM[0]=TOWNS_VMIF_TFR_VM_TO_HOST;
+			mem.state.spriteRAM[0]=TOWNS_VMIF_TFR_VM_TO_HOST;
 			for(int i=0; i<260 && i<file.vmFName.size(); ++i)
 			{
-				physMem.state.spriteRAM[64+i]=file.vmFName[i];
+				mem.state.spriteRAM[64+i]=file.vmFName[i];
 			}
 		}
 		else
 		{
 			// 2nd Batch and on
 			//   File Contents
-			if(2==physMem.state.spriteRAM[0])
+			if(2==mem.state.spriteRAM[0])
 			{
 				std::cout << "Read error in VM." << std::endl;
 				var.ftfr.toRecv.erase(var.ftfr.toRecv.begin());
 				return;
 			}
 
-			unsigned int batchSize=cpputil::GetDword(physMem.state.spriteRAM+4);
+			unsigned int batchSize=cpputil::GetDword(mem.state.spriteRAM+4);
 			for(unsigned int i=0; i<batchSize; ++i)
 			{
-				file.bin.push_back(physMem.state.spriteRAM[8+i]);
+				file.bin.push_back(mem.state.spriteRAM[8+i]);
 			}
 
-			if(1==physMem.state.spriteRAM[0])
+			if(1==mem.state.spriteRAM[0])
 			{
 				std::cout << "File finished.  " << file.bin.size() << " bytes." << std::endl;
 				if(0==cpputil::WriteBinaryFile(file.hostFName,file.bin.size(),file.bin.data()))
@@ -234,7 +234,7 @@ void FMTownsCommon::VMHostFileTransfer(void)
 	}
 	else
 	{
-		physMem.state.spriteRAM[0]=TOWNS_VMIF_TFR_END;
+		mem.state.spriteRAM[0]=TOWNS_VMIF_TFR_END;
 	}
 }
 void FMTownsCommon::VMHostFileTransfer::AddHostToVM(std::string hostFName,std::string vmFName)

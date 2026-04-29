@@ -234,7 +234,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 			unsigned int data=(state.lastSerialROMCommand&0xC0);
 			unsigned int index=TownsPhysicalMemory::SERIAL_ROM_LENGTH-1-(state.serialROMBitCount>>3);
 			unsigned int bit=(1<<(state.serialROMBitCount&7));
-			if(0!=(physMem.serialROM[index]&bit))
+			if(0!=(mem.serialROM[index]&bit))
 			{
 				data|=1;
 			}

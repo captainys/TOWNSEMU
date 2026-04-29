@@ -460,7 +460,7 @@ public:
 	TownsRTC rtc;
 	TownsDMAC dmac;
 	TownsCDROM cdrom;
-	TownsPhysicalMemory physMem;
+	TownsPhysicalMemory mem;
 	TownsCRTC crtc;
 	TownsSprite sprite;
 	TownsFDC fdc;
@@ -479,7 +479,6 @@ public:
 	unsigned int townsType;
 	Variable var;
 	InOut io;
-	Memory &mem=physMem;
 
 	/*! Pointers of all devices (except *this) must be stored in allDevices.
 	*/
@@ -988,7 +987,7 @@ public:
 
 		// This function caches the CPU pointer, and therefore cannot be
 		// called in the constructor of the base class, when CPU is not ready yet.
-		physMem.SetUpMemoryAccess(townsType,TownsTypeToCPUType(townsType));
+		mem.SetUpMemoryAccess(townsType,TownsTypeToCPUType(townsType));
 
 		PowerOn();
 	}

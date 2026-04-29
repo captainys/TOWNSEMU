@@ -293,7 +293,7 @@ void TownsThread::VMMainLoopTemplate(
 		{
 			townsPtr->state.nextSecondInTownsTime+=PER_SECOND;
 			townsPtr->fdc.SaveModifiedDiskImages();
-			townsPtr->physMem.state.memCard.SaveRawImageIfModified();
+			townsPtr->mem.state.memCard.SaveRawImageIfModified();
 		}
 		if(true==townsPtr->autoQSS)
 		{
@@ -343,7 +343,7 @@ void TownsThread::VMEnd(FMTownsCommon *townsPtr,Outside_World *outside_world,cla
 	if(0<townsPtr->var.CMOSFName.size())
 	{
 		auto expanded=townsPtr->var.ExpandFileName(townsPtr->var.CMOSFName);
-		if(true!=cpputil::WriteBinaryFile(expanded,TOWNS_CMOS_SIZE,townsPtr->physMem.state.CMOSRAM))
+		if(true!=cpputil::WriteBinaryFile(expanded,TOWNS_CMOS_SIZE,townsPtr->mem.state.CMOSRAM))
 		{
 			std::cout << "Failed to save CMOS." << std::endl;
 		}

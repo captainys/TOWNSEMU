@@ -108,7 +108,7 @@ void FMTownsCommon::State::PowerOn(void)
 	}
 
 	if(TOWNSTYPE_MARTY==argv.townsType &&
-	   TOWNSADDR_MARTY_ROM3_END-TOWNSADDR_MARTY_ROM0_BASE!=towns.physMem.martyRom.size())
+	   TOWNSADDR_MARTY_ROM3_END-TOWNSADDR_MARTY_ROM0_BASE!=towns.mem.martyRom.size())
 	{
 		std::cout << "Marty requires EX-ROM images." << std::endl;
 		return false;
@@ -140,7 +140,7 @@ void FMTownsCommon::State::PowerOn(void)
 	if(TOWNSTYPE_UNKNOWN!=argv.townsType)
 	{
 		towns.townsType=argv.townsType;
-		towns.physMem.SetUpMemoryAccess(argv.townsType,towns.TownsTypeToCPUType(argv.townsType));
+		towns.mem.SetUpMemoryAccess(argv.townsType,towns.TownsTypeToCPUType(argv.townsType));
 	}
 
 	towns.cdrom.var.virtuallyRemoved=argv.removeInternalCD;
@@ -248,7 +248,7 @@ void FMTownsCommon::State::PowerOn(void)
 		auto CMOSBinary=cpputil::ReadBinaryFile(CMOSFName);
 		if(0<CMOSBinary.size())
 		{
-			towns.physMem.SetCMOS(CMOSBinary);
+			towns.mem.SetCMOS(CMOSBinary);
 		}
 	}
 	if(true==argv.zeroCMOS)
@@ -258,11 +258,11 @@ void FMTownsCommon::State::PowerOn(void)
 		{
 			cmos.push_back(0);
 		}
-		towns.physMem.SetCMOS(cmos);
+		towns.mem.SetCMOS(cmos);
 	}
 	if(true==argv.alwaysBootToFASTMode)
 	{
-		towns.physMem.state.CMOSRAM[TOWNS_CMOSRAM_FASTMODE_FLAG]=1;
+		towns.mem.state.CMOSRAM[TOWNS_CMOSRAM_FASTMODE_FLAG]=1;
 	}
 	if(""!=argv.keyMapFName)
 	{
@@ -342,7 +342,7 @@ void FMTownsCommon::State::PowerOn(void)
 	std::cout << "Loaded ROM Images.\n";
 
 	towns.Reset();
-	towns.physMem.takeJISCodeLog=false;
+	towns.mem.takeJISCodeLog=false;
 
 	std::cout << "Virtual Machine Reset.\n";
 
@@ -390,12 +390,12 @@ void FMTownsCommon::State::PowerOn(void)
 
 	if(TOWNS_MEMCARD_TYPE_NONE!=argv.memCardType)
 	{
-		if(true==towns.physMem.state.memCard.LoadRawImage(argv.memCardImgFName))
+		if(true==towns.mem.state.memCard.LoadRawImage(argv.memCardImgFName))
 		{
-			towns.physMem.state.memCard.memCardType=argv.memCardType;
-			towns.physMem.state.memCard.fName=argv.memCardImgFName;
-			towns.physMem.state.memCard.changed=false;  // Because it was already in upon power-on.
-			towns.physMem.state.memCard.writeProtected=argv.memCardWriteProtected;
+			towns.mem.state.memCard.memCardType=argv.memCardType;
+			towns.mem.state.memCard.fName=argv.memCardImgFName;
+			towns.mem.state.memCard.changed=false;  // Because it was already in upon power-on.
+			towns.mem.state.memCard.writeProtected=argv.memCardWriteProtected;
 		}
 	}
 
@@ -597,10 +597,10 @@ std::string FMTownsCommon::Variable::ExpandFileName(std::string incoming) const
 FMTownsCommon::FMTownsCommon() : 
 	Device(this),
 	debugger(this),
-	physMem(this,&sound.state.rf5c68),
+	mem(this,&sound.state.rf5c68),
 	keyboard(this,&pic),
 	crtc(this,&sprite),
-	sprite(this,&physMem),
+	sprite(this,&mem),
 	pic(this),
 	dmac(this),
 	cdrom(this,&pic,&dmac),
@@ -634,7 +634,7 @@ FMTownsCommon::FMTownsCommon() :
 	allDevices.push_back(this);
 	allDevices.push_back(&pic);
 	allDevices.push_back(&dmac);
-	allDevices.push_back(&physMem);
+	allDevices.push_back(&mem);
 	allDevices.push_back(&crtc);
 	allDevices.push_back(&sprite);
 	allDevices.push_back(&fdc);
@@ -652,19 +652,19 @@ FMTownsCommon::FMTownsCommon() :
 	allDevices.push_back(&highResPCM);
 	VMBase::CacheDeviceIndex();
 
-	physMem.SetMainRAMSize(4*1024*1024);
+	mem.SetMainRAMSize(4*1024*1024);
 
-	physMem.SetVRAMSize(TOWNS_VRAM_SIZE);
-	physMem.SetCVRAMSize(TOWNS_CVRAM_SIZE);
-	physMem.SetSpriteRAMSize(TOWNS_SPRITERAM_SIZE);
-	physMem.SetDummySize(TOWNS_WAVERAM_SIZE);
+	mem.SetVRAMSize(TOWNS_VRAM_SIZE);
+	mem.SetCVRAMSize(TOWNS_CVRAM_SIZE);
+	mem.SetSpriteRAMSize(TOWNS_SPRITERAM_SIZE);
+	mem.SetDummySize(TOWNS_WAVERAM_SIZE);
 	for(int i=0; i<TOWNS_CMOS_SIZE; ++i)
 	{
-		physMem.state.CMOSRAM[i]=defCMOS[i];
+		mem.state.CMOSRAM[i]=defCMOS[i];
 	}
 
-	physMem.FMRVRAMAccess.townsPtr=this;
-	physMem.FMRVRAMAccess.crtcPtr=&this->crtc;
+	mem.FMRVRAMAccess.townsPtr=this;
+	mem.FMRVRAMAccess.crtcPtr=&this->crtc;
 
 	// Free-run counter since FM TOWNS 2UG [2] pp.801
 	// Didn't it exist since the first model FM TOWNS 2?
@@ -683,7 +683,7 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(&crtc,TOWNSIO_MX_HIRES/*0x470*/,TOWNSIO_MX_IMGOUT_D3/*0x477*/);
 	io.AddDevice(&keyboard,TOWNSIO_KEYBOARD_DATA/*0x600*/,TOWNSIO_KEYBOARD_IRQ/*0x604*/);
 	io.AddDevice(&fdc,TOWNSIO_FDC_STATUS_COMMAND/*0x200*/,TOWNSIO_FDC_DRIVE_SWITCH/*0x20E*/);
-	io.AddDevice(&physMem,TOWNSIO_CMOS_BASE,TOWNSIO_CMOS_END-1);
+	io.AddDevice(&mem,TOWNSIO_CMOS_BASE,TOWNSIO_CMOS_END-1);
 
 
 	// Individual I/O mappings >>>
@@ -761,25 +761,25 @@ FMTownsCommon::FMTownsCommon() :
 
 
 	io.AddDevice(this,TOWNSIO_RESET_REASON);
-	io.AddDevice(&physMem,TOWNSIO_FMR_VRAM_OR_MAINRAM);
-	io.AddDevice(&physMem,TOWNSIO_SYSROM_DICROM);
-	io.AddDevice(&physMem,TOWNSIO_DICROM_BANK);
-	io.AddDevice(&physMem,TOWNSIO_MEMSIZE);
-	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMMASK);
-	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMDISPLAYMODE);
-	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMPAGESEL);
-	io.AddDevice(&physMem,TOWNSIO_TVRAM_WRITE);
-	io.AddDevice(&physMem,TOWNSIO_VRAMACCESSCTRL_ADDR); //      0x458, // [2] pp.17,pp.112
-	io.AddDevice(&physMem,TOWNSIO_VRAMACCESSCTRL_DATA_LOW); //  0x45A, // [2] pp.17,pp.112
-	io.AddDevice(&physMem,TOWNSIO_VRAMACCESSCTRL_DATA_HIGH); // 0x45B, // [2] pp.17,pp.112
-	io.AddDevice(&physMem,TOWNSIO_MEMCARD_STATUS); //           0x48A, // [2] pp.93
-	io.AddDevice(&physMem,TOWNSIO_MEMCARD_BANK); //             0x490, // [2] pp.794
-	io.AddDevice(&physMem,TOWNSIO_MEMCARD_ATTRIB); //           0x491, // [2] pp.795
-	io.AddDevice(&physMem,TOWNSIO_KANJI_JISCODE_HIGH);//  0xFF94,
-	io.AddDevice(&physMem,TOWNSIO_KANJI_JISCODE_LOW);//   0xFF95,
-	io.AddDevice(&physMem,TOWNSIO_KANJI_PTN_HIGH);//      0xFF96,
-	io.AddDevice(&physMem,TOWNSIO_KANJI_PTN_LOW);//       0xFF97,
-	io.AddDevice(&physMem,TOWNSIO_KVRAM_OR_ANKFONT);//    0xFF99,
+	io.AddDevice(&mem,TOWNSIO_FMR_VRAM_OR_MAINRAM);
+	io.AddDevice(&mem,TOWNSIO_SYSROM_DICROM);
+	io.AddDevice(&mem,TOWNSIO_DICROM_BANK);
+	io.AddDevice(&mem,TOWNSIO_MEMSIZE);
+	io.AddDevice(&mem,TOWNSIO_FMR_VRAMMASK);
+	io.AddDevice(&mem,TOWNSIO_FMR_VRAMDISPLAYMODE);
+	io.AddDevice(&mem,TOWNSIO_FMR_VRAMPAGESEL);
+	io.AddDevice(&mem,TOWNSIO_TVRAM_WRITE);
+	io.AddDevice(&mem,TOWNSIO_VRAMACCESSCTRL_ADDR); //      0x458, // [2] pp.17,pp.112
+	io.AddDevice(&mem,TOWNSIO_VRAMACCESSCTRL_DATA_LOW); //  0x45A, // [2] pp.17,pp.112
+	io.AddDevice(&mem,TOWNSIO_VRAMACCESSCTRL_DATA_HIGH); // 0x45B, // [2] pp.17,pp.112
+	io.AddDevice(&mem,TOWNSIO_MEMCARD_STATUS); //           0x48A, // [2] pp.93
+	io.AddDevice(&mem,TOWNSIO_MEMCARD_BANK); //             0x490, // [2] pp.794
+	io.AddDevice(&mem,TOWNSIO_MEMCARD_ATTRIB); //           0x491, // [2] pp.795
+	io.AddDevice(&mem,TOWNSIO_KANJI_JISCODE_HIGH);//  0xFF94,
+	io.AddDevice(&mem,TOWNSIO_KANJI_JISCODE_LOW);//   0xFF95,
+	io.AddDevice(&mem,TOWNSIO_KANJI_PTN_HIGH);//      0xFF96,
+	io.AddDevice(&mem,TOWNSIO_KANJI_PTN_LOW);//       0xFF97,
+	io.AddDevice(&mem,TOWNSIO_KVRAM_OR_ANKFONT);//    0xFF99,
 
 
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_MASTER_CTRL_STATUS);
@@ -1110,7 +1110,7 @@ unsigned int FMTownsCommon::MachineID(void) const
 bool FMTownsCommon::LoadROMImages(std::string dirName,bool verbose)
 {
 	dirName=cpputil::ExpandFileName(dirName,var.specialPath);
-	if(true!=physMem.LoadROMImages(dirName,verbose))
+	if(true!=mem.LoadROMImages(dirName,verbose))
 	{
 		Device::Abort("Unable to load ROM images.");
 		return false;
@@ -1276,7 +1276,7 @@ void FMTownsCommon::RunFastDevicePollingInternal(void)
 
 void FMTownsCommon::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 {
-	physMem.SetUpVRAMAccess(TownsTypeToCPUType(townsType),breakOnRead,breakOnWrite);
+	mem.SetUpVRAMAccess(TownsTypeToCPUType(townsType),breakOnRead,breakOnWrite);
 }
 
 bool FMTownsCommon::FASTModeLamp(void) const
@@ -1298,16 +1298,16 @@ void FMTownsCommon::SetMainRAMSize(long long int size)
 		RAMEnd=TOWNSADDR_386SX_VRAM0_BASE-1;
 	}
 
-	physMem.SetMainRAMSize(size);
-	mem.RemoveAccess(physMem.state.RAM.size()-1,RAMEnd);
-	mem.AddAccess(&physMem.mainRAMAccess,0x00100000,physMem.state.RAM.size()-1);
+	mem.SetMainRAMSize(size);
+	mem.RemoveAccess(mem.state.RAM.size()-1,RAMEnd);
+	mem.AddAccess(&mem.mainRAMAccess,0x00100000,mem.state.RAM.size()-1);
 }
 
 void FMTownsCommon::ForceRender(class TownsRender &render,class Outside_World &world,Outside_World::WindowInterface &windowInterface)
 {
 	render.Prepare(crtc);
 	render.damperWireLine=var.damperWireLine;
-	render.BuildImage(physMem.state.VRAM,crtc.GetPalette(),crtc.chaseHQPalette);
+	render.BuildImage(mem.state.VRAM,crtc.GetPalette(),crtc.chaseHQPalette);
 	if(true==world.ImageNeedsFlip())
 	{
 		render.FlipUpsideDown();
@@ -1326,13 +1326,13 @@ void FMTownsCommon::RenderQuiet(class TownsRender &render,bool layer0,bool layer
 	auto palette=crtc.GetPalette();
 	ApplicationSpecificScreenshotOverride(render,palette);
 
-	render.BuildImage(physMem.state.VRAM,palette,crtc.chaseHQPalette);
+	render.BuildImage(mem.state.VRAM,palette,crtc.chaseHQPalette);
 }
 
 void FMTownsCommon::RenderEntireVRAMLayerQuiet(class TownsRender &render,unsigned int layer)
 {
 	render.PrepareEntireVRAMLayer(crtc,layer);
-	render.BuildImage(physMem.state.VRAM,crtc.GetPalette(),crtc.chaseHQPalette);
+	render.BuildImage(mem.state.VRAM,crtc.GetPalette(),crtc.chaseHQPalette);
 }
 
 bool FMTownsCommon::GetEleVolCDLeftEN(void) const
@@ -1475,8 +1475,8 @@ std::vector <std::string> FMTownsCommon::GetRealModeIntVectorsText(void) const
 			}
 			auto ij=i+j;
 			str+=cpputil::Ubtox(ij)+" ";
-			unsigned int offset=physMem.state.RAM[ij*4]|((unsigned int)physMem.state.RAM[ij*4+1]<<8);
-			unsigned int seg=physMem.state.RAM[ij*4+2]|((unsigned int)physMem.state.RAM[ij*4+3]<<8);
+			unsigned int offset=mem.state.RAM[ij*4]|((unsigned int)mem.state.RAM[ij*4+1]<<8);
+			unsigned int seg=mem.state.RAM[ij*4+2]|((unsigned int)mem.state.RAM[ij*4+3]<<8);
 			str+=cpputil::Ustox(seg)+":"+cpputil::Ustox(offset);
 		}
 		text.push_back(str);
@@ -1997,7 +1997,7 @@ unsigned int FMTownsCommon::FindDOSSEG(void) const
 	uint32_t foundBUGAt=0;
 	for(unsigned int addr=0; addr+3<=0xC0000; ++addr)
 	{
-		if(true==cpputil::Match(3,(const unsigned char *)"BUG",physMem.state.RAM.data()+addr))
+		if(true==cpputil::Match(3,(const unsigned char *)"BUG",mem.state.RAM.data()+addr))
 		{
 			foundBUGAt=addr;
 			break;
