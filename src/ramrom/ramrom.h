@@ -258,6 +258,8 @@ public:
 	NullMemoryAccess nullAccess;
 
 protected:
+	MemoryAccess *debuggerLink=nullptr;
+
 	std::vector <MemoryAccess *> memAccessPtr;
 	enum
 	{

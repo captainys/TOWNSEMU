@@ -193,6 +193,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		debuggerLink->FetchByte(physAddr);
 		accessType&=~1;
 		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
@@ -237,6 +238,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		debuggerLink->FetchByteDMA(physAddr);
 		accessType&=~1;
 		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
@@ -281,6 +283,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		debuggerLink->FetchWord(physAddr);
 		accessType&=~1;
 		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
@@ -325,6 +328,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		debuggerLink->FetchDword(physAddr);
 		accessType&=~1;
 		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
@@ -371,6 +375,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		debuggerLink->StoreByte(physAddr,data);
 		accessType&=~1;
 		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
@@ -416,6 +421,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		debuggerLink->StoreByteDMA(physAddr,data);
 		accessType&=~1;
 		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
@@ -461,6 +467,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		debuggerLink->StoreWord(physAddr,data);
 		accessType&=~1;
 		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
@@ -506,6 +513,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		debuggerLink->StoreDword(physAddr,data);
 		accessType&=~1;
 		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
@@ -549,6 +557,7 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		debuggerLink->GetConstMemoryWindow(physAddr);
 		{
 			MemoryAccess::ConstMemoryWindow window;
 			window.ptr=nullptr;
@@ -596,6 +605,7 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		debuggerLink->GetMemoryWindow(physAddr);
 		{
 			MemoryAccess::MemoryWindow window;
 			window.ptr=nullptr;
