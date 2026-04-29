@@ -1574,6 +1574,7 @@ unsigned int i486DXCommon::FPUState::RestoreEnv(unsigned int operandSize,bool is
 		//cpputil::GetWord(data+12);
 		return 14;
 	}
+	return 0;
 }
 std::vector <uint8_t> i486DXCommon::FPUState::FSAVE(const i486DXCommon &cpu,unsigned int operandSize) const
 {
@@ -1701,6 +1702,7 @@ unsigned int  i486DXCommon::FPUState::PopulateFPUEnv(uint8_t *data,unsigned int 
 		cpputil::PutWord(data+12,0);
 		return 14;
 	}
+	return 0;
 }
 void i486DXCommon::FPUState::RestoreFPUEnv(const uint8_t *data,unsigned int operandSize,bool isInRealMode)
 {

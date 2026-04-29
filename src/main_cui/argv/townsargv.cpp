@@ -564,6 +564,21 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			}
 			++i;
 		}
+		else if("-POWEROFFONIOW"==ARG && i+1<argc)
+		{
+			powerOffOnIOW=true;
+			powerOffOnIOWPort=cpputil::Xtoi(argv[i+1]);
+			powerOffOnIOWValue=~0;
+			for(size_t j=0; 0!=argv[i+1][j]; ++j)
+			{
+				if('@'==argv[i+1][j])
+				{
+					powerOffOnIOWValue=cpputil::Xtoi(argv[i+1]+j+1);
+					break;
+				}
+			}
+			++i;
+		}
 		else if("-FREQ"==ARG && i+1<argc)
 		{
 			freq=cpputil::Atoi(argv[i+1]);

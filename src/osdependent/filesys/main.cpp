@@ -30,7 +30,7 @@ int main(int ac,char *av[])
 			break;
 		}
 		std::cout << ent.fName << std::endl;
-		if(ent.fName=="CMakeLists.txt")
+		if(ent.fName=="CMakeLists.txt" || "CMAKEL~1.TXT"==ent.fName)
 		{
 			checked|=1;
 		}
@@ -38,11 +38,12 @@ int main(int ac,char *av[])
 		{
 			checked|=2;
 		}
-		if(ent.fName=="filesys_null.cpp")
+		if(ent.fName=="filesys_null.cpp" || "FILESY~1.CPP"==ent.fName)
 		{
 			checked|=4;
 		}
-		if(ent.fName=="filesys_win.cpp" || ent.fName=="filesys_unix.cpp" || ent.fName=="filesys_mac.cpp")
+		if(ent.fName=="filesys_win.cpp" || ent.fName=="filesys_unix.cpp" || ent.fName=="filesys_mac.cpp" ||
+		   "FILESY~2.CPP"==ent.fName || "FILESY~3.CPP"==ent.fName || "FILESY~4.CPP"==ent.fName)
 		{
 			checked|=8;
 		}

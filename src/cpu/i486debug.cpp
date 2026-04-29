@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
 #include <stdint.h>
 
 #include "vmbase.h"
@@ -1069,6 +1070,16 @@ void i486Debugger::IOWrite(const i486DXCommon &cpu,unsigned int ioport,unsigned 
 				break;
 			}
 		}
+	}
+
+	if(true==powerOffOnIOW &&
+	   ioport==powerOffOnIOWPort &&
+	   (~0==powerOffOnIOWValue || data==powerOffOnIOWValue))
+	{
+		std::cout << "Power Off on IO Write\n";
+		std::cout << "Port=" << cpputil::Ustox(ioport) << "\n";
+		std::cout << "Data=" << cpputil::Ubtox(data) << "\n";
+		exit(0);
 	}
 }
 void i486Debugger::IORead(const i486DXCommon &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)

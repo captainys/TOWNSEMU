@@ -234,6 +234,10 @@ FSKEY_NUM_KEYCODE
 			#include <GL/glu.h>
 			#include <GL/glext.h>
 		#else
+			#ifndef GL_SILENCE_DEPRECATION
+				#define GL_SILENCE_DEPRECATION
+			#endif
+
 		    #include <TargetConditionals.h>
 		    #if TARGET_OS_EMBEDDED!=0 || TARGET_OS_IPHONE!=0 || TARGET_OS_IPHONE_SIMULATOR!=0
 				#include <OpenGLES/ES2/gl.h>

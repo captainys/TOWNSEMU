@@ -787,7 +787,14 @@ bool FMTownsCommon::ControlMouseByDiffDirect(int diffX,int diffY)
 	{
 		if(p.device==TownsGamePort::MOUSE)
 		{
-			p.mouseMotion.Set(-diffX,-diffY);
+			p.mouseMotion.x()-=diffX;
+			p.mouseMotion.y()-=diffY;
+
+			p.mouseMotion.x()=std::max<int>(-127,p.mouseMotion.x());
+			p.mouseMotion.y()=std::max<int>(-127,p.mouseMotion.y());
+
+			p.mouseMotion.x()=std::min<int>( 127,p.mouseMotion.x());
+			p.mouseMotion.y()=std::min<int>( 127,p.mouseMotion.y());
 		}
 	}
 	return true;

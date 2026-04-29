@@ -12,6 +12,9 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 << LICENSE */
+
+#define GL_SILENCE_DEPRECATION
+
 #include <stdio.h>
 #ifdef _WIN32
 	#include <direct.h>
@@ -1731,20 +1734,43 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 	}
 	for(;;)
 	{
-		int lastXY[2]={winThrEx.primary.lastKnownMouse.mx,winThrEx.primary.lastKnownMouse.my};
-
 		winThrEx.primary.lastKnownMouse.Read();
 		if(FSMOUSEEVENT_NONE==winThrEx.primary.lastKnownMouse.evt)
 		{
 			break;
 		}
 		winThrEx.primary.mouseEvents.push_back(winThrEx.primary.lastKnownMouse);
+	}
 
-		int newXY[2]={winThrEx.primary.lastKnownMouse.mx,winThrEx.primary.lastKnownMouse.my};
-		int diffXY[2]={newXY[0]-lastXY[0],newXY[1]-lastXY[1]};
+	if(true==shared.differentialMouseIntegration)
+	{
+		int lb,mb,rb,mx,my;
+		FsGetMouseState(lb,mb,rb,mx,my);
+		// Next FsGetMouseEvent may lag from FsSetMousePosition if more events are in the queue.
+		// Therefore mouse position for differentialMouseIntegration should be polled separately.
 
-		winThrEx.primary.mouseMoveXY[0]+=diffXY[0];
-		winThrEx.primary.mouseMoveXY[1]+=diffXY[1];
+		winThrEx.primary.mouseMoveXY[0]+=mx-diffMouseXY[0];
+		winThrEx.primary.mouseMoveXY[1]+=my-diffMouseXY[1];
+
+		diffMouseXY[0]=mx;
+		diffMouseXY[1]=my;
+
+		int minX=winThrEx.primary.winWid/4;
+		int minY=winThrEx.primary.winHei/4;
+		int maxX=winThrEx.primary.winWid*3/4;
+		int maxY=winThrEx.primary.winHei*3/4;
+
+		if(mx<minX || my<minY ||
+           maxX<mx || maxY<my)
+        {
+			int cx=winThrEx.primary.winWid/2;
+			int cy=winThrEx.primary.winHei/2;
+
+			diffMouseXY[0]=cx;
+			diffMouseXY[1]=cy;
+
+			FsSetMousePosition(cx,cy);
+		}
 	}
 
 	PollGamePads();
@@ -1771,15 +1797,6 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 		{
 			sharedEx.readyToSend=winThrEx.primary;
 			winThrEx.primary.CleanUpEvents();
-
-			if(true==shared.differentialMouseIntegration)
-			{
-				int mx=winThrEx.primary.winWid/2;
-				int my=winThrEx.primary.winHei/2;
-				winThrEx.primary.lastKnownMouse.mx=mx;
-				winThrEx.primary.lastKnownMouse.my=my;
-				FsSetMousePosition(mx,my);
-			}
 		}
 	}
 }

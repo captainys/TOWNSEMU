@@ -317,10 +317,17 @@ bool TownsTgDrv::Int2F_1106_CloseRemoteFile(void)
 		   hostSFTIdx<FileSys::MAX_NUM_OPEN_FILE &&
 		   true==sharedDir[sharedDirIdx].sft[hostSFTIdx].IsOpen())
 		{
-			auto hostFName=sharedDir[sharedDirIdx].sft[hostSFTIdx].fName;
-			auto mode=sharedDir[sharedDirIdx].sft[hostSFTIdx].mode;
+			auto &sft=sharedDir[sharedDirIdx].sft[hostSFTIdx];
+			auto hostFName=sft.fName;
+			auto mode=sft.mode;
 
 			auto refCount=FetchSFTReferenceCount(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
+
+			if(true==monitor)
+			{
+				std::cout << "Close " << sft.subPath << " " << refCount;
+			}
+
 			if(refCount<=1)
 			{
 				sharedDir[sharedDirIdx].CloseFile(hostSFTIdx);
@@ -329,6 +336,11 @@ bool TownsTgDrv::Int2F_1106_CloseRemoteFile(void)
 			else
 			{
 				--refCount;
+			}
+
+			if(true==monitor)
+			{
+				std::cout << "-> " << refCount << "\n";
 			}
 
 			uint32_t dosTime=FetchDOSDateTimeFromSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
@@ -785,7 +797,7 @@ bool TownsTgDrv::Int2F_1116_OpenExistingFile(void)
 		auto mode=FetchStackParam0();
 		if(true==monitor)
 		{
-			std::cout << cpputil::Ustox(mode) << std::endl;
+			std::cout << cpputil::Ustox(mode) << " " << fName << "\n";
 		}
 
 		auto invalidErr=CheckFileName(fName);
@@ -846,7 +858,7 @@ bool TownsTgDrv::Int2F_1117_CreateOrTruncate(void)
 
 		if(true==monitor)
 		{
-			std::cout << cpputil::Ustox(mode) << std::endl;
+			std::cout << cpputil::Ustox(mode) << " " << fName << "\n";
 		}
 
 		// Cannot figure the meaning of high-byte of mode.

@@ -166,6 +166,10 @@ public:
 	bool forceQuitOnPowerOff=false;
 	std::string powerOffAt;
 
+	bool powerOffOnIOW=false;
+	uint32_t powerOffOnIOWPort=~0;
+	uint32_t powerOffOnIOWValue=~0;
+
 	bool pretend386DX=false;
 	bool useFPU=false;
 

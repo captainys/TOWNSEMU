@@ -1342,6 +1342,18 @@ void Outside_World::ProcessInkey(class FMTownsCommon &towns,int townsKey)
 void Outside_World::ProcessMouse(class FMTownsCommon &towns,int lb,int mb,int rb,int mx,int my)
 {
 	towns.SetMouseButtonState((0!=lb),(0!=rb));
+
+	{
+		int dx=lastMx-mx;
+		int dy=lastMy-my;
+		if(0!=dx || 0!=dy)
+		{
+			// std::cout << "Mouse Integration Active" << std::endl;
+			mouseIntegrationActive=true;
+			mouseStationaryCount=MOUSE_STATIONARY_COUNT;
+		}
+	}
+
 	if(true==mouseIntegrationActive)
 	{
 		int diffX,diffY;
@@ -1362,14 +1374,6 @@ void Outside_World::ProcessMouse(class FMTownsCommon &towns,int lb,int mb,int rb
 	}
 	else
 	{
-		int dx=lastMx-mx;
-		int dy=lastMy-my;
-		if(0!=dx || 0!=dy)
-		{
-			// std::cout << "Mouse Integration Active" << std::endl;
-			mouseIntegrationActive=true;
-			mouseStationaryCount=MOUSE_STATIONARY_COUNT;
-		}
 		towns.DontControlMouse();
 	}
 	lastMx=mx;
@@ -1379,6 +1383,14 @@ void Outside_World::ProcessMouse(class FMTownsCommon &towns,int lb,int mb,int rb
 void Outside_World::ProcessMouseDifferential(class FMTownsCommon &towns,int lb,int mb,int rb,int dx,int dy,int refX,int refY)
 {
 	towns.SetMouseButtonState((0!=lb),(0!=rb));
+
+	if(dx<-1 || 1<dx || dy<-1 || 1<dy)
+	{
+		// std::cout << "Mouse Integration Active" << std::endl;
+		mouseIntegrationActive=true;
+		mouseStationaryCount=MOUSE_STATIONARY_COUNT;
+	}
+
 	if(true==mouseIntegrationActive)
 	{
 		towns.ControlMouseByDiffDirect(dx,dy);
@@ -1399,12 +1411,6 @@ void Outside_World::ProcessMouseDifferential(class FMTownsCommon &towns,int lb,i
 	}
 	else
 	{
-		if(dx<-1 || 1<dx || dy<-1 || 1<dy)
-		{
-			// std::cout << "Mouse Integration Active" << std::endl;
-			mouseIntegrationActive=true;
-			mouseStationaryCount=MOUSE_STATIONARY_COUNT;
-		}
 		towns.DontControlMouse();
 	}
 }

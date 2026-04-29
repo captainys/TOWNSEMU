@@ -231,6 +231,10 @@ public:
 	bool monitorIOports[65536];
 	bool disassembleEveryStep=false,regDumpEveryStep=false;;
 
+	bool powerOffOnIOW=false;
+	uint32_t powerOffOnIOWPort=~0;
+	uint32_t powerOffOnIOWValue=~0;
+
 	CS_EIP lastDisassembleAddr;
 
 
