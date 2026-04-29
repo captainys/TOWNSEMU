@@ -320,7 +320,7 @@ public:
 
 
 
-class TownsPhysicalMemory : public Device
+class TownsPhysicalMemory : public Device, public Memory
 {
 public:
 	class KanjiROMAccess
@@ -412,8 +412,6 @@ public:
 	bool takeJISCodeLog;
 	std::vector <unsigned char> JISCodeLog; // Log KanjiROM Read Access
 
-	class Memory *memPtr;
-
 	TownsMainRAMAccess mainRAMAccess;
 	TownsMappedSysROMAccess mappedSysROMAccess;
 	TownsFMRVRAMAccess FMRVRAMAccess;
@@ -456,7 +454,7 @@ public:
 
 
 
-	TownsPhysicalMemory(class FMTownsCommon *townsPtr,class Memory *memPtr,class RF5C68 *pcmPtr);
+	TownsPhysicalMemory(class FMTownsCommon *townsPtr,class RF5C68 *pcmPtr);
 
 	bool LoadROMImages(std::string dirName,bool verbose=false);
 

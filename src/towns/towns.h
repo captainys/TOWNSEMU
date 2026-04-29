@@ -479,7 +479,7 @@ public:
 	unsigned int townsType;
 	Variable var;
 	InOut io;
-	Memory mem;
+	Memory &mem=physMem;
 
 	/*! Pointers of all devices (except *this) must be stored in allDevices.
 	*/

@@ -343,7 +343,7 @@ void TownsPhysicalMemory::IOWriteDword(unsigned int ioport,unsigned int data)
 	return Device::IOWriteDword(ioport,data);
 }
 
-TownsPhysicalMemory::TownsPhysicalMemory(class FMTownsCommon *townsPtr,class Memory *memPtr,class RF5C68 *pcmPtr) :
+TownsPhysicalMemory::TownsPhysicalMemory(class FMTownsCommon *townsPtr,class RF5C68 *pcmPtr) :
 	Device(townsPtr),
 	waveRAMAccess(townsPtr,pcmPtr,&townsPtr->sound.var.vgmRecorder),
 	oldMemCardAccess(townsPtr),
@@ -352,7 +352,6 @@ TownsPhysicalMemory::TownsPhysicalMemory(class FMTownsCommon *townsPtr,class Mem
 	this->townsPtr=townsPtr;
 
 	takeJISCodeLog=false;
-	this->memPtr=memPtr;
 
 	for(auto &b : state.CMOSRAM)
 	{
@@ -626,7 +625,7 @@ void TownsPhysicalMemory::SetDummySize(long long int size)
 
 void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int cpuType)
 {
-	auto &mem=*memPtr;
+	Memory &mem=*this;
 	auto &cpu=townsPtr->CPU();
 
 	mem.CleanUp();
@@ -769,7 +768,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 
 void TownsPhysicalMemory::SetUpVRAMAccess(unsigned int cpuType,bool breakOnRead,bool breakOnWrite)
 {
-	auto &mem=*memPtr;
+	Memory &mem=*this;
 	if(true!=breakOnRead && true!=breakOnWrite)
 	{
 		if(TOWNSCPU_80386SX!=cpuType)
@@ -846,11 +845,11 @@ void TownsPhysicalMemory::UpdateSysROMDicROMMappingFlag(bool sysRomMapping, bool
 
 		if (sysRomMapping)
 		{
-			memPtr->AddAccess(&mappedSysROMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
+			this->AddAccess(&mappedSysROMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
 		}
 		else
 		{
-			memPtr->AddAccess(&mainRAMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
+			this->AddAccess(&mainRAMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
 		}
 	}
 
@@ -862,11 +861,11 @@ void TownsPhysicalMemory::UpdateSysROMDicROMMappingFlag(bool sysRomMapping, bool
 		{
 			if (dicRomMapping)
 			{
-				memPtr->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+				this->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
 			}
 			else
 			{
-				memPtr->RemoveAccess(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+				this->RemoveAccess(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
 			}
 		}
 	}
@@ -886,19 +885,19 @@ void TownsPhysicalMemory::UpdateFMRVRAMMappingFlag(bool FMRVRAMMapping)
 
 		if (FMRVRAMMapping)
 		{
-			memPtr->AddAccess(&FMRVRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_VRAM_CVRAM_FONT_END - 1);
+			this->AddAccess(&FMRVRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_VRAM_CVRAM_FONT_END - 1);
 			if (state.dicRom) {
-				memPtr->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
-				memPtr->RemoveAccess(TOWNSADDR_FMR_RESERVED_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
+				this->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+				this->RemoveAccess(TOWNSADDR_FMR_RESERVED_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
 			}
 			else
 			{
-				memPtr->RemoveAccess(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
+				this->RemoveAccess(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
 			}
 		}
 		else
 		{
-			memPtr->AddAccess(&mainRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
+			this->AddAccess(&mainRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
 		}
 	}
 }
@@ -911,7 +910,7 @@ void TownsPhysicalMemory::ResetFMRVRAMMappingFlag(bool FMRVRAMMapping)
 
 void TownsPhysicalMemory::EnableOrDisableNativeVRAMMask(void)
 {
-	auto &mem=*memPtr;
+	auto &mem=*this;
 	if(0xffffffff==cpputil::GetDword(state.nativeVRAMMask))
 	{
 		mem.AddAccess(&VRAMAccess0,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
@@ -1501,11 +1500,11 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	EnableOrDisableNativeVRAMMask();
 	if(prevRAMsize<state.RAM.size())
 	{
-		memPtr->AddAccess(&mainRAMAccess,prevRAMsize,(unsigned int)state.RAM.size()-1);
+		this->AddAccess(&mainRAMAccess,prevRAMsize,(unsigned int)state.RAM.size()-1);
 	}
 	else if(state.RAM.size()<prevRAMsize)
 	{
-		memPtr->AddAccess(&memPtr->nullAccess,(unsigned int)state.RAM.size(),prevRAMsize-1);
+		this->AddAccess(&this->nullAccess,(unsigned int)state.RAM.size(),prevRAMsize-1);
 	}
 
 	return true;
