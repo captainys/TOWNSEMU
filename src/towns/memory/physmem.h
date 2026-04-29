@@ -325,6 +325,7 @@ class TownsPhysicalMemory : public Device, public Memory
 public:
 	enum
 	{
+		// Even number for normal     Odd number for debug
 		TOWNSMEM_NONE,                TOWNSMEM_NONE_DEBUG,
 		TOWNSMEM_LEGACY,              TOWNSMEM_LEGACY_DEBUG,
 		TOWNSMEM_MAINRAM,             TOWNSMEM_MAINRAM_DEBUG,
@@ -350,8 +351,22 @@ public:
 
 	uint8_t memoryAccessType[MEMORY_ACCESS_SLOT_SIZE];
 
+	// Fast access >>
+	inline unsigned int MainRAMFetchByte(unsigned int physAddr) const;
+	inline unsigned int MainRAMFetchWord(unsigned int physAddr) const;
+	inline unsigned int MainRAMFetchDword(unsigned int physAddr) const;
+	inline void MainRAMStoreByte(unsigned int physAddr,unsigned char data);
+	inline void MainRAMStoreWord(unsigned int physAddr,unsigned int data);
+	inline void MainRAMStoreDword(unsigned int physAddr,unsigned int data);
+
+	inline MemoryAccess::ConstMemoryWindow MainRAMGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow MainRAMGetMemoryWindow(unsigned int physAddr);
+	// Fast access <<
+
 	// ramrom.h functions real implementaiton >>
 	void CleanUp(void);
+
+	void SetUpMemoryAccessType(int cpuType);
 
 	inline unsigned int TrueFetchByte(unsigned int physAddr) const;
 	inline unsigned int TrueFetchByteDMA(unsigned int physAddr) const;

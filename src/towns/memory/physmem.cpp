@@ -628,6 +628,8 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	Memory &mem=*this;
 	auto &cpu=townsPtr->CPU();
 
+	SetUpMemoryAccessType(cpuType); // For new way of memory access.
+
 	mem.CleanUp();
 
 	mainRAMAccess.SetPhysicalMemoryPointer(this);
