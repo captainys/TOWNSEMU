@@ -257,7 +257,7 @@ class Memory
 public:
 	NullMemoryAccess nullAccess;
 
-private:
+protected:
 	std::vector <MemoryAccess *> memAccessPtr;
 	enum
 	{
@@ -299,15 +299,18 @@ public:
 
 
 	unsigned int FetchByte(unsigned int physAddr) const;
+	unsigned int FetchByteDMA(unsigned int physAddr) const;
 	unsigned int FetchWord(unsigned int physAddr) const;
 	unsigned int FetchDword(unsigned int physAddr) const;
-	MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
-	MemoryAccess::MemoryWindow GetMemoryWindow(unsigned int physAddr);
+
 	void StoreByte(unsigned int physAddr,unsigned char data);
-	unsigned int FetchByteDMA(unsigned int physAddr) const;
 	void StoreByteDMA(unsigned int physAddr,unsigned char data);
 	void StoreWord(unsigned int physAddr,unsigned int data);
 	void StoreDword(unsigned int physAddr,unsigned int data);
+
+	MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
+	MemoryAccess::MemoryWindow GetMemoryWindow(unsigned int physAddr);
+
 };
 
 

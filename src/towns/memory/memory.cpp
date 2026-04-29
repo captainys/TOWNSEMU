@@ -1,8 +1,79 @@
 #include <iostream>
 #include "memory.h"
 #include "ramrom.h"
+#include "physmem.h"
 
 
+void TownsPhysicalMemory::CleanUp(void)
+{
+	Memory::CleanUp();
+
+	for(auto &t : memoryAccessType)
+	{
+		t=TOWNSMEM_LEGACY;
+	}
+}
+
+inline unsigned int TownsPhysicalMemory::TrueFetchByte(unsigned int physAddr) const
+{
+	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+	return memAccess->FetchByte(physAddr);
+}
+
+inline unsigned int TownsPhysicalMemory::TrueFetchByteDMA(unsigned int physAddr) const
+{
+	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+	return memAccess->FetchByteDMA(physAddr);
+}
+
+inline unsigned int TownsPhysicalMemory::TrueFetchWord(unsigned int physAddr) const
+{
+	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+	return memAccess->FetchWord(physAddr);
+}
+
+inline unsigned int TownsPhysicalMemory::TrueFetchDword(unsigned int physAddr) const
+{
+	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+	return memAccess->FetchDword(physAddr);
+}
+
+
+inline void TownsPhysicalMemory::TrueStoreByte(unsigned int physAddr,unsigned char data)
+{
+	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+	memAccess->StoreByte(physAddr,data);
+}
+
+inline void TownsPhysicalMemory::TrueStoreByteDMA(unsigned int physAddr,unsigned char data)
+{
+	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+	memAccess->StoreByteDMA(physAddr,data);
+}
+
+inline void TownsPhysicalMemory::TrueStoreWord(unsigned int physAddr,unsigned int data)
+{
+	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+	memAccess->StoreWord(physAddr,data);
+}
+
+inline void TownsPhysicalMemory::TrueStoreDword(unsigned int physAddr,unsigned int data)
+{
+	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+	memAccess->StoreDword(physAddr,data);
+}
+
+inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWindow(unsigned int physAddr) const
+{
+	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+	return memAccess->GetConstMemoryWindow(physAddr);
+}
+
+inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsigned int physAddr)
+{
+	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+	return memAccess->GetMemoryWindow(physAddr);
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -87,59 +158,60 @@ MemoryAccess *Memory::GetAccessObject(unsigned int physAddr)
 
 unsigned int Memory::FetchByte(unsigned int physAddr) const
 {
-	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-	return memAccess->FetchByte(physAddr);
-}
-
-unsigned int Memory::FetchWord(unsigned int physAddr) const
-{
-	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-	return memAccess->FetchWord(physAddr);
-}
-
-unsigned int Memory::FetchDword(unsigned int physAddr) const
-{
-	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-	return memAccess->FetchDword(physAddr);
-}
-
-MemoryAccess::ConstMemoryWindow Memory::GetConstMemoryWindow(unsigned int physAddr) const
-{
-	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-	return memAccess->GetConstMemoryWindow(physAddr);
-}
-MemoryAccess::MemoryWindow Memory::GetMemoryWindow(unsigned int physAddr)
-{
-	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-	return memAccess->GetMemoryWindow(physAddr);
-}
-
-void Memory::StoreByte(unsigned int physAddr,unsigned char data)
-{
-	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-	memAccess->StoreByte(physAddr,data);
+	const TownsPhysicalMemory *physMem=(const TownsPhysicalMemory *)this;
+	return physMem->TrueFetchByte(physAddr);
 }
 
 unsigned int Memory::FetchByteDMA(unsigned int physAddr) const
 {
-	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-	return memAccess->FetchByteDMA(physAddr);
+	const TownsPhysicalMemory *physMem=(const TownsPhysicalMemory *)this;
+	return physMem->TrueFetchByteDMA(physAddr);
+}
+
+unsigned int Memory::FetchWord(unsigned int physAddr) const
+{
+	const TownsPhysicalMemory *physMem=(const TownsPhysicalMemory *)this;
+	return physMem->TrueFetchWord(physAddr);
+}
+
+unsigned int Memory::FetchDword(unsigned int physAddr) const
+{
+	const TownsPhysicalMemory *physMem=(const TownsPhysicalMemory *)this;
+	return physMem->TrueFetchDword(physAddr);
+}
+
+void Memory::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	TownsPhysicalMemory *physMem=(TownsPhysicalMemory *)this;
+	physMem->TrueStoreByte(physAddr,data);
 }
 
 void Memory::StoreByteDMA(unsigned int physAddr,unsigned char data)
 {
-	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-	memAccess->StoreByteDMA(physAddr,data);
+	TownsPhysicalMemory *physMem=(TownsPhysicalMemory *)this;
+	physMem->TrueStoreByteDMA(physAddr,data);
 }
 
 void Memory::StoreWord(unsigned int physAddr,unsigned int data)
 {
-	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-	memAccess->StoreWord(physAddr,data);
+	TownsPhysicalMemory *physMem=(TownsPhysicalMemory *)this;
+	physMem->TrueStoreWord(physAddr,data);
 }
 
 void Memory::StoreDword(unsigned int physAddr,unsigned int data)
 {
-	auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-	memAccess->StoreDword(physAddr,data);
+	TownsPhysicalMemory *physMem=(TownsPhysicalMemory *)this;
+	physMem->TrueStoreDword(physAddr,data);
 }
+
+MemoryAccess::ConstMemoryWindow Memory::GetConstMemoryWindow(unsigned int physAddr) const
+{
+	const TownsPhysicalMemory *physMem=(const TownsPhysicalMemory *)this;
+	return physMem->TrueGetConstMemoryWindow(physAddr);
+}
+MemoryAccess::MemoryWindow Memory::GetMemoryWindow(unsigned int physAddr)
+{
+	TownsPhysicalMemory *physMem=(TownsPhysicalMemory *)this;
+	return physMem->TrueGetMemoryWindow(physAddr);
+}
+

@@ -323,6 +323,52 @@ public:
 class TownsPhysicalMemory : public Device, public Memory
 {
 public:
+	enum
+	{
+		TOWNSMEM_NONE,                TOWNSMEM_NONE_DEBUG,
+		TOWNSMEM_LEGACY,              TOWNSMEM_LEGACY_DEBUG,
+		TOWNSMEM_MAINRAM,             TOWNSMEM_MAINRAM_DEBUG,
+		TOWNSMEM_FMRVRAM,             TOWNSMEM_FMRVRAM_DEBUG,
+		TOWNSMEM_MAPPED_DIC,          TOWNSMEM_MAPPED_DIC_DEBUG,
+		TOWNSMEM_MAPPED_SYSROM,       TOWNSMEM_MAPPED_SYSROM_DEBUG,
+		TOWNSMEM_SPRITE_RAM,          TOWNSMEM_SPRITE_RAM_DEBUG,
+		TOWNSMEM_MARTY_OSROM,         TOWNSMEM_MARTY_OSROM_DEBUG,
+		TOWNSMEM_MARTY_ROM0,          TOWNSMEM_MARTY_ROM0_DEBUG,
+		TOWNSMEM_NATIVE_DICROM,       TOWNSMEM_NATIVE_DICROM_DEBUG,
+		TOWNSMEM_NATIVE_CMOS,         TOWNSMEM_NATIVE_CMOS_DEBUG,
+		TOWNSMEM_OLD_MEMCARD,         TOWNSMEM_OLD_MEMCARD_DEBUG,
+		TOWNSMEM_JEIDA4_MEMCARD,      TOWNSMEM_JEIDA4_MEMCARD_DEBUG,
+		TOWNSMEM_OSROM,               TOWNSMEM_OSROM_DEBUG,
+		TOWNSMEM_FONTROM,             TOWNSMEM_FONTROM_DEBUG,
+		TOWNSMEM_FONT20ROM,           TOWNSMEM_FONT20ROM_DEBUG,
+		TOWNSMEM_WAVERAM,             TOWNSMEM_WAVERAM_DEBUG,
+		TOWNSMEM_NATIVE_SYSROM,       TOWNSMEM_NATIVE_SYSROM_DEBUG,
+		TOWNSMEM_VRAM_2PAGE,          TOWNSMEM_VRAM_2PAGE_DEBUG,
+		TOWNSMEM_VRAM_1PAGE,          TOWNSMEM_VRAM_1PAGE_DEBUG,
+		TOWNSMEM_VRAM_HIGHRES,        TOWNSMEM_VRAM_HIGHRES_DEBUG,
+	};
+
+	uint8_t memoryAccessType[MEMORY_ACCESS_SLOT_SIZE];
+
+	// ramrom.h functions real implementaiton >>
+	void CleanUp(void);
+
+	inline unsigned int TrueFetchByte(unsigned int physAddr) const;
+	inline unsigned int TrueFetchByteDMA(unsigned int physAddr) const;
+	inline unsigned int TrueFetchWord(unsigned int physAddr) const;
+	inline unsigned int TrueFetchDword(unsigned int physAddr) const;
+
+	inline void TrueStoreByte(unsigned int physAddr,unsigned char data);
+	inline void TrueStoreByteDMA(unsigned int physAddr,unsigned char data);
+	inline void TrueStoreWord(unsigned int physAddr,unsigned int data);
+	inline void TrueStoreDword(unsigned int physAddr,unsigned int data);
+
+	inline MemoryAccess::ConstMemoryWindow TrueGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow TrueGetMemoryWindow(unsigned int physAddr);
+	// ramrom.h functions real implementaiton <<
+
+
+
 	class KanjiROMAccess
 	{
 	public:
