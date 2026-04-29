@@ -1278,11 +1278,6 @@ void FMTownsCommon::RunFastDevicePollingInternal(void)
 	state.nextFastDevicePollingTime=state.townsTime+FAST_DEVICE_POLLING_INTERVAL;
 }
 
-void FMTownsCommon::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
-{
-	mem.SetUpVRAMAccess(TownsTypeToCPUType(townsType),breakOnRead,breakOnWrite);
-}
-
 bool FMTownsCommon::FASTModeLamp(void) const
 {
 	return (0==state.mainRAMWait && state.VRAMWait<3);

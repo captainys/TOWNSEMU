@@ -948,9 +948,6 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "WRFMRVRAM" << std::endl;
 	std::cout << "IOR ioport" << std::endl;
 	std::cout << "IOW ioport" << std::endl;
-	std::cout << "VRAMR" << std::endl;
-	std::cout << "VRAMW" << std::endl;
-	std::cout << "VRAMRW" << std::endl;
 	std::cout << "LBUTTONUP" << std::endl;
 	std::cout << "LBUTTONDOWN" << std::endl;
 	std::cout << "RETKEY" << std::endl;
@@ -3947,13 +3944,10 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd,
 				}
 				break;
 			case BREAK_ON_VRAMREAD:
-				towns.SetUpVRAMAccess(true,false);
-				break;
 			case BREAK_ON_VRAMWRITE:
-				towns.SetUpVRAMAccess(false,true);
-				break;
 			case BREAK_ON_VRAMREADWRITE:
-				towns.SetUpVRAMAccess(true,true);
+				std::cout << "BRKON VRAMR/VRAMW/VRAMRW are not supported any more.\n";
+				std::cout << "BRKON MEMR/MEMW and specify VRAM addresses.\n";
 				break;
 			case BREAK_ON_CDC_COMMAND:
 				towns.cdrom.var.debugBreakOnCommandWrite=true;
@@ -4223,7 +4217,8 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTownsCommon &towns,Command 
 		case BREAK_ON_VRAMREAD:
 		case BREAK_ON_VRAMWRITE:
 		case BREAK_ON_VRAMREADWRITE:
-			towns.SetUpVRAMAccess(false,false);
+			std::cout << "BRKON VRAMR/VRAMW/VRAMRW are not supported any more.\n";
+			std::cout << "BRKON MEMR/MEMW and specify VRAM addresses.\n";
 			break;
 		case BREAK_ON_CDC_COMMAND:
 			towns.cdrom.var.debugBreakOnCommandWrite=false;

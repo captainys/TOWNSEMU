@@ -260,66 +260,6 @@ public:
 	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
 };
 
-
-template <class MemAccessClass>
-class TownsMemAccessDebug : public MemAccessClass
-{
-public:
-	bool breakOnWrite=false;
-	bool breakOnRead=false;
-
-	virtual unsigned int FetchByte(unsigned int physAddr) const
-	{
-		if(true==breakOnRead && nullptr!=this->cpuPtr->debuggerPtr)
-		{
-			this->cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
-		}
-		return MemAccessClass::FetchByte(physAddr);
-	}
-	virtual unsigned int FetchWord(unsigned int physAddr) const
-	{
-		if(true==breakOnRead && nullptr!=this->cpuPtr->debuggerPtr)
-		{
-			this->cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
-		}
-		return MemAccessClass::FetchWord(physAddr);
-	}
-	virtual unsigned int FetchDword(unsigned int physAddr) const
-	{
-		if(true==breakOnRead && nullptr!=this->cpuPtr->debuggerPtr)
-		{
-			this->cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
-		}
-		return MemAccessClass::FetchDword(physAddr);
-	}
-	virtual void StoreByte(unsigned int physAddr,unsigned char data)
-	{
-		if(true==breakOnWrite && nullptr!=this->cpuPtr->debuggerPtr)
-		{
-			this->cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
-		}
-		MemAccessClass::StoreByte(physAddr,data);
-	}
-	virtual void StoreWord(unsigned int physAddr,unsigned int data)
-	{
-		if(true==breakOnWrite && nullptr!=this->cpuPtr->debuggerPtr)
-		{
-			this->cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
-		}
-		MemAccessClass::StoreWord(physAddr,data);
-	}
-	virtual void StoreDword(unsigned int physAddr,unsigned int data)
-	{
-		if(true==breakOnWrite && nullptr!=this->cpuPtr->debuggerPtr)
-		{
-			this->cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
-		}
-		MemAccessClass::StoreDword(physAddr,data);
-	}
-};
-
-
-
 class TownsPhysicalMemory : public Device, public Memory
 {
 public:
@@ -494,12 +434,6 @@ public:
 	TownsVRAMAccessWithMaskTemplate           <0x80000> VRAMAccessWithMaskHighRes1;
 	TownsSinglePageVRAMAccessWithMaskTemplate <0,TownsSinglePageHighResVRAMAddressTransform> VRAMAccessWithMaskHighRes2;
 
-	TownsMemAccessDebug <TownsVRAMAccessTemplate           <0> > VRAMAccess0Debug;
-	TownsMemAccessDebug <TownsSinglePageVRAMAccessTemplate <0,TownsSinglePageVRAMAddressTransform> > VRAMAccess1Debug;
-	TownsMemAccessDebug <TownsVRAMAccessTemplate           <0> > VRAMAccessHighRes0Debug;
-	TownsMemAccessDebug <TownsVRAMAccessTemplate           <0x80000> > VRAMAccessHighRes1Debug;
-	TownsMemAccessDebug <TownsSinglePageVRAMAccessTemplate <0,TownsSinglePageHighResVRAMAddressTransform> > VRAMAccessHighRes2Debug;
-
 
 	TownsSpriteRAMAccess spriteRAMAccess;
 	TownsOldMemCardAccess oldMemCardAccess;
@@ -566,8 +500,14 @@ public:
 	void SetUpMemoryAccess(unsigned int townsType,unsigned int cpuType);
 
 	/*!
+	    It resets VRAM access objects.
+	    Called during the initialization.
+	    Also called from IOWriteByte when native VRAM mask changes from/to 0xFFFFFFFF.
+	    VRAM Access Mask is a rarely used feature, and always keeping it enabled poses a serious performance hit.
+	    VRAM access object must only consider when the mask is not 0xFFFFFFFF.
+	    Solution is making two sets of VRAM-access objects one without mask and one with mask, and switching only when necessary.
 	*/
-	void SetUpVRAMAccess(unsigned int cpuType,bool breakOnRead,bool breakOnWrite);
+	void SetUpVRAMAccess(unsigned int cpuType);
 
 	/*! 
 	*/
@@ -579,15 +519,6 @@ public:
 	*/
 	void UpdateFMRVRAMMappingFlag(bool FMRVRAMMapping);
 	void ResetFMRVRAMMappingFlag(bool FMRVRAMMapping);
-
-	/*! Enable or disable Native VRAM Mask depending on the mask.
-	    It resets VRAM access objects.
-	    Called from IOWriteByte when native VRAM mask changes from/to 0xFFFFFFFF.
-	    VRAM Access Mask is a rarely used feature, and always keeping it enabled poses a serious performance hit.
-	    VRAM access object must only consider when the mask is not 0xFFFFFFFF.
-	    Solution is making two sets of VRAM-access objects one without mask and one with mask, and switching only when necessary.
-	*/
-	void EnableOrDisableNativeVRAMMask(void);
 
 	void IOWriteByte(unsigned int ioport,unsigned int data) override;
 	void IOWriteWord(unsigned int ioport, unsigned int data) override;

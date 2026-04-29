@@ -126,7 +126,7 @@ void TownsPhysicalMemory::State::Reset(void)
 			auto newMask=cpputil::GetDword(state.nativeVRAMMask);
 			if(prevMask!=newMask && (0xffffffff==prevMask || 0xffffffff==newMask))
 			{
-				EnableOrDisableNativeVRAMMask();
+				SetUpVRAMAccess(townsPtr->GetCPUType());
 			}
 		}
 		break;
@@ -138,7 +138,7 @@ void TownsPhysicalMemory::State::Reset(void)
 			auto newMask=cpputil::GetDword(state.nativeVRAMMask);
 			if(prevMask!=newMask && (0xffffffff==prevMask || 0xffffffff==newMask))
 			{
-				EnableOrDisableNativeVRAMMask();
+				SetUpVRAMAccess(townsPtr->GetCPUType());
 			}
 		}
 		break;
@@ -194,7 +194,7 @@ void TownsPhysicalMemory::State::Reset(void)
 			auto newMask=cpputil::GetDword(state.nativeVRAMMask);
 			if (prevMask!=newMask && (0xffffffff==prevMask||0xffffffff==newMask))
 			{
-				EnableOrDisableNativeVRAMMask();
+				SetUpVRAMAccess(townsPtr->GetCPUType());
 			}
 		}
 		break;
@@ -684,17 +684,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	VRAMAccessWithMaskHighRes2.SetPhysicalMemoryPointer(this);
 	VRAMAccessWithMaskHighRes2.SetCPUPointer(&cpu);
 
-	VRAMAccess0Debug.SetPhysicalMemoryPointer(this);
-	VRAMAccess0Debug.SetCPUPointer(&cpu);
-	VRAMAccess1Debug.SetPhysicalMemoryPointer(this);
-	VRAMAccess1Debug.SetCPUPointer(&cpu);
-	VRAMAccessHighRes0Debug.SetPhysicalMemoryPointer(this);
-	VRAMAccessHighRes0Debug.SetCPUPointer(&cpu);
-	VRAMAccessHighRes1Debug.SetPhysicalMemoryPointer(this);
-	VRAMAccessHighRes1Debug.SetCPUPointer(&cpu);
-	VRAMAccessHighRes2Debug.SetPhysicalMemoryPointer(this);
-	VRAMAccessHighRes2Debug.SetCPUPointer(&cpu);
-	SetUpVRAMAccess(cpuType,false,false);
+	SetUpVRAMAccess(cpuType);
 
 	spriteRAMAccess.SetPhysicalMemoryPointer(this);
 	spriteRAMAccess.SetCPUPointer(&cpu);
@@ -768,49 +758,38 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	}
 }
 
-void TownsPhysicalMemory::SetUpVRAMAccess(unsigned int cpuType,bool breakOnRead,bool breakOnWrite)
+void TownsPhysicalMemory::SetUpVRAMAccess(unsigned int cpuType)
 {
-	Memory &mem=*this;
-	if(true!=breakOnRead && true!=breakOnWrite)
+	if(TOWNSCPU_80386SX!=cpuType)
 	{
-		if(TOWNSCPU_80386SX!=cpuType)
+		if(0xffffffff==cpputil::GetDword(state.nativeVRAMMask))
 		{
-			mem.AddAccess(&VRAMAccess0,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
-			mem.AddAccess(&VRAMAccess1,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
-			mem.AddAccess(&VRAMAccessHighRes0,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
-			mem.AddAccess(&VRAMAccessHighRes1,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
-			mem.AddAccess(&VRAMAccessHighRes2,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
+			AddAccess(&VRAMAccess0,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
+			AddAccess(&VRAMAccess1,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
+			AddAccess(&VRAMAccessHighRes0,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
+			AddAccess(&VRAMAccessHighRes1,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
+			AddAccess(&VRAMAccessHighRes2,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
 		}
 		else
 		{
-			mem.AddAccess(&VRAMAccess0,TOWNSADDR_386SX_VRAM0_BASE,TOWNSADDR_386SX_VRAM0_END-1);
-			mem.AddAccess(&VRAMAccess1,TOWNSADDR_386SX_VRAM1_BASE,TOWNSADDR_386SX_VRAM1_END-1);
+			AddAccess(&VRAMAccessWithMask0,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
+			AddAccess(&VRAMAccessWithMask1,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
+			AddAccess(&VRAMAccessWithMaskHighRes0,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
+			AddAccess(&VRAMAccessWithMaskHighRes1,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
+			AddAccess(&VRAMAccessWithMaskHighRes2,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
 		}
 	}
 	else
 	{
-		VRAMAccess0Debug.breakOnRead=breakOnRead;
-		VRAMAccess0Debug.breakOnWrite=breakOnWrite;
-		VRAMAccess1Debug.breakOnRead=breakOnRead;
-		VRAMAccess1Debug.breakOnWrite=breakOnWrite;
-		VRAMAccessHighRes0Debug.breakOnRead=breakOnRead;
-		VRAMAccessHighRes0Debug.breakOnWrite=breakOnWrite;
-		VRAMAccessHighRes1Debug.breakOnRead=breakOnRead;
-		VRAMAccessHighRes1Debug.breakOnWrite=breakOnWrite;
-		VRAMAccessHighRes2Debug.breakOnRead=breakOnRead;
-		VRAMAccessHighRes2Debug.breakOnWrite=breakOnWrite;
-		if(TOWNSCPU_80386SX!=cpuType)
+		if(0xffffffff==cpputil::GetDword(state.nativeVRAMMask))
 		{
-			mem.AddAccess(&VRAMAccess0Debug,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
-			mem.AddAccess(&VRAMAccess1Debug,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
-			mem.AddAccess(&VRAMAccessHighRes0Debug,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
-			mem.AddAccess(&VRAMAccessHighRes1Debug,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
-			mem.AddAccess(&VRAMAccessHighRes2Debug,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
+			AddAccess(&VRAMAccess0,TOWNSADDR_386SX_VRAM0_BASE,TOWNSADDR_386SX_VRAM0_END-1);
+			AddAccess(&VRAMAccess1,TOWNSADDR_386SX_VRAM1_BASE,TOWNSADDR_386SX_VRAM1_END-1);
 		}
 		else
 		{
-			mem.AddAccess(&VRAMAccess0Debug,TOWNSADDR_386SX_VRAM0_BASE,TOWNSADDR_386SX_VRAM0_END-1);
-			mem.AddAccess(&VRAMAccess1Debug,TOWNSADDR_386SX_VRAM1_BASE,TOWNSADDR_386SX_VRAM1_END-1);
+			AddAccess(&VRAMAccessWithMask0,TOWNSADDR_386SX_VRAM0_BASE,TOWNSADDR_386SX_VRAM0_END-1);
+			AddAccess(&VRAMAccessWithMask1,TOWNSADDR_386SX_VRAM1_BASE,TOWNSADDR_386SX_VRAM1_END-1);
 		}
 	}
 }
@@ -908,27 +887,6 @@ void TownsPhysicalMemory::ResetFMRVRAMMappingFlag(bool FMRVRAMMapping)
 {
 	UpdateFMRVRAMMappingFlag(true!=FMRVRAMMapping);
 	UpdateFMRVRAMMappingFlag(FMRVRAMMapping);
-}
-
-void TownsPhysicalMemory::EnableOrDisableNativeVRAMMask(void)
-{
-	auto &mem=*this;
-	if(0xffffffff==cpputil::GetDword(state.nativeVRAMMask))
-	{
-		mem.AddAccess(&VRAMAccess0,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
-		mem.AddAccess(&VRAMAccess1,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
-		mem.AddAccess(&VRAMAccessHighRes0,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
-		mem.AddAccess(&VRAMAccessHighRes1,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
-		mem.AddAccess(&VRAMAccessHighRes2,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
-	}
-	else
-	{
-		mem.AddAccess(&VRAMAccessWithMask0,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
-		mem.AddAccess(&VRAMAccessWithMask1,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
-		mem.AddAccess(&VRAMAccessWithMaskHighRes0,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
-		mem.AddAccess(&VRAMAccessWithMaskHighRes1,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
-		mem.AddAccess(&VRAMAccessWithMaskHighRes2,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
-	}
 }
 
 void TownsPhysicalMemory::BeginMemFilter(unsigned int unit)
@@ -1499,7 +1457,7 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	// Reset mappings
 	ResetSysROMDicROMMappingFlag(state.sysRomMapping,state.dicRom);
 	ResetFMRVRAMMappingFlag(state.FMRVRAM);
-	EnableOrDisableNativeVRAMMask();
+	SetUpVRAMAccess(townsPtr->GetCPUType());
 	if(prevRAMsize<state.RAM.size())
 	{
 		this->AddAccess(&mainRAMAccess,prevRAMsize,(unsigned int)state.RAM.size()-1);

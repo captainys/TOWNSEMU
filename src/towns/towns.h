@@ -742,12 +742,6 @@ public:
 	void RenderEntireVRAMLayerQuiet(class TownsRender &render,unsigned int layer);
 
 
-	/*! Set up VRAM access.  Can have breakOnRead/breakOnWrite flag for debugging.
-	    Zero performance penalty if both flags are false.
-	*/
-	void SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite);
-
-
 	bool FASTModeLamp(void) const;
 
 
