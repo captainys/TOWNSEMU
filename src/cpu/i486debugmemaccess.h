@@ -24,12 +24,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "i486.h"
 #include "i486debug.h"
 
-class i486DebugMemoryAccess : public MemoryAccess
+class i486DebugMemoryAccess : public Memory::DebuggerLink
 {
 public:
 	i486Debugger *debuggerPtr;
 	unsigned int physAddrTop;
-	using MemoryAccess::memAccessChain;
 
 	uint8_t onRead[Memory::MEMORY_ACCESS_SLOT_SIZE];
 	uint8_t onWrite[Memory::MEMORY_ACCESS_SLOT_SIZE];
@@ -46,15 +45,14 @@ public:
 	void ClearBreakOnRead(unsigned int physAddr);
 	void ClearBreakOnWrite(unsigned int physAddr);
 
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual unsigned int FetchWord(unsigned int physAddr) const;
-	virtual unsigned int FetchDword(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-	virtual void StoreWord(unsigned int physAddr,unsigned int data);
-	virtual void StoreDword(unsigned int physAddr,unsigned int data);
-
-	virtual unsigned int FetchByteDMA(unsigned int physAddr) const override;
-	virtual void StoreByteDMA(unsigned int physAddr,unsigned char data) override;
+	void FetchByte(uint32_t physAddr) const override;
+	void FetchByteDMA(uint32_t physAddr) const override;
+	void FetchWord(uint32_t physAddr) const override;
+	void FetchDword(uint32_t physAddr) const override;
+	void StoreByte(uint32_t physAddr,unsigned char data) override;
+	void StoreByteDMA(uint32_t physAddr,unsigned char data) override;
+	void StoreWord(uint32_t physAddr,uint32_t data) override;
+	void StoreDword(uint32_t physAddr,uint32_t data) override;
 
 	inline bool CheckBreakOnWriteCondition(uint32_t physAddr,unsigned int data) const;
 

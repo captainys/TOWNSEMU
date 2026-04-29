@@ -21,6 +21,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include "cpputil.h"
 
+
 /*! MemoryAccess class is a base-class for actually memory-access implementation.
     MemoryAccess class pointers will be stored in 4KB slots of Memory class so that
     Memory class can direct access to the right memory-access object.
@@ -255,12 +256,24 @@ public:
 class Memory
 {
 public:
+	class DebuggerLink
+	{
+	public:
+		virtual void FetchByte(uint32_t physAddr) const=0;
+		virtual void FetchByteDMA(uint32_t physAddr) const=0;
+		virtual void FetchWord(uint32_t physAddr) const=0;
+		virtual void FetchDword(uint32_t physAddr) const=0;
+		virtual void StoreByte(uint32_t physAddr,unsigned char data)=0;
+		virtual void StoreByteDMA(uint32_t physAddr,unsigned char data)=0;
+		virtual void StoreWord(uint32_t physAddr,uint32_t data)=0;
+		virtual void StoreDword(uint32_t physAddr,uint32_t data)=0;
+	};
+
 	NullMemoryAccess nullAccess;
 
 protected:
-	MemoryAccess *debuggerLink=nullptr;
-
 	std::vector <MemoryAccess *> memAccessPtr;
+	std::vector <DebuggerLink *> debuggerLink;
 	enum
 	{
 		GRANURALITY_SHIFT=12,  // 4KB slot.
@@ -299,6 +312,13 @@ public:
 	*/
 	MemoryAccess *GetAccessObject(unsigned int physAddr);
 
+
+	DebuggerLink *GetDebuggerLink(uint32_t physAddr);
+
+
+	// Below functions are implemented for specific VM.
+	void SetDebuggerLink(DebuggerLink *debuggerLink,uint32_t addr);
+	void ClearDebuggerLink(uint32_t addr);
 
 	unsigned int FetchByte(unsigned int physAddr) const;
 	unsigned int FetchByteDMA(unsigned int physAddr) const;

@@ -109,17 +109,14 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 	}
 }
 
-/* virtual */ unsigned int i486DebugMemoryAccess::FetchByte(unsigned int physAddr) const
+/* virtual */ void i486DebugMemoryAccess::FetchByte(uint32_t physAddr) const
 {
-	auto data=memAccessChain->FetchByte(physAddr);
 	if(i486Debugger::BRKPNT_FLAG_NONE!=onRead[physAddr-physAddrTop])
 	{
 		std::string msg;
 		msg="Memory Read BYTE PTR PHYS:[";
 		msg+=cpputil::Uitox(physAddr);
-		msg+="] (";
-		msg+=cpputil::Ubtox(data);
-		msg+="H)";
+		msg+="]";
 
 		const uint8_t ANDPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED|i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
 		const uint8_t breakPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED;
@@ -132,20 +129,37 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 			debuggerPtr->MonitorButDoNotStop(msg);
 		}
 	}
-	return data;
 }
-/* virtual */ unsigned int i486DebugMemoryAccess::FetchWord(unsigned int physAddr) const
+/* virtual */ void i486DebugMemoryAccess::FetchByteDMA(uint32_t physAddr) const
 {
-	auto data=memAccessChain->FetchWord(physAddr);
+	if(true==onRead[physAddr-physAddrTop])
+	{
+		std::string msg;
+		msg="Memory Read BYTE PTR PHYS:[";
+		msg+=cpputil::Uitox(physAddr);
+		msg+="] **DMA**";
+
+		const uint8_t ANDPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED|i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
+		const uint8_t breakPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED;
+		if(breakPtn==(ANDPtn&onRead[physAddr-physAddrTop]))
+		{
+			debuggerPtr->ExternalBreak(msg);
+		}
+		else
+		{
+			debuggerPtr->MonitorButDoNotStop(msg);
+		}
+	}
+}
+/* virtual */ void i486DebugMemoryAccess::FetchWord(uint32_t physAddr) const
+{
 	if(i486Debugger::BRKPNT_FLAG_NONE!=onRead[physAddr-physAddrTop] ||
 	   i486Debugger::BRKPNT_FLAG_NONE!=onRead[physAddr+1-physAddrTop])
 	{
 		std::string msg;
 		msg="Memory Read WORD PTR PHYS:[";
 		msg+=cpputil::Uitox(physAddr);
-		msg+="] (";
-		msg+=cpputil::Ustox(data);
-		msg+=")";
+		msg+="]";
 		const uint8_t ANDPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED|i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
 		const uint8_t breakPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED;
 		if(breakPtn==(ANDPtn&onRead[physAddr-physAddrTop]) ||
@@ -158,11 +172,9 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 			debuggerPtr->MonitorButDoNotStop(msg);
 		}
 	}
-	return data;
 }
-/* virtual */ unsigned int i486DebugMemoryAccess::FetchDword(unsigned int physAddr) const
+/* virtual */ void i486DebugMemoryAccess::FetchDword(uint32_t physAddr) const
 {
-	auto data=memAccessChain->FetchDword(physAddr);
 	if(i486Debugger::BRKPNT_FLAG_NONE!=onRead[physAddr-physAddrTop] ||
 	   i486Debugger::BRKPNT_FLAG_NONE!=onRead[physAddr+1-physAddrTop] ||
 	   i486Debugger::BRKPNT_FLAG_NONE!=onRead[physAddr+2-physAddrTop] ||
@@ -171,9 +183,7 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 		std::string msg;
 		msg="Memory Read DWORD PTR PHYS:[";
 		msg+=cpputil::Uitox(physAddr);
-		msg+="] (";
-		msg+=cpputil::Uitox(data);
-		msg+=")";
+		msg+="]";
 
 		const uint8_t ANDPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED|i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
 		const uint8_t breakPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED;
@@ -189,33 +199,6 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 			debuggerPtr->MonitorButDoNotStop(msg);
 		}
 	}
-	return data;
-}
-
-/* virtual */ unsigned int i486DebugMemoryAccess::FetchByteDMA(unsigned int physAddr) const
-{
-	auto data=memAccessChain->FetchByte(physAddr);
-	if(true==onRead[physAddr-physAddrTop])
-	{
-		std::string msg;
-		msg="Memory Read BYTE PTR PHYS:[";
-		msg+=cpputil::Uitox(physAddr);
-		msg+="] (";
-		msg+=cpputil::Ubtox(data);
-		msg+="H) **DMA**";
-
-		const uint8_t ANDPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED|i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
-		const uint8_t breakPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED;
-		if(breakPtn==(ANDPtn&onRead[physAddr-physAddrTop]))
-		{
-			debuggerPtr->ExternalBreak(msg);
-		}
-		else
-		{
-			debuggerPtr->MonitorButDoNotStop(msg);
-		}
-	}
-	return data;
 }
 
 inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,unsigned int data) const
@@ -231,7 +214,7 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 	return false;
 }
 
-/* virtual */ void i486DebugMemoryAccess::StoreByte(unsigned int physAddr,unsigned char data)
+/* virtual */ void i486DebugMemoryAccess::StoreByte(uint32_t physAddr,unsigned char data)
 {
 	if(true==CheckBreakOnWriteCondition(physAddr,data))
 	{
@@ -254,9 +237,31 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 			debuggerPtr->MonitorButDoNotStop(msg);
 		}
 	}
-	memAccessChain->StoreByte(physAddr,data);
 }
-/* virtual */ void i486DebugMemoryAccess::StoreWord(unsigned int physAddr,unsigned int data)
+/* virtual */ void i486DebugMemoryAccess::StoreByteDMA(uint32_t physAddr,unsigned char data)
+{
+	if(true==CheckBreakOnWriteCondition(physAddr,data))
+	{
+		std::string msg;
+		msg="Memory Write BYTE PTR PHYS:[";
+		msg+=cpputil::Uitox(physAddr);
+		msg+="] (";
+		msg+=cpputil::Ubtox(data);
+		msg+=") **DMA**";
+		auto offset=physAddr-physAddrTop;
+		const uint8_t ANDPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED|i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
+		const uint8_t breakPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED;
+		if(breakPtn==(ANDPtn&onWrite[offset]))
+		{
+			debuggerPtr->ExternalBreak(msg);
+		}
+		else
+		{
+			debuggerPtr->MonitorButDoNotStop(msg);
+		}
+	}
+}
+/* virtual */ void i486DebugMemoryAccess::StoreWord(uint32_t physAddr,uint32_t data)
 {
 	if(true==CheckBreakOnWriteCondition(physAddr  ,data&0xFF) ||
 	   true==CheckBreakOnWriteCondition(physAddr+1,(data>>8)&0xFF))
@@ -281,9 +286,8 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 			debuggerPtr->MonitorButDoNotStop(msg);
 		}
 	}
-	memAccessChain->StoreWord(physAddr,data);
 }
-/* virtual */ void i486DebugMemoryAccess::StoreDword(unsigned int physAddr,unsigned int data)
+/* virtual */ void i486DebugMemoryAccess::StoreDword(uint32_t physAddr,uint32_t data)
 {
 	if(true==CheckBreakOnWriteCondition(physAddr  ,data&0xFF) ||
 	   true==CheckBreakOnWriteCondition(physAddr+1,(data>>8)&0xFF) ||
@@ -311,31 +315,6 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 			debuggerPtr->MonitorButDoNotStop(msg);
 		}
 	}
-	memAccessChain->StoreDword(physAddr,data);
-}
-/* virtual */ void i486DebugMemoryAccess::StoreByteDMA(unsigned int physAddr,unsigned char data)
-{
-	if(true==CheckBreakOnWriteCondition(physAddr,data))
-	{
-		std::string msg;
-		msg="Memory Write BYTE PTR PHYS:[";
-		msg+=cpputil::Uitox(physAddr);
-		msg+="] (";
-		msg+=cpputil::Ubtox(data);
-		msg+=") **DMA**";
-		auto offset=physAddr-physAddrTop;
-		const uint8_t ANDPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED|i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
-		const uint8_t breakPtn=i486Debugger::BRKPNT_FLAG_BREAK_ON_MEMRW_ENABLED;
-		if(breakPtn==(ANDPtn&onWrite[offset]))
-		{
-			debuggerPtr->ExternalBreak(msg);
-		}
-		else
-		{
-			debuggerPtr->MonitorButDoNotStop(msg);
-		}
-	}
-	memAccessChain->StoreByte(physAddr,data);
 }
 
 /* static */ void i486DebugMemoryAccess::SetBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr,bool monitorOnly)
@@ -345,10 +324,9 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 	if(nullptr==debugMemAccess)
 	{
 		debugMemAccess=new i486DebugMemoryAccess(debugger,physAddr);
-		debugMemAccess->memAccessChain=curMemAccess;
 	}
 	debugMemAccess->SetBreakOnRead(physAddr,monitorOnly);
-	mem.SetAccessObject(debugMemAccess,physAddr);
+	mem.SetDebuggerLink(debugMemAccess,physAddr);
 }
 /* static */ void i486DebugMemoryAccess::ClearBreakOnMemRead(Memory &mem,unsigned int physAddr)
 {
@@ -373,31 +351,29 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 }
 /* static */ void i486DebugMemoryAccess::SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,bool monitorOnly)
 {
-	auto *curMemAccess=mem.GetAccessObject(physAddr);
+	auto *curMemAccess=mem.GetDebuggerLink(physAddr);
 	i486DebugMemoryAccess *debugMemAccess=dynamic_cast <i486DebugMemoryAccess *>(curMemAccess);
 	if(nullptr==debugMemAccess)
 	{
 		debugMemAccess=new i486DebugMemoryAccess(debugger,physAddr);
-		debugMemAccess->memAccessChain=curMemAccess;
 	}
 	debugMemAccess->SetBreakOnWrite(physAddr,monitorOnly);
-	mem.SetAccessObject(debugMemAccess,physAddr);
+	mem.SetDebuggerLink(debugMemAccess,physAddr);
 }
 /* static */ void i486DebugMemoryAccess::SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,unsigned char minValue,unsigned char maxValue,bool monitorOnly)
 {
-	auto *curMemAccess=mem.GetAccessObject(physAddr);
+	auto *curMemAccess=mem.GetDebuggerLink(physAddr);
 	i486DebugMemoryAccess *debugMemAccess=dynamic_cast <i486DebugMemoryAccess *>(curMemAccess);
 	if(nullptr==debugMemAccess)
 	{
 		debugMemAccess=new i486DebugMemoryAccess(debugger,physAddr);
-		debugMemAccess->memAccessChain=curMemAccess;
 	}
 	debugMemAccess->SetBreakOnWrite(physAddr,minValue,maxValue,monitorOnly);
-	mem.SetAccessObject(debugMemAccess,physAddr);
+	mem.SetDebuggerLink(debugMemAccess,physAddr);
 }
 /* static */ void i486DebugMemoryAccess::ClearBreakOnMemWrite(Memory &mem,unsigned int physAddr)
 {
-	auto *curMemAccess=mem.GetAccessObject(physAddr);
+	auto *curMemAccess=mem.GetDebuggerLink(physAddr);
 	i486DebugMemoryAccess *debugMemAccess=dynamic_cast <i486DebugMemoryAccess *>(curMemAccess);
 	if(nullptr!=debugMemAccess)
 	{
@@ -408,7 +384,7 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 {
 	for(unsigned long long physAddr=0; physAddr<0x100000000LL; physAddr+=Memory::MEMORY_ACCESS_SLOT_SIZE)
 	{
-		auto memAccessPtr=mem.GetAccessObject((unsigned int)physAddr);
+		auto memAccessPtr=mem.GetDebuggerLink((unsigned int)physAddr);
 		auto debugMemAccessPtr=dynamic_cast <i486DebugMemoryAccess *>(memAccessPtr);
 		if(nullptr!=debugMemAccessPtr)
 		{

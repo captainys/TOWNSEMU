@@ -263,6 +263,7 @@ public:
 class TownsPhysicalMemory : public Device, public Memory
 {
 public:
+	const uint8_t ACCESSTYPE_DEBUG_FLAG=1;
 	enum
 	{
 		// Even number for normal access  Odd number for debug access
