@@ -156,130 +156,452 @@ void TownsPhysicalMemory::SetUpMemoryAccessType(int cpuType)
 
 inline unsigned int TownsPhysicalMemory::TrueFetchByte(unsigned int physAddr) const
 {
-	switch(memoryAccessType[physAddr>>GRANURALITY_SHIFT])
+	unsigned char accessType=memoryAccessType[physAddr>>GRANURALITY_SHIFT];
+REDO_WITH_DEBUG_FLAG_CLEAR:
+	switch(accessType)
 	{
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchByte(physAddr);
 	default:
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->FetchByte(physAddr);
+		{
+			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+			return memAccess->FetchByte(physAddr);
+		}
+		break;
+
+	case TOWNSMEM_NONE_DEBUG:
+	case TOWNSMEM_LEGACY_DEBUG:
+	case TOWNSMEM_MAINRAM_DEBUG:
+	case TOWNSMEM_FMRVRAM_DEBUG:
+	case TOWNSMEM_MAPPED_DIC_DEBUG:
+	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
+	case TOWNSMEM_SPRITE_RAM_DEBUG:
+	case TOWNSMEM_MARTY_OSROM_DEBUG:
+	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_NATIVE_DICROM_DEBUG:
+	case TOWNSMEM_NATIVE_CMOS_DEBUG:
+	case TOWNSMEM_OLD_MEMCARD_DEBUG:
+	case TOWNSMEM_JEIDA4_MEMCARD_DEBUG:
+	case TOWNSMEM_OSROM_DEBUG:
+	case TOWNSMEM_FONTROM_DEBUG:
+	case TOWNSMEM_FONT20ROM_DEBUG:
+	case TOWNSMEM_WAVERAM_DEBUG:
+	case TOWNSMEM_NATIVE_SYSROM_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		accessType&=~1;
+		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
 }
 
 inline unsigned int TownsPhysicalMemory::TrueFetchByteDMA(unsigned int physAddr) const
 {
-	switch(memoryAccessType[physAddr>>GRANURALITY_SHIFT])
+	unsigned char accessType=memoryAccessType[physAddr>>GRANURALITY_SHIFT];
+REDO_WITH_DEBUG_FLAG_CLEAR:
+	switch(accessType)
 	{
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchByte(physAddr);
 	default:
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->FetchByteDMA(physAddr);
+		{
+			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+			return memAccess->FetchByteDMA(physAddr);
+		}
+		break;
+
+	case TOWNSMEM_NONE_DEBUG:
+	case TOWNSMEM_LEGACY_DEBUG:
+	case TOWNSMEM_MAINRAM_DEBUG:
+	case TOWNSMEM_FMRVRAM_DEBUG:
+	case TOWNSMEM_MAPPED_DIC_DEBUG:
+	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
+	case TOWNSMEM_SPRITE_RAM_DEBUG:
+	case TOWNSMEM_MARTY_OSROM_DEBUG:
+	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_NATIVE_DICROM_DEBUG:
+	case TOWNSMEM_NATIVE_CMOS_DEBUG:
+	case TOWNSMEM_OLD_MEMCARD_DEBUG:
+	case TOWNSMEM_JEIDA4_MEMCARD_DEBUG:
+	case TOWNSMEM_OSROM_DEBUG:
+	case TOWNSMEM_FONTROM_DEBUG:
+	case TOWNSMEM_FONT20ROM_DEBUG:
+	case TOWNSMEM_WAVERAM_DEBUG:
+	case TOWNSMEM_NATIVE_SYSROM_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		accessType&=~1;
+		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
 }
 
 inline unsigned int TownsPhysicalMemory::TrueFetchWord(unsigned int physAddr) const
 {
-	switch(memoryAccessType[physAddr>>GRANURALITY_SHIFT])
+	unsigned char accessType=memoryAccessType[physAddr>>GRANURALITY_SHIFT];
+REDO_WITH_DEBUG_FLAG_CLEAR:
+	switch(accessType)
 	{
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchWord(physAddr);
 	default:
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->FetchWord(physAddr);
+		{
+			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+			return memAccess->FetchWord(physAddr);
+		}
+		break;
+
+	case TOWNSMEM_NONE_DEBUG:
+	case TOWNSMEM_LEGACY_DEBUG:
+	case TOWNSMEM_MAINRAM_DEBUG:
+	case TOWNSMEM_FMRVRAM_DEBUG:
+	case TOWNSMEM_MAPPED_DIC_DEBUG:
+	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
+	case TOWNSMEM_SPRITE_RAM_DEBUG:
+	case TOWNSMEM_MARTY_OSROM_DEBUG:
+	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_NATIVE_DICROM_DEBUG:
+	case TOWNSMEM_NATIVE_CMOS_DEBUG:
+	case TOWNSMEM_OLD_MEMCARD_DEBUG:
+	case TOWNSMEM_JEIDA4_MEMCARD_DEBUG:
+	case TOWNSMEM_OSROM_DEBUG:
+	case TOWNSMEM_FONTROM_DEBUG:
+	case TOWNSMEM_FONT20ROM_DEBUG:
+	case TOWNSMEM_WAVERAM_DEBUG:
+	case TOWNSMEM_NATIVE_SYSROM_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		accessType&=~1;
+		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
 }
 
 inline unsigned int TownsPhysicalMemory::TrueFetchDword(unsigned int physAddr) const
 {
-	switch(memoryAccessType[physAddr>>GRANURALITY_SHIFT])
+	unsigned char accessType=memoryAccessType[physAddr>>GRANURALITY_SHIFT];
+REDO_WITH_DEBUG_FLAG_CLEAR:
+	switch(accessType)
 	{
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchDword(physAddr);
 	default:
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->FetchDword(physAddr);
+		{
+			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+			return memAccess->FetchDword(physAddr);
+		}
+		break;
+
+	case TOWNSMEM_NONE_DEBUG:
+	case TOWNSMEM_LEGACY_DEBUG:
+	case TOWNSMEM_MAINRAM_DEBUG:
+	case TOWNSMEM_FMRVRAM_DEBUG:
+	case TOWNSMEM_MAPPED_DIC_DEBUG:
+	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
+	case TOWNSMEM_SPRITE_RAM_DEBUG:
+	case TOWNSMEM_MARTY_OSROM_DEBUG:
+	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_NATIVE_DICROM_DEBUG:
+	case TOWNSMEM_NATIVE_CMOS_DEBUG:
+	case TOWNSMEM_OLD_MEMCARD_DEBUG:
+	case TOWNSMEM_JEIDA4_MEMCARD_DEBUG:
+	case TOWNSMEM_OSROM_DEBUG:
+	case TOWNSMEM_FONTROM_DEBUG:
+	case TOWNSMEM_FONT20ROM_DEBUG:
+	case TOWNSMEM_WAVERAM_DEBUG:
+	case TOWNSMEM_NATIVE_SYSROM_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		accessType&=~1;
+		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
 }
 
 
 inline void TownsPhysicalMemory::TrueStoreByte(unsigned int physAddr,unsigned char data)
 {
-	switch(memoryAccessType[physAddr>>GRANURALITY_SHIFT])
+	unsigned char accessType=memoryAccessType[physAddr>>GRANURALITY_SHIFT];
+REDO_WITH_DEBUG_FLAG_CLEAR:
+	switch(accessType)
 	{
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreByte(physAddr,data);
 		break;
 	default:
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		memAccess->StoreByte(physAddr,data);
+		{
+			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+			memAccess->StoreByte(physAddr,data);
+		}
 		break;
+
+	case TOWNSMEM_NONE_DEBUG:
+	case TOWNSMEM_LEGACY_DEBUG:
+	case TOWNSMEM_MAINRAM_DEBUG:
+	case TOWNSMEM_FMRVRAM_DEBUG:
+	case TOWNSMEM_MAPPED_DIC_DEBUG:
+	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
+	case TOWNSMEM_SPRITE_RAM_DEBUG:
+	case TOWNSMEM_MARTY_OSROM_DEBUG:
+	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_NATIVE_DICROM_DEBUG:
+	case TOWNSMEM_NATIVE_CMOS_DEBUG:
+	case TOWNSMEM_OLD_MEMCARD_DEBUG:
+	case TOWNSMEM_JEIDA4_MEMCARD_DEBUG:
+	case TOWNSMEM_OSROM_DEBUG:
+	case TOWNSMEM_FONTROM_DEBUG:
+	case TOWNSMEM_FONT20ROM_DEBUG:
+	case TOWNSMEM_WAVERAM_DEBUG:
+	case TOWNSMEM_NATIVE_SYSROM_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		accessType&=~1;
+		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
 }
 
 inline void TownsPhysicalMemory::TrueStoreByteDMA(unsigned int physAddr,unsigned char data)
 {
-	switch(memoryAccessType[physAddr>>GRANURALITY_SHIFT])
+	unsigned char accessType=memoryAccessType[physAddr>>GRANURALITY_SHIFT];
+REDO_WITH_DEBUG_FLAG_CLEAR:
+	switch(accessType)
 	{
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreByte(physAddr,data);
 		break;
 	default:
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		memAccess->StoreByteDMA(physAddr,data);
+		{
+			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+			memAccess->StoreByteDMA(physAddr,data);
+		}
 		break;
+
+	case TOWNSMEM_NONE_DEBUG:
+	case TOWNSMEM_LEGACY_DEBUG:
+	case TOWNSMEM_MAINRAM_DEBUG:
+	case TOWNSMEM_FMRVRAM_DEBUG:
+	case TOWNSMEM_MAPPED_DIC_DEBUG:
+	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
+	case TOWNSMEM_SPRITE_RAM_DEBUG:
+	case TOWNSMEM_MARTY_OSROM_DEBUG:
+	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_NATIVE_DICROM_DEBUG:
+	case TOWNSMEM_NATIVE_CMOS_DEBUG:
+	case TOWNSMEM_OLD_MEMCARD_DEBUG:
+	case TOWNSMEM_JEIDA4_MEMCARD_DEBUG:
+	case TOWNSMEM_OSROM_DEBUG:
+	case TOWNSMEM_FONTROM_DEBUG:
+	case TOWNSMEM_FONT20ROM_DEBUG:
+	case TOWNSMEM_WAVERAM_DEBUG:
+	case TOWNSMEM_NATIVE_SYSROM_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		accessType&=~1;
+		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
 }
 
 inline void TownsPhysicalMemory::TrueStoreWord(unsigned int physAddr,unsigned int data)
 {
-	switch(memoryAccessType[physAddr>>GRANURALITY_SHIFT])
+	unsigned char accessType=memoryAccessType[physAddr>>GRANURALITY_SHIFT];
+REDO_WITH_DEBUG_FLAG_CLEAR:
+	switch(accessType)
 	{
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreWord(physAddr,data);
 		break;
 	default:
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		memAccess->StoreWord(physAddr,data);
+		{
+			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+			memAccess->StoreWord(physAddr,data);
+		}
 		break;
+
+	case TOWNSMEM_NONE_DEBUG:
+	case TOWNSMEM_LEGACY_DEBUG:
+	case TOWNSMEM_MAINRAM_DEBUG:
+	case TOWNSMEM_FMRVRAM_DEBUG:
+	case TOWNSMEM_MAPPED_DIC_DEBUG:
+	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
+	case TOWNSMEM_SPRITE_RAM_DEBUG:
+	case TOWNSMEM_MARTY_OSROM_DEBUG:
+	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_NATIVE_DICROM_DEBUG:
+	case TOWNSMEM_NATIVE_CMOS_DEBUG:
+	case TOWNSMEM_OLD_MEMCARD_DEBUG:
+	case TOWNSMEM_JEIDA4_MEMCARD_DEBUG:
+	case TOWNSMEM_OSROM_DEBUG:
+	case TOWNSMEM_FONTROM_DEBUG:
+	case TOWNSMEM_FONT20ROM_DEBUG:
+	case TOWNSMEM_WAVERAM_DEBUG:
+	case TOWNSMEM_NATIVE_SYSROM_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		accessType&=~1;
+		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
 }
 
 inline void TownsPhysicalMemory::TrueStoreDword(unsigned int physAddr,unsigned int data)
 {
-	switch(memoryAccessType[physAddr>>GRANURALITY_SHIFT])
+	unsigned char accessType=memoryAccessType[physAddr>>GRANURALITY_SHIFT];
+REDO_WITH_DEBUG_FLAG_CLEAR:
+	switch(accessType)
 	{
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreDword(physAddr,data);
 		break;
 	default:
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		memAccess->StoreDword(physAddr,data);
+		{
+			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+			memAccess->StoreDword(physAddr,data);
+		}
 		break;
+
+	case TOWNSMEM_NONE_DEBUG:
+	case TOWNSMEM_LEGACY_DEBUG:
+	case TOWNSMEM_MAINRAM_DEBUG:
+	case TOWNSMEM_FMRVRAM_DEBUG:
+	case TOWNSMEM_MAPPED_DIC_DEBUG:
+	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
+	case TOWNSMEM_SPRITE_RAM_DEBUG:
+	case TOWNSMEM_MARTY_OSROM_DEBUG:
+	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_NATIVE_DICROM_DEBUG:
+	case TOWNSMEM_NATIVE_CMOS_DEBUG:
+	case TOWNSMEM_OLD_MEMCARD_DEBUG:
+	case TOWNSMEM_JEIDA4_MEMCARD_DEBUG:
+	case TOWNSMEM_OSROM_DEBUG:
+	case TOWNSMEM_FONTROM_DEBUG:
+	case TOWNSMEM_FONT20ROM_DEBUG:
+	case TOWNSMEM_WAVERAM_DEBUG:
+	case TOWNSMEM_NATIVE_SYSROM_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		accessType&=~1;
+		goto REDO_WITH_DEBUG_FLAG_CLEAR;
 	}
 }
 
 inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWindow(unsigned int physAddr) const
 {
-	switch(memoryAccessType[physAddr>>GRANURALITY_SHIFT])
+	unsigned char accessType=memoryAccessType[physAddr>>GRANURALITY_SHIFT];
+	switch(accessType)
 	{
 	case TOWNSMEM_MAINRAM:
 		return MainRAMGetConstMemoryWindow(physAddr);
 	default:
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->GetConstMemoryWindow(physAddr);
+		{
+			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+			return memAccess->GetConstMemoryWindow(physAddr);
+		}
+		break;
+
+	case TOWNSMEM_NONE_DEBUG:
+	case TOWNSMEM_LEGACY_DEBUG:
+	case TOWNSMEM_MAINRAM_DEBUG:
+	case TOWNSMEM_FMRVRAM_DEBUG:
+	case TOWNSMEM_MAPPED_DIC_DEBUG:
+	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
+	case TOWNSMEM_SPRITE_RAM_DEBUG:
+	case TOWNSMEM_MARTY_OSROM_DEBUG:
+	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_NATIVE_DICROM_DEBUG:
+	case TOWNSMEM_NATIVE_CMOS_DEBUG:
+	case TOWNSMEM_OLD_MEMCARD_DEBUG:
+	case TOWNSMEM_JEIDA4_MEMCARD_DEBUG:
+	case TOWNSMEM_OSROM_DEBUG:
+	case TOWNSMEM_FONTROM_DEBUG:
+	case TOWNSMEM_FONT20ROM_DEBUG:
+	case TOWNSMEM_WAVERAM_DEBUG:
+	case TOWNSMEM_NATIVE_SYSROM_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		{
+			MemoryAccess::ConstMemoryWindow window;
+			window.ptr=nullptr;
+			return window;
+		}
+		break;
 	}
 }
 
 inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsigned int physAddr)
 {
-	switch(memoryAccessType[physAddr>>GRANURALITY_SHIFT])
+	unsigned char accessType=memoryAccessType[physAddr>>GRANURALITY_SHIFT];
+	switch(accessType)
 	{
 	case TOWNSMEM_MAINRAM:
 		return MainRAMGetMemoryWindow(physAddr);
 	default:
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->GetMemoryWindow(physAddr);
+		{
+			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+			return memAccess->GetMemoryWindow(physAddr);
+		}
+		break;
+
+	case TOWNSMEM_NONE_DEBUG:
+	case TOWNSMEM_LEGACY_DEBUG:
+	case TOWNSMEM_MAINRAM_DEBUG:
+	case TOWNSMEM_FMRVRAM_DEBUG:
+	case TOWNSMEM_MAPPED_DIC_DEBUG:
+	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
+	case TOWNSMEM_SPRITE_RAM_DEBUG:
+	case TOWNSMEM_MARTY_OSROM_DEBUG:
+	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_NATIVE_DICROM_DEBUG:
+	case TOWNSMEM_NATIVE_CMOS_DEBUG:
+	case TOWNSMEM_OLD_MEMCARD_DEBUG:
+	case TOWNSMEM_JEIDA4_MEMCARD_DEBUG:
+	case TOWNSMEM_OSROM_DEBUG:
+	case TOWNSMEM_FONTROM_DEBUG:
+	case TOWNSMEM_FONT20ROM_DEBUG:
+	case TOWNSMEM_WAVERAM_DEBUG:
+	case TOWNSMEM_NATIVE_SYSROM_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_DEBUG:
+	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
+	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
+		{
+			MemoryAccess::MemoryWindow window;
+			window.ptr=nullptr;
+			return window;
+		}
+		break;	
 	}
 }
 
