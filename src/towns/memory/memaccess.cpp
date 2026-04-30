@@ -50,7 +50,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 	breakOnCVRAMRead=false;
 }
 
-/* virtual */ unsigned int TownsFMRVRAMAccess::FetchByte(unsigned int physAddr) const
+unsigned int TownsFMRVRAMAccess::FetchByte(const TownsPhysicalMemory *physMemPtr,unsigned int physAddr) const
 {
 	if((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
 	   (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH))
@@ -177,7 +177,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 	}
 	return 0xff;
 }
-/* virtual */ unsigned int TownsFMRVRAMAccess::FetchWord(unsigned int physAddr) const
+unsigned int TownsFMRVRAMAccess::FetchWord(const TownsPhysicalMemory *physMemPtr,unsigned int physAddr) const
 {
 	if ((TOWNS_MEMIO_1_LOW<=physAddr&&physAddr<=TOWNS_MEMIO_1_HIGH) ||
 		(TOWNS_MEMIO_2_LOW<=physAddr&&physAddr<=TOWNS_MEMIO_2_HIGH))
@@ -203,13 +203,17 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 		}
 	}
 
-	return TownsMemAccess::FetchWord(physAddr);
+	return FetchByte(physMemPtr,physAddr)|
+	      (FetchByte(physMemPtr,physAddr+1)<<8);
 }
-/* virtual */ unsigned int TownsFMRVRAMAccess::FetchDword(unsigned int physAddr) const
+unsigned int TownsFMRVRAMAccess::FetchDword(const TownsPhysicalMemory *physMemPtr,unsigned int physAddr) const
 {
-	return TownsMemAccess::FetchDword(physAddr);
+	return FetchByte(physMemPtr,physAddr)|
+	      (FetchByte(physMemPtr,physAddr+1)<<8)|
+	      (FetchByte(physMemPtr,physAddr+2)<<16)|
+	      (FetchByte(physMemPtr,physAddr+3)<<24);
 }
-/* virtual */ void TownsFMRVRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
+void TownsFMRVRAMAccess::StoreByte(TownsPhysicalMemory *physMemPtr,unsigned int physAddr,unsigned char data)
 {
 	const auto FMRAddr=physAddr-TOWNSADDR_FMR_VRAM_BASE;
 	if(FMRAddr<TOWNSADDR_FMR_VRAM_END-TOWNSADDR_FMR_VRAM_BASE)
@@ -312,13 +316,17 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 		physMemPtr->state.TVRAMWrite=true;
 	}
 }
-/* virtual */ void TownsFMRVRAMAccess::StoreWord(unsigned int physAddr,unsigned int data)
+void TownsFMRVRAMAccess::StoreWord(TownsPhysicalMemory *physMemPtr,unsigned int physAddr,unsigned int data)
 {
-	TownsMemAccess::StoreWord(physAddr,data);
+	StoreByte(physMemPtr,physAddr,data);
+	StoreByte(physMemPtr,physAddr+1,data>>8);
 }
-/* virtual */ void TownsFMRVRAMAccess::StoreDword(unsigned int physAddr,unsigned int data)
+void TownsFMRVRAMAccess::StoreDword(TownsPhysicalMemory *physMemPtr,unsigned int physAddr,unsigned int data)
 {
-	TownsMemAccess::StoreDword(physAddr,data);
+	StoreByte(physMemPtr,physAddr,data);
+	StoreByte(physMemPtr,physAddr+1,data>>8);
+	StoreByte(physMemPtr,physAddr+2,data>>16);
+	StoreByte(physMemPtr,physAddr+3,data>>24);
 }
 
 

@@ -635,8 +635,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 
 	SetMemoryAccessTypeRange(0x00000000,0x000FFFFF,TOWNSMEM_MAINRAM);
 
-	FMRVRAMAccess.SetPhysicalMemoryPointer(this);
-	FMRVRAMAccess.SetCPUPointer(&cpu);
+	FMRVRAMAccess.cpuPtr=&cpu;
 	ResetFMRVRAMMappingFlag(true);  // This will set up memory access for 0xC0000 to 0xCFFFF
 
 	ResetSysROMDicROMMappingFlag(true,false);   // This will set up memory access for 0xF8000 to 0xFFFFF and 0xD0000 to 0xDFFFF
@@ -806,7 +805,6 @@ void TownsPhysicalMemory::UpdateFMRVRAMMappingFlag(bool FMRVRAMMapping)
 
 		if (FMRVRAMMapping)
 		{
-			this->AddAccess(&FMRVRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_VRAM_CVRAM_FONT_END - 1);
 			SetMemoryAccessTypeRange(TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_VRAM_CVRAM_FONT_END - 1, TOWNSMEM_FMRVRAM);
 
 			if (state.dicRom) {

@@ -46,21 +46,22 @@ public:
 };
 
 
-class TownsFMRVRAMAccess : public TownsMemAccess
+class TownsFMRVRAMAccess
 {
 public:
 	class TownsCRTC *crtcPtr;
 	class FMTownsCommon *townsPtr; // Need townsTime for getting HSYNC.
+	class i486DXCommon *cpuPtr;
 
 	bool breakOnFMRVRAMWrite,breakOnFMRVRAMRead;
 	bool breakOnCVRAMWrite,breakOnCVRAMRead;
 	TownsFMRVRAMAccess();
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual unsigned int FetchWord(unsigned int physAddr) const;
-	virtual unsigned int FetchDword(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-	virtual void StoreWord(unsigned int physAddr,unsigned int data);
-	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+	unsigned int FetchByte(const TownsPhysicalMemory *physMemPtr,unsigned int physAddr) const;
+	unsigned int FetchWord(const TownsPhysicalMemory *physMemPtr,unsigned int physAddr) const;
+	unsigned int FetchDword(const TownsPhysicalMemory *physMemPtr,unsigned int physAddr) const;
+	void StoreByte(TownsPhysicalMemory *physMemPtr,unsigned int physAddr,unsigned char data);
+	void StoreWord(TownsPhysicalMemory *physMemPtr,unsigned int physAddr,unsigned int data);
+	void StoreDword(TownsPhysicalMemory *physMemPtr,unsigned int physAddr,unsigned int data);
 };
 
 template <const uint32_t DISPLACEMENT>
@@ -342,11 +343,11 @@ public:
 	public:
 		unsigned char JISCodeHigh; // 000CFF94 Big Endian?
 		unsigned char JISCodeLow;  // 000CFF95
-		int row;
+		mutable int row; // Incremented on IO read.
 
 		void Reset();
 		inline unsigned int JISCode(){return JISCodeLow|(JISCodeHigh<<8);}
-		inline unsigned int FontROMCode(void)
+		inline unsigned int FontROMCode(void) const
 		{
 			if(JISCodeHigh<0x28)
 			{
@@ -424,7 +425,7 @@ public:
 	// bool preventCMOSInitToSingleDriveMode=true;
 
 	bool takeJISCodeLog;
-	std::vector <unsigned char> JISCodeLog; // Log KanjiROM Read Access
+	mutable std::vector <unsigned char> JISCodeLog; // Log KanjiROM Read Access
 
 	TownsFMRVRAMAccess FMRVRAMAccess;
 

@@ -591,6 +591,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return 0xFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchByte(physAddr);
+	case TOWNSMEM_FMRVRAM:
+		return FMRVRAMAccess.FetchByte(this,physAddr);
 	case TOWNSMEM_MAPPED_DIC:
 		return MappedDICFetchByte(physAddr);
 	case TOWNSMEM_MAPPED_SYSROM:
@@ -659,6 +661,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return 0xFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchByte(physAddr);
+	case TOWNSMEM_FMRVRAM:
+		return FMRVRAMAccess.FetchByte(this,physAddr);
 	case TOWNSMEM_MAPPED_DIC:
 		return MappedDICFetchByte(physAddr);
 	case TOWNSMEM_MAPPED_SYSROM:
@@ -727,6 +731,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return 0xFFFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchWord(physAddr);
+	case TOWNSMEM_FMRVRAM:
+		return FMRVRAMAccess.FetchWord(this,physAddr);
 	case TOWNSMEM_MAPPED_DIC:
 		return MappedDICFetchWord(physAddr);
 	case TOWNSMEM_MAPPED_SYSROM:
@@ -795,6 +801,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return 0xFFFFFFFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchDword(physAddr);
+	case TOWNSMEM_FMRVRAM:
+		return FMRVRAMAccess.FetchDword(this,physAddr);
 	case TOWNSMEM_MAPPED_DIC:
 		return MappedDICFetchDword(physAddr);
 	case TOWNSMEM_MAPPED_SYSROM:
@@ -864,6 +872,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		break;
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_FMRVRAM:
+		FMRVRAMAccess.StoreByte(this,physAddr,data);
 		break;
 	case TOWNSMEM_MAPPED_DIC:
 		MappedDICStoreByte(physAddr,data);
@@ -945,6 +956,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreByte(physAddr,data);
 		break;
+	case TOWNSMEM_FMRVRAM:
+		FMRVRAMAccess.StoreByte(this,physAddr,data);
+		break;
 	case TOWNSMEM_MAPPED_DIC:
 		MappedDICStoreByte(physAddr,data);
 		break;
@@ -1024,6 +1038,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		break;
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreWord(physAddr,data);
+		break;
+	case TOWNSMEM_FMRVRAM:
+		FMRVRAMAccess.StoreWord(this,physAddr,data);
 		break;
 	case TOWNSMEM_MAPPED_DIC:
 		MappedDICStoreWord(physAddr,data);
@@ -1105,6 +1122,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreDword(physAddr,data);
 		break;
+	case TOWNSMEM_FMRVRAM:
+		FMRVRAMAccess.StoreDword(this,physAddr,data);
+		break;
 	case TOWNSMEM_MAPPED_DIC:
 		MappedDICStoreDword(physAddr,data);
 		break;
@@ -1183,6 +1203,8 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 		return EmptyConstMemoryWindow();
 	case TOWNSMEM_MAINRAM:
 		return MainRAMGetConstMemoryWindow(physAddr);
+	case TOWNSMEM_FMRVRAM:
+		return EmptyConstMemoryWindow();
 	case TOWNSMEM_MAPPED_DIC:
 		return MappedDICGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_MAPPED_SYSROM:
@@ -1248,6 +1270,8 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 		return EmptyMemoryWindow();
 	case TOWNSMEM_MAINRAM:
 		return MainRAMGetMemoryWindow(physAddr);
+	case TOWNSMEM_FMRVRAM:
+		return EmptyMemoryWindow();
 	case TOWNSMEM_MAPPED_DIC:
 		return MappedDICGetMemoryWindow(physAddr);
 	case TOWNSMEM_MAPPED_SYSROM:
