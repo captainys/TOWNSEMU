@@ -307,26 +307,9 @@ public:
 	*/
 	void CleanUp(void);
 
-	/*! Register memory-access object for physical address physAddrLow to physAddrHigh.
-	    Ex.  AddAccess(&low1MBAccess,0x00000000,0x000FFFFF);
-	    If a memory-access object chain is assigned to the slot, it only replaces the
-	    terminal memory-access object.
+	/*! Legacy memory access.
 	*/
 	void AddAccess(MemoryAccess *memAccess,unsigned int physAddrLow,unsigned int physAddrHigh);
-
-	/*! Remove memory access.
-	*/
-	void RemoveAccess(unsigned int physAddrLow,unsigned int physAddrHigh);
-
-	/*! Register memory-access object for the window that the physical address resides.
-	    It disregards the memory-access object chain.  If the chain exists, entire
-	    chain is replaced with the incoming memory-access object.
-	*/
-	void SetAccessObject(MemoryAccess *memAccess,unsigned int physAddr);
-
-	/*! Returns memory access pointer for the given physical address.
-	*/
-	MemoryAccess *GetAccessObject(unsigned int physAddr);
 
 
 	DebuggerLink *GetDebuggerLink(uint32_t physAddr);

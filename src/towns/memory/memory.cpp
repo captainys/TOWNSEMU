@@ -1101,37 +1101,6 @@ void Memory::AddAccess(MemoryAccess *memAccess,unsigned int physAddrLow,unsigned
 		}
 	}
 }
-void Memory::RemoveAccess(unsigned int physAddrLow,unsigned int physAddrHigh)
-{
-	auto low=physAddrLow>>GRANURALITY_SHIFT;
-	auto high=(physAddrHigh-1)>>GRANURALITY_SHIFT;
-	for(auto i=low; i<=high; ++i)
-	{
-		if(nullptr==memAccessPtr[i]->memAccessChain)
-		{
-			memAccessPtr[i]=&nullAccess;
-		}
-		else
-		{
-			auto ptr=memAccessPtr[i];
-			while(nullptr!=ptr->memAccessChain->memAccessChain)
-			{
-				ptr=ptr->memAccessChain;
-			}
-			ptr->memAccessChain=&nullAccess;
-		}
-	}
-}
-void Memory::SetAccessObject(MemoryAccess *memAccess,unsigned int physAddr)
-{
-	auto slot=physAddr>>GRANURALITY_SHIFT;
-	memAccessPtr[slot]=memAccess;
-}
-MemoryAccess *Memory::GetAccessObject(unsigned int physAddr)
-{
-	auto slot=physAddr>>GRANURALITY_SHIFT;
-	return memAccessPtr[slot];
-}
 
 Memory::DebuggerLink *Memory::GetDebuggerLink(uint32_t physAddr)
 {
