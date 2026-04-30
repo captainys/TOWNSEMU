@@ -274,8 +274,7 @@ public:
 		TOWNSMEM_MAPPED_DIC,              TOWNSMEM_MAPPED_DIC_DEBUG,
 		TOWNSMEM_MAPPED_SYSROM,           TOWNSMEM_MAPPED_SYSROM_DEBUG,
 		TOWNSMEM_SPRITE_RAM,              TOWNSMEM_SPRITE_RAM_DEBUG,
-		TOWNSMEM_MARTY_OSROM,             TOWNSMEM_MARTY_OSROM_DEBUG,
-		TOWNSMEM_MARTY_ROM0,              TOWNSMEM_MARTY_ROM0_DEBUG,
+		TOWNSMEM_MARTY_EXROM,             TOWNSMEM_MARTY_EXROM_DEBUG,
 		TOWNSMEM_NATIVE_DICROM,           TOWNSMEM_NATIVE_DICROM_DEBUG,
 		TOWNSMEM_NATIVE_CMOS,             TOWNSMEM_NATIVE_CMOS_DEBUG,
 		TOWNSMEM_OLD_MEMCARD,             TOWNSMEM_OLD_MEMCARD_DEBUG,
@@ -313,13 +312,22 @@ public:
 	inline void SpriteRAMStoreDword(unsigned int physAddr,unsigned int data);
 	inline MemoryAccess::ConstMemoryWindow SpriteRAMGetConstMemoryWindow(unsigned int physAddr) const;
 	inline MemoryAccess::MemoryWindow SpriteRAMGetMemoryWindow(unsigned int physAddr);
+
+	inline unsigned int OSROMFetchByte(unsigned int physAddr) const;
+	inline unsigned int OSROMFetchWord(unsigned int physAddr) const;
+	inline unsigned int OSROMFetchDword(unsigned int physAddr) const;
+	inline void OSROMStoreByte(unsigned int physAddr,unsigned char data);
+	inline void OSROMStoreWord(unsigned int physAddr,unsigned int data);
+	inline void OSROMStoreDword(unsigned int physAddr,unsigned int data);
+	inline MemoryAccess::ConstMemoryWindow OSROMGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow OSROMGetMemoryWindow(unsigned int physAddr);
 	// Fast access <<
 
 	// ramrom.h functions real implementaiton >>
 	void CleanUp(void);
 
 	void SetMemoryAccessTypeRange(uint32_t addrBegin,uint32_t addrEnd,uint8_t type);
-	void SetUpMemoryAccessType(int cpuType);
+	void SetUpMemoryAccessType(int townsType,int cpuType);
 
 	inline unsigned int TrueFetchByte(unsigned int physAddr) const;
 	inline unsigned int TrueFetchByteDMA(unsigned int physAddr) const;

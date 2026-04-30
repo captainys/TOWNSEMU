@@ -600,10 +600,12 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 
 /* virtual */ unsigned int TownsOsROMAccess::FetchByte(unsigned int physAddr) const
 {
+printf("%s %d\n",__FUNCTION__,__LINE__);
 	return physMemPtr->dosRom[physAddr&TOWNSADDR_OSROM_AND];
 }
 /* virtual */ unsigned int TownsOsROMAccess::FetchWord(unsigned int physAddr) const
 {
+printf("%s %d\n",__FUNCTION__,__LINE__);
 	physAddr&=TOWNSADDR_OSROM_AND;
 	if(physAddr+1<physMemPtr->dosRom.size())
 	{
@@ -618,6 +620,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 }
 /* virtual */ unsigned int TownsOsROMAccess::FetchDword(unsigned int physAddr) const
 {
+printf("%s %d\n",__FUNCTION__,__LINE__);
 	physAddr&=TOWNSADDR_OSROM_AND;
 	if(physAddr+3<physMemPtr->dosRom.size())
 	{
@@ -632,6 +635,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 }
 /* virtual */ void TownsOsROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
+printf("%s %d\n",__FUNCTION__,__LINE__);
 }
 
 

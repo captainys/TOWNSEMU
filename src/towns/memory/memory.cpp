@@ -8,63 +8,59 @@
 ////////////////////////////////////////////////////////////
 
 
-#define DefaultFetchByteDMA \
-inline unsigned int FetchByteDMA(const TownsPhysicalMemory &physMem,unsigned int physAddr) const \
+#define DefaultFetchByteDMA(Prefix) \
+inline unsigned int TownsPhysicalMemory::Prefix##FetchByteDMA(const TownsPhysicalMemory &physMem,unsigned int physAddr) const \
 { \
-	return FetchByte(physMem,physAddr); \
+	return Prefix##FetchByte(physMem,physAddr); \
 }
 
-#define DefaultFetchWord \
-inline unsigned int FetchWord(const TownsPhysicalMemory &physMem,unsigned int physAddr) const \
+#define DefaultFetchWord(Prefix) \
+inline unsigned int TownsPhysicalMemory::Prefix##FetchWord(const TownsPhysicalMemory &physMem,unsigned int physAddr) const \
 { \
-	return FetchByte(physMem,physAddr)|(FetchByte(physMem,physAddr+1)<<8); \
+	return Prefix##FetchByte(physMem,physAddr)|(Prefix##FetchByte(physMem,physAddr+1)<<8); \
 }
 
-#define DefaultFetchDword \
-inline unsigned int FetchDword(const TownsPhysicalMemory &physMem,unsigned int physAddr) const \
+#define DefaultFetchDword(Prefix) \
+inline unsigned int TownsPhysicalMemory::Prefix##FetchDword(const TownsPhysicalMemory &physMem,unsigned int physAddr) const \
 { \
-	return FetchByte(physMem,physAddr)| \
-	      (FetchByte(physMem,physAddr+1)<<8)| \
-	      (FetchByte(physMem,physAddr+2)<<16)| \
-	      (FetchByte(physMem,physAddr+3)<<24); \
+	return Prefix##FetchByte(physMem,physAddr)| \
+	      (Prefix##FetchByte(physMem,physAddr+1)<<8)| \
+	      (Prefix##FetchByte(physMem,physAddr+2)<<16)| \
+	      (Prefix##FetchByte(physMem,physAddr+3)<<24); \
 }
 
-#define DefaultStoreByteDMA \
-inline void StoreByteDMA(TownsPhysicalMemory &physMem,unsigned int physAddr,unsigned char data) \
+#define DefaultStoreByteDMA(Prefix) \
+inline void TownsPhysicalMemory::Prefix##StoreByteDMA(TownsPhysicalMemory &physMem,unsigned int physAddr,unsigned char data) \
 { \
-	StoreByte(physMem,physAddr,data); \
+	Prefix##StoreByte(physMem,physAddr,data); \
 }
 
-#define DefaultStoreWord \
-inline void StoreWord(TownsPhysicalMemory &physMem,unsigned int physAddr,unsigned int data) \
+#define DefaultStoreWord(Prefix) \
+inline void TownsPhysicalMemory::Prefix##StoreWord(TownsPhysicalMemory &physMem,unsigned int physAddr,unsigned int data) \
 { \
-	StoreByte(physMem,physAddr,data&255); \
-	StoreByte(physMem,physAddr+1,(data>>8)&255); \
+	Prefix##StoreByte(physMem,physAddr,data&255); \
+	Prefix##StoreByte(physMem,physAddr+1,(data>>8)&255); \
 }
 
-#define DefaultStoreDword \
-inline void StoreDword(TownsPhysicalMemory &physMem,unsigned int physAddr,unsigned int data) \
+#define DefaultStoreDword(Prefix) \
+inline void TownsPhysicalMemory::Prefix##StoreDword(TownsPhysicalMemory &physMem,unsigned int physAddr,unsigned int data) \
 { \
-	StoreByte(physMem,physAddr,data&255); \
-	StoreByte(physMem,physAddr+1,(data>>8)&255); \
-	StoreByte(physMem,physAddr+2,(data>>16)&255); \
-	StoreByte(physMem,physAddr+3,(data>>24)&255); \
+	Prefix##StoreByte(physMem,physAddr,data&255); \
+	Prefix##StoreByte(physMem,physAddr+1,(data>>8)&255); \
+	Prefix##StoreByte(physMem,physAddr+2,(data>>16)&255); \
+	Prefix##StoreByte(physMem,physAddr+3,(data>>24)&255); \
 }
 
-#define DefaultGetConstMemoryWindow \
-MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const \
+#define DefaultGetConstMemoryWindow(Prefix) \
+MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::Prefix##GetConstMemoryWindow(unsigned int physAddr) const \
 { \
-	MemoryAccess::ConstMemoryWindow window; \
-	window.ptr=nullptr; \
-	return window; \
+	return EmptyConstMemoryWindow(); \
 }
 
-#define DefaultGetMemoryWindow \
-MemoryAccess::MemoryWindow GetMemoryWindow(unsigned int physAddr) \
+#define DefaultGetMemoryWindow(Prefix) \
+MemoryAccess::MemoryWindow TownsPhysicalMemory::Prefix##GetMemoryWindow(unsigned int physAddr) \
 { \
-	MemoryAccess::MemoryWindow window; \
-	window.ptr=nullptr; \
-	return window; \
+	return EmptyMemoryWindow(); \
 }
 
 
@@ -163,6 +159,59 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::SpriteRAMGetMemoryWindow(
 
 ////////////////////////////////////////////////////////////
 
+inline unsigned int TownsPhysicalMemory::OSROMFetchByte(unsigned int physAddr) const
+{
+	return dosRom[physAddr&TOWNSADDR_OSROM_AND];
+}
+
+inline unsigned int TownsPhysicalMemory::OSROMFetchWord(unsigned int physAddr) const
+{
+	physAddr&=TOWNSADDR_OSROM_AND;
+	if(physAddr+1<dosRom.size())
+	{
+		auto *ROMPtr=dosRom.data()+physAddr;
+		return ROMPtr[0]|(ROMPtr[1]<<8);
+	}
+	else
+	{
+		Abort("Cross-Border Access to OS ROM");
+	}
+	return 0xffff;
+}
+
+inline unsigned int TownsPhysicalMemory::OSROMFetchDword(unsigned int physAddr) const
+{
+	physAddr&=TOWNSADDR_OSROM_AND;
+	if(physAddr+3<dosRom.size())
+	{
+		auto *ROMPtr=dosRom.data()+physAddr;
+		return ROMPtr[0]|(ROMPtr[1]<<8)|(ROMPtr[2]<<16)|(ROMPtr[3]<<24);
+	}
+	else
+	{
+		Abort("Cross-Border Access to OS ROM");
+	}
+	return 0xffffffff;
+}
+
+inline void TownsPhysicalMemory::OSROMStoreByte(unsigned int physAddr,unsigned char data)
+{
+}
+
+inline void TownsPhysicalMemory::OSROMStoreWord(unsigned int physAddr,unsigned int data)
+{
+}
+
+inline void TownsPhysicalMemory::OSROMStoreDword(unsigned int physAddr,unsigned int data)
+{
+}
+
+DefaultGetConstMemoryWindow(OSROM)
+
+DefaultGetMemoryWindow(OSROM)
+
+////////////////////////////////////////////////////////////
+
 void TownsPhysicalMemory::CleanUp(void)
 {
 	Memory::CleanUp();
@@ -183,7 +232,7 @@ void TownsPhysicalMemory::SetMemoryAccessTypeRange(uint32_t addrBegin,uint32_t a
 	}
 }
 
-void TownsPhysicalMemory::SetUpMemoryAccessType(int cpuType)
+void TownsPhysicalMemory::SetUpMemoryAccessType(int townsType,int cpuType)
 {
 	if(TOWNSCPU_80386SX==cpuType && 0xA00000<state.RAM.size())
 	{
@@ -202,11 +251,23 @@ void TownsPhysicalMemory::SetUpMemoryAccessType(int cpuType)
 
 	if(TOWNSCPU_80386SX!=cpuType)
 	{
+		SetMemoryAccessTypeRange(TOWNSADDR_OSROM_BASE,TOWNSADDR_OSROM_END,TOWNSMEM_OSROM);
 	}
 	else
 	{
 		SetMemoryAccessTypeRange(TOWNSADDR_386SX_SPRITERAM_BASE,TOWNSADDR_386SX_SPRITERAM_END,TOWNSMEM_SPRITE_RAM);
+
+		if(TOWNSTYPE_MARTY==townsType)
+		{
+			SetMemoryAccessTypeRange(TOWNSADDR_MARTY_OSROM_BASE,TOWNSADDR_MARTY_OSROM_END,TOWNSMEM_OSROM);
+			SetMemoryAccessTypeRange(TOWNSADDR_MARTY_ROM0_BASE,TOWNSADDR_MARTY_ROM3_END,TOWNSMEM_MARTY_EXROM);
+		}
+		else
+		{
+			SetMemoryAccessTypeRange(TOWNSADDR_386SX_OSROM_BASE,TOWNSADDR_386SX_OSROM_END,TOWNSMEM_OSROM);
+		}
 	}
+
 }
 
 inline unsigned int TownsPhysicalMemory::TrueFetchByte(unsigned int physAddr) const
@@ -219,6 +280,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return MainRAMFetchByte(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMFetchByte(physAddr);
+	case TOWNSMEM_OSROM:
+		return OSROMFetchByte(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -233,8 +296,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAPPED_DIC_DEBUG:
 	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
 	case TOWNSMEM_SPRITE_RAM_DEBUG:
-	case TOWNSMEM_MARTY_OSROM_DEBUG:
-	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_MARTY_EXROM_DEBUG:
 	case TOWNSMEM_NATIVE_DICROM_DEBUG:
 	case TOWNSMEM_NATIVE_CMOS_DEBUG:
 	case TOWNSMEM_OLD_MEMCARD_DEBUG:
@@ -266,6 +328,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return MainRAMFetchByte(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMFetchByte(physAddr);
+	case TOWNSMEM_OSROM:
+		return OSROMFetchByte(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -280,8 +344,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAPPED_DIC_DEBUG:
 	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
 	case TOWNSMEM_SPRITE_RAM_DEBUG:
-	case TOWNSMEM_MARTY_OSROM_DEBUG:
-	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_MARTY_EXROM_DEBUG:
 	case TOWNSMEM_NATIVE_DICROM_DEBUG:
 	case TOWNSMEM_NATIVE_CMOS_DEBUG:
 	case TOWNSMEM_OLD_MEMCARD_DEBUG:
@@ -313,6 +376,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return MainRAMFetchWord(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMFetchWord(physAddr);
+	case TOWNSMEM_OSROM:
+		return OSROMFetchWord(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -327,8 +392,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAPPED_DIC_DEBUG:
 	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
 	case TOWNSMEM_SPRITE_RAM_DEBUG:
-	case TOWNSMEM_MARTY_OSROM_DEBUG:
-	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_MARTY_EXROM_DEBUG:
 	case TOWNSMEM_NATIVE_DICROM_DEBUG:
 	case TOWNSMEM_NATIVE_CMOS_DEBUG:
 	case TOWNSMEM_OLD_MEMCARD_DEBUG:
@@ -360,6 +424,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return MainRAMFetchDword(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMFetchDword(physAddr);
+	case TOWNSMEM_OSROM:
+		return OSROMFetchDword(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -374,8 +440,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAPPED_DIC_DEBUG:
 	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
 	case TOWNSMEM_SPRITE_RAM_DEBUG:
-	case TOWNSMEM_MARTY_OSROM_DEBUG:
-	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_MARTY_EXROM_DEBUG:
 	case TOWNSMEM_NATIVE_DICROM_DEBUG:
 	case TOWNSMEM_NATIVE_CMOS_DEBUG:
 	case TOWNSMEM_OLD_MEMCARD_DEBUG:
@@ -410,6 +475,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreByte(physAddr,data);
 		break;
+	case TOWNSMEM_OSROM:
+		OSROMStoreByte(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -424,8 +492,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAPPED_DIC_DEBUG:
 	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
 	case TOWNSMEM_SPRITE_RAM_DEBUG:
-	case TOWNSMEM_MARTY_OSROM_DEBUG:
-	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_MARTY_EXROM_DEBUG:
 	case TOWNSMEM_NATIVE_DICROM_DEBUG:
 	case TOWNSMEM_NATIVE_CMOS_DEBUG:
 	case TOWNSMEM_OLD_MEMCARD_DEBUG:
@@ -459,6 +526,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreByte(physAddr,data);
 		break;
+	case TOWNSMEM_OSROM:
+		OSROMStoreByte(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -473,8 +543,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAPPED_DIC_DEBUG:
 	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
 	case TOWNSMEM_SPRITE_RAM_DEBUG:
-	case TOWNSMEM_MARTY_OSROM_DEBUG:
-	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_MARTY_EXROM_DEBUG:
 	case TOWNSMEM_NATIVE_DICROM_DEBUG:
 	case TOWNSMEM_NATIVE_CMOS_DEBUG:
 	case TOWNSMEM_OLD_MEMCARD_DEBUG:
@@ -508,6 +577,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreWord(physAddr,data);
 		break;
+	case TOWNSMEM_OSROM:
+		OSROMStoreWord(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -522,8 +594,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAPPED_DIC_DEBUG:
 	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
 	case TOWNSMEM_SPRITE_RAM_DEBUG:
-	case TOWNSMEM_MARTY_OSROM_DEBUG:
-	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_MARTY_EXROM_DEBUG:
 	case TOWNSMEM_NATIVE_DICROM_DEBUG:
 	case TOWNSMEM_NATIVE_CMOS_DEBUG:
 	case TOWNSMEM_OLD_MEMCARD_DEBUG:
@@ -557,6 +628,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreDword(physAddr,data);
 		break;
+	case TOWNSMEM_OSROM:
+		OSROMStoreDword(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -571,8 +645,7 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAPPED_DIC_DEBUG:
 	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
 	case TOWNSMEM_SPRITE_RAM_DEBUG:
-	case TOWNSMEM_MARTY_OSROM_DEBUG:
-	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_MARTY_EXROM_DEBUG:
 	case TOWNSMEM_NATIVE_DICROM_DEBUG:
 	case TOWNSMEM_NATIVE_CMOS_DEBUG:
 	case TOWNSMEM_OLD_MEMCARD_DEBUG:
@@ -603,6 +676,8 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 		return MainRAMGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMGetConstMemoryWindow(physAddr);
+	case TOWNSMEM_OSROM:
+		return OSROMGetConstMemoryWindow(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -617,8 +692,7 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 	case TOWNSMEM_MAPPED_DIC_DEBUG:
 	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
 	case TOWNSMEM_SPRITE_RAM_DEBUG:
-	case TOWNSMEM_MARTY_OSROM_DEBUG:
-	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_MARTY_EXROM_DEBUG:
 	case TOWNSMEM_NATIVE_DICROM_DEBUG:
 	case TOWNSMEM_NATIVE_CMOS_DEBUG:
 	case TOWNSMEM_OLD_MEMCARD_DEBUG:
@@ -647,6 +721,8 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 		return MainRAMGetMemoryWindow(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMGetMemoryWindow(physAddr);
+	case TOWNSMEM_OSROM:
+		return OSROMGetMemoryWindow(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -661,8 +737,7 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 	case TOWNSMEM_MAPPED_DIC_DEBUG:
 	case TOWNSMEM_MAPPED_SYSROM_DEBUG:
 	case TOWNSMEM_SPRITE_RAM_DEBUG:
-	case TOWNSMEM_MARTY_OSROM_DEBUG:
-	case TOWNSMEM_MARTY_ROM0_DEBUG:
+	case TOWNSMEM_MARTY_EXROM_DEBUG:
 	case TOWNSMEM_NATIVE_DICROM_DEBUG:
 	case TOWNSMEM_NATIVE_CMOS_DEBUG:
 	case TOWNSMEM_OLD_MEMCARD_DEBUG:
