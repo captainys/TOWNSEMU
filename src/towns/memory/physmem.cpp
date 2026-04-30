@@ -795,10 +795,12 @@ void TownsPhysicalMemory::UpdateSysROMDicROMMappingFlag(bool sysRomMapping, bool
 		if (sysRomMapping)
 		{
 			this->AddAccess(&mappedSysROMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
+			SetMemoryAccessTypeRange(TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1,TOWNSMEM_MAPPED_SYSROM);
 		}
 		else
 		{
 			this->AddAccess(&mainRAMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
+			SetMemoryAccessTypeRange(TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1,TOWNSMEM_MAINRAM);
 		}
 	}
 
@@ -811,10 +813,12 @@ void TownsPhysicalMemory::UpdateSysROMDicROMMappingFlag(bool sysRomMapping, bool
 			if (dicRomMapping)
 			{
 				this->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+				SetMemoryAccessTypeRange(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1,TOWNSMEM_MAPPED_DIC);
 			}
 			else
 			{
 				this->RemoveAccess(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+				SetMemoryAccessTypeRange(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1,TOWNSMEM_NONE);
 			}
 		}
 	}
@@ -835,18 +839,25 @@ void TownsPhysicalMemory::UpdateFMRVRAMMappingFlag(bool FMRVRAMMapping)
 		if (FMRVRAMMapping)
 		{
 			this->AddAccess(&FMRVRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_VRAM_CVRAM_FONT_END - 1);
+			SetMemoryAccessTypeRange(TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_VRAM_CVRAM_FONT_END - 1, TOWNSMEM_FMRVRAM);
+
 			if (state.dicRom) {
 				this->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
 				this->RemoveAccess(TOWNSADDR_FMR_RESERVED_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
+
+				SetMemoryAccessTypeRange(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1, TOWNSMEM_MAPPED_DIC);
+				SetMemoryAccessTypeRange(TOWNSADDR_FMR_RESERVED_BASE, TOWNSADDR_FMR_RESERVED_END - 1,TOWNSMEM_NONE);
 			}
 			else
 			{
 				this->RemoveAccess(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
+				SetMemoryAccessTypeRange(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_FMR_RESERVED_END - 1,TOWNSMEM_NONE);
 			}
 		}
 		else
 		{
 			this->AddAccess(&mainRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
+			SetMemoryAccessTypeRange(TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_RESERVED_END - 1,TOWNSMEM_MAINRAM);
 		}
 	}
 }

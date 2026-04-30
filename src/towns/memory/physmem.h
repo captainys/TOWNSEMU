@@ -328,7 +328,14 @@ public:
 	// ramrom.h functions real implementaiton >>
 	void CleanUp(void);
 
+	/*! Set up memory-access type for the memory range.
+	    End address can be the last address 0x????FFFF or the starting of the next memory range 0x????0000.
+	    It subtracts one from addrEnd before right-shifting by 12 bits.
+	*/
 	void SetMemoryAccessTypeRange(uint32_t addrBegin,uint32_t addrEnd,uint8_t type);
+
+	/*! Set up default memory-access type.
+	*/
 	void SetUpMemoryAccessType(int townsType,int cpuType);
 
 	inline unsigned int TrueFetchByte(unsigned int physAddr) const;
