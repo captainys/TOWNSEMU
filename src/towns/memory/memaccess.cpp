@@ -493,19 +493,6 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 ////////////////////////////////////////////////////////////
 
 #include "rf5c68.h"
-
-/* virtual */ unsigned int TownsWaveRAMAccess::FetchByte(unsigned int physAddr) const
-{
-	return pcmPtr->ReadWaveRAM(physAddr&TOWNSADDR_WAVERAM_WINDOW_AND);
-}
-/* virtual */ void TownsWaveRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
-{
-	pcmPtr->WriteWaveRAM(physAddr&TOWNSADDR_WAVERAM_WINDOW_AND,data);
-	if(true==vgmRecorderPtr->enabled)
-	{
-		vgmRecorderPtr->WritePCMMemory(townsPtr->state.townsTime,VGMRecorder::MEM_RF5C68,physAddr&TOWNSADDR_WAVERAM_WINDOW_AND,data);
-	}
-}
 TownsWaveRAMAccess::TownsWaveRAMAccess(class FMTownsCommon *townsPtr,class RF5C68 *pcmPtr,class VGMRecorder *vgmRecPtr)
 {
 	this->townsPtr=townsPtr;
@@ -513,3 +500,45 @@ TownsWaveRAMAccess::TownsWaveRAMAccess(class FMTownsCommon *townsPtr,class RF5C6
 	this->vgmRecorderPtr=vgmRecPtr;
 }
 
+unsigned int TownsWaveRAMAccess::FetchByte(unsigned int physAddr) const
+{
+	return pcmPtr->ReadWaveRAM(physAddr&TOWNSADDR_WAVERAM_WINDOW_AND);
+}
+
+unsigned int TownsWaveRAMAccess::FetchWord(unsigned int physAddr) const
+{
+	// In real towns, it's byte access only.
+	return FetchByte(physAddr)|(FetchByte(physAddr+1)<<8);
+}
+
+unsigned int TownsWaveRAMAccess::FetchDword(unsigned int physAddr) const
+{
+	// In real towns, it's byte access only.
+	return FetchByte(physAddr)|
+	      (FetchByte(physAddr+1)<<8)|
+	      (FetchByte(physAddr+2)<<16)|
+	      (FetchByte(physAddr+3)<<24);
+}
+
+void TownsWaveRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	pcmPtr->WriteWaveRAM(physAddr&TOWNSADDR_WAVERAM_WINDOW_AND,data);
+	if(true==vgmRecorderPtr->enabled)
+	{
+		vgmRecorderPtr->WritePCMMemory(townsPtr->state.townsTime,VGMRecorder::MEM_RF5C68,physAddr&TOWNSADDR_WAVERAM_WINDOW_AND,data);
+	}
+}
+
+void TownsWaveRAMAccess::StoreWord(unsigned int physAddr,unsigned char data)
+{
+	StoreByte(physAddr,data);
+	StoreByte(physAddr+1,data>>8);
+}
+
+void TownsWaveRAMAccess::StoreDword(unsigned int physAddr,unsigned char data)
+{
+	StoreByte(physAddr,data);
+	StoreByte(physAddr+1,data>>8);
+	StoreByte(physAddr+2,data>>16);
+	StoreByte(physAddr+3,data>>24);
+}

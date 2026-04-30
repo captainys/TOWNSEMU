@@ -460,6 +460,8 @@ void TownsPhysicalMemory::SetUpMemoryAccessType(int townsType,int cpuType)
 		SetMemoryAccessTypeRange(TOWNSADDR_OSROM_BASE,TOWNSADDR_OSROM_END,TOWNSMEM_OSROM);
 		SetMemoryAccessTypeRange(TOWNSADDR_FONT_BASE,TOWNSADDR_FONT_END,TOWNSMEM_FONTROM);
 		SetMemoryAccessTypeRange(TOWNSADDR_FONT20_BASE,TOWNSADDR_FONT20_END,TOWNSMEM_FONT20ROM);
+
+		SetMemoryAccessTypeRange(TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1,TOWNSMEM_WAVERAM);
 	}
 	else
 	{
@@ -477,6 +479,7 @@ void TownsPhysicalMemory::SetUpMemoryAccessType(int townsType,int cpuType)
 
 		SetMemoryAccessTypeRange(TOWNSADDR_386SX_FONT_BASE,TOWNSADDR_386SX_FONT_END,TOWNSMEM_FONTROM);
 		SetMemoryAccessTypeRange(TOWNSADDR_386SX_SYSROM_BASE,TOWNSADDR_386SX_SYSROM_END,TOWNSMEM_NATIVE_SYSROM);
+		SetMemoryAccessTypeRange(TOWNSADDR_386SX_WAVERAM_WINDOW_BASE,TOWNSADDR_386SX_WAVERAM_WINDOW_END-1,TOWNSMEM_WAVERAM);
 	}
 }
 
@@ -510,6 +513,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return Font20ROMFetchByte(physAddr);
 	case TOWNSMEM_MARTY_EXROM:
 		return MartyEXROMFetchByte(physAddr);
+	case TOWNSMEM_WAVERAM:
+		return waveRAMAccess.FetchByte(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -570,6 +575,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return Font20ROMFetchByte(physAddr);
 	case TOWNSMEM_MARTY_EXROM:
 		return MartyEXROMFetchByte(physAddr);
+	case TOWNSMEM_WAVERAM:
+		return waveRAMAccess.FetchByte(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -630,6 +637,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return Font20ROMFetchWord(physAddr);
 	case TOWNSMEM_MARTY_EXROM:
 		return MartyEXROMFetchWord(physAddr);
+	case TOWNSMEM_WAVERAM:
+		return waveRAMAccess.FetchWord(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -690,6 +699,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return Font20ROMFetchDword(physAddr);
 	case TOWNSMEM_MARTY_EXROM:
 		return MartyEXROMFetchDword(physAddr);
+	case TOWNSMEM_WAVERAM:
+		return waveRAMAccess.FetchDword(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -758,6 +769,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MARTY_EXROM:
 		MartyEXROMStoreByte(physAddr,data);
 		break;
+	case TOWNSMEM_WAVERAM:
+		waveRAMAccess.StoreByte(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -824,6 +838,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		break;
 	case TOWNSMEM_MARTY_EXROM:
 		MartyEXROMStoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_WAVERAM:
+		waveRAMAccess.StoreByte(physAddr,data);
 		break;
 	default:
 		{
@@ -892,6 +909,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MARTY_EXROM:
 		MartyEXROMStoreWord(physAddr,data);
 		break;
+	case TOWNSMEM_WAVERAM:
+		waveRAMAccess.StoreWord(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -959,6 +979,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MARTY_EXROM:
 		MartyEXROMStoreDword(physAddr,data);
 		break;
+	case TOWNSMEM_WAVERAM:
+		waveRAMAccess.StoreDword(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -1018,6 +1041,8 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 		return Font20ROMGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_MARTY_EXROM:
 		return MartyEXROMGetConstMemoryWindow(physAddr);
+	case TOWNSMEM_WAVERAM:
+		return EmptyConstMemoryWindow();
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -1075,6 +1100,8 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 		return Font20ROMGetMemoryWindow(physAddr);
 	case TOWNSMEM_MARTY_EXROM:
 		return MartyEXROMGetMemoryWindow(physAddr);
+	case TOWNSMEM_WAVERAM:
+		return EmptyMemoryWindow();
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];

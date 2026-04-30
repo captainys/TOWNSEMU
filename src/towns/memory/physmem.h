@@ -170,16 +170,20 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
 
-class TownsWaveRAMAccess : public TownsMemAccess
+class TownsWaveRAMAccess
 {
 public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-
 	class FMTownsCommon *townsPtr=nullptr;
 	class RF5C68 *pcmPtr=nullptr;
 	class VGMRecorder *vgmRecorderPtr=nullptr;
 	TownsWaveRAMAccess(class FMTownsCommon *townsPtr,class RF5C68 *pcmPtr,class VGMRecorder *vgmRecPtr);
+
+	unsigned int FetchByte(unsigned int physAddr) const;
+	unsigned int FetchWord(unsigned int physAddr) const;
+	unsigned int FetchDword(unsigned int physAddr) const;
+	void StoreByte(unsigned int physAddr,unsigned char data);
+	void StoreWord(unsigned int physAddr,unsigned char data);
+	void StoreDword(unsigned int physAddr,unsigned char data);
 };
 
 class TownsMartyEXROMAccess : public TownsMemAccess

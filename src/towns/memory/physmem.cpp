@@ -689,16 +689,12 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	JEIDA4MemCardAccess.SetPhysicalMemoryPointer(this);
 	JEIDA4MemCardAccess.SetCPUPointer(&cpu);
 
-	waveRAMAccess.SetPhysicalMemoryPointer(this);
-	waveRAMAccess.SetCPUPointer(&cpu);
-
 	if(TOWNSCPU_80386SX!=cpuType)
 	{
 		this->AddAccess(&nativeDicROMAccess,TOWNSADDR_NATIVE_DICROM_BASE,TOWNSADDR_NATIVE_DICROM_END-1);
 		this->AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_NATIVE_CMOSRAM_BASE,TOWNSADDR_NATIVE_CMOSRAM_END-1);
 		this->AddAccess(&oldMemCardAccess,TOWNSADDR_MEMCARD_OLD_BASE,TOWNSADDR_MEMCARD_OLD_END-1);
 		this->AddAccess(&JEIDA4MemCardAccess,TOWNSADDR_MEMCARD_JEIDA4_BASE,TOWNSADDR_MEMCARD_JEIDA4_END-1);
-		this->AddAccess(&waveRAMAccess,TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1);
 	}
 	else
 	{
@@ -711,7 +707,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 		this->AddAccess(&nativeDicROMAccess,TOWNSADDR_386SX_NATIVE_DICROM_BASE,TOWNSADDR_386SX_NATIVE_DICROM_END-1);
 		this->AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_386SX_NATIVE_CMOSRAM_BASE,TOWNSADDR_386SX_NATIVE_CMOSRAM_END-1);
 		this->AddAccess(&oldMemCardAccess,TOWNSADDR_386SX_MEMCARD_BASE,TOWNSADDR_386SX_MEMCARD_END-1);
-		this->AddAccess(&waveRAMAccess,TOWNSADDR_386SX_WAVERAM_WINDOW_BASE,TOWNSADDR_386SX_WAVERAM_WINDOW_END-1);
 	}
 }
 
