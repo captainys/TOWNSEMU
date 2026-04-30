@@ -293,7 +293,7 @@ public:
 		TOWNSMEM_VRAM_HIGHRES_WITH_MASK,  TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG,
 	};
 
-	uint8_t memoryAccessType[MEMORY_ACCESS_SLOT_SIZE];
+	uint8_t memoryAccessType[MEMORY_ACCESS_SLOT_COUNT];
 
 	// Fast access >>
 	inline unsigned int MainRAMFetchByte(unsigned int physAddr) const;
@@ -302,9 +302,17 @@ public:
 	inline void MainRAMStoreByte(unsigned int physAddr,unsigned char data);
 	inline void MainRAMStoreWord(unsigned int physAddr,unsigned int data);
 	inline void MainRAMStoreDword(unsigned int physAddr,unsigned int data);
-
 	inline MemoryAccess::ConstMemoryWindow MainRAMGetConstMemoryWindow(unsigned int physAddr) const;
 	inline MemoryAccess::MemoryWindow MainRAMGetMemoryWindow(unsigned int physAddr);
+
+	inline unsigned int SpriteRAMFetchByte(unsigned int physAddr) const;
+	inline unsigned int SpriteRAMFetchWord(unsigned int physAddr) const;
+	inline unsigned int SpriteRAMFetchDword(unsigned int physAddr) const;
+	inline void SpriteRAMStoreByte(unsigned int physAddr,unsigned char data);
+	inline void SpriteRAMStoreWord(unsigned int physAddr,unsigned int data);
+	inline void SpriteRAMStoreDword(unsigned int physAddr,unsigned int data);
+	inline MemoryAccess::ConstMemoryWindow SpriteRAMGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow SpriteRAMGetMemoryWindow(unsigned int physAddr);
 	// Fast access <<
 
 	// ramrom.h functions real implementaiton >>

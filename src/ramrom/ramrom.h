@@ -283,6 +283,7 @@ public:
 	enum
 	{
 		MEMORY_ACCESS_SLOT_SIZE=(1<<GRANURALITY_SHIFT),
+		MEMORY_ACCESS_SLOT_COUNT=(1<<(32-GRANURALITY_SHIFT)),
 	};
 
 	MemoryAccess::ConstMemoryWindow EmptyConstMemoryWindow(void) const

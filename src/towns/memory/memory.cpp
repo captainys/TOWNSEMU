@@ -121,6 +121,48 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::MainRAMGetMemoryWindow(un
 
 ////////////////////////////////////////////////////////////
 
+inline unsigned int TownsPhysicalMemory::SpriteRAMFetchByte(unsigned int physAddr) const
+{
+	return state.spriteRAM[physAddr&TOWNSADDR_SPRITERAM_AND];
+}
+
+inline unsigned int TownsPhysicalMemory::SpriteRAMFetchWord(unsigned int physAddr) const
+{
+	return cpputil::GetWord(state.spriteRAM+(physAddr&TOWNSADDR_SPRITERAM_AND));
+}
+
+inline unsigned int TownsPhysicalMemory::SpriteRAMFetchDword(unsigned int physAddr) const
+{
+	return cpputil::GetDword(state.spriteRAM+(physAddr&TOWNSADDR_SPRITERAM_AND));
+}
+
+inline void TownsPhysicalMemory::SpriteRAMStoreByte(unsigned int physAddr,unsigned char data)
+{
+	state.spriteRAM[physAddr&TOWNSADDR_SPRITERAM_AND]=data;
+}
+
+inline void TownsPhysicalMemory::SpriteRAMStoreWord(unsigned int physAddr,unsigned int data)
+{
+	cpputil::PutWord(state.spriteRAM+(physAddr&TOWNSADDR_SPRITERAM_AND),data);
+}
+
+inline void TownsPhysicalMemory::SpriteRAMStoreDword(unsigned int physAddr,unsigned int data)
+{
+	cpputil::PutDword(state.spriteRAM+(physAddr&TOWNSADDR_SPRITERAM_AND),data);
+}
+
+inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::SpriteRAMGetConstMemoryWindow(unsigned int physAddr) const
+{
+	return EmptyConstMemoryWindow();
+}
+
+inline MemoryAccess::MemoryWindow TownsPhysicalMemory::SpriteRAMGetMemoryWindow(unsigned int physAddr)
+{
+	return EmptyMemoryWindow();
+}
+
+////////////////////////////////////////////////////////////
+
 void TownsPhysicalMemory::CleanUp(void)
 {
 	Memory::CleanUp();
@@ -153,6 +195,18 @@ void TownsPhysicalMemory::SetUpMemoryAccessType(int cpuType)
 	// FMR_DICROM
 	// MAPPED_SYSROM
 	SetMemoryAccessTypeRange(TOWNSADDR_SYSROM_MAP_END,state.RAM.size(),TOWNSMEM_MAINRAM);
+
+	// Unless CMOS is cleared, Towns OS will try to put R drive from 81000000H regardless of the CPU type.
+	// To let 386SX run with the same CMOS setting, leave mapping of 81000000H.
+	SetMemoryAccessTypeRange(TOWNSADDR_SPRITERAM_BASE,TOWNSADDR_SPRITERAM_END,TOWNSMEM_SPRITE_RAM);
+
+	if(TOWNSCPU_80386SX!=cpuType)
+	{
+	}
+	else
+	{
+		SetMemoryAccessTypeRange(TOWNSADDR_386SX_SPRITERAM_BASE,TOWNSADDR_386SX_SPRITERAM_END,TOWNSMEM_SPRITE_RAM);
+	}
 }
 
 inline unsigned int TownsPhysicalMemory::TrueFetchByte(unsigned int physAddr) const
@@ -163,6 +217,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	{
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchByte(physAddr);
+	case TOWNSMEM_SPRITE_RAM:
+		return SpriteRAMFetchByte(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -208,6 +264,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	{
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchByte(physAddr);
+	case TOWNSMEM_SPRITE_RAM:
+		return SpriteRAMFetchByte(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -253,6 +311,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	{
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchWord(physAddr);
+	case TOWNSMEM_SPRITE_RAM:
+		return SpriteRAMFetchWord(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -298,6 +358,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	{
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchDword(physAddr);
+	case TOWNSMEM_SPRITE_RAM:
+		return SpriteRAMFetchDword(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -345,6 +407,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreByte(physAddr,data);
 		break;
+	case TOWNSMEM_SPRITE_RAM:
+		SpriteRAMStoreByte(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -390,6 +455,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	{
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_SPRITE_RAM:
+		SpriteRAMStoreByte(physAddr,data);
 		break;
 	default:
 		{
@@ -437,6 +505,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreWord(physAddr,data);
 		break;
+	case TOWNSMEM_SPRITE_RAM:
+		SpriteRAMStoreWord(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -483,6 +554,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreDword(physAddr,data);
 		break;
+	case TOWNSMEM_SPRITE_RAM:
+		SpriteRAMStoreDword(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -527,6 +601,8 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 	{
 	case TOWNSMEM_MAINRAM:
 		return MainRAMGetConstMemoryWindow(physAddr);
+	case TOWNSMEM_SPRITE_RAM:
+		return SpriteRAMGetConstMemoryWindow(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -569,6 +645,8 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 	{
 	case TOWNSMEM_MAINRAM:
 		return MainRAMGetMemoryWindow(physAddr);
+	case TOWNSMEM_SPRITE_RAM:
+		return SpriteRAMGetMemoryWindow(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
