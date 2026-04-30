@@ -1014,7 +1014,7 @@ void Memory::AddAccess(MemoryAccess *memAccess,unsigned int physAddrLow,unsigned
 void Memory::RemoveAccess(unsigned int physAddrLow,unsigned int physAddrHigh)
 {
 	auto low=physAddrLow>>GRANURALITY_SHIFT;
-	auto high=physAddrHigh>>GRANURALITY_SHIFT;
+	auto high=(physAddrHigh-1)>>GRANURALITY_SHIFT;
 	for(auto i=low; i<=high; ++i)
 	{
 		if(nullptr==memAccessPtr[i]->memAccessChain)

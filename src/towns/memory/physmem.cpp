@@ -589,7 +589,6 @@ void TownsPhysicalMemory::SetMainRAMSize(uint64_t size,uint64_t RAMEnd)
 	SetMemoryAccessTypeRange(0x00100000,size,TOWNSMEM_MAINRAM);
 
 	RemoveAccess(size,RAMEnd);
-	AddAccess(&mainRAMAccess,0x00100000,size-1);
 }
 
 void TownsPhysicalMemory::SetVRAMSize(long long int size)
@@ -636,9 +635,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 
 	SetUpMemoryAccessType(townsType,cpuType); // For new way of memory access.
 
-	mainRAMAccess.SetPhysicalMemoryPointer(this);
-	mainRAMAccess.SetCPUPointer(&cpu);
-	this->AddAccess(&mainRAMAccess,0x00000000,0x000FFFFF);
+	SetMemoryAccessTypeRange(0x00000000,0x000FFFFF,TOWNSMEM_MAINRAM);
 
 	FMRVRAMAccess.SetPhysicalMemoryPointer(this);
 	FMRVRAMAccess.SetCPUPointer(&cpu);
@@ -663,7 +660,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 
 	if(0x00100000<state.RAM.size())
 	{
-		this->AddAccess(&mainRAMAccess,0x00100000,(unsigned int)state.RAM.size()-1);
+		SetMemoryAccessTypeRange(0x00100000,(unsigned int)state.RAM.size()-1,TOWNSMEM_MAINRAM);
 	}
 
 	VRAMAccess0.SetPhysicalMemoryPointer(this);
@@ -799,7 +796,6 @@ void TownsPhysicalMemory::UpdateSysROMDicROMMappingFlag(bool sysRomMapping, bool
 		}
 		else
 		{
-			this->AddAccess(&mainRAMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
 			SetMemoryAccessTypeRange(TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1,TOWNSMEM_MAINRAM);
 		}
 	}
@@ -856,7 +852,6 @@ void TownsPhysicalMemory::UpdateFMRVRAMMappingFlag(bool FMRVRAMMapping)
 		}
 		else
 		{
-			this->AddAccess(&mainRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
 			SetMemoryAccessTypeRange(TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_RESERVED_END - 1,TOWNSMEM_MAINRAM);
 		}
 	}
@@ -1439,11 +1434,11 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	SetUpVRAMAccess(townsPtr->GetCPUType());
 	if(prevRAMsize<state.RAM.size())
 	{
-		this->AddAccess(&mainRAMAccess,prevRAMsize,(unsigned int)state.RAM.size()-1);
+		SetMemoryAccessTypeRange(prevRAMsize,(unsigned int)state.RAM.size()-1,TOWNSMEM_MAINRAM);
 	}
 	else if(state.RAM.size()<prevRAMsize)
 	{
-		this->AddAccess(&this->nullAccess,(unsigned int)state.RAM.size(),prevRAMsize-1);
+		SetMemoryAccessTypeRange((unsigned int)state.RAM.size(),prevRAMsize-1,TOWNSMEM_NONE);
 	}
 
 	return true;
