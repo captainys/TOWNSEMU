@@ -312,6 +312,15 @@ public:
 	inline void OSROMStoreDword(unsigned int physAddr,unsigned int data);
 	inline MemoryAccess::ConstMemoryWindow OSROMGetConstMemoryWindow(unsigned int physAddr) const;
 	inline MemoryAccess::MemoryWindow OSROMGetMemoryWindow(unsigned int physAddr);
+
+	inline unsigned int NativeSYSROMFetchByte(unsigned int physAddr) const;
+	inline unsigned int NativeSYSROMFetchWord(unsigned int physAddr) const;
+	inline unsigned int NativeSYSROMFetchDword(unsigned int physAddr) const;
+	inline void NativeSYSROMStoreByte(unsigned int physAddr,unsigned char data);
+	inline void NativeSYSROMStoreWord(unsigned int physAddr,unsigned int data);
+	inline void NativeSYSROMStoreDword(unsigned int physAddr,unsigned int data);
+	inline MemoryAccess::ConstMemoryWindow NativeSYSROMGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow NativeSYSROMGetMemoryWindow(unsigned int physAddr);
 	// Fast access <<
 
 	// ramrom.h functions real implementaiton >>

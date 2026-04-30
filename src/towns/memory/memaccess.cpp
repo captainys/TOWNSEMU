@@ -648,13 +648,16 @@ TownsWaveRAMAccess::TownsWaveRAMAccess(class FMTownsCommon *townsPtr,class RF5C6
 
 /* virtual */ unsigned int TownsSysROMAccess::FetchByte(unsigned int physAddr) const
 {
+printf("%s %d\n",__FUNCTION__,__LINE__);
 	return physMemPtr->sysRom[physAddr&TOWNSADDR_SYSROM_AND];
 }
 /* virtual */ void TownsSysROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
+printf("%s %d\n",__FUNCTION__,__LINE__);
 }
 /* virtual */ MemoryAccess::ConstMemoryWindow TownsSysROMAccess::GetConstMemoryWindow(unsigned int physAddr) const
 {
+printf("%s %d %08x\n",__FUNCTION__,__LINE__,physAddr);
 	MemoryAccess::ConstMemoryWindow memWin;
 	memWin.ptr=physMemPtr->sysRom.data()+((physAddr&(~0xfff)&TOWNSADDR_SYSROM_AND));
 	return memWin;
