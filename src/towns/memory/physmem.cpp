@@ -625,16 +625,15 @@ void TownsPhysicalMemory::SetDummySize(long long int size)
 
 void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int cpuType)
 {
-	Memory &mem=*this;
 	auto &cpu=townsPtr->CPU();
 
-	mem.CleanUp();
+	CleanUp();
 
 	SetUpMemoryAccessType(townsType,cpuType); // For new way of memory access.
 
 	mainRAMAccess.SetPhysicalMemoryPointer(this);
 	mainRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&mainRAMAccess,0x00000000,0x000FFFFF);
+	this->AddAccess(&mainRAMAccess,0x00000000,0x000FFFFF);
 
 	FMRVRAMAccess.SetPhysicalMemoryPointer(this);
 	FMRVRAMAccess.SetCPUPointer(&cpu);
@@ -659,7 +658,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 
 	if(0x00100000<state.RAM.size())
 	{
-		mem.AddAccess(&mainRAMAccess,0x00100000,(unsigned int)state.RAM.size()-1);
+		this->AddAccess(&mainRAMAccess,0x00100000,(unsigned int)state.RAM.size()-1);
 	}
 
 	VRAMAccess0.SetPhysicalMemoryPointer(this);
@@ -700,12 +699,12 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 
 	if(TOWNSCPU_80386SX!=cpuType)
 	{
-		mem.AddAccess(&nativeDicROMAccess,TOWNSADDR_NATIVE_DICROM_BASE,TOWNSADDR_NATIVE_DICROM_END-1);
-		mem.AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_NATIVE_CMOSRAM_BASE,TOWNSADDR_NATIVE_CMOSRAM_END-1);
-		mem.AddAccess(&oldMemCardAccess,TOWNSADDR_MEMCARD_OLD_BASE,TOWNSADDR_MEMCARD_OLD_END-1);
-		mem.AddAccess(&JEIDA4MemCardAccess,TOWNSADDR_MEMCARD_JEIDA4_BASE,TOWNSADDR_MEMCARD_JEIDA4_END-1);
-		mem.AddAccess(&font20ROMAccess,TOWNSADDR_FONT20_BASE,TOWNSADDR_FONT20_END-1);
-		mem.AddAccess(&waveRAMAccess,TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1);
+		this->AddAccess(&nativeDicROMAccess,TOWNSADDR_NATIVE_DICROM_BASE,TOWNSADDR_NATIVE_DICROM_END-1);
+		this->AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_NATIVE_CMOSRAM_BASE,TOWNSADDR_NATIVE_CMOSRAM_END-1);
+		this->AddAccess(&oldMemCardAccess,TOWNSADDR_MEMCARD_OLD_BASE,TOWNSADDR_MEMCARD_OLD_END-1);
+		this->AddAccess(&JEIDA4MemCardAccess,TOWNSADDR_MEMCARD_JEIDA4_BASE,TOWNSADDR_MEMCARD_JEIDA4_END-1);
+		this->AddAccess(&font20ROMAccess,TOWNSADDR_FONT20_BASE,TOWNSADDR_FONT20_END-1);
+		this->AddAccess(&waveRAMAccess,TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1);
 	}
 	else
 	{
@@ -715,10 +714,10 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 		// high address memory access.
 		// Also CPU core does not care 80386SX mode.  Therefore, the reset vector still needs to be
 		// 0xFFFFFFF0, which means SYSROM still needs to be accessible from high address.
-		mem.AddAccess(&nativeDicROMAccess,TOWNSADDR_386SX_NATIVE_DICROM_BASE,TOWNSADDR_386SX_NATIVE_DICROM_END-1);
-		mem.AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_386SX_NATIVE_CMOSRAM_BASE,TOWNSADDR_386SX_NATIVE_CMOSRAM_END-1);
-		mem.AddAccess(&oldMemCardAccess,TOWNSADDR_386SX_MEMCARD_BASE,TOWNSADDR_386SX_MEMCARD_END-1);
-		mem.AddAccess(&waveRAMAccess,TOWNSADDR_386SX_WAVERAM_WINDOW_BASE,TOWNSADDR_386SX_WAVERAM_WINDOW_END-1);
+		this->AddAccess(&nativeDicROMAccess,TOWNSADDR_386SX_NATIVE_DICROM_BASE,TOWNSADDR_386SX_NATIVE_DICROM_END-1);
+		this->AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_386SX_NATIVE_CMOSRAM_BASE,TOWNSADDR_386SX_NATIVE_CMOSRAM_END-1);
+		this->AddAccess(&oldMemCardAccess,TOWNSADDR_386SX_MEMCARD_BASE,TOWNSADDR_386SX_MEMCARD_END-1);
+		this->AddAccess(&waveRAMAccess,TOWNSADDR_386SX_WAVERAM_WINDOW_BASE,TOWNSADDR_386SX_WAVERAM_WINDOW_END-1);
 	}
 }
 

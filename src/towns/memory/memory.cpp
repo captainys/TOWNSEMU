@@ -375,8 +375,13 @@ void TownsPhysicalMemory::SetUpMemoryAccessType(int townsType,int cpuType)
 		SetMemoryAccessTypeRange(TOWNSADDR_386SX_FONT_BASE,TOWNSADDR_386SX_FONT_END,TOWNSMEM_FONTROM);
 		SetMemoryAccessTypeRange(TOWNSADDR_386SX_SYSROM_BASE,TOWNSADDR_386SX_SYSROM_END,TOWNSMEM_NATIVE_SYSROM);
 	}
-
 }
+
+
+
+
+
+////////////////////////////////////////////////////////////
 
 inline unsigned int TownsPhysicalMemory::TrueFetchByte(unsigned int physAddr) const
 {
@@ -384,6 +389,8 @@ inline unsigned int TownsPhysicalMemory::TrueFetchByte(unsigned int physAddr) co
 REDO_WITH_DEBUG_FLAG_CLEAR:
 	switch(accessType)
 	{
+	case TOWNSMEM_NONE:
+		return 0xFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchByte(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
@@ -438,6 +445,8 @@ inline unsigned int TownsPhysicalMemory::TrueFetchByteDMA(unsigned int physAddr)
 REDO_WITH_DEBUG_FLAG_CLEAR:
 	switch(accessType)
 	{
+	case TOWNSMEM_NONE:
+		return 0xFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchByte(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
@@ -492,6 +501,8 @@ inline unsigned int TownsPhysicalMemory::TrueFetchWord(unsigned int physAddr) co
 REDO_WITH_DEBUG_FLAG_CLEAR:
 	switch(accessType)
 	{
+	case TOWNSMEM_NONE:
+		return 0xFFFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchWord(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
@@ -546,6 +557,8 @@ inline unsigned int TownsPhysicalMemory::TrueFetchDword(unsigned int physAddr) c
 REDO_WITH_DEBUG_FLAG_CLEAR:
 	switch(accessType)
 	{
+	case TOWNSMEM_NONE:
+		return 0xFFFFFFFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchDword(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
@@ -601,6 +614,8 @@ inline void TownsPhysicalMemory::TrueStoreByte(unsigned int physAddr,unsigned ch
 REDO_WITH_DEBUG_FLAG_CLEAR:
 	switch(accessType)
 	{
+	case TOWNSMEM_NONE:
+		break;
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreByte(physAddr,data);
 		break;
@@ -661,6 +676,8 @@ inline void TownsPhysicalMemory::TrueStoreByteDMA(unsigned int physAddr,unsigned
 REDO_WITH_DEBUG_FLAG_CLEAR:
 	switch(accessType)
 	{
+	case TOWNSMEM_NONE:
+		break;
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreByte(physAddr,data);
 		break;
@@ -721,6 +738,8 @@ inline void TownsPhysicalMemory::TrueStoreWord(unsigned int physAddr,unsigned in
 REDO_WITH_DEBUG_FLAG_CLEAR:
 	switch(accessType)
 	{
+	case TOWNSMEM_NONE:
+		break;
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreWord(physAddr,data);
 		break;
@@ -781,6 +800,8 @@ inline void TownsPhysicalMemory::TrueStoreDword(unsigned int physAddr,unsigned i
 REDO_WITH_DEBUG_FLAG_CLEAR:
 	switch(accessType)
 	{
+	case TOWNSMEM_NONE:
+		break;
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreDword(physAddr,data);
 		break;
@@ -840,6 +861,8 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 	unsigned char accessType=memoryAccessType[physAddr>>GRANURALITY_SHIFT];
 	switch(accessType)
 	{
+	case TOWNSMEM_NONE:
+		return EmptyConstMemoryWindow();
 	case TOWNSMEM_MAINRAM:
 		return MainRAMGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
@@ -891,6 +914,8 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 	unsigned char accessType=memoryAccessType[physAddr>>GRANURALITY_SHIFT];
 	switch(accessType)
 	{
+	case TOWNSMEM_NONE:
+		return EmptyMemoryWindow();
 	case TOWNSMEM_MAINRAM:
 		return MainRAMGetMemoryWindow(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
