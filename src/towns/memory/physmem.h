@@ -208,15 +208,6 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
 
-class TownsOsROMAccess : public TownsMemAccess
-{
-public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual unsigned int FetchWord(unsigned int physAddr) const;
-	virtual unsigned int FetchDword(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-};
-
 class TownsFontROMAccess : public TownsMemAccess
 {
 public:
@@ -458,7 +449,6 @@ public:
 
 	TownsOldMemCardAccess oldMemCardAccess;
 	TownsJEIDA4MemCardAccess JEIDA4MemCardAccess;
-	TownsOsROMAccess osROMAccess;
 	TownsFont20ROMAccess font20ROMAccess;
 	TownsWaveRAMAccess waveRAMAccess;
 	TownsSysROMAccess sysROMAccess;

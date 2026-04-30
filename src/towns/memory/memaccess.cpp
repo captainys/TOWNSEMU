@@ -598,49 +598,6 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 
 ////////////////////////////////////////////////////////////
 
-/* virtual */ unsigned int TownsOsROMAccess::FetchByte(unsigned int physAddr) const
-{
-printf("%s %d\n",__FUNCTION__,__LINE__);
-	return physMemPtr->dosRom[physAddr&TOWNSADDR_OSROM_AND];
-}
-/* virtual */ unsigned int TownsOsROMAccess::FetchWord(unsigned int physAddr) const
-{
-printf("%s %d\n",__FUNCTION__,__LINE__);
-	physAddr&=TOWNSADDR_OSROM_AND;
-	if(physAddr+1<physMemPtr->dosRom.size())
-	{
-		auto *ROMPtr=physMemPtr->dosRom.data()+physAddr;
-		return ROMPtr[0]|(ROMPtr[1]<<8);
-	}
-	else
-	{
-		cpuPtr->Abort("Cross-Border Access to OS ROM");
-	}
-	return 0xffff;
-}
-/* virtual */ unsigned int TownsOsROMAccess::FetchDword(unsigned int physAddr) const
-{
-printf("%s %d\n",__FUNCTION__,__LINE__);
-	physAddr&=TOWNSADDR_OSROM_AND;
-	if(physAddr+3<physMemPtr->dosRom.size())
-	{
-		auto *ROMPtr=physMemPtr->dosRom.data()+physAddr;
-		return ROMPtr[0]|(ROMPtr[1]<<8)|(ROMPtr[2]<<16)|(ROMPtr[3]<<24);
-	}
-	else
-	{
-		cpuPtr->Abort("Cross-Border Access to OS ROM");
-	}
-	return 0xffffffff;
-}
-/* virtual */ void TownsOsROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
-{
-printf("%s %d\n",__FUNCTION__,__LINE__);
-}
-
-
-////////////////////////////////////////////////////////////
-
 
 /* virtual */ unsigned int TownsFontROMAccess::FetchByte(unsigned int physAddr) const
 {
