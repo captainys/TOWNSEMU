@@ -131,6 +131,62 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::MainRAMGetMemoryWindow(un
 
 ////////////////////////////////////////////////////////////
 
+inline unsigned int TownsPhysicalMemory::MappedSYSROMFetchByte(unsigned int physAddr) const
+{
+	unsigned int offset=physAddr-TOWNSADDR_SYSROM_MAP_BASE;
+	auto ROMPtr=sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
+	if(offset<TOWNSADDR_SYSROM_MAP_SIZE)
+	{
+		return ROMPtr[0];
+	}
+	Abort("Out-of-bound access to Mapped SYSROM");
+	return 0xFFFFFFFF;
+}
+
+inline unsigned int TownsPhysicalMemory::MappedSYSROMFetchWord(unsigned int physAddr) const
+{
+	unsigned int offset=physAddr-TOWNSADDR_SYSROM_MAP_BASE;
+	auto ROMPtr=sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
+	if(offset<TOWNSADDR_SYSROM_MAP_SIZE-1)
+	{
+		return cpputil::GetWord(ROMPtr);
+	}
+	Abort("Cross-Border WORD access to Mapped SYSROM");
+	return 0xFFFFFFFF;
+}
+
+inline unsigned int TownsPhysicalMemory::MappedSYSROMFetchDword(unsigned int physAddr) const
+{
+	unsigned int offset=physAddr-TOWNSADDR_SYSROM_MAP_BASE;
+	auto ROMPtr=sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
+	if(offset<TOWNSADDR_SYSROM_MAP_SIZE-3)
+	{
+		return cpputil::GetDword(ROMPtr);;
+	}
+	Abort("Cross-Border DWORD access to Mapped SYSROM");
+	return 0xFFFFFFFF;
+}
+
+inline void TownsPhysicalMemory::MappedSYSROMStoreByte(unsigned int physAddr,unsigned char data)
+{
+}
+
+DefaultStoreWord(MappedSYSROM)
+
+DefaultStoreDword(MappedSYSROM)
+
+inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::MappedSYSROMGetConstMemoryWindow(unsigned int physAddr) const
+{
+	MemoryAccess::ConstMemoryWindow memWin;
+	const unsigned int offset=(physAddr&(~0xfff))-TOWNSADDR_SYSROM_MAP_BASE;
+	memWin.ptr=sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
+	return memWin;
+}
+
+DefaultGetMemoryWindow(MappedSYSROM)
+
+////////////////////////////////////////////////////////////
+
 inline unsigned int TownsPhysicalMemory::SpriteRAMFetchByte(unsigned int physAddr) const
 {
 	return state.spriteRAM[physAddr&TOWNSADDR_SPRITERAM_AND];
@@ -407,6 +463,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return 0xFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchByte(physAddr);
+	case TOWNSMEM_MAPPED_SYSROM:
+		return MappedSYSROMFetchByte(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMFetchByte(physAddr);
 	case TOWNSMEM_OSROM:
@@ -463,6 +521,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return 0xFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchByte(physAddr);
+	case TOWNSMEM_MAPPED_SYSROM:
+		return MappedSYSROMFetchByte(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMFetchByte(physAddr);
 	case TOWNSMEM_OSROM:
@@ -519,6 +579,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return 0xFFFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchWord(physAddr);
+	case TOWNSMEM_MAPPED_SYSROM:
+		return MappedSYSROMFetchWord(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMFetchWord(physAddr);
 	case TOWNSMEM_OSROM:
@@ -575,6 +637,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return 0xFFFFFFFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchDword(physAddr);
+	case TOWNSMEM_MAPPED_SYSROM:
+		return MappedSYSROMFetchDword(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMFetchDword(physAddr);
 	case TOWNSMEM_OSROM:
@@ -633,6 +697,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreByte(physAddr,data);
 		break;
+	case TOWNSMEM_MAPPED_SYSROM:
+		return MappedSYSROMStoreByte(physAddr,data);
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreByte(physAddr,data);
 		break;
@@ -695,6 +761,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreByte(physAddr,data);
 		break;
+	case TOWNSMEM_MAPPED_SYSROM:
+		return MappedSYSROMStoreByte(physAddr,data);
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreByte(physAddr,data);
 		break;
@@ -757,6 +825,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreWord(physAddr,data);
 		break;
+	case TOWNSMEM_MAPPED_SYSROM:
+		return MappedSYSROMStoreWord(physAddr,data);
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreWord(physAddr,data);
 		break;
@@ -819,6 +889,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreDword(physAddr,data);
 		break;
+	case TOWNSMEM_MAPPED_SYSROM:
+		return MappedSYSROMStoreDword(physAddr,data);
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreDword(physAddr,data);
 		break;
@@ -879,6 +951,8 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 		return EmptyConstMemoryWindow();
 	case TOWNSMEM_MAINRAM:
 		return MainRAMGetConstMemoryWindow(physAddr);
+	case TOWNSMEM_MAPPED_SYSROM:
+		return MappedSYSROMGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_OSROM:
@@ -932,6 +1006,8 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 		return EmptyMemoryWindow();
 	case TOWNSMEM_MAINRAM:
 		return MainRAMGetMemoryWindow(physAddr);
+	case TOWNSMEM_MAPPED_SYSROM:
+		return MappedSYSROMGetMemoryWindow(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMGetMemoryWindow(physAddr);
 	case TOWNSMEM_OSROM:

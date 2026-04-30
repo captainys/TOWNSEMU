@@ -265,6 +265,15 @@ public:
 	inline MemoryAccess::ConstMemoryWindow MainRAMGetConstMemoryWindow(unsigned int physAddr) const;
 	inline MemoryAccess::MemoryWindow MainRAMGetMemoryWindow(unsigned int physAddr);
 
+	inline unsigned int MappedSYSROMFetchByte(unsigned int physAddr) const;
+	inline unsigned int MappedSYSROMFetchWord(unsigned int physAddr) const;
+	inline unsigned int MappedSYSROMFetchDword(unsigned int physAddr) const;
+	inline void MappedSYSROMStoreByte(unsigned int physAddr,unsigned char data);
+	inline void MappedSYSROMStoreWord(unsigned int physAddr,unsigned int data);
+	inline void MappedSYSROMStoreDword(unsigned int physAddr,unsigned int data);
+	inline MemoryAccess::ConstMemoryWindow MappedSYSROMGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow MappedSYSROMGetMemoryWindow(unsigned int physAddr);
+
 	inline unsigned int SpriteRAMFetchByte(unsigned int physAddr) const;
 	inline unsigned int SpriteRAMFetchWord(unsigned int physAddr) const;
 	inline unsigned int SpriteRAMFetchDword(unsigned int physAddr) const;
