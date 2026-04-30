@@ -577,7 +577,7 @@ void TownsPhysicalMemory::SetCMOS(const std::vector <unsigned char> &cmos)
 	}
 }
 
-void TownsPhysicalMemory::SetMainRAMSize(long long int size)
+void TownsPhysicalMemory::SetMainRAMSize(uint64_t size,uint64_t RAMEnd)
 {
 	size&=0xFFF00000;
 	if(size<0x100000) // Minimum 1MB.
@@ -585,6 +585,11 @@ void TownsPhysicalMemory::SetMainRAMSize(long long int size)
 		size=0x100000;
 	}
 	state.RAM.resize(size);
+	SetMemoryAccessTypeRange(size,RAMEnd,TOWNSMEM_NONE);
+	SetMemoryAccessTypeRange(0x00100000,size,TOWNSMEM_MAINRAM);
+
+	RemoveAccess(size,RAMEnd);
+	AddAccess(&mainRAMAccess,0x00100000,size-1);
 }
 
 void TownsPhysicalMemory::SetVRAMSize(long long int size)

@@ -697,7 +697,14 @@ public:
 	/*! Set main RAM size.  Can change it only before starting the VM.
 	    VM probably will crash if you do this after starting.
 	*/
-	void SetMainRAMSize(long long int size);
+	void SetMainRAMSize(size_t size);
+
+	/*! Returns maximum RAM size in bytes.
+	    Normal Towns   32GB
+	    386SX Towns    10MB
+	    Marty           6MB
+	*/
+	size_t GetMaxMainRAMSize(void) const;
 
 	/*!
 	*/

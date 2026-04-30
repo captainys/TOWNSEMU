@@ -479,8 +479,9 @@ public:
 
 	/*! Sets the main RAM size.
 	    Don't call this function directly.  Call FMTownsCommon::SetMainRAMSize, which will call this function from inside.
+	    RAMEnd is the maximum RAM size for this VM.
 	*/
-	void SetMainRAMSize(long long int size);
+	void SetMainRAMSize(uint64_t size,uint64_t RAMEnd);
 
 	/*! Sets the VRAM size.
 	*/

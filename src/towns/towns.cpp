@@ -656,7 +656,7 @@ FMTownsCommon::FMTownsCommon() :
 	allDevices.push_back(&highResPCM);
 	VMBase::CacheDeviceIndex();
 
-	mem.SetMainRAMSize(4*1024*1024);
+	mem.SetMainRAMSize(4*1024*1024,GetMaxMainRAMSize());
 
 	mem.SetVRAMSize(TOWNS_VRAM_SIZE);
 	mem.SetCVRAMSize(TOWNS_CVRAM_SIZE);
@@ -1283,23 +1283,25 @@ bool FMTownsCommon::FASTModeLamp(void) const
 	return (0==state.mainRAMWait && state.VRAMWait<3);
 }
 
-void FMTownsCommon::SetMainRAMSize(long long int size)
+void FMTownsCommon::SetMainRAMSize(size_t size)
 {
-	uint64_t RAMEnd=0x7FFFFFFF;
+	auto RAMEnd=GetMaxMainRAMSize();
+	size=std::min<size_t>(size,RAMEnd);
+	size=std::max<size_t>(size,0x00100000);  // Even Marty should have at least 1MB.
+	mem.SetMainRAMSize(size,RAMEnd);
+}
+
+size_t FMTownsCommon::GetMaxMainRAMSize(void) const
+{
 	if(TOWNSTYPE_MARTY==townsType)
 	{
-		size=std::min<uint64_t>(size,TOWNSADDR_MARTY_OSROM_BASE);
-		RAMEnd=TOWNSADDR_MARTY_OSROM_BASE-1;
+		return TOWNSADDR_MARTY_OSROM_BASE;
 	}
 	else if(TOWNSCPU_80386SX==TownsTypeToCPUType(townsType))
 	{
-		size=std::min<uint64_t>(size,TOWNSADDR_386SX_VRAM0_BASE);
-		RAMEnd=TOWNSADDR_386SX_VRAM0_BASE-1;
+		return TOWNSADDR_386SX_VRAM0_BASE;
 	}
-
-	mem.SetMainRAMSize(size);
-	mem.RemoveAccess(mem.state.RAM.size(),RAMEnd);
-	mem.AddAccess(&mem.mainRAMAccess,0x00100000,mem.state.RAM.size()-1);
+	return 0x80000000;
 }
 
 void FMTownsCommon::ForceRender(class TownsRender &render,class Outside_World &world,Outside_World::WindowInterface &windowInterface)
