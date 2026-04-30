@@ -63,27 +63,6 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
-class TownsMappedDICROMandCMOSRAMAccess : public TownsMemAccess
-{
-public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-};
-
-class TownsNativeDICROMAccess : public TownsMemAccess
-{
-public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-};
-
-class TownsNativeCMOSRAMAccess : public TownsMemAccess
-{
-public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-};
-
 template <const uint32_t DISPLACEMENT>
 class TownsVRAMAccessTemplate : public TownsMemAccess
 {
