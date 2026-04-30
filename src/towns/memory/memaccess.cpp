@@ -42,63 +42,6 @@ void TownsMemAccess::SetCPUPointer(class i486DXCommon *cpuPtr)
 ////////////////////////////////////////////////////////////
 
 
-/* virtual */ unsigned int TownsMappedSysROMAccess::FetchByte(unsigned int physAddr) const
-{
-	unsigned int offset=physAddr-TOWNSADDR_SYSROM_MAP_BASE;
-	auto ROMPtr=physMemPtr->sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
-	if(offset<TOWNSADDR_SYSROM_MAP_SIZE)
-	{
-		return ROMPtr[0];
-	}
-	cpuPtr->Abort("Out-of-bound access to Mapped SYSROM");
-	return 0xFFFFFFFF;
-}
-/* virtual */ unsigned int TownsMappedSysROMAccess::FetchWord(unsigned int physAddr) const
-{
-	unsigned int offset=physAddr-TOWNSADDR_SYSROM_MAP_BASE;
-	auto ROMPtr=physMemPtr->sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
-	if(offset<TOWNSADDR_SYSROM_MAP_SIZE-1)
-	{
-		return cpputil::GetWord(ROMPtr);
-	}
-	cpuPtr->Abort("Cross-Border WORD access to Mapped SYSROM");
-	return 0xFFFFFFFF;
-}
-/* virtual */ unsigned int TownsMappedSysROMAccess::FetchDword(unsigned int physAddr) const
-{
-	unsigned int offset=physAddr-TOWNSADDR_SYSROM_MAP_BASE;
-	auto ROMPtr=physMemPtr->sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
-	if(offset<TOWNSADDR_SYSROM_MAP_SIZE-3)
-	{
-		return cpputil::GetDword(ROMPtr);;
-	}
-	cpuPtr->Abort("Cross-Border DWORD access to Mapped SYSROM");
-	return 0xFFFFFFFF;
-}
-/* virtual */ void TownsMappedSysROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
-{
-	// ROM mode no writing
-}
-/* virtual */ void TownsMappedSysROMAccess::StoreWord(unsigned int physAddr,unsigned int data)
-{
-	// ROM mode no writing
-}
-/* virtual */ void TownsMappedSysROMAccess::StoreDword(unsigned int physAddr,unsigned int data)
-{
-	// ROM mode no writing
-}
-
-/* virtual */ MemoryAccess::ConstMemoryWindow TownsMappedSysROMAccess::GetConstMemoryWindow(unsigned int physAddr) const
-{
-	MemoryAccess::ConstMemoryWindow memWin;
-	const unsigned int offset=(physAddr&(~0xfff))-TOWNSADDR_SYSROM_MAP_BASE;
-	memWin.ptr=physMemPtr->sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
-	return memWin;
-}
-
-////////////////////////////////////////////////////////////
-
-
 TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 {
 	breakOnFMRVRAMWrite=false;

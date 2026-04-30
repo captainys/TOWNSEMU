@@ -649,8 +649,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	nativeCMOSRAMAccess.SetPhysicalMemoryPointer(this);
 	nativeCMOSRAMAccess.SetCPUPointer(&cpu);
 
-	mappedSysROMAccess.SetPhysicalMemoryPointer(this);
-	mappedSysROMAccess.SetCPUPointer(&cpu);
 	ResetSysROMDicROMMappingFlag(true,false);   // This will set up memory access for 0xF8000 to 0xFFFFF and 0xD0000 to 0xDFFFF
 
 	if(TOWNSCPU_80386SX==cpuType && 0xA00000<state.RAM.size())
@@ -791,7 +789,6 @@ void TownsPhysicalMemory::UpdateSysROMDicROMMappingFlag(bool sysRomMapping, bool
 
 		if (sysRomMapping)
 		{
-			this->AddAccess(&mappedSysROMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
 			SetMemoryAccessTypeRange(TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1,TOWNSMEM_MAPPED_SYSROM);
 		}
 		else
