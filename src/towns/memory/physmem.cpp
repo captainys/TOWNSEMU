@@ -587,8 +587,6 @@ void TownsPhysicalMemory::SetMainRAMSize(uint64_t size,uint64_t RAMEnd)
 	state.RAM.resize(size);
 	SetMemoryAccessTypeRange(size,RAMEnd,TOWNSMEM_NONE);
 	SetMemoryAccessTypeRange(0x00100000,size,TOWNSMEM_MAINRAM);
-
-	RemoveAccess(size,RAMEnd);
 }
 
 void TownsPhysicalMemory::SetVRAMSize(long long int size)
@@ -810,7 +808,6 @@ void TownsPhysicalMemory::UpdateSysROMDicROMMappingFlag(bool sysRomMapping, bool
 			}
 			else
 			{
-				this->RemoveAccess(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
 				SetMemoryAccessTypeRange(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1,TOWNSMEM_NONE);
 			}
 		}
@@ -836,14 +833,12 @@ void TownsPhysicalMemory::UpdateFMRVRAMMappingFlag(bool FMRVRAMMapping)
 
 			if (state.dicRom) {
 				this->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
-				this->RemoveAccess(TOWNSADDR_FMR_RESERVED_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
 
 				SetMemoryAccessTypeRange(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1, TOWNSMEM_MAPPED_DIC);
 				SetMemoryAccessTypeRange(TOWNSADDR_FMR_RESERVED_BASE, TOWNSADDR_FMR_RESERVED_END - 1,TOWNSMEM_NONE);
 			}
 			else
 			{
-				this->RemoveAccess(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
 				SetMemoryAccessTypeRange(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_FMR_RESERVED_END - 1,TOWNSMEM_NONE);
 			}
 		}
