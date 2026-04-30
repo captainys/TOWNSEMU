@@ -492,18 +492,6 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 
 ////////////////////////////////////////////////////////////
 
-
-/* virtual */ unsigned int TownsFont20ROMAccess::FetchByte(unsigned int physAddr) const
-{
-	physAddr&=TOWNSADDR_FONT20_AND;
-	return physMemPtr->font20Rom[physAddr];
-}
-/* virtual */ void TownsFont20ROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
-{
-}
-
-////////////////////////////////////////////////////////////
-
 #include "rf5c68.h"
 
 /* virtual */ unsigned int TownsWaveRAMAccess::FetchByte(unsigned int physAddr) const

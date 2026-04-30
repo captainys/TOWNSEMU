@@ -170,13 +170,6 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
 
-class TownsFont20ROMAccess : public TownsMemAccess
-{
-public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-};
-
 class TownsWaveRAMAccess : public TownsMemAccess
 {
 public:
@@ -285,6 +278,15 @@ public:
 	inline void FontROMStoreDword(unsigned int physAddr,unsigned int data);
 	inline MemoryAccess::ConstMemoryWindow FontROMGetConstMemoryWindow(unsigned int physAddr) const;
 	inline MemoryAccess::MemoryWindow FontROMGetMemoryWindow(unsigned int physAddr);
+
+	inline unsigned int Font20ROMFetchByte(unsigned int physAddr) const;
+	inline unsigned int Font20ROMFetchWord(unsigned int physAddr) const;
+	inline unsigned int Font20ROMFetchDword(unsigned int physAddr) const;
+	inline void Font20ROMStoreByte(unsigned int physAddr,unsigned char data);
+	inline void Font20ROMStoreWord(unsigned int physAddr,unsigned int data);
+	inline void Font20ROMStoreDword(unsigned int physAddr,unsigned int data);
+	inline MemoryAccess::ConstMemoryWindow Font20ROMGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow Font20ROMGetMemoryWindow(unsigned int physAddr);
 
 	inline unsigned int MartyEXROMFetchByte(unsigned int physAddr) const;
 	inline unsigned int MartyEXROMFetchWord(unsigned int physAddr) const;
@@ -435,7 +437,6 @@ public:
 
 	TownsOldMemCardAccess oldMemCardAccess;
 	TownsJEIDA4MemCardAccess JEIDA4MemCardAccess;
-	TownsFont20ROMAccess font20ROMAccess;
 	TownsWaveRAMAccess waveRAMAccess;
 
 
