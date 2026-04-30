@@ -131,27 +131,28 @@ void TownsPhysicalMemory::CleanUp(void)
 	}
 }
 
-void TownsPhysicalMemory::SetUpMemoryAccessType(int cpuType)
+void TownsPhysicalMemory::SetMemoryAccessTypeRange(uint32_t addrBegin,uint32_t addrEnd,uint8_t type)
 {
 	const unsigned int pageLength=(1<<GRANURALITY_SHIFT);
+	for(unsigned addr=addrBegin; addr<addrEnd; addr+=pageLength)
+	{
+		memoryAccessType[addr>>GRANURALITY_SHIFT]&=ACCESSTYPE_DEBUG_FLAG;
+		memoryAccessType[addr>>GRANURALITY_SHIFT]|=type;
+	}
+}
 
+void TownsPhysicalMemory::SetUpMemoryAccessType(int cpuType)
+{
 	if(TOWNSCPU_80386SX==cpuType && 0xA00000<state.RAM.size())
 	{
 		state.RAM.resize(0xA00000);
 	}
 
-	for(unsigned addr=0; addr<TOWNSADDR_FMR_VRAM_BASE; addr+=pageLength)
-	{
-		memoryAccessType[addr>>GRANURALITY_SHIFT]=TOWNSMEM_MAINRAM;
-	}
+	SetMemoryAccessTypeRange(0,TOWNSADDR_FMR_VRAM_BASE,TOWNSMEM_MAINRAM);
 	// FMR_VRAM/CVRAM
 	// FMR_DICROM
 	// MAPPED_SYSROM
-	for(unsigned addr=TOWNSADDR_SYSROM_MAP_END; addr<state.RAM.size(); addr+=pageLength)
-	{
-		memoryAccessType[addr>>GRANURALITY_SHIFT]=TOWNSMEM_MAINRAM;
-	}
-
+	SetMemoryAccessTypeRange(TOWNSADDR_SYSROM_MAP_END,state.RAM.size(),TOWNSMEM_MAINRAM);
 }
 
 inline unsigned int TownsPhysicalMemory::TrueFetchByte(unsigned int physAddr) const
@@ -557,12 +558,7 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
-		{
-			MemoryAccess::ConstMemoryWindow window;
-			window.ptr=nullptr;
-			return window;
-		}
-		break;
+		return EmptyConstMemoryWindow();
 	}
 }
 
@@ -604,12 +600,7 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 	case TOWNSMEM_VRAM_2PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_1PAGE_WITH_MASK_DEBUG:
 	case TOWNSMEM_VRAM_HIGHRES_WITH_MASK_DEBUG:
-		{
-			MemoryAccess::MemoryWindow window;
-			window.ptr=nullptr;
-			return window;
-		}
-		break;	
+		return EmptyMemoryWindow();
 	}
 }
 

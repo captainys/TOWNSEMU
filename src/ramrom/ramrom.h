@@ -285,6 +285,21 @@ public:
 		MEMORY_ACCESS_SLOT_SIZE=(1<<GRANURALITY_SHIFT),
 	};
 
+	MemoryAccess::ConstMemoryWindow EmptyConstMemoryWindow(void) const
+	{
+		MemoryAccess::ConstMemoryWindow window;
+		window.ptr=nullptr;
+		return window;
+	}
+	MemoryAccess::MemoryWindow EmptyMemoryWindow(void) const
+	{
+		MemoryAccess::MemoryWindow window;
+		window.ptr=nullptr;
+		return window;
+	}
+
+
+
 	Memory();
 
 	/*! Unassign all memory access objects.

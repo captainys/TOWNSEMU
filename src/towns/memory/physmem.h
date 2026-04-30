@@ -310,6 +310,7 @@ public:
 	// ramrom.h functions real implementaiton >>
 	void CleanUp(void);
 
+	void SetMemoryAccessTypeRange(uint32_t addrBegin,uint32_t addrEnd,uint8_t type);
 	void SetUpMemoryAccessType(int cpuType);
 
 	inline unsigned int TrueFetchByte(unsigned int physAddr) const;
