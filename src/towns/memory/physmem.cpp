@@ -692,22 +692,11 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	JEIDA4MemCardAccess.SetPhysicalMemoryPointer(this);
 	JEIDA4MemCardAccess.SetCPUPointer(&cpu);
 
-	fontROMAccess.SetPhysicalMemoryPointer(this);
-	fontROMAccess.SetCPUPointer(&cpu);
-
 	font20ROMAccess.SetPhysicalMemoryPointer(this);
 	font20ROMAccess.SetCPUPointer(&cpu);
 
 	waveRAMAccess.SetPhysicalMemoryPointer(this);
 	waveRAMAccess.SetCPUPointer(&cpu);
-
-	martyROMAccess.SetPhysicalMemoryPointer(this);
-	martyROMAccess.SetCPUPointer(&cpu);
-
-	if(TOWNSTYPE_MARTY==townsType)
-	{
-		mem.AddAccess(&martyROMAccess,TOWNSADDR_MARTY_ROM0_BASE,TOWNSADDR_MARTY_ROM3_END-1);
-	}
 
 	if(TOWNSCPU_80386SX!=cpuType)
 	{
@@ -715,7 +704,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 		mem.AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_NATIVE_CMOSRAM_BASE,TOWNSADDR_NATIVE_CMOSRAM_END-1);
 		mem.AddAccess(&oldMemCardAccess,TOWNSADDR_MEMCARD_OLD_BASE,TOWNSADDR_MEMCARD_OLD_END-1);
 		mem.AddAccess(&JEIDA4MemCardAccess,TOWNSADDR_MEMCARD_JEIDA4_BASE,TOWNSADDR_MEMCARD_JEIDA4_END-1);
-		mem.AddAccess(&fontROMAccess,TOWNSADDR_FONT_BASE,TOWNSADDR_FONT_END-1);
 		mem.AddAccess(&font20ROMAccess,TOWNSADDR_FONT20_BASE,TOWNSADDR_FONT20_END-1);
 		mem.AddAccess(&waveRAMAccess,TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1);
 	}
@@ -730,7 +718,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 		mem.AddAccess(&nativeDicROMAccess,TOWNSADDR_386SX_NATIVE_DICROM_BASE,TOWNSADDR_386SX_NATIVE_DICROM_END-1);
 		mem.AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_386SX_NATIVE_CMOSRAM_BASE,TOWNSADDR_386SX_NATIVE_CMOSRAM_END-1);
 		mem.AddAccess(&oldMemCardAccess,TOWNSADDR_386SX_MEMCARD_BASE,TOWNSADDR_386SX_MEMCARD_END-1);
-		mem.AddAccess(&fontROMAccess,TOWNSADDR_386SX_FONT_BASE,TOWNSADDR_386SX_FONT_END-1);
 		mem.AddAccess(&waveRAMAccess,TOWNSADDR_386SX_WAVERAM_WINDOW_BASE,TOWNSADDR_386SX_WAVERAM_WINDOW_END-1);
 	}
 }

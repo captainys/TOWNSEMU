@@ -599,17 +599,6 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 ////////////////////////////////////////////////////////////
 
 
-/* virtual */ unsigned int TownsFontROMAccess::FetchByte(unsigned int physAddr) const
-{
-	physAddr&=TOWNSADDR_FONT_AND;
-	return physMemPtr->fontRom[physAddr];
-}
-/* virtual */ void TownsFontROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
-{
-}
-
-////////////////////////////////////////////////////////////
-
 /* virtual */ unsigned int TownsFont20ROMAccess::FetchByte(unsigned int physAddr) const
 {
 	physAddr&=TOWNSADDR_FONT20_AND;
@@ -642,20 +631,3 @@ TownsWaveRAMAccess::TownsWaveRAMAccess(class FMTownsCommon *townsPtr,class RF5C6
 	this->vgmRecorderPtr=vgmRecPtr;
 }
 
-////////////////////////////////////////////////////////////
-
-/* virtual */ unsigned int TownsMartyEXROMAccess::FetchByte(unsigned int physAddr) const
-{
-	auto townsPtr=physMemPtr->townsPtr;
-	townsPtr->NotifyDiskRead();
-	return physMemPtr->martyRom[physAddr-TOWNSADDR_MARTY_ROM0_BASE];
-}
-/* virtual */ void TownsMartyEXROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
-{
-}
-/* virtual */ MemoryAccess::ConstMemoryWindow TownsMartyEXROMAccess::GetConstMemoryWindow(unsigned int physAddr) const
-{
-	MemoryAccess::ConstMemoryWindow memWin;
-	memWin.ptr=physMemPtr->martyRom.data()+(physAddr-TOWNSADDR_MARTY_ROM0_BASE);
-	return memWin;
-}

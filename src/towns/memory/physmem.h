@@ -208,13 +208,6 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
 
-class TownsFontROMAccess : public TownsMemAccess
-{
-public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-};
-
 class TownsFont20ROMAccess : public TownsMemAccess
 {
 public:
@@ -312,6 +305,24 @@ public:
 	inline void NativeSYSROMStoreDword(unsigned int physAddr,unsigned int data);
 	inline MemoryAccess::ConstMemoryWindow NativeSYSROMGetConstMemoryWindow(unsigned int physAddr) const;
 	inline MemoryAccess::MemoryWindow NativeSYSROMGetMemoryWindow(unsigned int physAddr);
+
+	inline unsigned int FontROMFetchByte(unsigned int physAddr) const;
+	inline unsigned int FontROMFetchWord(unsigned int physAddr) const;
+	inline unsigned int FontROMFetchDword(unsigned int physAddr) const;
+	inline void FontROMStoreByte(unsigned int physAddr,unsigned char data);
+	inline void FontROMStoreWord(unsigned int physAddr,unsigned int data);
+	inline void FontROMStoreDword(unsigned int physAddr,unsigned int data);
+	inline MemoryAccess::ConstMemoryWindow FontROMGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow FontROMGetMemoryWindow(unsigned int physAddr);
+
+	inline unsigned int MartyEXROMFetchByte(unsigned int physAddr) const;
+	inline unsigned int MartyEXROMFetchWord(unsigned int physAddr) const;
+	inline unsigned int MartyEXROMFetchDword(unsigned int physAddr) const;
+	inline void MartyEXROMStoreByte(unsigned int physAddr,unsigned char data);
+	inline void MartyEXROMStoreWord(unsigned int physAddr,unsigned int data);
+	inline void MartyEXROMStoreDword(unsigned int physAddr,unsigned int data);
+	inline MemoryAccess::ConstMemoryWindow MartyEXROMGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow MartyEXROMGetMemoryWindow(unsigned int physAddr);
 	// Fast access <<
 
 	// ramrom.h functions real implementaiton >>
@@ -431,7 +442,6 @@ public:
 	TownsMappedDICROMandCMOSRAMAccess mappedDicROMandDicRAMAccess;
 	TownsNativeDICROMAccess nativeDicROMAccess;
 	TownsNativeCMOSRAMAccess nativeCMOSRAMAccess;
-	TownsFontROMAccess fontROMAccess;
 
 
 	TownsVRAMAccessTemplate           <0> VRAMAccess0;
@@ -451,7 +461,6 @@ public:
 	TownsJEIDA4MemCardAccess JEIDA4MemCardAccess;
 	TownsFont20ROMAccess font20ROMAccess;
 	TownsWaveRAMAccess waveRAMAccess;
-	TownsMartyEXROMAccess martyROMAccess;
 
 
 	virtual const char *DeviceName(void) const{return "MEMORY";}

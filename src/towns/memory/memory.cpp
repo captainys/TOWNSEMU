@@ -2,7 +2,7 @@
 #include "memory.h"
 #include "ramrom.h"
 #include "physmem.h"
-
+#include "towns.h"
 
 
 ////////////////////////////////////////////////////////////
@@ -208,6 +208,38 @@ DefaultGetMemoryWindow(OSROM)
 
 ////////////////////////////////////////////////////////////
 
+inline unsigned int TownsPhysicalMemory::FontROMFetchByte(unsigned int physAddr) const
+{
+	physAddr&=TOWNSADDR_FONT_AND;
+	return fontRom[physAddr];
+}
+
+inline unsigned int TownsPhysicalMemory::FontROMFetchWord(unsigned int physAddr) const
+{
+	physAddr&=TOWNSADDR_FONT_AND;
+	return cpputil::GetWord(fontRom.data()+physAddr);
+}
+
+inline unsigned int TownsPhysicalMemory::FontROMFetchDword(unsigned int physAddr) const
+{
+	physAddr&=TOWNSADDR_FONT_AND;
+	return cpputil::GetDword(fontRom.data()+physAddr);
+}
+
+inline void TownsPhysicalMemory::FontROMStoreByte(unsigned int physAddr,unsigned char data)
+{
+}
+
+DefaultStoreWord(FontROM)
+
+DefaultStoreDword(FontROM)
+
+DefaultGetMemoryWindow(FontROM)
+
+DefaultGetConstMemoryWindow(FontROM)
+
+////////////////////////////////////////////////////////////
+
 inline unsigned int TownsPhysicalMemory::NativeSYSROMFetchByte(unsigned int physAddr) const
 {
 	return sysRom[physAddr&TOWNSADDR_SYSROM_AND];
@@ -239,6 +271,43 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::NativeSYSROMGetConst
 }
 
 DefaultGetMemoryWindow(NativeSYSROM)
+
+////////////////////////////////////////////////////////////
+
+inline unsigned int TownsPhysicalMemory::MartyEXROMFetchByte(unsigned int physAddr) const
+{
+	townsPtr->NotifyDiskRead();
+	return martyRom[physAddr-TOWNSADDR_MARTY_ROM0_BASE];
+}
+
+inline unsigned int TownsPhysicalMemory::MartyEXROMFetchWord(unsigned int physAddr) const
+{
+	townsPtr->NotifyDiskRead();
+	return cpputil::GetWord(martyRom.data()+(physAddr-TOWNSADDR_MARTY_ROM0_BASE));
+}
+
+inline unsigned int TownsPhysicalMemory::MartyEXROMFetchDword(unsigned int physAddr) const
+{
+	townsPtr->NotifyDiskRead();
+	return cpputil::GetDword(martyRom.data()+(physAddr-TOWNSADDR_MARTY_ROM0_BASE));
+}
+
+inline void TownsPhysicalMemory::MartyEXROMStoreByte(unsigned int physAddr,unsigned char data)
+{
+}
+
+DefaultStoreWord(MartyEXROM)
+
+DefaultStoreDword(MartyEXROM)
+
+inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::MartyEXROMGetConstMemoryWindow(unsigned int physAddr) const
+{
+	MemoryAccess::ConstMemoryWindow memWin;
+	memWin.ptr=martyRom.data()+(physAddr-TOWNSADDR_MARTY_ROM0_BASE);
+	return memWin;
+}
+
+DefaultGetMemoryWindow(MartyEXROM)
 
 ////////////////////////////////////////////////////////////
 
@@ -287,6 +356,7 @@ void TownsPhysicalMemory::SetUpMemoryAccessType(int townsType,int cpuType)
 	if(TOWNSCPU_80386SX!=cpuType)
 	{
 		SetMemoryAccessTypeRange(TOWNSADDR_OSROM_BASE,TOWNSADDR_OSROM_END,TOWNSMEM_OSROM);
+		SetMemoryAccessTypeRange(TOWNSADDR_FONT_BASE,TOWNSADDR_FONT_END,TOWNSMEM_FONTROM);
 	}
 	else
 	{
@@ -301,7 +371,8 @@ void TownsPhysicalMemory::SetUpMemoryAccessType(int townsType,int cpuType)
 		{
 			SetMemoryAccessTypeRange(TOWNSADDR_386SX_OSROM_BASE,TOWNSADDR_386SX_OSROM_END,TOWNSMEM_OSROM);
 		}
-	
+
+		SetMemoryAccessTypeRange(TOWNSADDR_386SX_FONT_BASE,TOWNSADDR_386SX_FONT_END,TOWNSMEM_FONTROM);
 		SetMemoryAccessTypeRange(TOWNSADDR_386SX_SYSROM_BASE,TOWNSADDR_386SX_SYSROM_END,TOWNSMEM_NATIVE_SYSROM);
 	}
 
@@ -321,6 +392,10 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return OSROMFetchByte(physAddr);
 	case TOWNSMEM_NATIVE_SYSROM:
 		return NativeSYSROMFetchByte(physAddr);
+	case TOWNSMEM_FONTROM:
+		return FontROMFetchByte(physAddr);
+	case TOWNSMEM_MARTY_EXROM:
+		return MartyEXROMFetchByte(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -371,6 +446,10 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return OSROMFetchByte(physAddr);
 	case TOWNSMEM_NATIVE_SYSROM:
 		return NativeSYSROMFetchByte(physAddr);
+	case TOWNSMEM_FONTROM:
+		return FontROMFetchByte(physAddr);
+	case TOWNSMEM_MARTY_EXROM:
+		return MartyEXROMFetchByte(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -421,6 +500,10 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return OSROMFetchWord(physAddr);
 	case TOWNSMEM_NATIVE_SYSROM:
 		return NativeSYSROMFetchWord(physAddr);
+	case TOWNSMEM_FONTROM:
+		return FontROMFetchWord(physAddr);
+	case TOWNSMEM_MARTY_EXROM:
+		return MartyEXROMFetchWord(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -471,6 +554,10 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return OSROMFetchDword(physAddr);
 	case TOWNSMEM_NATIVE_SYSROM:
 		return NativeSYSROMFetchDword(physAddr);
+	case TOWNSMEM_FONTROM:
+		return FontROMFetchDword(physAddr);
+	case TOWNSMEM_MARTY_EXROM:
+		return MartyEXROMFetchDword(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -526,6 +613,12 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_NATIVE_SYSROM:
 		NativeSYSROMStoreByte(physAddr,data);
 		break;
+	case TOWNSMEM_FONTROM:
+		FontROMStoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_MARTY_EXROM:
+		MartyEXROMStoreByte(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -579,6 +672,12 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		break;
 	case TOWNSMEM_NATIVE_SYSROM:
 		NativeSYSROMStoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_FONTROM:
+		FontROMStoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_MARTY_EXROM:
+		MartyEXROMStoreByte(physAddr,data);
 		break;
 	default:
 		{
@@ -634,6 +733,12 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_NATIVE_SYSROM:
 		NativeSYSROMStoreWord(physAddr,data);
 		break;
+	case TOWNSMEM_FONTROM:
+		FontROMStoreWord(physAddr,data);
+		break;
+	case TOWNSMEM_MARTY_EXROM:
+		MartyEXROMStoreWord(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -688,6 +793,12 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_NATIVE_SYSROM:
 		NativeSYSROMStoreDword(physAddr,data);
 		break;
+	case TOWNSMEM_FONTROM:
+		FontROMStoreDword(physAddr,data);
+		break;
+	case TOWNSMEM_MARTY_EXROM:
+		MartyEXROMStoreDword(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -737,6 +848,10 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 		return OSROMGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_NATIVE_SYSROM:
 		return NativeSYSROMGetConstMemoryWindow(physAddr);
+	case TOWNSMEM_FONTROM:
+		return FontROMGetConstMemoryWindow(physAddr);
+	case TOWNSMEM_MARTY_EXROM:
+		return MartyEXROMGetConstMemoryWindow(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -784,6 +899,10 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 		return OSROMGetMemoryWindow(physAddr);
 	case TOWNSMEM_NATIVE_SYSROM:
 		return NativeSYSROMGetMemoryWindow(physAddr);
+	case TOWNSMEM_FONTROM:
+		return FontROMGetMemoryWindow(physAddr);
+	case TOWNSMEM_MARTY_EXROM:
+		return MartyEXROMGetMemoryWindow(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
