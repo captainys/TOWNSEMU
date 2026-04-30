@@ -324,21 +324,6 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 
 ////////////////////////////////////////////////////////////
 
-
-/* virtual */ unsigned int TownsNativeCMOSRAMAccess::FetchByte(unsigned int physAddr) const
-{
-	auto &physMem=*physMemPtr;
-	return physMem.state.CMOSRAM[physAddr&TOWNSADDR_NATIVE_CMOSRAM_AND];
-}
-/* virtual */ void TownsNativeCMOSRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
-{
-	auto &physMem=*physMemPtr;
-	physMem.state.CMOSRAM[physAddr&TOWNSADDR_NATIVE_CMOSRAM_AND]=data;
-}
-
-
-////////////////////////////////////////////////////////////
-
 /* virtual */ unsigned int TownsOldMemCardAccess::FetchByte(unsigned int physAddr) const
 {
 	// DISKBIOS (INT 93H AX=??50H) reads C0000000H for CIS information.
@@ -490,13 +475,13 @@ void TownsWaveRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 	}
 }
 
-void TownsWaveRAMAccess::StoreWord(unsigned int physAddr,unsigned char data)
+void TownsWaveRAMAccess::StoreWord(unsigned int physAddr,unsigned int data)
 {
 	StoreByte(physAddr,data);
 	StoreByte(physAddr+1,data>>8);
 }
 
-void TownsWaveRAMAccess::StoreDword(unsigned int physAddr,unsigned char data)
+void TownsWaveRAMAccess::StoreDword(unsigned int physAddr,unsigned int data)
 {
 	StoreByte(physAddr,data);
 	StoreByte(physAddr+1,data>>8);

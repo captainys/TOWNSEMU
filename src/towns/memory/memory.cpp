@@ -154,6 +154,30 @@ DefaultGetMemoryWindow(NativeDICROM)
 
 ////////////////////////////////////////////////////////////
 
+inline unsigned int TownsPhysicalMemory::NativeCMOSFetchByte(unsigned int physAddr) const
+{
+	return state.CMOSRAM[physAddr&TOWNSADDR_NATIVE_CMOSRAM_AND];
+}
+
+DefaultFetchWord(NativeCMOS)
+
+DefaultFetchDword(NativeCMOS)
+
+inline void TownsPhysicalMemory::NativeCMOSStoreByte(unsigned int physAddr,unsigned char data)
+{
+	state.CMOSRAM[physAddr&TOWNSADDR_NATIVE_CMOSRAM_AND]=data;
+}
+
+DefaultStoreWord(NativeCMOS)
+
+DefaultStoreDword(NativeCMOS)
+
+DefaultGetConstMemoryWindow(NativeCMOS)
+
+DefaultGetMemoryWindow(NativeCMOS)
+
+////////////////////////////////////////////////////////////
+
 inline unsigned int TownsPhysicalMemory::MappedDICFetchByte(unsigned int physAddr) const
 {
 	if(TOWNSADDR_FMR_DICROM_BASE<=physAddr && physAddr<TOWNSADDR_FMR_DICROM_END) // Dic ROM
@@ -521,6 +545,7 @@ void TownsPhysicalMemory::SetUpMemoryAccessType(int townsType,int cpuType)
 		SetMemoryAccessTypeRange(TOWNSADDR_FONT20_BASE,TOWNSADDR_FONT20_END,TOWNSMEM_FONT20ROM);
 		SetMemoryAccessTypeRange(TOWNSADDR_NATIVE_DICROM_BASE,TOWNSADDR_NATIVE_DICROM_END-1,TOWNSMEM_NATIVE_DICROM);
 		SetMemoryAccessTypeRange(TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1,TOWNSMEM_WAVERAM);
+		SetMemoryAccessTypeRange(TOWNSADDR_NATIVE_CMOSRAM_BASE,TOWNSADDR_NATIVE_CMOSRAM_END-1,TOWNSMEM_NATIVE_CMOS);
 	}
 	else
 	{
@@ -544,6 +569,7 @@ void TownsPhysicalMemory::SetUpMemoryAccessType(int townsType,int cpuType)
 
 		SetMemoryAccessTypeRange(TOWNSADDR_386SX_FONT_BASE,TOWNSADDR_386SX_FONT_END,TOWNSMEM_FONTROM);
 		SetMemoryAccessTypeRange(TOWNSADDR_386SX_SYSROM_BASE,TOWNSADDR_386SX_SYSROM_END,TOWNSMEM_NATIVE_SYSROM);
+		SetMemoryAccessTypeRange(TOWNSADDR_386SX_NATIVE_CMOSRAM_BASE,TOWNSADDR_386SX_NATIVE_CMOSRAM_END-1,TOWNSMEM_NATIVE_CMOS);
 		SetMemoryAccessTypeRange(TOWNSADDR_386SX_NATIVE_DICROM_BASE,TOWNSADDR_386SX_NATIVE_DICROM_END-1,TOWNSMEM_NATIVE_DICROM);
 		SetMemoryAccessTypeRange(TOWNSADDR_386SX_WAVERAM_WINDOW_BASE,TOWNSADDR_386SX_WAVERAM_WINDOW_END-1,TOWNSMEM_WAVERAM);
 	}
@@ -579,6 +605,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return FontROMFetchByte(physAddr);
 	case TOWNSMEM_FONT20ROM:
 		return Font20ROMFetchByte(physAddr);
+	case TOWNSMEM_NATIVE_CMOS:
+		return NativeCMOSFetchByte(physAddr);
 	case TOWNSMEM_NATIVE_DICROM:
 		return NativeDICROMFetchByte(physAddr);
 	case TOWNSMEM_MARTY_EXROM:
@@ -645,6 +673,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return FontROMFetchByte(physAddr);
 	case TOWNSMEM_FONT20ROM:
 		return Font20ROMFetchByte(physAddr);
+	case TOWNSMEM_NATIVE_CMOS:
+		return NativeCMOSFetchByte(physAddr);
 	case TOWNSMEM_NATIVE_DICROM:
 		return NativeDICROMFetchByte(physAddr);
 	case TOWNSMEM_MARTY_EXROM:
@@ -711,6 +741,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return FontROMFetchWord(physAddr);
 	case TOWNSMEM_FONT20ROM:
 		return Font20ROMFetchWord(physAddr);
+	case TOWNSMEM_NATIVE_CMOS:
+		return NativeCMOSFetchWord(physAddr);
 	case TOWNSMEM_NATIVE_DICROM:
 		return NativeDICROMFetchWord(physAddr);
 	case TOWNSMEM_MARTY_EXROM:
@@ -777,6 +809,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return FontROMFetchDword(physAddr);
 	case TOWNSMEM_FONT20ROM:
 		return Font20ROMFetchDword(physAddr);
+	case TOWNSMEM_NATIVE_CMOS:
+		return NativeCMOSFetchDword(physAddr);
 	case TOWNSMEM_NATIVE_DICROM:
 		return NativeDICROMFetchDword(physAddr);
 	case TOWNSMEM_MARTY_EXROM:
@@ -851,6 +885,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		break;
 	case TOWNSMEM_FONT20ROM:
 		Font20ROMStoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_NATIVE_CMOS:
+		NativeCMOSStoreByte(physAddr,data);
 		break;
 	case TOWNSMEM_NATIVE_DICROM:
 		NativeDICROMStoreByte(physAddr,data);
@@ -929,6 +966,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_FONT20ROM:
 		Font20ROMStoreByte(physAddr,data);
 		break;
+	case TOWNSMEM_NATIVE_CMOS:
+		NativeCMOSStoreByte(physAddr,data);
+		break;
 	case TOWNSMEM_NATIVE_DICROM:
 		NativeDICROMStoreByte(physAddr,data);
 		break;
@@ -1005,6 +1045,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		break;
 	case TOWNSMEM_FONT20ROM:
 		Font20ROMStoreWord(physAddr,data);
+		break;
+	case TOWNSMEM_NATIVE_CMOS:
+		NativeCMOSStoreWord(physAddr,data);
 		break;
 	case TOWNSMEM_NATIVE_DICROM:
 		NativeDICROMStoreWord(physAddr,data);
@@ -1083,6 +1126,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_FONT20ROM:
 		Font20ROMStoreDword(physAddr,data);
 		break;
+	case TOWNSMEM_NATIVE_CMOS:
+		NativeCMOSStoreDword(physAddr,data);
+		break;
 	case TOWNSMEM_NATIVE_DICROM:
 		NativeDICROMStoreDword(physAddr,data);
 		break;
@@ -1151,6 +1197,8 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 		return FontROMGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_FONT20ROM:
 		return Font20ROMGetConstMemoryWindow(physAddr);
+	case TOWNSMEM_NATIVE_CMOS:
+		return NativeCMOSGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_NATIVE_DICROM:
 		return NativeDICROMGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_MARTY_EXROM:
@@ -1214,6 +1262,8 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 		return FontROMGetMemoryWindow(physAddr);
 	case TOWNSMEM_FONT20ROM:
 		return Font20ROMGetMemoryWindow(physAddr);
+	case TOWNSMEM_NATIVE_CMOS:
+		return NativeCMOSGetMemoryWindow(physAddr);
 	case TOWNSMEM_NATIVE_DICROM:
 		return NativeDICROMGetMemoryWindow(physAddr);
 	case TOWNSMEM_MARTY_EXROM:

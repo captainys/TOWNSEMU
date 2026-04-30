@@ -182,8 +182,8 @@ public:
 	unsigned int FetchWord(unsigned int physAddr) const;
 	unsigned int FetchDword(unsigned int physAddr) const;
 	void StoreByte(unsigned int physAddr,unsigned char data);
-	void StoreWord(unsigned int physAddr,unsigned char data);
-	void StoreDword(unsigned int physAddr,unsigned char data);
+	void StoreWord(unsigned int physAddr,unsigned int data);
+	void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
 
@@ -273,6 +273,15 @@ public:
 	inline void NativeDICROMStoreDword(unsigned int physAddr,unsigned int data);
 	inline MemoryAccess::ConstMemoryWindow NativeDICROMGetConstMemoryWindow(unsigned int physAddr) const;
 	inline MemoryAccess::MemoryWindow NativeDICROMGetMemoryWindow(unsigned int physAddr);
+
+	inline unsigned int NativeCMOSFetchByte(unsigned int physAddr) const;
+	inline unsigned int NativeCMOSFetchWord(unsigned int physAddr) const;
+	inline unsigned int NativeCMOSFetchDword(unsigned int physAddr) const;
+	inline void NativeCMOSStoreByte(unsigned int physAddr,unsigned char data);
+	inline void NativeCMOSStoreWord(unsigned int physAddr,unsigned int data);
+	inline void NativeCMOSStoreDword(unsigned int physAddr,unsigned int data);
+	inline MemoryAccess::ConstMemoryWindow NativeCMOSGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow NativeCMOSGetMemoryWindow(unsigned int physAddr);
 
 	inline unsigned int OSROMFetchByte(unsigned int physAddr) const;
 	inline unsigned int OSROMFetchWord(unsigned int physAddr) const;
@@ -439,8 +448,6 @@ public:
 	std::vector <unsigned char> JISCodeLog; // Log KanjiROM Read Access
 
 	TownsFMRVRAMAccess FMRVRAMAccess;
-	TownsNativeCMOSRAMAccess nativeCMOSRAMAccess;
-
 
 	TownsVRAMAccessTemplate           <0> VRAMAccess0;
 	TownsSinglePageVRAMAccessTemplate <0,TownsSinglePageVRAMAddressTransform> VRAMAccess1;
