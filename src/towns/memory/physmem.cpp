@@ -642,8 +642,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	mappedDicROMandDicRAMAccess.SetPhysicalMemoryPointer(this);
 	mappedDicROMandDicRAMAccess.SetCPUPointer(&cpu);
 
-	nativeDicROMAccess.SetPhysicalMemoryPointer(this);
-	nativeDicROMAccess.SetCPUPointer(&cpu);
 	nativeCMOSRAMAccess.SetPhysicalMemoryPointer(this);
 	nativeCMOSRAMAccess.SetCPUPointer(&cpu);
 
@@ -691,7 +689,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 
 	if(TOWNSCPU_80386SX!=cpuType)
 	{
-		this->AddAccess(&nativeDicROMAccess,TOWNSADDR_NATIVE_DICROM_BASE,TOWNSADDR_NATIVE_DICROM_END-1);
 		this->AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_NATIVE_CMOSRAM_BASE,TOWNSADDR_NATIVE_CMOSRAM_END-1);
 		this->AddAccess(&oldMemCardAccess,TOWNSADDR_MEMCARD_OLD_BASE,TOWNSADDR_MEMCARD_OLD_END-1);
 		this->AddAccess(&JEIDA4MemCardAccess,TOWNSADDR_MEMCARD_JEIDA4_BASE,TOWNSADDR_MEMCARD_JEIDA4_END-1);
@@ -704,7 +701,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 		// high address memory access.
 		// Also CPU core does not care 80386SX mode.  Therefore, the reset vector still needs to be
 		// 0xFFFFFFF0, which means SYSROM still needs to be accessible from high address.
-		this->AddAccess(&nativeDicROMAccess,TOWNSADDR_386SX_NATIVE_DICROM_BASE,TOWNSADDR_386SX_NATIVE_DICROM_END-1);
 		this->AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_386SX_NATIVE_CMOSRAM_BASE,TOWNSADDR_386SX_NATIVE_CMOSRAM_END-1);
 		this->AddAccess(&oldMemCardAccess,TOWNSADDR_386SX_MEMCARD_BASE,TOWNSADDR_386SX_MEMCARD_END-1);
 	}

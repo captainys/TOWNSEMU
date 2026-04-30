@@ -350,20 +350,6 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 ////////////////////////////////////////////////////////////
 
 
-/* virtual */ unsigned int TownsNativeDICROMAccess::FetchByte(unsigned int physAddr) const
-{
-	auto &physMem=*physMemPtr;
-	return physMem.dicRom[physAddr&TOWNSADDR_NATIVE_DICROM_AND];
-}
-/* virtual */ void TownsNativeDICROMAccess::StoreByte(unsigned int,unsigned char)
-{
-	// It's a ROM.
-}
-
-
-////////////////////////////////////////////////////////////
-
-
 /* virtual */ unsigned int TownsNativeCMOSRAMAccess::FetchByte(unsigned int physAddr) const
 {
 	auto &physMem=*physMemPtr;

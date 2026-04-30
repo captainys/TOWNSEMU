@@ -256,6 +256,15 @@ public:
 	inline MemoryAccess::ConstMemoryWindow SpriteRAMGetConstMemoryWindow(unsigned int physAddr) const;
 	inline MemoryAccess::MemoryWindow SpriteRAMGetMemoryWindow(unsigned int physAddr);
 
+	inline unsigned int NativeDICROMFetchByte(unsigned int physAddr) const;
+	inline unsigned int NativeDICROMFetchWord(unsigned int physAddr) const;
+	inline unsigned int NativeDICROMFetchDword(unsigned int physAddr) const;
+	inline void NativeDICROMStoreByte(unsigned int physAddr,unsigned char data);
+	inline void NativeDICROMStoreWord(unsigned int physAddr,unsigned int data);
+	inline void NativeDICROMStoreDword(unsigned int physAddr,unsigned int data);
+	inline MemoryAccess::ConstMemoryWindow NativeDICROMGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow NativeDICROMGetMemoryWindow(unsigned int physAddr);
+
 	inline unsigned int OSROMFetchByte(unsigned int physAddr) const;
 	inline unsigned int OSROMFetchWord(unsigned int physAddr) const;
 	inline unsigned int OSROMFetchDword(unsigned int physAddr) const;
@@ -422,7 +431,6 @@ public:
 
 	TownsFMRVRAMAccess FMRVRAMAccess;
 	TownsMappedDICROMandCMOSRAMAccess mappedDicROMandDicRAMAccess;
-	TownsNativeDICROMAccess nativeDicROMAccess;
 	TownsNativeCMOSRAMAccess nativeCMOSRAMAccess;
 
 
