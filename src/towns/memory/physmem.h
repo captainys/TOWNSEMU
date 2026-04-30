@@ -186,13 +186,13 @@ public:
 	void StoreDword(unsigned int physAddr,unsigned char data);
 };
 
-class TownsMartyEXROMAccess : public TownsMemAccess
-{
-public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
-};
+
+
+////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////
+
+
 
 class TownsPhysicalMemory : public Device, public Memory
 {
@@ -237,6 +237,15 @@ public:
 	inline void MainRAMStoreDword(unsigned int physAddr,unsigned int data);
 	inline MemoryAccess::ConstMemoryWindow MainRAMGetConstMemoryWindow(unsigned int physAddr) const;
 	inline MemoryAccess::MemoryWindow MainRAMGetMemoryWindow(unsigned int physAddr);
+
+	inline unsigned int MappedDICFetchByte(unsigned int physAddr) const;
+	inline unsigned int MappedDICFetchWord(unsigned int physAddr) const;
+	inline unsigned int MappedDICFetchDword(unsigned int physAddr) const;
+	inline void MappedDICStoreByte(unsigned int physAddr,unsigned char data);
+	inline void MappedDICStoreWord(unsigned int physAddr,unsigned int data);
+	inline void MappedDICStoreDword(unsigned int physAddr,unsigned int data);
+	inline MemoryAccess::ConstMemoryWindow MappedDICGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow MappedDICGetMemoryWindow(unsigned int physAddr);
 
 	inline unsigned int MappedSYSROMFetchByte(unsigned int physAddr) const;
 	inline unsigned int MappedSYSROMFetchWord(unsigned int physAddr) const;
