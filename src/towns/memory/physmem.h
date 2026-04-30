@@ -448,7 +448,6 @@ public:
 	TownsSinglePageVRAMAccessWithMaskTemplate <0,TownsSinglePageHighResVRAMAddressTransform> VRAMAccessWithMaskHighRes2;
 
 
-	TownsSpriteRAMAccess spriteRAMAccess;
 	TownsOldMemCardAccess oldMemCardAccess;
 	TownsJEIDA4MemCardAccess JEIDA4MemCardAccess;
 	TownsOsROMAccess osROMAccess;

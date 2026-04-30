@@ -686,9 +686,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 
 	SetUpVRAMAccess(cpuType);
 
-	spriteRAMAccess.SetPhysicalMemoryPointer(this);
-	spriteRAMAccess.SetCPUPointer(&cpu);
-
 	oldMemCardAccess.SetPhysicalMemoryPointer(this);
 	oldMemCardAccess.SetCPUPointer(&cpu);
 
@@ -714,10 +711,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	martyROMAccess.SetCPUPointer(&cpu);
 
 	mem.AddAccess(&sysROMAccess,TOWNSADDR_SYSROM_BASE,0xFFFFFFFF); // Even when machine ID is 386SX, the CPU core is actually 486.  The reset instruction pointer needs to be at the end of 32-bit address space.
-
-	// Unless CMOS is cleared, Towns OS will try to put R drive from 81000000H regardless of the CPU type.
-	// To let 386SX run with the same CMOS setting, leave mapping of 81000000H.
-	mem.AddAccess(&spriteRAMAccess,TOWNSADDR_SPRITERAM_BASE,TOWNSADDR_SPRITERAM_END-1);
 
 	if(TOWNSTYPE_MARTY==townsType)
 	{
@@ -746,7 +739,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 		// 0xFFFFFFF0, which means SYSROM still needs to be accessible from high address.
 		mem.AddAccess(&nativeDicROMAccess,TOWNSADDR_386SX_NATIVE_DICROM_BASE,TOWNSADDR_386SX_NATIVE_DICROM_END-1);
 		mem.AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_386SX_NATIVE_CMOSRAM_BASE,TOWNSADDR_386SX_NATIVE_CMOSRAM_END-1);
-		mem.AddAccess(&spriteRAMAccess,TOWNSADDR_386SX_SPRITERAM_BASE,TOWNSADDR_386SX_SPRITERAM_END-1);
 		mem.AddAccess(&oldMemCardAccess,TOWNSADDR_386SX_MEMCARD_BASE,TOWNSADDR_386SX_MEMCARD_END-1);
 		if(TOWNSTYPE_MARTY!=townsType)
 		{
