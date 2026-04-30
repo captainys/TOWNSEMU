@@ -234,15 +234,6 @@ public:
 	TownsWaveRAMAccess(class FMTownsCommon *townsPtr,class RF5C68 *pcmPtr,class VGMRecorder *vgmRecPtr);
 };
 
-class TownsSysROMAccess : public TownsMemAccess
-{
-public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-
-	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
-};
-
 class TownsMartyEXROMAccess : public TownsMemAccess
 {
 public:
@@ -460,7 +451,6 @@ public:
 	TownsJEIDA4MemCardAccess JEIDA4MemCardAccess;
 	TownsFont20ROMAccess font20ROMAccess;
 	TownsWaveRAMAccess waveRAMAccess;
-	TownsSysROMAccess sysROMAccess;
 	TownsMartyEXROMAccess martyROMAccess;
 
 

@@ -701,13 +701,8 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	waveRAMAccess.SetPhysicalMemoryPointer(this);
 	waveRAMAccess.SetCPUPointer(&cpu);
 
-	sysROMAccess.SetPhysicalMemoryPointer(this);
-	sysROMAccess.SetCPUPointer(&cpu);
-
 	martyROMAccess.SetPhysicalMemoryPointer(this);
 	martyROMAccess.SetCPUPointer(&cpu);
-
-	mem.AddAccess(&sysROMAccess,TOWNSADDR_SYSROM_BASE,0xFFFFFFFF); // Even when machine ID is 386SX, the CPU core is actually 486.  The reset instruction pointer needs to be at the end of 32-bit address space.
 
 	if(TOWNSTYPE_MARTY==townsType)
 	{
@@ -737,7 +732,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 		mem.AddAccess(&oldMemCardAccess,TOWNSADDR_386SX_MEMCARD_BASE,TOWNSADDR_386SX_MEMCARD_END-1);
 		mem.AddAccess(&fontROMAccess,TOWNSADDR_386SX_FONT_BASE,TOWNSADDR_386SX_FONT_END-1);
 		mem.AddAccess(&waveRAMAccess,TOWNSADDR_386SX_WAVERAM_WINDOW_BASE,TOWNSADDR_386SX_WAVERAM_WINDOW_END-1);
-		mem.AddAccess(&sysROMAccess,TOWNSADDR_386SX_SYSROM_BASE,TOWNSADDR_386SX_SYSROM_END-1);
 	}
 }
 
