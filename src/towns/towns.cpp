@@ -1298,7 +1298,7 @@ void FMTownsCommon::SetMainRAMSize(long long int size)
 	}
 
 	mem.SetMainRAMSize(size);
-	mem.RemoveAccess(mem.state.RAM.size()-1,RAMEnd);
+	mem.RemoveAccess(mem.state.RAM.size(),RAMEnd);
 	mem.AddAccess(&mem.mainRAMAccess,0x00100000,mem.state.RAM.size()-1);
 }
 
