@@ -154,6 +154,42 @@ DefaultGetMemoryWindow(NativeDICROM)
 
 ////////////////////////////////////////////////////////////
 
+inline unsigned int TownsPhysicalMemory::MappedDICFetchByte(unsigned int physAddr) const
+{
+	if(TOWNSADDR_FMR_DICROM_BASE<=physAddr && physAddr<TOWNSADDR_FMR_DICROM_END) // Dic ROM
+	{
+		unsigned int offset=32768*state.DICROMBank+(physAddr-TOWNSADDR_FMR_DICROM_BASE);
+		return dicRom[offset];
+	}
+	else if(TOWNSADDR_BACKUP_RAM_BASE<=physAddr && physAddr<TOWNSADDR_BACKUP_RAM_END) // 
+	{
+		return state.CMOSRAM[physAddr-TOWNSADDR_BACKUP_RAM_BASE];
+	}
+	return 0xFF;
+}
+
+DefaultFetchWord(MappedDIC)
+
+DefaultFetchDword(MappedDIC)
+
+inline void TownsPhysicalMemory::MappedDICStoreByte(unsigned int physAddr,unsigned char data)
+{
+	if(TOWNSADDR_BACKUP_RAM_BASE<=physAddr && physAddr<TOWNSADDR_BACKUP_RAM_END) // 
+	{
+		state.CMOSRAM[physAddr-TOWNSADDR_BACKUP_RAM_BASE]=data;
+	}
+}
+
+DefaultStoreWord(MappedDIC)
+
+DefaultStoreDword(MappedDIC)
+
+DefaultGetConstMemoryWindow(MappedDIC)
+
+DefaultGetMemoryWindow(MappedDIC)
+
+////////////////////////////////////////////////////////////
+
 inline unsigned int TownsPhysicalMemory::MappedSYSROMFetchByte(unsigned int physAddr) const
 {
 	unsigned int offset=physAddr-TOWNSADDR_SYSROM_MAP_BASE;
@@ -529,6 +565,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return 0xFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchByte(physAddr);
+	case TOWNSMEM_MAPPED_DIC:
+		return MappedDICFetchByte(physAddr);
 	case TOWNSMEM_MAPPED_SYSROM:
 		return MappedSYSROMFetchByte(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
@@ -593,6 +631,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return 0xFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchByte(physAddr);
+	case TOWNSMEM_MAPPED_DIC:
+		return MappedDICFetchByte(physAddr);
 	case TOWNSMEM_MAPPED_SYSROM:
 		return MappedSYSROMFetchByte(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
@@ -657,6 +697,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return 0xFFFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchWord(physAddr);
+	case TOWNSMEM_MAPPED_DIC:
+		return MappedDICFetchWord(physAddr);
 	case TOWNSMEM_MAPPED_SYSROM:
 		return MappedSYSROMFetchWord(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
@@ -721,6 +763,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return 0xFFFFFFFF;
 	case TOWNSMEM_MAINRAM:
 		return MainRAMFetchDword(physAddr);
+	case TOWNSMEM_MAPPED_DIC:
+		return MappedDICFetchDword(physAddr);
 	case TOWNSMEM_MAPPED_SYSROM:
 		return MappedSYSROMFetchDword(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
@@ -787,8 +831,12 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreByte(physAddr,data);
 		break;
+	case TOWNSMEM_MAPPED_DIC:
+		MappedDICStoreByte(physAddr,data);
+		break;
 	case TOWNSMEM_MAPPED_SYSROM:
-		return MappedSYSROMStoreByte(physAddr,data);
+		MappedSYSROMStoreByte(physAddr,data);
+		break;
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreByte(physAddr,data);
 		break;
@@ -860,8 +908,12 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreByte(physAddr,data);
 		break;
+	case TOWNSMEM_MAPPED_DIC:
+		MappedDICStoreByte(physAddr,data);
+		break;
 	case TOWNSMEM_MAPPED_SYSROM:
-		return MappedSYSROMStoreByte(physAddr,data);
+		MappedSYSROMStoreByte(physAddr,data);
+		break;
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreByte(physAddr,data);
 		break;
@@ -933,8 +985,12 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreWord(physAddr,data);
 		break;
+	case TOWNSMEM_MAPPED_DIC:
+		MappedDICStoreWord(physAddr,data);
+		break;
 	case TOWNSMEM_MAPPED_SYSROM:
-		return MappedSYSROMStoreWord(physAddr,data);
+		MappedSYSROMStoreWord(physAddr,data);
+		break;
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreWord(physAddr,data);
 		break;
@@ -1006,8 +1062,12 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_MAINRAM:
 		MainRAMStoreDword(physAddr,data);
 		break;
+	case TOWNSMEM_MAPPED_DIC:
+		MappedDICStoreDword(physAddr,data);
+		break;
 	case TOWNSMEM_MAPPED_SYSROM:
-		return MappedSYSROMStoreDword(physAddr,data);
+		MappedSYSROMStoreDword(physAddr,data);
+		break;
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreDword(physAddr,data);
 		break;
@@ -1077,6 +1137,8 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 		return EmptyConstMemoryWindow();
 	case TOWNSMEM_MAINRAM:
 		return MainRAMGetConstMemoryWindow(physAddr);
+	case TOWNSMEM_MAPPED_DIC:
+		return MappedDICGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_MAPPED_SYSROM:
 		return MappedSYSROMGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
@@ -1138,6 +1200,8 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 		return EmptyMemoryWindow();
 	case TOWNSMEM_MAINRAM:
 		return MainRAMGetMemoryWindow(physAddr);
+	case TOWNSMEM_MAPPED_DIC:
+		return MappedDICGetMemoryWindow(physAddr);
 	case TOWNSMEM_MAPPED_SYSROM:
 		return MappedSYSROMGetMemoryWindow(physAddr);
 	case TOWNSMEM_SPRITE_RAM:

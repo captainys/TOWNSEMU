@@ -639,9 +639,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	FMRVRAMAccess.SetCPUPointer(&cpu);
 	ResetFMRVRAMMappingFlag(true);  // This will set up memory access for 0xC0000 to 0xCFFFF
 
-	mappedDicROMandDicRAMAccess.SetPhysicalMemoryPointer(this);
-	mappedDicROMandDicRAMAccess.SetCPUPointer(&cpu);
-
 	nativeCMOSRAMAccess.SetPhysicalMemoryPointer(this);
 	nativeCMOSRAMAccess.SetCPUPointer(&cpu);
 
@@ -790,7 +787,6 @@ void TownsPhysicalMemory::UpdateSysROMDicROMMappingFlag(bool sysRomMapping, bool
 		{
 			if (dicRomMapping)
 			{
-				this->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
 				SetMemoryAccessTypeRange(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1,TOWNSMEM_MAPPED_DIC);
 			}
 			else
@@ -819,8 +815,6 @@ void TownsPhysicalMemory::UpdateFMRVRAMMappingFlag(bool FMRVRAMMapping)
 			SetMemoryAccessTypeRange(TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_VRAM_CVRAM_FONT_END - 1, TOWNSMEM_FMRVRAM);
 
 			if (state.dicRom) {
-				this->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
-
 				SetMemoryAccessTypeRange(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1, TOWNSMEM_MAPPED_DIC);
 				SetMemoryAccessTypeRange(TOWNSADDR_FMR_RESERVED_BASE, TOWNSADDR_FMR_RESERVED_END - 1,TOWNSMEM_NONE);
 			}

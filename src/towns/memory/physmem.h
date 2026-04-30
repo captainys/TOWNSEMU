@@ -439,7 +439,6 @@ public:
 	std::vector <unsigned char> JISCodeLog; // Log KanjiROM Read Access
 
 	TownsFMRVRAMAccess FMRVRAMAccess;
-	TownsMappedDICROMandCMOSRAMAccess mappedDicROMandDicRAMAccess;
 	TownsNativeCMOSRAMAccess nativeCMOSRAMAccess;
 
 
