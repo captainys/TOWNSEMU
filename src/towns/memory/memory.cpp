@@ -759,6 +759,26 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return MartyEXROMFetchByte(physAddr);
 	case TOWNSMEM_WAVERAM:
 		return waveRAMAccess.FetchByte(physAddr);
+	case TOWNSMEM_VRAM0:
+		return VRAMAccess0.FetchByte(physAddr);
+	case TOWNSMEM_VRAM1:
+		return VRAMAccess1.FetchByte(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES0:
+		return VRAMAccessHighRes0.FetchByte(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES1:
+		return VRAMAccessHighRes1.FetchByte(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES2:
+		return VRAMAccessHighRes2.FetchByte(physAddr);
+	case TOWNSMEM_VRAM0_WITHMASK:
+		return VRAMAccessWithMask0.FetchByte(physAddr);
+	case TOWNSMEM_VRAM1_WITHMASK:
+		return VRAMAccessWithMask1.FetchByte(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES0_WITHMASK:
+		return VRAMAccessWithMaskHighRes0.FetchByte(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES1_WITHMASK:
+		return VRAMAccessWithMaskHighRes1.FetchByte(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
+		return VRAMAccessWithMaskHighRes2.FetchByte(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -837,6 +857,26 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return MartyEXROMFetchByte(physAddr);
 	case TOWNSMEM_WAVERAM:
 		return waveRAMAccess.FetchByte(physAddr);
+	case TOWNSMEM_VRAM0:
+		return VRAMAccess0.FetchByte(physAddr);
+	case TOWNSMEM_VRAM1:
+		return VRAMAccess1.FetchByte(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES0:
+		return VRAMAccessHighRes0.FetchByte(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES1:
+		return VRAMAccessHighRes1.FetchByte(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES2:
+		return VRAMAccessHighRes2.FetchByte(physAddr);
+	case TOWNSMEM_VRAM0_WITHMASK:
+		return VRAMAccessWithMask0.FetchByte(physAddr);
+	case TOWNSMEM_VRAM1_WITHMASK:
+		return VRAMAccessWithMask1.FetchByte(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES0_WITHMASK:
+		return VRAMAccessWithMaskHighRes0.FetchByte(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES1_WITHMASK:
+		return VRAMAccessWithMaskHighRes1.FetchByte(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
+		return VRAMAccessWithMaskHighRes2.FetchByte(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -915,6 +955,26 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return MartyEXROMFetchWord(physAddr);
 	case TOWNSMEM_WAVERAM:
 		return waveRAMAccess.FetchWord(physAddr);
+	case TOWNSMEM_VRAM0:
+		return VRAMAccess0.FetchWord(physAddr);
+	case TOWNSMEM_VRAM1:
+		return VRAMAccess1.FetchWord(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES0:
+		return VRAMAccessHighRes0.FetchWord(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES1:
+		return VRAMAccessHighRes1.FetchWord(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES2:
+		return VRAMAccessHighRes2.FetchWord(physAddr);
+	case TOWNSMEM_VRAM0_WITHMASK:
+		return VRAMAccessWithMask0.FetchWord(physAddr);
+	case TOWNSMEM_VRAM1_WITHMASK:
+		return VRAMAccessWithMask1.FetchWord(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES0_WITHMASK:
+		return VRAMAccessWithMaskHighRes0.FetchWord(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES1_WITHMASK:
+		return VRAMAccessWithMaskHighRes1.FetchWord(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
+		return VRAMAccessWithMaskHighRes2.FetchWord(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -993,6 +1053,26 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return MartyEXROMFetchDword(physAddr);
 	case TOWNSMEM_WAVERAM:
 		return waveRAMAccess.FetchDword(physAddr);
+	case TOWNSMEM_VRAM0:
+		return VRAMAccess0.FetchDword(physAddr);
+	case TOWNSMEM_VRAM1:
+		return VRAMAccess1.FetchDword(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES0:
+		return VRAMAccessHighRes0.FetchDword(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES1:
+		return VRAMAccessHighRes1.FetchDword(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES2:
+		return VRAMAccessHighRes2.FetchDword(physAddr);
+	case TOWNSMEM_VRAM0_WITHMASK:
+		return VRAMAccessWithMask0.FetchDword(physAddr);
+	case TOWNSMEM_VRAM1_WITHMASK:
+		return VRAMAccessWithMask1.FetchDword(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES0_WITHMASK:
+		return VRAMAccessWithMaskHighRes0.FetchDword(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES1_WITHMASK:
+		return VRAMAccessWithMaskHighRes1.FetchDword(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
+		return VRAMAccessWithMaskHighRes2.FetchDword(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -1087,6 +1167,36 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_WAVERAM:
 		waveRAMAccess.StoreByte(physAddr,data);
 		break;
+	case TOWNSMEM_VRAM0:
+		VRAMAccess0.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM1:
+		VRAMAccess1.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES0:
+		VRAMAccessHighRes0.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES1:
+		VRAMAccessHighRes1.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES2:
+		VRAMAccessHighRes2.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM0_WITHMASK:
+		VRAMAccessWithMask0.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM1_WITHMASK:
+		VRAMAccessWithMask1.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES0_WITHMASK:
+		VRAMAccessWithMaskHighRes0.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES1_WITHMASK:
+		VRAMAccessWithMaskHighRes1.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
+		VRAMAccessWithMaskHighRes2.StoreByte(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -1179,6 +1289,36 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		break;
 	case TOWNSMEM_WAVERAM:
 		waveRAMAccess.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM0:
+		VRAMAccess0.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM1:
+		VRAMAccess1.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES0:
+		VRAMAccessHighRes0.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES1:
+		VRAMAccessHighRes1.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES2:
+		VRAMAccessHighRes2.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM0_WITHMASK:
+		VRAMAccessWithMask0.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM1_WITHMASK:
+		VRAMAccessWithMask1.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES0_WITHMASK:
+		VRAMAccessWithMaskHighRes0.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES1_WITHMASK:
+		VRAMAccessWithMaskHighRes1.StoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
+		VRAMAccessWithMaskHighRes2.StoreByte(physAddr,data);
 		break;
 	default:
 		{
@@ -1273,6 +1413,36 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_WAVERAM:
 		waveRAMAccess.StoreWord(physAddr,data);
 		break;
+	case TOWNSMEM_VRAM0:
+		VRAMAccess0.StoreWord(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM1:
+		VRAMAccess1.StoreWord(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES0:
+		VRAMAccessHighRes0.StoreWord(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES1:
+		VRAMAccessHighRes1.StoreWord(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES2:
+		VRAMAccessHighRes2.StoreWord(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM0_WITHMASK:
+		VRAMAccessWithMask0.StoreWord(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM1_WITHMASK:
+		VRAMAccessWithMask1.StoreWord(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES0_WITHMASK:
+		VRAMAccessWithMaskHighRes0.StoreWord(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES1_WITHMASK:
+		VRAMAccessWithMaskHighRes1.StoreWord(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
+		VRAMAccessWithMaskHighRes2.StoreWord(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -1366,6 +1536,36 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_WAVERAM:
 		waveRAMAccess.StoreDword(physAddr,data);
 		break;
+	case TOWNSMEM_VRAM0:
+		VRAMAccess0.StoreDword(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM1:
+		VRAMAccess1.StoreDword(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES0:
+		VRAMAccessHighRes0.StoreDword(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES1:
+		VRAMAccessHighRes1.StoreDword(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES2:
+		VRAMAccessHighRes2.StoreDword(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM0_WITHMASK:
+		VRAMAccessWithMask0.StoreDword(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM1_WITHMASK:
+		VRAMAccessWithMask1.StoreDword(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES0_WITHMASK:
+		VRAMAccessWithMaskHighRes0.StoreDword(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES1_WITHMASK:
+		VRAMAccessWithMaskHighRes1.StoreDword(physAddr,data);
+		break;
+	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
+		VRAMAccessWithMaskHighRes2.StoreDword(physAddr,data);
+		break;
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -1443,6 +1643,26 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 		return MartyEXROMGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_WAVERAM:
 		return EmptyConstMemoryWindow();
+	case TOWNSMEM_VRAM0:
+		return VRAMAccess0.GetConstMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM1:
+		return VRAMAccess1.GetConstMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES0:
+		return VRAMAccessHighRes0.GetConstMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES1:
+		return VRAMAccessHighRes1.GetConstMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES2:
+		return VRAMAccessHighRes2.GetConstMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM0_WITHMASK:
+		return VRAMAccessWithMask0.GetConstMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM1_WITHMASK:
+		return VRAMAccessWithMask1.GetConstMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES0_WITHMASK:
+		return VRAMAccessWithMaskHighRes0.GetConstMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES1_WITHMASK:
+		return VRAMAccessWithMaskHighRes1.GetConstMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
+		return VRAMAccessWithMaskHighRes2.GetConstMemoryWindow(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
@@ -1518,6 +1738,26 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 		return MartyEXROMGetMemoryWindow(physAddr);
 	case TOWNSMEM_WAVERAM:
 		return EmptyMemoryWindow();
+	case TOWNSMEM_VRAM0:
+		return VRAMAccess0.GetMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM1:
+		return VRAMAccess1.GetMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES0:
+		return VRAMAccessHighRes0.GetMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES1:
+		return VRAMAccessHighRes1.GetMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES2:
+		return VRAMAccessHighRes2.GetMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM0_WITHMASK:
+		return VRAMAccessWithMask0.GetMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM1_WITHMASK:
+		return VRAMAccessWithMask1.GetMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES0_WITHMASK:
+		return VRAMAccessWithMaskHighRes0.GetMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES1_WITHMASK:
+		return VRAMAccessWithMaskHighRes1.GetMemoryWindow(physAddr);
+	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
+		return VRAMAccessWithMaskHighRes2.GetMemoryWindow(physAddr);
 	default:
 		{
 			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
