@@ -329,65 +329,6 @@ void TownsFMRVRAMAccess::StoreDword(TownsPhysicalMemory *physMemPtr,unsigned int
 	StoreByte(physMemPtr,physAddr+3,data>>24);
 }
 
-
-////////////////////////////////////////////////////////////
-
-/* virtual */ unsigned int TownsOldMemCardAccess::FetchByte(unsigned int physAddr) const
-{
-	// DISKBIOS (INT 93H AX=??50H) reads C0000000H for CIS information.
-	// Just returning 0xFF (CIS termination) makes TICMFMT.EXE happy.
-	if(true==physMemPtr->state.memCardREG)
-	{
-		return 0xFF;
-	}
-
-	auto &memCard=physMemPtr->state.memCard;
-
-	// Looks like first 16MB of JEIDA4 memory card is also accessible from C0000000h
-	unsigned int memCardAddr=physAddr;
-	if(0xC0000000<=physAddr)
-	{
-		memCardAddr&=TOWNSADDR_MEMCARD_AND;
-	}
-	else
-	{
-		memCardAddr&=TOWNSADDR_386SX_MEMCARD_AND;
-	}
-	if(memCardAddr<memCard.data.size())
-	{
-		townsPtr->NotifyDiskRead();
-		return memCard.data[memCardAddr];
-	}
-	return 0xFF;
-}
-/* virtual */ void TownsOldMemCardAccess::StoreByte(unsigned int physAddr,unsigned char data)
-{
-	if(true!=physMemPtr->state.memCardREG)
-	{
-		townsPtr->NotifyDiskRead();
-
-		// Looks like first 16MB of JEIDA4 memory card is also accessible from C0000000h
-		auto &memCard=physMemPtr->state.memCard;
-		if(true!=memCard.writeProtected)
-		{
-			unsigned int memCardAddr=physAddr;
-			if(0xC0000000<=physAddr)
-			{
-				memCardAddr&=TOWNSADDR_MEMCARD_AND;
-			}
-			else
-			{
-				memCardAddr&=TOWNSADDR_386SX_MEMCARD_AND;
-			}
-			if(memCardAddr<memCard.data.size())
-			{
-				memCard.data[memCardAddr]=data;
-				memCard.modified=true;
-			}
-		}
-	}
-}
-
 ////////////////////////////////////////////////////////////
 
 /* virtual */ unsigned int TownsJEIDA4MemCardAccess::FetchByte(unsigned int physAddr) const

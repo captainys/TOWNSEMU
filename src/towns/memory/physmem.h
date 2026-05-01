@@ -124,19 +124,6 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
-class TownsOldMemCardAccess : public TownsMemAccess
-{
-public:
-	class FMTownsCommon *townsPtr; // Need to notify disk read upon BOOTKEY ICM
-	TownsOldMemCardAccess(class FMTownsCommon *townsPtr)
-	{
-		this->townsPtr=townsPtr;
-	}
-
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-};
-
 class TownsJEIDA4MemCardAccess : public TownsMemAccess
 {
 public:
@@ -455,7 +442,6 @@ public:
 	TownsSinglePageVRAMAccessWithMaskTemplate <0,TownsSinglePageHighResVRAMAddressTransform> VRAMAccessWithMaskHighRes2;
 
 
-	TownsOldMemCardAccess oldMemCardAccess;
 	TownsJEIDA4MemCardAccess JEIDA4MemCardAccess;
 	TownsWaveRAMAccess waveRAMAccess;
 

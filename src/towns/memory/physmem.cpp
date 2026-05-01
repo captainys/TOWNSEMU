@@ -346,7 +346,6 @@ void TownsPhysicalMemory::IOWriteDword(unsigned int ioport,unsigned int data)
 TownsPhysicalMemory::TownsPhysicalMemory(class FMTownsCommon *townsPtr,class RF5C68 *pcmPtr) :
 	Device(townsPtr),
 	waveRAMAccess(townsPtr,pcmPtr,&townsPtr->sound.var.vgmRecorder),
-	oldMemCardAccess(townsPtr),
 	JEIDA4MemCardAccess(townsPtr)
 {
 	this->townsPtr=townsPtr;
@@ -674,15 +673,11 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 
 	SetUpVRAMAccess(cpuType);
 
-	oldMemCardAccess.SetPhysicalMemoryPointer(this);
-	oldMemCardAccess.SetCPUPointer(&cpu);
-
 	JEIDA4MemCardAccess.SetPhysicalMemoryPointer(this);
 	JEIDA4MemCardAccess.SetCPUPointer(&cpu);
 
 	if(TOWNSCPU_80386SX!=cpuType)
 	{
-		this->AddAccess(&oldMemCardAccess,TOWNSADDR_MEMCARD_OLD_BASE,TOWNSADDR_MEMCARD_OLD_END-1);
 		this->AddAccess(&JEIDA4MemCardAccess,TOWNSADDR_MEMCARD_JEIDA4_BASE,TOWNSADDR_MEMCARD_JEIDA4_END-1);
 
 		SetMemoryAccessTypeRange(TOWNSADDR_MEMCARD_OLD_BASE,TOWNSADDR_MEMCARD_OLD_END-1,TOWNSMEM_OLD_MEMCARD);
@@ -696,7 +691,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 		// high address memory access.
 		// Also CPU core does not care 80386SX mode.  Therefore, the reset vector still needs to be
 		// 0xFFFFFFF0, which means SYSROM still needs to be accessible from high address.
-		this->AddAccess(&oldMemCardAccess,TOWNSADDR_386SX_MEMCARD_BASE,TOWNSADDR_386SX_MEMCARD_END-1);
 
 		SetMemoryAccessTypeRange(TOWNSADDR_386SX_MEMCARD_BASE,TOWNSADDR_386SX_MEMCARD_END-1,TOWNSMEM_OLD_MEMCARD);
 	}
