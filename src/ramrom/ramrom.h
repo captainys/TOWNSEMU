@@ -31,16 +31,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class MemoryAccess
 {
 public:
-	/*! For debugging memory read/write, a debug memory-access object may be inserted
-	    between Memory class and a specific memory-access object.
-
-	    memAccessChain is to tell Memory class that a memory-access object is inserted.
-
-	    AddAccess function only changes the terminal memory-access object, if a memory-access
-	    object is inserted.
-	*/
-	MemoryAccess *memAccessChain=nullptr;
-
 	virtual unsigned int FetchByte(unsigned int physAddr) const=0;
 	virtual unsigned int FetchWord(unsigned int physAddr) const;
 	virtual unsigned int FetchDword(unsigned int physAddr) const;
@@ -301,21 +291,17 @@ public:
 
 
 
+	// Below functions are implemented for specific VM.
+
 	Memory();
 
 	/*! Unassign all memory access objects.
 	*/
 	void CleanUp(void);
 
-	/*! Legacy memory access.
-	*/
-	void AddAccess(MemoryAccess *memAccess,unsigned int physAddrLow,unsigned int physAddrHigh);
-
 
 	DebuggerLink *GetDebuggerLink(uint32_t physAddr);
 
-
-	// Below functions are implemented for specific VM.
 	void SetDebuggerLink(DebuggerLink *debuggerLink,uint32_t addr);
 	void ClearDebuggerLink(uint32_t addr);
 

@@ -1817,35 +1817,6 @@ void Memory::CleanUp(void)
 	}
 }
 
-void Memory::AddAccess(MemoryAccess *memAccess,unsigned int physAddrLow,unsigned int physAddrHigh)
-{
-	if(0!=(physAddrLow&((1<<GRANURALITY_SHIFT)-1)) || 0xfff!=(physAddrHigh&(1<<GRANURALITY_SHIFT)-1))
-	{
-		std::cout << __FUNCTION__ << std::endl;
-		std::cout << "Error: Physical address must be integer multiple of 0x1000" << std::endl;
-		std::cout << "       to integer multiple of 0x1000 minus 1." << std::endl;
-		return;
-	}
-	auto low=physAddrLow>>GRANURALITY_SHIFT;
-	auto high=physAddrHigh>>GRANURALITY_SHIFT;
-	for(auto i=low; i<=high; ++i)
-	{
-		if(nullptr==memAccessPtr[i]->memAccessChain)
-		{
-			memAccessPtr[i]=memAccess;
-		}
-		else
-		{
-			auto ptr=memAccessPtr[i];
-			while(nullptr!=ptr->memAccessChain->memAccessChain)
-			{
-				ptr=ptr->memAccessChain;
-			}
-			ptr->memAccessChain=memAccess;
-		}
-	}
-}
-
 Memory::DebuggerLink *Memory::GetDebuggerLink(uint32_t physAddr)
 {
 	if(0==debuggerLink.size())
