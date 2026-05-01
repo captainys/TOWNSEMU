@@ -35,16 +35,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-class TownsMemAccess : public MemoryAccess
-{
-public:
-	class TownsPhysicalMemory *physMemPtr;
-	class i486DXCommon *cpuPtr;
-	TownsMemAccess();
-	void SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr);
-	void SetCPUPointer(class i486DXCommon *cpuPtr);
-};
-
+class TownsPhysicalMemory;
 
 class TownsFMRVRAMAccess
 {
@@ -64,25 +55,50 @@ public:
 	void StoreDword(TownsPhysicalMemory *physMemPtr,unsigned int physAddr,unsigned int data);
 };
 
-template <const uint32_t DISPLACEMENT>
-class TownsVRAMAccessTemplate : public TownsMemAccess
+
+class TownsVRAMAccess
 {
 public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual unsigned int FetchWord(unsigned int physAddr) const;
-	virtual unsigned int FetchDword(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-	virtual void StoreWord(unsigned int physAddr,unsigned int data);
-	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+	class TownsPhysicalMemory *physMemPtr;
+	class i486DXCommon *cpuPtr;
+	TownsVRAMAccess();
+	void SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr);
+	void SetCPUPointer(class i486DXCommon *cpuPtr);
+
+	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(uint32_t physAddr) const
+	{
+		MemoryAccess::ConstMemoryWindow window;
+		window.ptr=nullptr;
+		return window;
+	}
+
+	inline MemoryAccess::MemoryWindow GetMemoryWindow(uint32_t physAddr) const
+	{
+		MemoryAccess::MemoryWindow window;
+		window.ptr=nullptr;
+		return window;
+	}
+};
+
+template <const uint32_t DISPLACEMENT>
+class TownsVRAMAccessTemplate : public TownsVRAMAccess
+{
+public:
+	inline unsigned int FetchByte(unsigned int physAddr) const;
+	inline unsigned int FetchWord(unsigned int physAddr) const;
+	inline unsigned int FetchDword(unsigned int physAddr) const;
+	inline void StoreByte(unsigned int physAddr,unsigned char data);
+	inline void StoreWord(unsigned int physAddr,unsigned int data);
+	inline void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
 template <const uint32_t DISPLACEMENT>
 class TownsVRAMAccessWithMaskTemplate : public TownsVRAMAccessTemplate <DISPLACEMENT>
 {
 public:
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-	virtual void StoreWord(unsigned int physAddr,unsigned int data);
-	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+	inline void StoreByte(unsigned int physAddr,unsigned char data);
+	inline void StoreWord(unsigned int physAddr,unsigned int data);
+	inline void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
 class TownsSinglePageVRAMAddressTransform
@@ -104,24 +120,24 @@ public:
 };
 
 template <const uint32_t DISPLACEMENT,class TRANSFORM>
-class TownsSinglePageVRAMAccessTemplate : public TownsMemAccess, public TRANSFORM
+class TownsSinglePageVRAMAccessTemplate : public TownsVRAMAccess, public TRANSFORM
 {
 public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual unsigned int FetchWord(unsigned int physAddr) const;
-	virtual unsigned int FetchDword(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-	virtual void StoreWord(unsigned int physAddr,unsigned int data);
-	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+	inline unsigned int FetchByte(unsigned int physAddr) const;
+	inline unsigned int FetchWord(unsigned int physAddr) const;
+	inline unsigned int FetchDword(unsigned int physAddr) const;
+	inline void StoreByte(unsigned int physAddr,unsigned char data);
+	inline void StoreWord(unsigned int physAddr,unsigned int data);
+	inline void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
 template <const uint32_t DISPLACEMENT,class TRANSFORM>
 class TownsSinglePageVRAMAccessWithMaskTemplate : public TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>
 {
 public:
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-	virtual void StoreWord(unsigned int physAddr,unsigned int data);
-	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+	inline void StoreByte(unsigned int physAddr,unsigned char data);
+	inline void StoreWord(unsigned int physAddr,unsigned int data);
+	inline void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
 class TownsWaveRAMAccess

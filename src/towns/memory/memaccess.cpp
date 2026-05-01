@@ -24,16 +24,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "towns.h"
 
 
-TownsMemAccess::TownsMemAccess()
+TownsVRAMAccess::TownsVRAMAccess()
 {
 	physMemPtr=nullptr;
 	cpuPtr=nullptr;
 }
-void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
+void TownsVRAMAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 {
 	physMemPtr=ptr;
 }
-void TownsMemAccess::SetCPUPointer(class i486DXCommon *cpuPtr)
+void TownsVRAMAccess::SetCPUPointer(class i486DXCommon *cpuPtr)
 {
 	this->cpuPtr=cpuPtr;
 }
