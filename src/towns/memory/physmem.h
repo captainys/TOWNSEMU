@@ -245,6 +245,15 @@ public:
 	inline MemoryAccess::ConstMemoryWindow OldMemCardGetConstMemoryWindow(unsigned int physAddr) const;
 	inline MemoryAccess::MemoryWindow OldMemCardGetMemoryWindow(unsigned int physAddr);
 
+	inline unsigned int JEIDA4MemCardFetchByte(unsigned int physAddr) const;
+	inline unsigned int JEIDA4MemCardFetchWord(unsigned int physAddr) const;
+	inline unsigned int JEIDA4MemCardFetchDword(unsigned int physAddr) const;
+	inline void JEIDA4MemCardStoreByte(unsigned int physAddr,unsigned char data);
+	inline void JEIDA4MemCardStoreWord(unsigned int physAddr,unsigned int data);
+	inline void JEIDA4MemCardStoreDword(unsigned int physAddr,unsigned int data);
+	inline MemoryAccess::ConstMemoryWindow JEIDA4MemCardGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow JEIDA4MemCardGetMemoryWindow(unsigned int physAddr);
+
 	inline unsigned int NativeDICROMFetchByte(unsigned int physAddr) const;
 	inline unsigned int NativeDICROMFetchWord(unsigned int physAddr) const;
 	inline unsigned int NativeDICROMFetchDword(unsigned int physAddr) const;
