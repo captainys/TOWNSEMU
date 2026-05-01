@@ -249,6 +249,15 @@ public:
 	inline MemoryAccess::ConstMemoryWindow SpriteRAMGetConstMemoryWindow(unsigned int physAddr) const;
 	inline MemoryAccess::MemoryWindow SpriteRAMGetMemoryWindow(unsigned int physAddr);
 
+	inline unsigned int OldMemCardFetchByte(unsigned int physAddr) const;
+	inline unsigned int OldMemCardFetchWord(unsigned int physAddr) const;
+	inline unsigned int OldMemCardFetchDword(unsigned int physAddr) const;
+	inline void OldMemCardStoreByte(unsigned int physAddr,unsigned char data);
+	inline void OldMemCardStoreWord(unsigned int physAddr,unsigned int data);
+	inline void OldMemCardStoreDword(unsigned int physAddr,unsigned int data);
+	inline MemoryAccess::ConstMemoryWindow OldMemCardGetConstMemoryWindow(unsigned int physAddr) const;
+	inline MemoryAccess::MemoryWindow OldMemCardGetMemoryWindow(unsigned int physAddr);
+
 	inline unsigned int NativeDICROMFetchByte(unsigned int physAddr) const;
 	inline unsigned int NativeDICROMFetchWord(unsigned int physAddr) const;
 	inline unsigned int NativeDICROMFetchDword(unsigned int physAddr) const;

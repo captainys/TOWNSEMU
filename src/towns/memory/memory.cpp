@@ -312,6 +312,77 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::SpriteRAMGetMemoryWindow(
 
 ////////////////////////////////////////////////////////////
 
+inline unsigned int TownsPhysicalMemory::OldMemCardFetchByte(unsigned int physAddr) const
+{
+	// DISKBIOS (INT 93H AX=??50H) reads C0000000H for CIS information.
+	// Just returning 0xFF (CIS termination) makes TICMFMT.EXE happy.
+	if(true==state.memCardREG)
+	{
+		return 0xFF;
+	}
+
+	auto &memCard=state.memCard;
+
+	// Looks like first 16MB of JEIDA4 memory card is also accessible from C0000000h
+	unsigned int memCardAddr=physAddr;
+	if(0xC0000000<=physAddr)
+	{
+		memCardAddr&=TOWNSADDR_MEMCARD_AND;
+	}
+	else
+	{
+		memCardAddr&=TOWNSADDR_386SX_MEMCARD_AND;
+	}
+	if(memCardAddr<memCard.data.size())
+	{
+		townsPtr->NotifyDiskRead();
+		return memCard.data[memCardAddr];
+	}
+	return 0xFF;
+}
+
+DefaultFetchWord(OldMemCard)
+
+DefaultFetchDword(OldMemCard)
+
+inline void TownsPhysicalMemory::OldMemCardStoreByte(unsigned int physAddr,unsigned char data)
+{
+	if(true!=state.memCardREG)
+	{
+		townsPtr->NotifyDiskRead();
+
+		// Looks like first 16MB of JEIDA4 memory card is also accessible from C0000000h
+		auto &memCard=state.memCard;
+		if(true!=memCard.writeProtected)
+		{
+			unsigned int memCardAddr=physAddr;
+			if(0xC0000000<=physAddr)
+			{
+				memCardAddr&=TOWNSADDR_MEMCARD_AND;
+			}
+			else
+			{
+				memCardAddr&=TOWNSADDR_386SX_MEMCARD_AND;
+			}
+			if(memCardAddr<memCard.data.size())
+			{
+				memCard.data[memCardAddr]=data;
+				memCard.modified=true;
+			}
+		}
+	}
+}
+
+DefaultStoreWord(OldMemCard)
+
+DefaultStoreDword(OldMemCard)
+
+DefaultGetConstMemoryWindow(OldMemCard)
+
+DefaultGetMemoryWindow(OldMemCard)
+
+////////////////////////////////////////////////////////////
+
 inline unsigned int TownsPhysicalMemory::OSROMFetchByte(unsigned int physAddr) const
 {
 	return dosRom[physAddr&TOWNSADDR_OSROM_AND];
@@ -599,6 +670,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return MappedSYSROMFetchByte(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMFetchByte(physAddr);
+	case TOWNSMEM_OLD_MEMCARD:
+		return OldMemCardFetchByte(physAddr);
 	case TOWNSMEM_OSROM:
 		return OSROMFetchByte(physAddr);
 	case TOWNSMEM_NATIVE_SYSROM:
@@ -673,6 +746,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return MappedSYSROMFetchByte(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMFetchByte(physAddr);
+	case TOWNSMEM_OLD_MEMCARD:
+		return OldMemCardFetchByte(physAddr);
 	case TOWNSMEM_OSROM:
 		return OSROMFetchByte(physAddr);
 	case TOWNSMEM_NATIVE_SYSROM:
@@ -747,6 +822,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return MappedSYSROMFetchWord(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMFetchWord(physAddr);
+	case TOWNSMEM_OLD_MEMCARD:
+		return OldMemCardFetchWord(physAddr);
 	case TOWNSMEM_OSROM:
 		return OSROMFetchWord(physAddr);
 	case TOWNSMEM_NATIVE_SYSROM:
@@ -821,6 +898,8 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return MappedSYSROMFetchDword(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMFetchDword(physAddr);
+	case TOWNSMEM_OLD_MEMCARD:
+		return OldMemCardFetchDword(physAddr);
 	case TOWNSMEM_OSROM:
 		return OSROMFetchDword(physAddr);
 	case TOWNSMEM_NATIVE_SYSROM:
@@ -900,6 +979,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		break;
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreByte(physAddr,data);
+		break;
+	case TOWNSMEM_OLD_MEMCARD:
+		OldMemCardStoreByte(physAddr,data);
 		break;
 	case TOWNSMEM_OSROM:
 		OSROMStoreByte(physAddr,data);
@@ -988,6 +1070,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreByte(physAddr,data);
 		break;
+	case TOWNSMEM_OLD_MEMCARD:
+		OldMemCardStoreByte(physAddr,data);
+		break;
 	case TOWNSMEM_OSROM:
 		OSROMStoreByte(physAddr,data);
 		break;
@@ -1074,6 +1159,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		break;
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreWord(physAddr,data);
+		break;
+	case TOWNSMEM_OLD_MEMCARD:
+		OldMemCardStoreWord(physAddr,data);
 		break;
 	case TOWNSMEM_OSROM:
 		OSROMStoreWord(physAddr,data);
@@ -1162,6 +1250,9 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_SPRITE_RAM:
 		SpriteRAMStoreDword(physAddr,data);
 		break;
+	case TOWNSMEM_OLD_MEMCARD:
+		OldMemCardStoreDword(physAddr,data);
+		break;
 	case TOWNSMEM_OSROM:
 		OSROMStoreDword(physAddr,data);
 		break;
@@ -1243,6 +1334,8 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 		return MappedSYSROMGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMGetConstMemoryWindow(physAddr);
+	case TOWNSMEM_OLD_MEMCARD:
+		return OldMemCardGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_OSROM:
 		return OSROMGetConstMemoryWindow(physAddr);
 	case TOWNSMEM_NATIVE_SYSROM:
@@ -1314,6 +1407,8 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 		return MappedSYSROMGetMemoryWindow(physAddr);
 	case TOWNSMEM_SPRITE_RAM:
 		return SpriteRAMGetMemoryWindow(physAddr);
+	case TOWNSMEM_OLD_MEMCARD:
+		return OldMemCardGetMemoryWindow(physAddr);
 	case TOWNSMEM_OSROM:
 		return OSROMGetMemoryWindow(physAddr);
 	case TOWNSMEM_NATIVE_SYSROM:
