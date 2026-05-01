@@ -331,62 +331,6 @@ void TownsFMRVRAMAccess::StoreDword(TownsPhysicalMemory *physMemPtr,unsigned int
 
 ////////////////////////////////////////////////////////////
 
-/* virtual */ unsigned int TownsJEIDA4MemCardAccess::FetchByte(unsigned int physAddr) const
-{
-	if(true!=physMemPtr->state.memCardREG)
-	{
-		auto &memCard=physMemPtr->state.memCard;
-		if(TOWNS_MEMCARD_TYPE_JEIDA4==memCard.memCardType)
-		{
-			// I should return attribute information if REG==true.  But, I don't know what exactly it is.
-			unsigned int memCardAddr=physAddr;
-			if(0xC0000000<=physAddr)
-			{
-				memCardAddr&=TOWNSADDR_MEMCARD_AND;
-				memCardAddr+=0x400000*physMemPtr->state.memCardBank;
-			}
-			else
-			{
-				memCardAddr&=TOWNSADDR_386SX_MEMCARD_AND;
-				memCardAddr+=0x100000*physMemPtr->state.memCardBank;
-			}
-			if(memCardAddr<memCard.data.size())
-			{
-				return memCard.data[memCardAddr];
-			}
-		}
-	}
-	return 0xFF;
-}
-/* virtual */ void TownsJEIDA4MemCardAccess::StoreByte(unsigned int physAddr,unsigned char data)
-{
-	if(true!=physMemPtr->state.memCardREG)
-	{
-		auto &memCard=physMemPtr->state.memCard;
-		if(TOWNS_MEMCARD_TYPE_JEIDA4==memCard.memCardType && true!=memCard.writeProtected)
-		{
-			unsigned int memCardAddr=physAddr;
-			if(0xC0000000<=physAddr)
-			{
-				memCardAddr&=TOWNSADDR_MEMCARD_AND;
-				memCardAddr+=0x400000*physMemPtr->state.memCardBank;
-			}
-			else
-			{
-				memCardAddr&=TOWNSADDR_386SX_MEMCARD_AND;
-				memCardAddr+=0x100000*physMemPtr->state.memCardBank;
-			}
-			if(memCardAddr<memCard.data.size())
-			{
-				memCard.data[memCardAddr]=data;
-				memCard.modified=true;
-			}
-		}
-	}
-}
-
-////////////////////////////////////////////////////////////
-
 #include "rf5c68.h"
 TownsWaveRAMAccess::TownsWaveRAMAccess(class FMTownsCommon *townsPtr,class RF5C68 *pcmPtr,class VGMRecorder *vgmRecPtr)
 {
