@@ -779,12 +779,6 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return VRAMAccessWithMaskHighRes1.FetchByte(physAddr);
 	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
 		return VRAMAccessWithMaskHighRes2.FetchByte(physAddr);
-	default:
-		{
-			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-			return memAccess->FetchByte(physAddr);
-		}
-		break;
 
 	case TOWNSMEM_NONE_DEBUG:
 	case TOWNSMEM_LEGACY_DEBUG:
@@ -877,12 +871,6 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return VRAMAccessWithMaskHighRes1.FetchByte(physAddr);
 	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
 		return VRAMAccessWithMaskHighRes2.FetchByte(physAddr);
-	default:
-		{
-			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-			return memAccess->FetchByteDMA(physAddr);
-		}
-		break;
 
 	case TOWNSMEM_NONE_DEBUG:
 	case TOWNSMEM_LEGACY_DEBUG:
@@ -975,12 +963,6 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return VRAMAccessWithMaskHighRes1.FetchWord(physAddr);
 	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
 		return VRAMAccessWithMaskHighRes2.FetchWord(physAddr);
-	default:
-		{
-			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-			return memAccess->FetchWord(physAddr);
-		}
-		break;
 
 	case TOWNSMEM_NONE_DEBUG:
 	case TOWNSMEM_LEGACY_DEBUG:
@@ -1073,12 +1055,6 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		return VRAMAccessWithMaskHighRes1.FetchDword(physAddr);
 	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
 		return VRAMAccessWithMaskHighRes2.FetchDword(physAddr);
-	default:
-		{
-			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-			return memAccess->FetchDword(physAddr);
-		}
-		break;
 
 	case TOWNSMEM_NONE_DEBUG:
 	case TOWNSMEM_LEGACY_DEBUG:
@@ -1197,12 +1173,6 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
 		VRAMAccessWithMaskHighRes2.StoreByte(physAddr,data);
 		break;
-	default:
-		{
-			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-			memAccess->StoreByte(physAddr,data);
-		}
-		break;
 
 	case TOWNSMEM_NONE_DEBUG:
 	case TOWNSMEM_LEGACY_DEBUG:
@@ -1319,12 +1289,6 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 		break;
 	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
 		VRAMAccessWithMaskHighRes2.StoreByte(physAddr,data);
-		break;
-	default:
-		{
-			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-			memAccess->StoreByteDMA(physAddr,data);
-		}
 		break;
 
 	case TOWNSMEM_NONE_DEBUG:
@@ -1443,12 +1407,6 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
 		VRAMAccessWithMaskHighRes2.StoreWord(physAddr,data);
 		break;
-	default:
-		{
-			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-			memAccess->StoreWord(physAddr,data);
-		}
-		break;
 
 	case TOWNSMEM_NONE_DEBUG:
 	case TOWNSMEM_LEGACY_DEBUG:
@@ -1566,12 +1524,6 @@ REDO_WITH_DEBUG_FLAG_CLEAR:
 	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
 		VRAMAccessWithMaskHighRes2.StoreDword(physAddr,data);
 		break;
-	default:
-		{
-			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-			memAccess->StoreDword(physAddr,data);
-		}
-		break;
 
 	case TOWNSMEM_NONE_DEBUG:
 	case TOWNSMEM_LEGACY_DEBUG:
@@ -1663,12 +1615,6 @@ inline MemoryAccess::ConstMemoryWindow TownsPhysicalMemory::TrueGetConstMemoryWi
 		return VRAMAccessWithMaskHighRes1.GetConstMemoryWindow(physAddr);
 	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
 		return VRAMAccessWithMaskHighRes2.GetConstMemoryWindow(physAddr);
-	default:
-		{
-			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-			return memAccess->GetConstMemoryWindow(physAddr);
-		}
-		break;
 
 	case TOWNSMEM_NONE_DEBUG:
 	case TOWNSMEM_LEGACY_DEBUG:
@@ -1758,12 +1704,6 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 		return VRAMAccessWithMaskHighRes1.GetMemoryWindow(physAddr);
 	case TOWNSMEM_VRAM_HIGHRES2_WITHMASK:
 		return VRAMAccessWithMaskHighRes2.GetMemoryWindow(physAddr);
-	default:
-		{
-			auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-			return memAccess->GetMemoryWindow(physAddr);
-		}
-		break;
 
 	case TOWNSMEM_NONE_DEBUG:
 	case TOWNSMEM_LEGACY_DEBUG:
@@ -1802,19 +1742,10 @@ inline MemoryAccess::MemoryWindow TownsPhysicalMemory::TrueGetMemoryWindow(unsig
 
 Memory::Memory()
 {
-	memAccessPtr.resize(1<<(32-GRANURALITY_SHIFT));
-	for(auto &ptr : memAccessPtr)
-	{
-		ptr=&nullAccess;
-	}
 }
 
 void Memory::CleanUp(void)
 {
-	for(auto &ptr : memAccessPtr)
-	{
-		ptr=&nullAccess;
-	}
 }
 
 Memory::DebuggerLink *Memory::GetDebuggerLink(uint32_t physAddr)

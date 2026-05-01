@@ -31,18 +31,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class MemoryAccess
 {
 public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const=0;
-	virtual unsigned int FetchWord(unsigned int physAddr) const;
-	virtual unsigned int FetchDword(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data)=0;
-	virtual void StoreWord(unsigned int physAddr,unsigned int data);
-	virtual void StoreDword(unsigned int physAddr,unsigned int data);
-
-	/* Default behavior is just forward calls to FetchByte and StoreByte.
-	*/
-	virtual unsigned int FetchByteDMA(unsigned int physAddr) const;
-	virtual void StoreByteDMA(unsigned int physAddr,unsigned char data);
-
 	/*! Memory Access Pointer is for skipping segment and paging translation and directly accessing the memory.
 	    Not all memory range can be accessible by the MemoryAccess::Pointer, memory-mapped I/O for example.
 	    Therefore, the default behavior is returning an unaccessible pointer.
@@ -213,23 +201,8 @@ public:
 			return (addr&~(MEMORY_WINDOW_SIZE-1))==linearBaseAddr;
 		}
 	};
-
-	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
-	virtual MemoryWindow GetMemoryWindow(unsigned int physAddr);
 };
 
-
-
-class NullMemoryAccess : public MemoryAccess
-{
-public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual unsigned int FetchWord(unsigned int physAddr) const;
-	virtual unsigned int FetchDword(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-	virtual void StoreWord(unsigned int physAddr,unsigned int data);
-	virtual void StoreDword(unsigned int physAddr,unsigned int data);
-};
 
 
 /*! Memory class needs to be implemented for each VM.
@@ -259,10 +232,7 @@ public:
 		virtual void StoreDword(uint32_t physAddr,uint32_t data)=0;
 	};
 
-	NullMemoryAccess nullAccess;
-
 protected:
-	std::vector <MemoryAccess *> memAccessPtr;
 	std::vector <DebuggerLink *> debuggerLink;
 	enum
 	{
