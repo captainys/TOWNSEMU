@@ -648,18 +648,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 		SetMemoryAccessTypeRange(0x00100000,(unsigned int)state.RAM.size()-1,TOWNSMEM_MAINRAM);
 	}
 
-	VRAMAccess0.SetPhysicalMemoryPointer(this);
-	VRAMAccess1.SetPhysicalMemoryPointer(this);
-	VRAMAccessHighRes0.SetPhysicalMemoryPointer(this);
-	VRAMAccessHighRes1.SetPhysicalMemoryPointer(this);
-	VRAMAccessHighRes2.SetPhysicalMemoryPointer(this);
-
-	VRAMAccessWithMask0.SetPhysicalMemoryPointer(this);
-	VRAMAccessWithMask1.SetPhysicalMemoryPointer(this);
-	VRAMAccessWithMaskHighRes0.SetPhysicalMemoryPointer(this);
-	VRAMAccessWithMaskHighRes1.SetPhysicalMemoryPointer(this);
-	VRAMAccessWithMaskHighRes2.SetPhysicalMemoryPointer(this);
-
 	SetUpVRAMAccess(cpuType);
 
 	if(TOWNSCPU_80386SX!=cpuType)

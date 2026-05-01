@@ -24,15 +24,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "towns.h"
 
 
-TownsVRAMAccess::TownsVRAMAccess()
-{
-	physMemPtr=nullptr;
-}
-void TownsVRAMAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
-{
-	physMemPtr=ptr;
-}
-
 
 ////////////////////////////////////////////////////////////
 
