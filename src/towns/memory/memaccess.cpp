@@ -27,15 +27,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 TownsVRAMAccess::TownsVRAMAccess()
 {
 	physMemPtr=nullptr;
-	cpuPtr=nullptr;
 }
 void TownsVRAMAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 {
 	physMemPtr=ptr;
-}
-void TownsVRAMAccess::SetCPUPointer(class i486DXCommon *cpuPtr)
-{
-	this->cpuPtr=cpuPtr;
 }
 
 

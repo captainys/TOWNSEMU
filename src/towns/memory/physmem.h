@@ -60,10 +60,9 @@ class TownsVRAMAccess
 {
 public:
 	class TownsPhysicalMemory *physMemPtr;
-	class i486DXCommon *cpuPtr;
+
 	TownsVRAMAccess();
 	void SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr);
-	void SetCPUPointer(class i486DXCommon *cpuPtr);
 
 	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(uint32_t physAddr) const
 	{

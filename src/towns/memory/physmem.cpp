@@ -649,26 +649,16 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	}
 
 	VRAMAccess0.SetPhysicalMemoryPointer(this);
-	VRAMAccess0.SetCPUPointer(&cpu);
 	VRAMAccess1.SetPhysicalMemoryPointer(this);
-	VRAMAccess1.SetCPUPointer(&cpu);
 	VRAMAccessHighRes0.SetPhysicalMemoryPointer(this);
-	VRAMAccessHighRes0.SetCPUPointer(&cpu);
 	VRAMAccessHighRes1.SetPhysicalMemoryPointer(this);
-	VRAMAccessHighRes1.SetCPUPointer(&cpu);
 	VRAMAccessHighRes2.SetPhysicalMemoryPointer(this);
-	VRAMAccessHighRes2.SetCPUPointer(&cpu);
 
 	VRAMAccessWithMask0.SetPhysicalMemoryPointer(this);
-	VRAMAccessWithMask0.SetCPUPointer(&cpu);
 	VRAMAccessWithMask1.SetPhysicalMemoryPointer(this);
-	VRAMAccessWithMask1.SetCPUPointer(&cpu);
 	VRAMAccessWithMaskHighRes0.SetPhysicalMemoryPointer(this);
-	VRAMAccessWithMaskHighRes0.SetCPUPointer(&cpu);
 	VRAMAccessWithMaskHighRes1.SetPhysicalMemoryPointer(this);
-	VRAMAccessWithMaskHighRes1.SetCPUPointer(&cpu);
 	VRAMAccessWithMaskHighRes2.SetPhysicalMemoryPointer(this);
-	VRAMAccessWithMaskHighRes2.SetCPUPointer(&cpu);
 
 	SetUpVRAMAccess(cpuType);
 
