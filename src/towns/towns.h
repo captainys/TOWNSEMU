@@ -51,6 +51,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "townsparam.h"
 #include "highrespcm.h"
 
+#include "rex3586.h"
+
 #include "eventlog.h"
 
 #include "outside_world.h"
@@ -474,6 +476,7 @@ public:
 	TownsVnDrv vndrv;
 	TownsTgDrv tgdrv;
 	TownsHighResPCM highResPCM;
+	RatocREX3586 rex3586;
 	// Machine State <<
 
 	unsigned int townsType;

@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 
 
+#include "towns.h"
 #include "rex3586.h"
 
 
@@ -23,6 +24,12 @@ RatocREX3586::RatocREX3586(class FMTownsCommon *ptr) : Device(ptr)
 
 void RatocREX3586::PowerOn(void)
 {
+	Reset();
+}
+
+void RatocREX3586::Reset(void)
+{
+	state.ROMReadPtr=0;
 	for(auto &row : state.regs)
 	{
 		for(auto &col : row)
@@ -30,10 +37,6 @@ void RatocREX3586::PowerOn(void)
 			col=0xFF;
 		}
 	}
-}
-
-void RatocREX3586::Reset(void)
-{
 }
 
 void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
@@ -48,14 +51,16 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 
 uint32_t RatocREX3586::SerializeVersion(void) const
 {
-	return 0;
+	return 0; // **** Not state-save target yet.  Uncomment townsstate.cpp in DeviceToLoad/SaveState when ready.
 }
 
 void RatocREX3586::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
+	 // **** Not state-save target yet.  Uncomment townsstate.cpp in DeviceToLoad/SaveState when ready.
 }
 
 bool RatocREX3586::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
+	 // **** Not state-save target yet.  Uncomment townsstate.cpp in DeviceToLoad/SaveState when ready.
 	return true;
 }

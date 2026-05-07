@@ -20,7 +20,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <cstdint>
 
-#include "towns.h"
 #include "device.h"
 #include "cheapmath.h"
 
@@ -46,6 +45,7 @@ public:
 	class State
 	{
 	public:
+		unsigned int ROMReadPtr=0;
 		unsigned char regs[NUM_REG_BANKS][NUM_REGS];
 	};
 	State state;
