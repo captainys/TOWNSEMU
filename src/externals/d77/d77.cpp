@@ -1140,6 +1140,7 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 	HasUnstableByteFlags *lastData=nullptr;
 	while(ptr+16<=len)
 	{
+		bytesUsed=ptr+16;
 		switch(rdd[ptr])
 		{
 		case 1: // Begin Track
@@ -1261,7 +1262,6 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 			ptr+=16;
 			break;
 		case 6: // End of Disk.  Force it to be done
-			bytesUsed=ptr+16;
 			ptr=len;
 			break;
 		case 0x10: // Unstable byte flags
