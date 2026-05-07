@@ -619,7 +619,8 @@ FMTownsCommon::FMTownsCommon() :
 	vndrv(this),
 	tgdrv(this),
 	mapXY{this,this},
-	highResPCM(this)
+	highResPCM(this),
+	rex3586(this)
 {
 	/* Memo to myself:
 	To instantiate high-fidelity VM and default-fidelity VM in the same executable
@@ -654,6 +655,7 @@ FMTownsCommon::FMTownsCommon() :
 	allDevices.push_back(&vndrv);
 	allDevices.push_back(&tgdrv);
 	allDevices.push_back(&highResPCM);
+	allDevices.push_back(&rex3586);
 	VMBase::CacheDeviceIndex();
 
 	physMem.SetMainRAMSize(4*1024*1024);
@@ -945,6 +947,24 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(&midi,TOWNSIO_MIDI_TIMER1_COUNT); //             0x0E75,
 	io.AddDevice(&midi,TOWNSIO_MIDI_TIMER2_COUNT); //             0x0E76,
 	io.AddDevice(&midi,TOWNSIO_MIDI_TIMER_CTRL); //               0x0E77,
+
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_TX_STATUS); //	0x7000,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_RX_STATUS); //	0x7001,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_TX_INTEN); //	0x7002,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_RX_INTEN); //	0x7003,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_TX_MODE); //	0x7004,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_RX_MODE); //	0x7005,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_CONFIG0); //	0x7006,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_CONFIG1); //	0x7007,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_BUFFMEMPORT_L); //0x7008,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_BUFFMEMPORT_H); //0x7009,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_TX_START); //	0x700A,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_16COLL); //		0x700B,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_DMAEN); //		0x700C,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_DMABURST); //	0x700D,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_SELF_RX); //	0x700E,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_TRCV_STATUS); //0x700F,
+	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_ROM); // 0x7010
 
 	baseClassReady=true;
 }

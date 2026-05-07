@@ -25,7 +25,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 /* From the real REX3586.  ROM (IO 7010h) returns the following bits.  Low-bit first.
 
-First 20 bits:  0xFFFF0
+First 4 bits: 0
+Next 20 bits:  0xFFFF
 Next 40 bits: 0x?????????? (Mac address)
 Next 16 bits: 0xA200
 Next 152 bits:  All 1
@@ -45,7 +46,9 @@ public:
 	class State
 	{
 	public:
+		unsigned int ROMReadPtr=0;
 		unsigned char regs[NUM_REG_BANKS][NUM_REGS];
+		uint64_t MAC=0xC0D0350582;
 	};
 	State state;
 

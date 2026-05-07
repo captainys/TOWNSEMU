@@ -157,6 +157,7 @@ std::vector <const Device *> FMTownsCommon::DevicesToSaveState(void) const
 		allDevices.push_back(&highResPCM);
 	}
 	allDevices.push_back(&midi);
+	// allDevices.push_back(&rex3586);
 	// allDevices.push_back(&vndrv);
 	return allDevices;
 }
@@ -182,6 +183,7 @@ std::vector <Device *> FMTownsCommon::DevicesToLoadState(void)
 	allDevices.push_back(&serialport);
 	allDevices.push_back(&highResPCM);
 	allDevices.push_back(&midi);
+	// allDevices.push_back(&rex3586);
 	// allDevices.push_back(&vndrv);
 	return allDevices;
 }
