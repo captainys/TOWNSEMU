@@ -1018,21 +1018,24 @@ void i486Debugger::IOWrite(const i486DXCommon &cpu,unsigned int ioport,unsigned 
 {
 	specialDebugInfo->IOWrite(*this,cpu,ioport,data,lengthInBytes);
 
+	std::string valueStr;
+	if(1==lengthInBytes)
+	{
+		valueStr=cpputil::Ubtox(data);
+	}
+	else if(2==lengthInBytes)
+	{
+		valueStr=cpputil::Ustox(data);
+	}
+	else
+	{
+		valueStr=cpputil::Uitox(data);
+	}
+
 	if(true==breakOnIOWrite[ioport&(i486DXCommon::I486_NUM_IOPORT-1)])
 	{
 		std::string msg;
-		if(4==lengthInBytes)
-		{
-			msg="IOWrite Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Uitox(data);
-		}
-		else if(2==lengthInBytes)
-		{
-			msg="IOWrite Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ustox(data);
-		}
-		else
-		{
-			msg="IOWrite Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data);
-		}
+		msg="IOWrite Port:"+cpputil::Uitox(ioport)+" Value:"+valueStr;
 		ExternalBreak(msg);
 		WriteLogFile(msg);
 	}
@@ -1044,19 +1047,7 @@ void i486Debugger::IOWrite(const i486DXCommon &cpu,unsigned int ioport,unsigned 
 			std::ostream &ofs=(0==i ? std::cout : logOfs);
 
 			ofs<< cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
-			ofs<< "Write IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] ";
-			if(4==lengthInBytes)
-			{
-				ofs<< cpputil::Uitox(data);;
-			}
-			else if(2==lengthInBytes)
-			{
-				ofs<< cpputil::Ustox(data);;
-			}
-			else
-			{
-				ofs<< cpputil::Ubtox(data);;
-			}
+			ofs<< "Write IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] " << valueStr;
 
 			auto iter=ioLabel.find(ioport);
 			if(ioLabel.end()!=iter)
@@ -1078,7 +1069,7 @@ void i486Debugger::IOWrite(const i486DXCommon &cpu,unsigned int ioport,unsigned 
 	{
 		std::cout << "Power Off on IO Write\n";
 		std::cout << "Port=" << cpputil::Ustox(ioport) << "\n";
-		std::cout << "Data=" << cpputil::Ubtox(data) << "\n";
+		std::cout << "Data=" << valueStr << "\n";
 		exit(0);
 	}
 }
@@ -1086,9 +1077,23 @@ void i486Debugger::IORead(const i486DXCommon &cpu,unsigned int ioport,unsigned i
 {
 	specialDebugInfo->IORead(*this,cpu,ioport,data,lengthInBytes);
 
+	std::string valueStr;
+	if(1==lengthInBytes)
+	{
+		valueStr=cpputil::Ubtox(data);
+	}
+	else if(2==lengthInBytes)
+	{
+		valueStr=cpputil::Ustox(data);
+	}
+	else
+	{
+		valueStr=cpputil::Uitox(data);
+	}
+
 	if(true==breakOnIORead[ioport&(i486DXCommon::I486_NUM_IOPORT-1)])
 	{
-		std::string msg="IORead Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data);
+		std::string msg="IORead Port:"+cpputil::Uitox(ioport)+" Value:"+valueStr;
 		ExternalBreak(msg);
 		WriteLogFile(msg);
 	}
@@ -1100,7 +1105,7 @@ void i486Debugger::IORead(const i486DXCommon &cpu,unsigned int ioport,unsigned i
 			std::ostream &ofs=(0==i ? std::cout : logOfs);
 
 			ofs << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
-			ofs << "Read IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
+			ofs << "Read IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] " << valueStr;
 			auto iter=ioLabel.find(ioport);
 			if(ioLabel.end()!=iter)
 			{
