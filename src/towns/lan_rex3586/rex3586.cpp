@@ -16,7 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "towns.h"
 #include "rex3586.h"
-
+#include "miscutil.h"
 
 RatocREX3586::RatocREX3586(class FMTownsCommon *ptr) : Device(ptr)
 {
@@ -75,10 +75,20 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 		break;
 	// Reg Bank 2
 	case TOWNSIO_LAN_REX3586_BUFFMEMPORT_L: //0x7008,
+		state.TXPacket.push_back(data);
 		break;
 	case TOWNSIO_LAN_REX3586_BUFFMEMPORT_H: //0x7009,
+		state.TXPacket.push_back(data);
 		break;
 	case TOWNSIO_LAN_REX3586_TX_START: //	0x700A,
+		if(0x81==(data&0x81)) // Apparently it is the trigger.
+		{
+			for(auto str : miscutil::MakeDump(state.TXPacket.size(),state.TXPacket.data()))
+			{
+				std::cout << str << "\n";
+			}
+			state.TXPacket.clear();
+		}
 		break;
 	case TOWNSIO_LAN_REX3586_16COLL: //		0x700B,
 		break;

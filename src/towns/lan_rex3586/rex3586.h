@@ -52,8 +52,17 @@ public:
 		uint8_t config[2]={0,0};
 		bool TXIntEN=false,RXIntEN=false;
 		uint8_t INTNum=4; // 4 by REX3586.COM,  10 by Linux driver.  Apparently controlled by 7010H
+
+		std::vector <uint8_t> TXPacket,RXPacket;
 	};
 	State state;
+
+	class Variable
+	{
+	public:
+		bool monitorTxPacket=true;
+		bool monitorRxPacket=true;
+	};
 
 	virtual const char *DeviceName(void) const{return "REX3586";}
 

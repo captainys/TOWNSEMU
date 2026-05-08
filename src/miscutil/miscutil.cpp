@@ -16,6 +16,53 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "cpputil.h"
 
 
+std::vector <std::string> miscutil::MakeDump(size_t length,const unsigned char data[])
+{
+	bool shiftJIS=false;
+	bool includeASCII=true;
+	size_t bytesPerLine=16;
+	size_t stride=1;
+	std::vector <std::string> text;
+
+	for(size_t ptr=0; ptr<length; ptr+=bytesPerLine)
+	{
+		std::string addrTxt;
+		addrTxt=cpputil::Uitox(ptr);
+
+		std::string str,ascii;
+		for(int x=0; x<bytesPerLine; x+=stride)
+		{
+			auto byte=data[ptr+x];
+			str+=" "+cpputil::Ubtox(byte);
+
+			if(true==includeASCII)
+			{
+				if(byte<' ' || (true!=shiftJIS && 0x80<=byte))
+				{
+					ascii.push_back(' ');
+				}
+				else
+				{
+					ascii.push_back(byte);
+				}
+			}
+		}
+		if(0!=ascii.size())
+		{
+			str.push_back('|');
+			str+=ascii;
+			if(true==shiftJIS)
+			{
+				// Make sure to break first char of shift-JIS
+				ascii.push_back(' ');
+				ascii.push_back(' ');
+			}
+		}
+		text.push_back(addrTxt+str);
+	}
+
+	return text;
+}
 
 std::vector <std::string> miscutil::MakeMemDump(const i486DXCommon &cpu,const Memory &mem,i486DXCommon::FarPointer ptr,unsigned int length,bool shiftJIS)
 {
