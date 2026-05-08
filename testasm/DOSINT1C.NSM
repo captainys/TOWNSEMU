@@ -1,0 +1,57 @@
+; DOSINT1C.COM
+; Emulate DOS INT 1CH (1/18sec timer)
+; 1/18sec=55.5555ms
+
+TIMER_INTERVAL			EQU		555
+
+						ORG		0100H
+						BITS	16
+
+						JMP		SHORT MAIN
+
+TIMER_COUNT:			DW		TIMER_INTERVAL
+
+INT_1CH:
+						IRET
+
+
+
+TIMER_CALLBACK:
+						SUB		WORD [CS:TIMER_COUNT],100
+						JA		TIMER_INT_IRET
+
+						INT		1CH
+						ADD		WORD [CS:TIMER_COUNT],TIMER_INTERVAL
+
+TIMER_INT_IRET:
+						RETF
+
+
+TIMER_PARAM_BLOCK:
+						DB		0 				; Interval Timer Mode
+						DB		0				; Not used
+						DW		TIMER_CALLBACK	; Call-Back IP
+TIMER_PARAM_CS			DW		0				; Call-Back CS to be set.
+						DW		0				; For some reason, high-word first.
+						DW		1				; 1 tick=10ms
+
+
+RESIDENT_END:
+
+MAIN:
+						PUSH	CS
+						POP		DS
+						MOV		DX,INT_1CH
+						MOV		AX,251CH	; Set INT 1CH Vector
+						INT		21H
+
+						MOV		AH,00H		; Register Timer
+						MOV		CS:[TIMER_PARAM_CS],DS
+						MOV		DI,TIMER_PARAM_BLOCK
+						INT		97H
+
+						MOV		AX,3100H	; Terminate and stay resident
+						MOV		DX,RESIDENT_END
+						ADD		DX,0FH
+						SHR		DX,4
+						INT		21H
