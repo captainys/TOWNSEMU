@@ -58,6 +58,16 @@ void RatocREX3586::ReceivePacket(size_t len,const uint8_t data[])
 
 	state.RXPacket.insert(state.RXPacket.end(),data,data+len);
 	UpdatePIC();
+
+	if(true==var.monitorRxPacket)
+	{
+		for(auto str : miscutil::MakeDump(state.RXPacket.size(),state.RXPacket.data()))
+		{
+			std::cout << str << "\n";
+		}
+	}
+
+std::cout << "RX: " << state.RXPacket.size() << "\n";
 }
 
 void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
@@ -70,7 +80,7 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 		if(0x82==(data&0x82))
 		{
 			// Looks like it clears TX status.
-			state.TXPacket.clear();
+			// state.TXPacket.clear();
 			UpdatePIC();
 		}
 		break;
@@ -78,7 +88,7 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 		if(0x81==(data&0x81))
 		{
 			// Looks like it clears RX status.
-			state.RXPacket.clear();
+			// state.RXPacket.clear();  But doesn't look to clear the data.
 			UpdatePIC();
 		}
 		break;
@@ -140,9 +150,12 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 		case TOWNSIO_LAN_REX3586_TX_START: //	0x700A,
 			if(0x81==(data&0x81)) // Apparently it is the trigger.
 			{
-				for(auto str : miscutil::MakeDump(state.TXPacket.size(),state.TXPacket.data()))
+				if(true==var.monitorTxPacket)
 				{
-					std::cout << str << "\n";
+					for(auto str : miscutil::MakeDump(state.TXPacket.size(),state.TXPacket.data()))
+					{
+						std::cout << str << "\n";
+					}
 				}
 				net.TransmitPacket(state.TXPacket.size(),state.TXPacket.data(),this);
 				state.TXPacket.clear();
@@ -187,13 +200,19 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 	case TOWNSIO_LAN_REX3586_TX_MODE: //	0x7004,
 		break;
 	case TOWNSIO_LAN_REX3586_RX_MODE: //	0x7005,
+		// RD3586.COM reads data when RX_MODE&0x40==0
+		// 4700:00000D57 A840                      TEST    AL,40H
+		// 4700:00000D59 740B                      JE      00000D66(Go on to read)
+		// at1700.c reads data in the following while loop
+		// while ((inb(ioaddr + RX_MODE) & 0x40) == 0)
+		// Bit 6 needs to be zero when there is data.
 		if(0==state.RXPacket.size())
 		{
-			data&=~0x40;
+			data|=0x40;
 		}
 		else
 		{
-			data|=0x40;
+			data&=~0x40;
 		}
 		break;
 	case TOWNSIO_LAN_REX3586_CONFIG0: //	0x7006,
@@ -308,6 +327,30 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 	return data;
 }
 
+unsigned int RatocREX3586::IOReadWord(unsigned int ioport)
+{
+	if(2==state.GetCurrentRegisterBank() && TOWNSIO_LAN_REX3586_BUFFMEMPORT_L==ioport)
+	{
+		if(2<=state.RXPacket.size())
+		{
+			uint16_t data=state.RXPacket[0]|(state.RXPacket[1]<<8);
+			state.RXPacket.erase(state.RXPacket.begin());
+			state.RXPacket.erase(state.RXPacket.begin());
+			return data;
+		}
+		else if(1==state.RXPacket.size())
+		{
+			uint16_t data=state.RXPacket[0];
+			state.RXPacket.erase(state.RXPacket.begin());
+			return data;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	return Device::IOReadWord(ioport);
+}
 
 uint32_t RatocREX3586::SerializeVersion(void) const
 {

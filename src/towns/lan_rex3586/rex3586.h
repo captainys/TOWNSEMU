@@ -87,6 +87,8 @@ public:
 	void IOWriteByte(unsigned int ioport,unsigned int data) override;
 	unsigned int IOReadByte(unsigned int ioport) override;
 
+	unsigned int IOReadWord(unsigned int ioport) override;
+
 	uint32_t SerializeVersion(void) const override;
 	void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const override;
 	bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version) override;

@@ -107,6 +107,8 @@ public:
 	static void PutWordBE(uint8_t data[],uint16_t i);
 	static void PutDwordBE(uint8_t data[],uint32_t i);
 
+	static uint16_t CalcIPCheckSum(size_t len,const uint8_t data[]);
+
 	// Adapter -> Virtual Network
 	void TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv);
 protected:

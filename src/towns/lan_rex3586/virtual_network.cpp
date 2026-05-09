@@ -115,6 +115,37 @@ void VirtualNetwork::PutDwordBE(uint8_t data[],uint32_t i)
 	data[0]=i>>24;
 }
 
+uint16_t VirtualNetwork::CalcIPCheckSum(size_t len,const uint8_t DATA[])
+{
+	const uint8_t *data=DATA;
+	uint32_t sum=0;
+	while(2<=len)
+	{
+		uint16_t word=*(uint16_t *)data;
+
+		sum+=word;
+		if(0x10000<=sum)
+		{
+			++sum;
+			sum&=0xFFFF;
+		}
+
+		data+=2;
+		len-=2;
+	}
+	if(1==len)
+	{
+		sum+=*data;
+		if(0x10000<=sum)
+		{
+			++sum;
+			sum&=0xFFFF;
+		}
+	}
+
+	return ((~sum) & 0xFFFF);
+}
+
 void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv)
 {
 	if(len<36)
@@ -254,22 +285,32 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 		data[13]=0;
 
 		// IP layer
-		data[14]=0x45; // version=4, header length=5 words.
+		data[14]=0x45; // version=4, header length=5 words (5*4=20 bytes).
 		data[15]=0;    // QoS
 		PutWordBE(data+16,0x148); // Length : Is the length always 0x148?
 		PutWordBE(data+18,0); // Fragment ID
-		PutWordBE(data+20,0); // Fragment Offset or Flags
+		PutWordBE(data+20,0); // Fragment Offset or Flags  (Looks like 0xC000 for flags, 0x3FFF for offset)
 		data[22]=0x40; // TTL
 		data[23]=0x11; // UDP
 		PutWordBE(data+24,0); // Checksum to be filled.
 		PutDwordBE(data+26,DHCP_SERVER_IP); // Src IP
 		PutDwordBE(data+30,VM_DHCP_IP);     // Dst IP
 
+		for(uint32_t t=0; t<0x10000; ++t) // Stupid. But I'm tired after running 5K today.
+		{
+			data[24]=t&0xFF;
+			data[25]=(t>>8);
+			if(0==CalcIPCheckSum(20,data+14))
+			{
+				break;
+			}
+		}
+
 		// UDP
 		PutWordBE(data+34,DHCP_SERVER_PORT);
 		PutWordBE(data+36,DHCP_CLIENT_PORT);
 		PutWordBE(data+38,0x134); // Length
-		PutWordBE(data+40,0);     // Checksum to be filled.
+		PutWordBE(data+40,0);     // UDP checksum is optional according to PD3586
 		data[42]=2; // Is this same as DHCP_MSG_REPLY?
 		data[43]=1; // net type
 		data[44]=6; // 6-byte MAC address
@@ -280,35 +321,43 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 		PutMAC(data+70,ether.srcMAC);
 
 		// UDP Payload
-		PutDwordBE(data+0x118,0x63825363);
-		data[0x11C]=DHCP_OPTION_MESSAGE_TYPE; // 0x35
-		data[0x11D]=1;  // 1 byte
-		data[0x11E]=DHCP_MSG_REPLY;
+		{
+			uint32_t ptr=0x116;
+			PutDwordBE(data+ptr,0x63825363);
+			ptr+=4;
+			data[ptr++]=DHCP_OPTION_MESSAGE_TYPE; // 0x35
+			data[ptr++]=1;  // 1 byte
+			data[ptr++]=DHCP_MSG_REPLY;
 
-		data[0x11F]=DHCP_OPTION_DNS_SERVER;
-		data[0x120]=4; // 4 bytes
-		PutDwordBE(data+0x121,DHCP_SERVER_IP);
+			data[ptr++]=DHCP_OPTION_SERVER_IP;
+			data[ptr++]=4; // 4 bytes
+			PutDwordBE(data+ptr,DHCP_SERVER_IP);
+			ptr+=4;
 
-		data[0x125]=DHCP_OPTION_LEASE_TIME_REQ;
-		data[0x126]=4;
-		PutDwordBE(data+0x127,opt.leaseTimeReq);
+			data[ptr++]=DHCP_OPTION_LEASE_TIME_REQ;
+			data[ptr++]=4;
+			PutDwordBE(data+ptr,opt.leaseTimeReq);
+			ptr+=4;
 
-		data[0x12B]=DHCP_OPTION_SUBNET_MASK;
-		data[0x12C]=4;
-		PutDwordBE(data+0x12D,0xFFFFFF00);
+			data[ptr++]=DHCP_OPTION_SUBNET_MASK;
+			data[ptr++]=4;
+			PutDwordBE(data+ptr,0xFFFFFF00);
+			ptr+=4;
 
-		data[0x131]=DHCP_OPTION_DEF_ROUTER;
-		data[0x132]=4;
-		PutDwordBE(data+0x133,ROUTER_IP);
+			data[ptr++]=DHCP_OPTION_DEF_ROUTER;
+			data[ptr++]=4;
+			PutDwordBE(data+ptr,ROUTER_IP);
+			ptr+=4;
 
-		data[0x137]=DHCP_OPTION_DNS_SERVER;
-		data[0x138]=4;
-		PutDwordBE(data+0x139,DNS_IP);
+			data[ptr++]=DHCP_OPTION_DNS_SERVER;
+			data[ptr++]=4;
+			PutDwordBE(data+ptr,DNS_IP);
+			ptr+=4;
 
-		data[0x13D]=DHCP_OPTION_END;
+			data[ptr++]=DHCP_OPTION_END;
 
-		cpputil::PutWord(DATA.data(),0x13E);
-		DATA.resize(0x13D);
+			DATA.resize(ptr);
+		}
 
 		break;
 	case 3: // DHCP_MSG_REQUEST
