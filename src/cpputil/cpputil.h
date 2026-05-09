@@ -86,6 +86,7 @@ long long int FileSize(const std::string &fName);
 
 char BoolToChar(bool f);
 
+std::string U64tox(uint64_t i);
 std::string Uitox(unsigned int i);
 std::string Ustox(unsigned short i);
 std::string Ubtox(unsigned char i);

@@ -876,9 +876,16 @@ long long int cpputil::FileSize(const std::string &fName)
 	return 0;
 }
 
-char BoolToChar(bool f)
+std::string cpputil::U64tox(uint64_t i)
 {
-	return (true==f ? '1' : '0');
+	std::string s;
+	s.resize(16);
+	for(int n=15; 0<=n; --n)
+	{
+		s[n]=FourBitToX(i&0x0F);
+		i>>=4;
+	}
+	return s;
 }
 
 std::string cpputil::Uitox(unsigned int i)

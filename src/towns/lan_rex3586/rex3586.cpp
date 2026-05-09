@@ -133,6 +133,7 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 				{
 					std::cout << str << "\n";
 				}
+				net.TransmitPacket(state.TXPacket.size(),state.TXPacket.data(),this);
 				state.TXPacket.clear();
 				UpdatePIC();
 			}
