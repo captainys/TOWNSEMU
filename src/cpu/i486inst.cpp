@@ -122,6 +122,7 @@ void i486DXCommon::MakeOpCodeRenumberTable(void)
 	opCodeRenumberTable[I486_OPCODE_IMUL_R_RM_IMM]=I486_RENUMBER_IMUL_R_RM_IMM;
 	opCodeRenumberTable[I486_OPCODE_IMUL_R_RM]=I486_RENUMBER_IMUL_R_RM;
 	opCodeRenumberTable[I486_OPCODE_INSB]=I486_RENUMBER_INSB;
+	opCodeRenumberTable[I486_OPCODE_INS]=I486_RENUMBER_INS;
 	opCodeRenumberTable[I486_OPCODE_IN_AL_I8]=I486_RENUMBER_IN_AL_I8;
 	opCodeRenumberTable[I486_OPCODE_IN_A_I8]=I486_RENUMBER_IN_A_I8;
 	opCodeRenumberTable[I486_OPCODE_IN_AL_DX]=I486_RENUMBER_IN_AL_DX;
@@ -390,6 +391,7 @@ void i486DXCommon::MakeOpCodeRenumberTable(void)
 	opCodeNeedOperandTable[I486_OPCODE_DEC_EDI]=I486_NEEDOPERAND_NONE;
 	opCodeNeedOperandTable[I486_OPCODE_FWAIT]=I486_NEEDOPERAND_NONE;
 	opCodeNeedOperandTable[I486_OPCODE_INSB]=I486_NEEDOPERAND_NONE;
+	opCodeNeedOperandTable[I486_OPCODE_INS]=I486_NEEDOPERAND_NONE;
 	opCodeNeedOperandTable[I486_OPCODE_IN_AL_DX]=I486_NEEDOPERAND_NONE;
 	opCodeNeedOperandTable[I486_OPCODE_IN_A_DX]=I486_NEEDOPERAND_NONE;
 	opCodeNeedOperandTable[I486_OPCODE_LEAVE]=I486_NEEDOPERAND_NONE;
@@ -2069,6 +2071,17 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 		}
 		break;
 
+	case I486_OPCODE_INS://     0x6D,
+		disasm=(16==operandSize ? "INSW" : "INSD");
+		if(INST_PREFIX_REP==instPrefix)
+		{
+			disasm="REP "+disasm;
+		}
+		else if(INST_PREFIX_REPNE==instPrefix)
+		{
+			disasm="REPNE(!) "+disasm;
+		}
+		break;
 
 	case I486_OPCODE_IN_AL_I8://=        0xE4,
 		disasm="IN";

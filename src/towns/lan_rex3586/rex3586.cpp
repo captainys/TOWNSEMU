@@ -50,6 +50,12 @@ void RatocREX3586::UpdatePIC(void)
 
 void RatocREX3586::ReceivePacket(size_t len,const uint8_t data[])
 {
+	state.RXPacket.push_back(0x20); // Linux at1700.c requires the (first_byte&0xF0)==0x20.  PD3586.COM assumes error if b0 is set.
+	state.RXPacket.push_back(0);    // Meaning unknown
+
+	state.RXPacket.push_back(len);
+	state.RXPacket.push_back(len>>8);
+
 	state.RXPacket.insert(state.RXPacket.end(),data,data+len);
 	UpdatePIC();
 }
@@ -264,8 +270,26 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 		{
 		// Reg Bank 2
 		case TOWNSIO_LAN_REX3586_BUFFMEMPORT_L: //0x7008,
+			if(0<state.RXPacket.size())
+			{
+				data=state.RXPacket[0];
+				state.RXPacket.erase(state.RXPacket.begin());
+			}
+			else
+			{
+				data=0;
+			}
 			break;
 		case TOWNSIO_LAN_REX3586_BUFFMEMPORT_H: //0x7009,
+			if(0<state.RXPacket.size())
+			{
+				data=state.RXPacket[0];
+				state.RXPacket.erase(state.RXPacket.begin());
+			}
+			else
+			{
+				data=0;
+			}
 			break;
 		case TOWNSIO_LAN_REX3586_TX_START: //	0x700A,
 			break;

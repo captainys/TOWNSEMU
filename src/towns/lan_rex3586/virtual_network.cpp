@@ -242,7 +242,7 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 	std::vector <uint8_t> DATA;
 	DATA.resize(512);
 
-	auto data=DATA.data()+2;
+	auto data=DATA.data();
 
 	switch(opt.msgType)
 	{
@@ -308,6 +308,7 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 		data[0x13D]=DHCP_OPTION_END;
 
 		cpputil::PutWord(DATA.data(),0x13E);
+		DATA.resize(0x13D);
 
 		break;
 	case 3: // DHCP_MSG_REQUEST

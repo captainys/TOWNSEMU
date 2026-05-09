@@ -4752,7 +4752,36 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 		}
 		break;
-
+	case I486_RENUMBER_INS://     0x6D,
+		{
+			auto prefix=REPNEtoREP(inst.instPrefix);
+			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
+			{
+				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
+				if(true==fidelity.TakeIOReadException(*this,GetDX(),1,mem,inst.numBytes))
+				{
+					EIPIncrement=0;
+					break;
+				}
+				uint32_t ioRead;
+				if(16==inst.operandSize)
+				{
+					ioRead=IOIn16(io,GetDX());
+					StoreWord(mem,inst.addressSize,state.ES(),state.EDI(),ioRead);
+				}
+				else
+				{
+					ioRead=IOIn32(io,GetDX());
+					StoreDword(mem,inst.addressSize,state.ES(),state.EDI(),ioRead);
+				}
+				UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
+				if(INST_PREFIX_REP==prefix)
+				{
+					EIPIncrement=0;
+				}
+			}
+		}
+		break;
 
 	case I486_RENUMBER_IN_AL_I8://=        0xE4,
 		if(true==IsInRealMode())
