@@ -22,6 +22,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "device.h"
 #include "cheapmath.h"
+#include "virtual_network.h"
 
 /* From the real REX3586.  ROM (IO 7010h) returns the following bits.  Low-bit first.
 
@@ -34,7 +35,7 @@ Next 24 bits: 0x4C414E ("LAN")
 Last 4 bits: All 0
 */
 
-class RatocREX3586 : public Device
+class RatocREX3586 : public Device, public VirtualNetwork::PacketReceiver
 {
 public:
 	enum
@@ -68,12 +69,17 @@ public:
 		bool monitorTxPacket=true;
 		bool monitorRxPacket=true;
 	};
+	Variable var;
+
+	VirtualNetwork net;
 
 	virtual const char *DeviceName(void) const{return "REX3586";}
 
 	RatocREX3586(class FMTownsCommon *ptr);
 
 	void UpdatePIC(void);
+
+	void ReceivePacket(size_t len,const uint8_t data[]) override;
 
 	void PowerOn(void) override;
 	void Reset(void) override;
