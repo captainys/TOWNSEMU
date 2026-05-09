@@ -10,6 +10,7 @@ void VirtualNetwork::DHCPOption::CleanUp(void)
 	hostName="";
 	paramReqList.clear();
 	leaseTimeReq=0xffff;
+	requestedIP=0;
 }
 
 bool VirtualNetwork::DHCPOption::Decode(size_t len,const uint8_t data[])
@@ -33,17 +34,23 @@ bool VirtualNetwork::DHCPOption::Decode(size_t len,const uint8_t data[])
 				hostName.push_back(data[2+i]);
 			}
 			break;
+		case DHCP_OPTION_REQUESTED_IP_ADDR: // 0x22,
+			requestedIP=GetDwordBE(data+2);
+			break;
+		case DHCP_OPTION_LEASE_TIME_REQ: //0x33,
+			leaseTimeReq=GetDwordBE(data+2);
+			break;
 		case DHCP_OPTION_MESSAGE_TYPE: //0x35,
 			msgType=data[2];
+			break;
+		case DHCP_OPTION_SERVER_IP: //0x36,
+			hostIP=GetDwordBE(data+2);
 			break;
 		case DHCP_OPTION_PARAM_REQ_LIST: //0x37,
 			for(int i=0; i<data[1]; ++i)
 			{
 				paramReqList.push_back(data[2+i]);
 			}
-			break;
-		case DHCP_OPTION_LEASE_TIME_REQ: //0x33,
-			leaseTimeReq=GetDwordBE(data+2);
 			break;
 		case DHCP_OPTION_END: //0xFF
 			return true;
@@ -278,6 +285,7 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 	switch(opt.msgType)
 	{
 	case 1: // DHCP_MSG_DISCOVER
+	case 3: // DHCP_MSG_REQUEST
 		// Ether layer
 		PutMAC(data  ,ether.srcMAC); // Source MAC is now destination.
 		PutMAC(data+6,MAC_DHCP_SERVER);
@@ -322,12 +330,14 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 
 		// UDP Payload
 		{
+			uint8_t replyMsgType=(1==opt.msgType ? DHCP_MSG_REPLY : DHCP_MSG_ACK);
+
 			uint32_t ptr=0x116;
 			PutDwordBE(data+ptr,0x63825363);
 			ptr+=4;
 			data[ptr++]=DHCP_OPTION_MESSAGE_TYPE; // 0x35
 			data[ptr++]=1;  // 1 byte
-			data[ptr++]=DHCP_MSG_REPLY;
+			data[ptr++]=replyMsgType;
 
 			data[ptr++]=DHCP_OPTION_SERVER_IP;
 			data[ptr++]=4; // 4 bytes
@@ -360,7 +370,8 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 		}
 
 		break;
-	case 3: // DHCP_MSG_REQUEST
+	case 2:
+		std::cout << "Message Type 2 is not supposed to come from the client.\n";
 		break;
 	case 4:
 		std::cout << "Unknown Message Type.\n";

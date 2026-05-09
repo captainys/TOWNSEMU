@@ -24,11 +24,13 @@ public:
 		DHCP_MSG_DISCOVER=1,
 		DHCP_MSG_REPLY=2,
 		DHCP_MSG_REQUEST=3,
+		DHCP_MSG_ACK=5,
 
 		DHCP_OPTION_SUBNET_MASK=0x01,
 		DHCP_OPTION_DEF_ROUTER=0x03,
 		DHCP_OPTION_DNS_SERVER=0x06,
 		DHCP_OPTION_HOSTNAME=0x0C,
+		DHCP_OPTION_REQUESTED_IP_ADDR=0x32,
 		DHCP_OPTION_LEASE_TIME_REQ=0x33,
 		DHCP_OPTION_MESSAGE_TYPE=0x35,
 		DHCP_OPTION_SERVER_IP=0x36,
@@ -67,6 +69,8 @@ public:
 		uint16_t dstPort;
 		uint16_t len;
 		uint16_t checkSum;
+
+		// Apparently from this byte is already DHCP data.
 		uint8_t messageType;
 		uint8_t netType;
 		uint8_t MAClen;
@@ -84,6 +88,8 @@ public:
 		std::string hostName;
 		std::vector <uint8_t> paramReqList;
 		uint32_t leaseTimeReq;
+		uint32_t requestedIP;
+		uint32_t hostIP;
 
 		void CleanUp(void);
 		bool Decode(size_t len,const uint8_t data[]);
