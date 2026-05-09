@@ -15,8 +15,10 @@ void VirtualNetwork::DHCPOption::CleanUp(void)
 bool VirtualNetwork::DHCPOption::Decode(size_t len,const uint8_t data[])
 {
 	CleanUp();
-	while(0<len)
+	while(0<len && data[0]!=DHCP_OPTION_END)
 	{
+		std::cout << cpputil::Ubtox(data[0]) << " " << cpputil::Ubtox(data[1]) << " (" << len << ")\n";
+
 		if(len<2+data[1])
 		{
 			std::cout << "DHCP Option Overflow.\n";
@@ -50,8 +52,9 @@ bool VirtualNetwork::DHCPOption::Decode(size_t len,const uint8_t data[])
 			return false;
 		}
 
-		data+=(2+data[1]);
-		len-=(2+data[1]);
+		auto optlen=data[1];
+		len-=(2+optlen);
+		data+=(2+optlen);
 	}
 	return true;
 }

@@ -43,10 +43,15 @@ void RatocREX3586::Reset(void)
 
 void RatocREX3586::UpdatePIC(void)
 {
+	bool irr=(true==state.RXIntEN && 0!=state.RXPacket.size()); // What about TX?  What can trigger TX INT?
+	FMTownsCommon *towns=(FMTownsCommon *)vmPtr;
+	towns->pic.SetInterruptRequestBit(state.INTNum,irr);
 }
 
 void RatocREX3586::ReceivePacket(size_t len,const uint8_t data[])
 {
+	state.RXPacket.insert(state.RXPacket.end(),data,data+len);
+	UpdatePIC();
 }
 
 void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
@@ -160,6 +165,14 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 	case TOWNSIO_LAN_REX3586_TX_STATUS: //	0x7000,
 		break;
 	case TOWNSIO_LAN_REX3586_RX_STATUS: //	0x7001,
+		if(0==state.RXPacket.size())
+		{
+			data=0;
+		}
+		else
+		{
+			data=0xFF;
+		}
 		break;
 	case TOWNSIO_LAN_REX3586_TX_INTEN: //	0x7002,
 		break;
@@ -168,6 +181,14 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 	case TOWNSIO_LAN_REX3586_TX_MODE: //	0x7004,
 		break;
 	case TOWNSIO_LAN_REX3586_RX_MODE: //	0x7005,
+		if(0==state.RXPacket.size())
+		{
+			data&=~0x40;
+		}
+		else
+		{
+			data|=0x40;
+		}
 		break;
 	case TOWNSIO_LAN_REX3586_CONFIG0: //	0x7006,
 		data=state.config[0];
