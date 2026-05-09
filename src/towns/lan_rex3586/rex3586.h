@@ -53,6 +53,11 @@ public:
 		bool TXIntEN=false,RXIntEN=false;
 		uint8_t INTNum=4; // 4 by REX3586.COM,  10 by Linux driver.  Apparently controlled by 7010H
 
+		unsigned int GetCurrentRegisterBank(void) const // Apparently Config 1 Bits 2-3 are the bank.
+		{
+			return (config[1]>>2)&3;
+		}
+
 		std::vector <uint8_t> TXPacket,RXPacket;
 	};
 	State state;
@@ -67,6 +72,8 @@ public:
 	virtual const char *DeviceName(void) const{return "REX3586";}
 
 	RatocREX3586(class FMTownsCommon *ptr);
+
+	void UpdatePIC(void);
 
 	void PowerOn(void) override;
 	void Reset(void) override;

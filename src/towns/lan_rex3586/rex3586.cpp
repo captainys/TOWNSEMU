@@ -41,27 +41,39 @@ void RatocREX3586::Reset(void)
 	}
 }
 
+void RatocREX3586::UpdatePIC(void)
+{
+}
+
 void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 {
+	state.regs[state.GetCurrentRegisterBank()][ioport-TOWNSIO_LAN_REX3586_TX_STATUS]=data;
+
 	switch(ioport)
 	{
 	case TOWNSIO_LAN_REX3586_TX_STATUS: //	0x7000,
 		if(0x82==(data&0x82))
 		{
 			// Looks like it clears TX status.
+			state.TXPacket.clear();
+			UpdatePIC();
 		}
 		break;
 	case TOWNSIO_LAN_REX3586_RX_STATUS: //	0x7001,
 		if(0x81==(data&0x81))
 		{
 			// Looks like it clears RX status.
+			state.RXPacket.clear();
+			UpdatePIC();
 		}
 		break;
 	case TOWNSIO_LAN_REX3586_TX_INTEN: //	0x7002,
 		state.TXIntEN=(0x82==(data&0x82));
+		UpdatePIC();
 		break;
 	case TOWNSIO_LAN_REX3586_RX_INTEN: //	0x7003,
 		state.RXIntEN=(0x81==(data&0x81));
+		UpdatePIC();
 		break;
 	case TOWNSIO_LAN_REX3586_TX_MODE: //	0x7004,
 		break;
@@ -72,64 +84,73 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 		break;
 	case TOWNSIO_LAN_REX3586_CONFIG1: //	0x7007,
 		state.config[1]=data;
+		// Bits 2 and 3 looks to be the register bank.
 		break;
-	// Reg Bank 2
-	case TOWNSIO_LAN_REX3586_BUFFMEMPORT_L: //0x7008,
-		state.TXPacket.push_back(data);
-		break;
-	case TOWNSIO_LAN_REX3586_BUFFMEMPORT_H: //0x7009,
-		state.TXPacket.push_back(data);
-		break;
-	case TOWNSIO_LAN_REX3586_TX_START: //	0x700A,
-		if(0x81==(data&0x81)) // Apparently it is the trigger.
+	}
+
+	if(2==state.GetCurrentRegisterBank())
+	{
+		switch(ioport)
 		{
-			for(auto str : miscutil::MakeDump(state.TXPacket.size(),state.TXPacket.data()))
+		// Reg Bank 2
+		case TOWNSIO_LAN_REX3586_BUFFMEMPORT_L: //0x7008,
+			state.TXPacket.push_back(data);
+			break;
+		case TOWNSIO_LAN_REX3586_BUFFMEMPORT_H: //0x7009,
+			state.TXPacket.push_back(data);
+			break;
+		case TOWNSIO_LAN_REX3586_TX_START: //	0x700A,
+			if(0x81==(data&0x81)) // Apparently it is the trigger.
 			{
-				std::cout << str << "\n";
+				for(auto str : miscutil::MakeDump(state.TXPacket.size(),state.TXPacket.data()))
+				{
+					std::cout << str << "\n";
+				}
+				state.TXPacket.clear();
+				UpdatePIC();
 			}
-			state.TXPacket.clear();
-		}
-		break;
-	case TOWNSIO_LAN_REX3586_16COLL: //		0x700B,
-		break;
-	case TOWNSIO_LAN_REX3586_DMAEN: //		0x700C,
-		break;
-	case TOWNSIO_LAN_REX3586_DMABURST: //	0x700D,
-		break;
-	case TOWNSIO_LAN_REX3586_SELF_RX: //	0x700E,
-		break;
-	case TOWNSIO_LAN_REX3586_TRCV_STATUS: //0x700F,
-		break;
+			break;
+		case TOWNSIO_LAN_REX3586_16COLL: //		0x700B,
+			break;
+		case TOWNSIO_LAN_REX3586_DMAEN: //		0x700C,
+			break;
+		case TOWNSIO_LAN_REX3586_DMABURST: //	0x700D,
+			break;
+		case TOWNSIO_LAN_REX3586_SELF_RX: //	0x700E,
+			break;
+		case TOWNSIO_LAN_REX3586_TRCV_STATUS: //0x700F,
+			break;
 
-	case TOWNSIO_LAN_REX3586_ROM: //        0x7010,
-		if(0==(data&0x0F))
-		{
-			state.ROMReadPtr=0;
-		}
+		case TOWNSIO_LAN_REX3586_ROM: //        0x7010,
+			if(0==(data&0x0F))
+			{
+				state.ROMReadPtr=0;
+			}
 
-		// According to Linux FM TOWNS REX 3586 driver, high-4 bits control the IRQ.
-		switch(data&0x10)
-		{
-		case 0x10:
-			state.INTNum=4;
-			break;
-		case 0x20:
-			state.INTNum=5;
-			break;
-		case 0x40:
-			state.INTNum=10;
-			break;
-		case 0x80:
-			state.INTNum=14;
+			// According to Linux FM TOWNS REX 3586 driver, high-4 bits control the IRQ.
+			switch(data&0x10)
+			{
+			case 0x10:
+				state.INTNum=4;
+				break;
+			case 0x20:
+				state.INTNum=5;
+				break;
+			case 0x40:
+				state.INTNum=10;
+				break;
+			case 0x80:
+				state.INTNum=14;
+				break;
+			}
 			break;
 		}
-		break;
 	}
 }
 
 unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 {
-	unsigned int data=0xFF;
+	unsigned int data=state.regs[state.GetCurrentRegisterBank()][ioport-TOWNSIO_LAN_REX3586_TX_STATUS];
 	switch(ioport)
 	{
 	case TOWNSIO_LAN_REX3586_TX_STATUS: //	0x7000,
@@ -150,85 +171,92 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 	case TOWNSIO_LAN_REX3586_CONFIG1: //	0x7007,
 		data=state.config[1];
 		break;
-	// Reg Bank 2
-	case TOWNSIO_LAN_REX3586_BUFFMEMPORT_L: //0x7008,
-		break;
-	case TOWNSIO_LAN_REX3586_BUFFMEMPORT_H: //0x7009,
-		break;
-	case TOWNSIO_LAN_REX3586_TX_START: //	0x700A,
-		break;
-	case TOWNSIO_LAN_REX3586_16COLL: //		0x700B,
-		break;
-	case TOWNSIO_LAN_REX3586_DMAEN: //		0x700C,
-		break;
-	case TOWNSIO_LAN_REX3586_DMABURST: //	0x700D,
-		break;
-	case TOWNSIO_LAN_REX3586_SELF_RX: //	0x700E,
-		break;
-	case TOWNSIO_LAN_REX3586_TRCV_STATUS: //0x700F,
-		break;
+	}
+	if(2==state.GetCurrentRegisterBank())
+	{
+		data=0xFF;
+		switch(ioport)
+		{
+		// Reg Bank 2
+		case TOWNSIO_LAN_REX3586_BUFFMEMPORT_L: //0x7008,
+			break;
+		case TOWNSIO_LAN_REX3586_BUFFMEMPORT_H: //0x7009,
+			break;
+		case TOWNSIO_LAN_REX3586_TX_START: //	0x700A,
+			break;
+		case TOWNSIO_LAN_REX3586_16COLL: //		0x700B,
+			break;
+		case TOWNSIO_LAN_REX3586_DMAEN: //		0x700C,
+			break;
+		case TOWNSIO_LAN_REX3586_DMABURST: //	0x700D,
+			break;
+		case TOWNSIO_LAN_REX3586_SELF_RX: //	0x700E,
+			break;
+		case TOWNSIO_LAN_REX3586_TRCV_STATUS: //0x700F,
+			break;
 
-	case TOWNSIO_LAN_REX3586_ROM: //        0x7010,
-		// First 4 bits: 0
-		if(state.ROMReadPtr<4)
-		{
-			data=0;
-		}
-		// Next 16 bits:  0xFFFF
-		else if(state.ROMReadPtr<20)
-		{
-			data=1;
-		}
-		// Next 48 bits: 0x?????????? (Mac address)
-		else if(state.ROMReadPtr<68)
-		{
-			auto bit=state.ROMReadPtr-20;
-			data=(state.MAC>>bit)&1;
-		}
-		// Next  8 bits: 0xA2
-		else if(state.ROMReadPtr<76)
-		{
-			auto bit=state.ROMReadPtr-68;
-			unsigned short data=0xA2;
-			data=(data>>bit)&1;
-		}
-		// Next 152 bits:  All 1
-		else if(state.ROMReadPtr<232)
-		{
-			data=1;
-		}
-		// Next 24 bits: 0x4C414E ("LAN")
-		else if(state.ROMReadPtr<252)
-		{
-			auto bit=state.ROMReadPtr-232;
-			unsigned int data=0x4C414E;
-			data=(data>>bit)&1;
-		}
-		// Last 4 bits: All 0
-		else
-		{
-			data=0;
-		}
+		case TOWNSIO_LAN_REX3586_ROM: //        0x7010,
+			// First 4 bits: 0
+			if(state.ROMReadPtr<4)
+			{
+				data=0;
+			}
+			// Next 16 bits:  0xFFFF
+			else if(state.ROMReadPtr<20)
+			{
+				data=1;
+			}
+			// Next 48 bits: 0x?????????? (Mac address)
+			else if(state.ROMReadPtr<68)
+			{
+				auto bit=state.ROMReadPtr-20;
+				data=(state.MAC>>bit)&1;
+			}
+			// Next  8 bits: 0xA2
+			else if(state.ROMReadPtr<76)
+			{
+				auto bit=state.ROMReadPtr-68;
+				unsigned short data=0xA2;
+				data=(data>>bit)&1;
+			}
+			// Next 152 bits:  All 1
+			else if(state.ROMReadPtr<232)
+			{
+				data=1;
+			}
+			// Next 24 bits: 0x4C414E ("LAN")
+			else if(state.ROMReadPtr<252)
+			{
+				auto bit=state.ROMReadPtr-232;
+				unsigned int data=0x4C414E;
+				data=(data>>bit)&1;
+			}
+			// Last 4 bits: All 0
+			else
+			{
+				data=0;
+			}
 
-		switch(state.INTNum)
-		{
-		case 4:
-			data|=0x10;
-			break;
-		case 5:
-			data|=0x20;
-			break;
-		case 10:
-			data|=0x40;
-			break;
-		case 14:
-			data|=0x80;
+			switch(state.INTNum)
+			{
+			case 4:
+				data|=0x10;
+				break;
+			case 5:
+				data|=0x20;
+				break;
+			case 10:
+				data|=0x40;
+				break;
+			case 14:
+				data|=0x80;
+				break;
+			}
+
+			++state.ROMReadPtr;
+			state.ROMReadPtr&=0xFF;
 			break;
 		}
-
-		++state.ROMReadPtr;
-		state.ROMReadPtr&=0xFF;
-		break;
 	}
 	return data;
 }

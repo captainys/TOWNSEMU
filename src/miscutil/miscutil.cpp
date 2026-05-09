@@ -32,18 +32,29 @@ std::vector <std::string> miscutil::MakeDump(size_t length,const unsigned char d
 		std::string str,ascii;
 		for(int x=0; x<bytesPerLine; x+=stride)
 		{
-			auto byte=data[ptr+x];
-			str+=" "+cpputil::Ubtox(byte);
-
-			if(true==includeASCII)
+			if(ptr+x<length)
 			{
-				if(byte<' ' || (true!=shiftJIS && 0x80<=byte))
+				auto byte=data[ptr+x];
+				str+=" "+cpputil::Ubtox(byte);
+
+				if(true==includeASCII)
+				{
+					if(byte<' ' || (true!=shiftJIS && 0x80<=byte))
+					{
+						ascii.push_back(' ');
+					}
+					else
+					{
+						ascii.push_back(byte);
+					}
+				}
+			}
+			else
+			{
+				str+="   ";
+				if(true==includeASCII)
 				{
 					ascii.push_back(' ');
-				}
-				else
-				{
-					ascii.push_back(byte);
 				}
 			}
 		}
