@@ -239,7 +239,6 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 	}
 	if(2==state.GetCurrentRegisterBank())
 	{
-		data=0xFF;
 		switch(ioport)
 		{
 		// Reg Bank 2
