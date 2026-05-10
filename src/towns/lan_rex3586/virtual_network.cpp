@@ -153,6 +153,58 @@ uint16_t VirtualNetwork::CalcIPCheckSum(size_t len,const uint8_t DATA[])
 	return ((~sum) & 0xFFFF);
 }
 
+VirtualNetwork::EthernetHeader VirtualNetwork::DecodeEthernetHeader(size_t len,const uint8_t data[])
+{
+	EthernetHeader hdr;
+	hdr.dstMAC=GetMAC(data);
+	hdr.srcMAC=GetMAC(data+6);
+	hdr.type=GetWordBE(data+12);
+	return hdr;
+}
+
+void VirtualNetwork::AddEthernetHeader(std::vector <uint8_t> &DATA,const EthernetHeader &hdr)
+{
+	size_t ptr=DATA.size();
+	DATA.resize(ptr+ETHER_HEADER_SIZE);
+
+	auto data=DATA.data()+ptr;
+	PutMAC(data,hdr.dstMAC);
+	PutMAC(data+6,hdr.srcMAC);
+	PutWordBE(data+12,hdr.type);
+}
+
+VirtualNetwork::ARPHeader VirtualNetwork::DecodeARPHeader(size_t len,const uint8_t data[])
+{
+	ARPHeader hdr;
+	hdr.hardware=GetWordBE(data);
+	hdr.protocol=GetWordBE(data+2);
+	hdr.hardware_size=data[4];
+	hdr.protocol_size=data[5];
+	hdr.messageType=GetWordBE(data+6);
+	hdr.srcMAC=GetMAC(data+8);
+	hdr.srcIP=GetDwordBE(data+14);
+	hdr.dstMAC=GetMAC(data+18);
+	hdr.dstIP=GetDwordBE(data+24);
+	return hdr;
+}
+
+void VirtualNetwork::AddARPHeader(std::vector <uint8_t> &DATA,const ARPHeader &hdr)
+{
+	size_t ptr=DATA.size();
+	DATA.resize(ptr+ARP_HEADER_SIZE);
+
+	auto data=DATA.data()+ptr;
+	PutWordBE(data   ,hdr.hardware);
+	PutWordBE(data+2 ,hdr.protocol);
+	data[4]=hdr.hardware_size;
+	data[5]=hdr.protocol_size;
+	PutWordBE(data+6,hdr.messageType);
+	PutMAC(data+8,hdr.srcMAC);
+	PutDwordBE(data+14,hdr.srcIP);
+	PutMAC(data+18,hdr.dstMAC);
+	PutDwordBE(data+24,hdr.dstIP);
+}
+
 void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv)
 {
 	if(len<36)
@@ -164,7 +216,6 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 		return;
 	}
 
-	EthernetHeader ether;
 	IPHeader ip;
 
 
@@ -174,9 +225,7 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 	len-=2;
 
 	// The Ethernet (Layer 2) Header
-	ether.dstMAC=GetMAC(data);
-	ether.srcMAC=GetMAC(data+6);
-	ether.type=data[12];
+	EthernetHeader ether=DecodeEthernetHeader(14,data);
 
 	if(true==monitorTX)
 	{
@@ -185,72 +234,77 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 		std::cout << "Dst MAC " << cpputil::U64tox(ether.dstMAC) << "\n";
 	}
 
-	// Is data[13] unused?
-
 	data+=14;
 	len-=14;
 
-	// IP (Layer 3) Header
-	ip.version_headerLen=data[0];
-	ip.QoS=data[1];
-	ip.len=GetWordBE(data+2);
-	ip.fragID=GetWordBE(data+4);
-	ip.flagOrFragOffset=GetWordBE(data+6);
-	ip.TTL=data[8];
-	ip.protocol=data[9];  // 06H for TCP  11H for UDP
-	ip.checkSum=GetWordBE(data+10);
-	ip.srcIP=GetDwordBE(data+12);
-	ip.dstIP=GetDwordBE(data+16);
-
-	if(true==monitorTX)
+	if(TYPE_IP==ether.type)
 	{
-		std::cout << "SRC IP:" << cpputil::Uitox(ip.srcIP) << "DST IP:" << cpputil::Uitox(ip.dstIP) << "\n";;
-	}
-
-	data+=20;
-	len-=20;
-
-	if(0x06==ip.protocol) // TCP
-	{
-		if(true==monitorTX)
-		{
-			std::cout << "TCP\n";
-		}
-	}
-	else if(0x11==ip.protocol) // UDP
-	{
-		UDPHeader udp;
-
-		udp.srcPort=GetWordBE(data);
-		udp.dstPort=GetWordBE(data+2);
-		udp.len=GetWordBE(data+4);
-		udp.checkSum=GetWordBE(data+6);
-		udp.messageType=data[8];
-		udp.netType=data[9];
-		udp.MAClen=data[10];
-		udp.hop=data[11];
-		udp.transactionID=GetDwordBE(data+12);
-		// From +16 to +36 are vague.  Prob Seconds Elapsed(word), BOOTP flags(word), ClientIP(DW), MyIP(DW), ServerIP(DW), RelayIP(DW).
-		udp.MAC=GetMAC(data+36);
+		// IP (Layer 3) Header
+		ip.version_headerLen=data[0];
+		ip.QoS=data[1];
+		ip.len=GetWordBE(data+2);
+		ip.fragID=GetWordBE(data+4);
+		ip.flagOrFragOffset=GetWordBE(data+6);
+		ip.TTL=data[8];
+		ip.protocol=data[9];  // 06H for TCP  11H for UDP
+		ip.checkSum=GetWordBE(data+10);
+		ip.srcIP=GetDwordBE(data+12);
+		ip.dstIP=GetDwordBE(data+16);
 
 		if(true==monitorTX)
 		{
-			std::cout << "UDP SRCPort: " << cpputil::Ustox(udp.srcPort) << " DSTPort:" << cpputil::Ustox(udp.dstPort) << "\n";
+			std::cout << "SRC IP:" << cpputil::Uitox(ip.srcIP) << "DST IP:" << cpputil::Uitox(ip.dstIP) << "\n";;
 		}
 
-		if(0xFFFFFFFF==ip.dstIP && DHCP_CLIENT_PORT==udp.srcPort && DHCP_SERVER_PORT==udp.dstPort) // Broadcast and DHCP port
+		data+=20;
+		len-=20;
+
+		if(0x06==ip.protocol) // TCP
 		{
-			// Must be DHCP
-			uint32_t magicNumber=GetDwordBE(data+0xF4);
-			if(0x63825363==magicNumber)
+			if(true==monitorTX)
 			{
-				if(true==monitorTX)
-				{
-					std::cout << "DHCP Packet\n";
-				}
-				ProcessUDP_DHCP_Packet(ether,ip,udp,len,data,recv);
+				std::cout << "TCP\n";
 			}
 		}
+		else if(0x11==ip.protocol) // UDP
+		{
+			UDPHeader udp;
+
+			udp.srcPort=GetWordBE(data);
+			udp.dstPort=GetWordBE(data+2);
+			udp.len=GetWordBE(data+4);
+			udp.checkSum=GetWordBE(data+6);
+			udp.messageType=data[8];
+			udp.netType=data[9];
+			udp.MAClen=data[10];
+			udp.hop=data[11];
+			udp.transactionID=GetDwordBE(data+12);
+			// From +16 to +36 are vague.  Prob Seconds Elapsed(word), BOOTP flags(word), ClientIP(DW), MyIP(DW), ServerIP(DW), RelayIP(DW).
+			udp.MAC=GetMAC(data+36);
+
+			if(true==monitorTX)
+			{
+				std::cout << "UDP SRCPort: " << cpputil::Ustox(udp.srcPort) << " DSTPort:" << cpputil::Ustox(udp.dstPort) << "\n";
+			}
+
+			if(0xFFFFFFFF==ip.dstIP && DHCP_CLIENT_PORT==udp.srcPort && DHCP_SERVER_PORT==udp.dstPort) // Broadcast and DHCP port
+			{
+				// Must be DHCP
+				uint32_t magicNumber=GetDwordBE(data+0xF4);
+				if(0x63825363==magicNumber)
+				{
+					if(true==monitorTX)
+					{
+						std::cout << "DHCP Packet\n";
+					}
+					ProcessUDP_DHCP_Packet(ether,ip,udp,len,data,recv);
+				}
+			}
+		}
+	}
+	else if(TYPE_ARP==ether.type)
+	{
+		ProcessARP_Packet(ether,len,data,recv);
 	}
 }
 
@@ -379,4 +433,34 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 	}
 
 	return DATA;
+}
+
+void VirtualNetwork::ProcessARP_Packet(EthernetHeader ether,size_t len,const uint8_t data[],PacketReceiver *recv)
+{
+	ARPHeader arp=DecodeARPHeader(len,data);
+	if(arp.dstIP==ROUTER_IP)
+	{
+		// Asking ROUTER IP?
+		ether.dstMAC=ether.srcMAC;
+		ether.srcMAC=MAC_ROUTER;
+
+		arp.messageType=2; // Reply
+		arp.srcMAC=MAC_ROUTER;
+		arp.srcIP=ROUTER_IP;
+		arp.dstMAC=MAC_ROUTER;
+		arp.dstIP=ROUTER_IP;
+
+		std::vector <uint8_t> data;
+		AddEthernetHeader(data,ether);
+		AddARPHeader(data,arp);
+		recv->ReceivePacket(data.size(),data.data());
+	}
+	else if(VM_DHCP_IP==arp.dstIP && VM_DHCP_IP==arp.srcIP)
+	{
+		// Stay silent.  Do not reply.
+	}
+	else
+	{
+		// Neet to get from outside.
+	}
 }

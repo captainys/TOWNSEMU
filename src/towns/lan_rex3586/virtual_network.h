@@ -6,10 +6,17 @@
 class VirtualNetwork
 {
 public:
+	const uint64_t MAC_DHCP_SERVER=0x434553534E41LL; // "CESSNA"
+	const uint64_t MAC_ROUTER=0x434553534E41LL;      // "CESSNA"
 	enum
 	{
-		MAC_DHCP_SERVER=0x00000001,
 		VM_DHCP_IP=0xC0A80164, // 192.168.1.100
+
+		ETHER_HEADER_SIZE=14,
+		ARP_HEADER_SIZE=28,
+
+		TYPE_IP=0x0800,
+		TYPE_ARP=0x0806,
 	};
 
 	enum
@@ -42,7 +49,7 @@ public:
 	{
 	public:
 		uint64_t dstMAC,srcMAC;
-		uint8_t type;
+		uint16_t type;
 	};
 	class IPHeader
 	{
@@ -80,6 +87,19 @@ public:
 		uint64_t MAC;
 	};
 
+	class ARPHeader
+	{
+	public:
+		uint16_t hardware;
+		uint16_t protocol;
+		uint8_t hardware_size; // MAC size?
+		uint8_t protocol_size;
+		uint16_t messageType;  // 02 for reply.
+		uint64_t srcMAC;
+		uint32_t srcIP;
+		uint64_t dstMAC;
+		uint32_t dstIP;
+	};
 
 	class DHCPOption
 	{
@@ -115,11 +135,19 @@ public:
 
 	static uint16_t CalcIPCheckSum(size_t len,const uint8_t data[]);
 
+	static EthernetHeader DecodeEthernetHeader(size_t len,const uint8_t data[]);
+	static void AddEthernetHeader(std::vector <uint8_t> &data,const EthernetHeader &hdr);
+
+	static ARPHeader DecodeARPHeader(size_t len,const uint8_t data[]);
+	static void AddARPHeader(std::vector <uint8_t> &data,const ARPHeader &hdr);
+
 	// Adapter -> Virtual Network
 	void TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv);
 protected:
 	void ProcessUDP_DHCP_Packet(EthernetHeader ether,IPHeader ip,UDPHeader udp,size_t len,const uint8_t data[],PacketReceiver *recv);
 	std::vector <uint8_t> MakeDHCPReturnPacket(EthernetHeader ether,IPHeader ip,UDPHeader udp,DHCPOption opt);
+
+	void ProcessARP_Packet(EthernetHeader ether,size_t len,const uint8_t data[],PacketReceiver *recv);
 
 public:
 	// Polling.
