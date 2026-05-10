@@ -205,6 +205,22 @@ void VirtualNetwork::AddARPHeader(std::vector <uint8_t> &DATA,const ARPHeader &h
 	PutDwordBE(data+24,hdr.dstIP);
 }
 
+VirtualNetwork::TCPHeader VirtualNetwork::DecodeTCPHeader(size_t len,const uint8_t data[])
+{
+	TCPHeader hdr;
+	hdr.srcPort=GetWordBE(data);
+	hdr.dstPort=GetWordBE(data+2);
+	hdr.sequenceNum=GetDwordBE(data+4);
+	hdr.ackNum=GetDwordBE(data+8);
+	hdr.dataOffset_reservedBits=data[12];
+	hdr.flags=data[13];
+	hdr.windowSize=GetWordBE(data+14);
+	hdr.checkSum=GetWordBE(data+16);
+	hdr.urgentPointer=GetWordBE(data+18);
+	memcpy(hdr.options,data+20,hdr.GetOptionLength());
+	return hdr;
+}
+
 void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv)
 {
 	if(len<36)
@@ -237,7 +253,7 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 	data+=14;
 	len-=14;
 
-	if(TYPE_IP==ether.type)
+	if(TYPE_IPV4==ether.type)
 	{
 		// IP (Layer 3) Header
 		ip.version_headerLen=data[0];
@@ -265,6 +281,13 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 			{
 				std::cout << "TCP\n";
 			}
+
+			TCPHeader tcp=DecodeTCPHeader(len,data);
+
+			data+=tcp.GetTotalLength();
+			len-=tcp.GetTotalLength();
+
+			ProcessTCP_Packet(ether,ip,tcp,len,data,recv);
 		}
 		else if(0x11==ip.protocol) // UDP
 		{
@@ -462,5 +485,16 @@ void VirtualNetwork::ProcessARP_Packet(EthernetHeader ether,size_t len,const uin
 	else
 	{
 		// Neet to get from outside.
+	}
+}
+
+void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv)
+{
+	if(tcp.flags&TCP_FLAG_SYN)
+	{
+		if(monitorTX)
+		{
+			std::cout << "SYN\n";
+		}
 	}
 }

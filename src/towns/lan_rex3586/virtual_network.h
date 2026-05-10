@@ -15,7 +15,7 @@ public:
 		ETHER_HEADER_SIZE=14,
 		ARP_HEADER_SIZE=28,
 
-		TYPE_IP=0x0800,
+		TYPE_IPV4=0x0800,
 		TYPE_ARP=0x0806,
 	};
 
@@ -45,6 +45,18 @@ public:
 		DHCP_OPTION_END=0xFF
 	};
 
+	enum
+	{
+		TCP_FLAG_FIN=1,
+		TCP_FLAG_SYN=2,
+		TCP_FLAG_RST=4,
+		TCP_FLAG_PSH=8,
+		TCP_FLAG_ACK=16,
+		TCP_FLAG_URG=32,
+		TCP_FLAG_ECE=64,
+		TCP_FLAG_CWR=128,
+	};
+
 	class EthernetHeader
 	{
 	public:
@@ -68,6 +80,31 @@ public:
 	class TCPHeader
 	{
 	public:
+		uint16_t srcPort;
+		uint16_t dstPort;
+		uint32_t sequenceNum;
+		uint32_t ackNum;
+		uint8_t dataOffset_reservedBits;
+		uint8_t flags;
+		uint16_t windowSize;
+		uint16_t checkSum;
+		uint16_t urgentPointer;
+		uint8_t options[40];
+
+		size_t GetOptionLength(void) const
+		{
+			size_t total=GetTotalLength();
+			if(20<total)
+			{
+				return total-20;
+			}
+			return 0;
+		}
+		size_t GetTotalLength(void) const
+		{
+			size_t L=(dataOffset_reservedBits>>4);
+			return L*4;
+		}
 	};
 	class UDPHeader
 	{
@@ -141,6 +178,8 @@ public:
 	static ARPHeader DecodeARPHeader(size_t len,const uint8_t data[]);
 	static void AddARPHeader(std::vector <uint8_t> &data,const ARPHeader &hdr);
 
+	static TCPHeader DecodeTCPHeader(size_t len,const uint8_t data[]);
+
 	// Adapter -> Virtual Network
 	void TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv);
 protected:
@@ -148,6 +187,8 @@ protected:
 	std::vector <uint8_t> MakeDHCPReturnPacket(EthernetHeader ether,IPHeader ip,UDPHeader udp,DHCPOption opt);
 
 	void ProcessARP_Packet(EthernetHeader ether,size_t len,const uint8_t data[],PacketReceiver *recv);
+
+	void ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv);
 
 public:
 	// Polling.
