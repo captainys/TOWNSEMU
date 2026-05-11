@@ -2,6 +2,10 @@
 ; Emulate DOS INT 16H Keyboard
 ; At least it shouldn't crash.
 
+; Minimally support AH=0 Read and AH=1 Check Key
+
+EFLAGS_ZF				EQU		0x40
+
 						ORG		0100H
 						BITS	16
 
@@ -9,15 +13,75 @@
 
 
 INT_16H:
+						CMP		AH,1	; Is Key Ready?
+						JE		SHORT INT_16H_IS_KEY_READY
+						CMP		AH,0	; Key Read
+						JE		SHORT INT_16H_KEY_READ
+
+						IRET
+
+; Return ZF=1 if no key stroke  ZF=0 if key stroke.  AH=BIOS Scan Code, which I don't know.  AL is ASCII char.
+INT_16H_IS_KEY_READY:
+						PUSH	DX
+						PUSH	BX
+						PUSH	AX
+
+						MOV		AH,7
+						INT		90H
+						CMP		DH,0FFH
+						MOV		BX,SP
+						; [BX]   AX
+						; [BX+2] Prev BX
+						; [BX+4] DX
+						; [BX+6] Return IP
+						; [BX+8] Return CS
+						; [BX+10] Return FLAGS
+						JE		NO_KEY_IN_BUFFER
+
+						MOV		[BX],DL
+						AND		BYTE [BX+10],0xFF-EFLAGS_ZF
+
+						POP		AX
+						POP		BX
+						POP		DX
+						IRET
+
+NO_KEY_IN_BUFFER:
+						OR		BYTE [BX+10],EFLAGS_ZF
+						POP		AX
+						POP		BX
+						POP		DX
+						IRET
+
+
+; Return AH=BIOS Scan Code  AL=ASCII char.
+INT_16H_KEY_READ:
+						PUSH	DX
+						PUSH	BX
+						PUSH	AX
+
+						MOV		AH,9
+						INT		90H
+						CMP		DH,0FFH
+						JNE		NO_KEY_READ
+						MOV		DL,0
+NO_KEY_READ:
+						MOV		BX,SP
+						MOV		[BX],DL
+
+						POP		AX
+						POP		BX
+						POP		DX
 						IRET
 
 RESIDENT_END:
+
 
 MAIN:
 						PUSH	CS
 						POP		DS
 						MOV		DX,INT_16H
-						MOV		AX,2516H	; Set INT 1CH Vector
+						MOV		AX,2516H	; Set INT 16H Vector
 						INT		21H
 
 						MOV		AX,3100H	; Terminate and stay resident

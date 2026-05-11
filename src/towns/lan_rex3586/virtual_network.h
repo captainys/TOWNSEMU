@@ -10,8 +10,6 @@ public:
 	const uint64_t MAC_ROUTER=0x434553534E41LL;      // "CESSNA"
 	enum
 	{
-		VM_DHCP_IP=0xC0A80164, // 192.168.1.100
-
 		ETHER_HEADER_SIZE=14,
 		ARP_HEADER_SIZE=28,
 
@@ -21,10 +19,15 @@ public:
 
 	enum
 	{
-		DHCP_SERVER_IP=0xC0A80101, // 192.168.1.1
-		ROUTER_IP=0xC0A80101,
-		DNS_IP=0xC0A80101,
+		DHCP_SERVER_IP=0x0A000202, // 10.0.2.2
+		ROUTER_IP=0x0A000202,
+		DNS_IP=0x0A000202,
 
+		VM_DHCP_IP=0x0A00020F,     // 10.0.2.15
+	};
+
+	enum
+	{
 		DHCP_CLIENT_PORT=0x44,
 		DHCP_SERVER_PORT=0x43,
 
@@ -161,6 +164,7 @@ public:
 	};
 
 	bool monitorTX=true,monitorRX=true;
+	uint32_t sequenceNumSource=59673459;
 
 	static uint64_t GetMAC(const uint8_t data[]);
 	static uint16_t GetWordBE(const uint8_t data[]);
@@ -172,13 +176,21 @@ public:
 
 	static uint16_t CalcIPCheckSum(size_t len,const uint8_t data[]);
 
+	static uint16_t TestTCPCheckSum(size_t len,const uint8_t data[],uint32_t srcIP,uint32_t dstIP);
+
 	static EthernetHeader DecodeEthernetHeader(size_t len,const uint8_t data[]);
 	static void AddEthernetHeader(std::vector <uint8_t> &data,const EthernetHeader &hdr);
+
+	static void AddIPHeader(std::vector <uint8_t> &data,const IPHeader &hdr);
+	static void RecalculateIPHeaderCheckSum(size_t len,uint8_t data[]);
 
 	static ARPHeader DecodeARPHeader(size_t len,const uint8_t data[]);
 	static void AddARPHeader(std::vector <uint8_t> &data,const ARPHeader &hdr);
 
 	static TCPHeader DecodeTCPHeader(size_t len,const uint8_t data[]);
+	static void AddTCPHeader(std::vector <uint8_t> &data,TCPHeader &hdr);
+	static void RecalculateTCPHeaderCheckSum(size_t len,uint8_t data[],uint32_t srcIP,uint32_t dstIP);
+
 
 	// Adapter -> Virtual Network
 	void TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv);

@@ -1,5 +1,7 @@
 #include <iostream>
+#include <string>
 #include "virtual_network.h"
+#include "miscutil.h"
 
 
 ////////////////////////////////////////////////////////////
@@ -153,6 +155,23 @@ uint16_t VirtualNetwork::CalcIPCheckSum(size_t len,const uint8_t DATA[])
 	return ((~sum) & 0xFFFF);
 }
 
+uint16_t VirtualNetwork::TestTCPCheckSum(size_t len,const uint8_t data[],uint32_t srcIP,uint32_t dstIP)
+{
+	auto hdr=DecodeTCPHeader(len,data);
+	std::vector <uint8_t> allData;
+
+	allData.resize(12);
+	PutDwordBE(allData.data()  ,srcIP);
+	PutDwordBE(allData.data()+4,dstIP);
+	allData[8]=0;
+	allData[9]=6; // TCP
+	PutWordBE(allData.data()+10,len);
+
+	allData.insert(allData.end(),data,data+len);
+
+	return CalcIPCheckSum(allData.size(),allData.data());
+}
+
 VirtualNetwork::EthernetHeader VirtualNetwork::DecodeEthernetHeader(size_t len,const uint8_t data[])
 {
 	EthernetHeader hdr;
@@ -171,6 +190,35 @@ void VirtualNetwork::AddEthernetHeader(std::vector <uint8_t> &DATA,const Etherne
 	PutMAC(data,hdr.dstMAC);
 	PutMAC(data+6,hdr.srcMAC);
 	PutWordBE(data+12,hdr.type);
+}
+
+void VirtualNetwork::AddIPHeader(std::vector <uint8_t> &data,const IPHeader &hdr)
+{
+	size_t pos=data.size();
+	data.resize(pos+20);
+	data[pos]=hdr.version_headerLen;
+	data[pos+1]=hdr.QoS;
+	PutWordBE(data.data()+pos+2,hdr.len);
+	PutWordBE(data.data()+pos+4,hdr.fragID);
+	PutWordBE(data.data()+pos+6,hdr.flagOrFragOffset);
+	data[pos+8]=hdr.TTL;
+	data[pos+9]=hdr.protocol;
+	PutWordBE(data.data()+pos+10,0); // Checksum 0 tentatively.
+	PutDwordBE(data.data()+pos+12,hdr.srcIP);
+	PutDwordBE(data.data()+pos+16,hdr.dstIP);
+}
+
+void VirtualNetwork::RecalculateIPHeaderCheckSum(size_t len,uint8_t data[])
+{
+	for(uint32_t t=0; t<0x10000; ++t) // Stupid. But I'm tired after running 5K today.
+	{
+		data[10]=t&0xFF;
+		data[11]=(t>>8);
+		if(0==CalcIPCheckSum(20,data))
+		{
+			break;
+		}
+	}
 }
 
 VirtualNetwork::ARPHeader VirtualNetwork::DecodeARPHeader(size_t len,const uint8_t data[])
@@ -221,6 +269,37 @@ VirtualNetwork::TCPHeader VirtualNetwork::DecodeTCPHeader(size_t len,const uint8
 	return hdr;
 }
 
+void VirtualNetwork::AddTCPHeader(std::vector <uint8_t> &data,TCPHeader &hdr)
+{
+	size_t totalLen=hdr.GetTotalLength();
+	size_t pos=data.size();
+	data.resize(pos+totalLen);
+
+	PutWordBE (data.data()+pos  ,hdr.srcPort);
+	PutWordBE (data.data()+pos+2,hdr.dstPort);
+	PutDwordBE(data.data()+pos+4,hdr.sequenceNum);
+	PutDwordBE(data.data()+pos+8,hdr.ackNum);
+	data[pos+12]=hdr.dataOffset_reservedBits;
+	data[pos+13]=hdr.flags;
+	PutWordBE (data.data()+pos+14,hdr.windowSize);
+	PutWordBE (data.data()+pos+16,0); // Put checksum 0 tentatively.
+	PutWordBE (data.data()+pos+18,hdr.urgentPointer);
+	memcpy(data.data()+pos+20,hdr.options,totalLen-20);
+}
+
+void VirtualNetwork::RecalculateTCPHeaderCheckSum(size_t len,uint8_t data[],uint32_t srcIP,uint32_t dstIP)
+{
+	for(uint32_t t=0; t<0x10000; ++t) // It's stupid, but I'm tired after teaching at Japanese school today.
+	{
+		data[16]=t&0xFF;
+		data[17]=t>>8;
+		if(0==TestTCPCheckSum(len,data,srcIP,dstIP))
+		{
+			break;
+		}
+	}
+}
+
 void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv)
 {
 	if(len<36)
@@ -269,8 +348,16 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 
 		if(true==monitorTX)
 		{
-			std::cout << "SRC IP:" << cpputil::Uitox(ip.srcIP) << "DST IP:" << cpputil::Uitox(ip.dstIP) << "\n";;
+			std::cout << "SRC IP:" << cpputil::Uitox(ip.srcIP) << "DST IP:" << cpputil::Uitox(ip.dstIP) << "\n";
+			std::cout << "IPv4 tells that the length is " << ip.len << " bytes.\n";
+			std::cout << "What sent from the VM is " << len << " bytes.\n";
 		}
+
+		if(len<ip.len)
+		{
+			return; // Broken packet?
+		}
+		len=ip.len; // Update to the length from the IP header.
 
 		data+=20;
 		len-=20;
@@ -283,6 +370,11 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 			}
 
 			TCPHeader tcp=DecodeTCPHeader(len,data);
+
+			if(monitorTX)
+			{
+				std::cout << "CheckSumTest:" << cpputil::Ustox(TestTCPCheckSum(len,data,ip.srcIP,ip.dstIP)) << "\n";
+			}
 
 			data+=tcp.GetTotalLength();
 			len-=tcp.GetTotalLength();
@@ -381,15 +473,7 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 		PutDwordBE(data+26,DHCP_SERVER_IP); // Src IP
 		PutDwordBE(data+30,VM_DHCP_IP);     // Dst IP
 
-		for(uint32_t t=0; t<0x10000; ++t) // Stupid. But I'm tired after running 5K today.
-		{
-			data[24]=t&0xFF;
-			data[25]=(t>>8);
-			if(0==CalcIPCheckSum(20,data+14))
-			{
-				break;
-			}
-		}
+		RecalculateIPHeaderCheckSum(20,data+14);
 
 		// UDP
 		PutWordBE(data+34,DHCP_SERVER_PORT);
@@ -496,5 +580,56 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		{
 			std::cout << "SYN\n";
 		}
+
+		// Not really, but pretend the connection was successful.
+		std::swap(ether.srcMAC,ether.dstMAC);
+		std::swap(ip.srcIP,ip.dstIP);
+		std::swap(tcp.srcPort,tcp.dstPort);
+		tcp.flags|=TCP_FLAG_ACK;
+		tcp.ackNum=tcp.sequenceNum+1;
+		tcp.sequenceNum=sequenceNumSource++;
+
+		std::vector <uint8_t> data;
+		AddEthernetHeader(data,ether);
+
+		for(auto str : miscutil::MakeDump(data.size(),data.data()))
+		{
+			std::cout << str << "\n";
+		}
+		std::cout << "--1--\n";
+
+		size_t IPHeaderPos=data.size();
+		AddIPHeader(data,ip);
+
+		for(auto str : miscutil::MakeDump(data.size(),data.data()))
+		{
+			std::cout << str << "\n";
+		}
+		std::cout << "--2--\n";
+
+		RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+
+		for(auto str : miscutil::MakeDump(data.size(),data.data()))
+		{
+			std::cout << str << "\n";
+		}
+		std::cout << "--3--\n";
+
+		size_t TCPHeaderPos=data.size();
+		AddTCPHeader(data,tcp);
+		for(auto str : miscutil::MakeDump(data.size(),data.data()))
+		{
+			std::cout << str << "\n";
+		}
+		std::cout << "--4--\n";
+		RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
+
+		for(auto str : miscutil::MakeDump(data.size(),data.data()))
+		{
+			std::cout << str << "\n";
+		}
+		std::cout << "--5--\n";
+
+		recv->ReceivePacket(data.size(),data.data());
 	}
 }

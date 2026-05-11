@@ -1,0 +1,28 @@
+; DOSINT1C.COM
+; Emulate DOS INT 10H Video Control
+; At least it shouldn't crash.
+
+						ORG		0100H
+						BITS	16
+
+						JMP		SHORT MAIN
+
+
+INT_10H:
+						IRET
+
+RESIDENT_END:
+
+MAIN:
+						PUSH	CS
+						POP		DS
+						MOV		DX,INT_10H
+						MOV		AX,2510H	; Set INT 1CH Vector
+						INT		21H
+
+						MOV		AX,3100H	; Terminate and stay resident
+						MOV		DX,RESIDENT_END
+						ADD		DX,0FH
+						SHR		DX,4
+						INT		21H
+
