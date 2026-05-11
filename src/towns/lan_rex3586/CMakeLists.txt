@@ -1,4 +1,4 @@
-add_library(virtual_network virtual_network.h virtual_network.cpp)
+add_library(virtual_network virtual_network.h virtual_network.cpp network_thread.h network_thread.cpp)
 target_link_libraries(virtual_network cpputil miscutil)
 target_include_directories(virtual_network PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
