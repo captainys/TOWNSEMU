@@ -16,13 +16,21 @@
 
 #ifdef _WIN32
 #define _WINSOCKAPI_
+#define WIN32_LEAN_AND_MEAN
   // According to the Win32API documentation,
   // I must define _WINSOCKAPI_ to prevent inclusion of
   // winsock.h from windows.h
 	#include <winsock2.h>
-	#include <windows.h>
-	#pragma comment(lib,"wsock32.lib")
-	typedef int socklen_t;
+
+	#ifdef min // **ck windows.h
+		#undef min
+	#endif
+	#ifdef max
+		#undef max
+	#endif
+	#ifdef OUT // Really fu** windows.h
+		#undef OUT
+	#endif
 #else
 	#include <unistd.h>
 	#include <netdb.h>
@@ -41,7 +49,7 @@
 #endif
 
 
-class NetworkThread
+class RealNetwork
 {
 public:
 	enum
@@ -61,7 +69,7 @@ public:
 
 	class Client
 	{
-	friend class NetworkThread;
+	friend class RealNetwork;
 	public:
 		int state;
 		bool bytesIncoming=false;
@@ -73,11 +81,13 @@ public:
 	class TCPConnectionRequest
 	{
 	public:
-		bool connected;
+		bool connected=false;
 		SOCKET sock;
 		Connection conn;
 		bool DoConnect(void);
 	};
+
+	bool started=false;
 
 	std::atomic_bool stopThread=false;
 	std::thread workerThread;
@@ -92,13 +102,19 @@ public:
 	std::mutex TCPDisconnectReqLock;
 
 
+public:
+	// In the VM thread.
 	// Starts the thread.
-	NetworkThread();
+	RealNetwork();
 
 	// Closes the thread.
-	~NetworkThread();
+	~RealNetwork();
+
+	void Start(void);
+	void End(void);
 
 	// Called from the VM thread.
+	void RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t port);
 
 
 
@@ -107,10 +123,6 @@ public:
 private:
 	void StartUp(void);
 	void CleanUp(void);
-
-public:
-	// Called from the VM thread.
-	void RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t port);
 };
 
 /* } */

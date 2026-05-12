@@ -24,6 +24,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "cheapmath.h"
 #include "virtual_network.h"
 
+
 /* From the real REX3586.  ROM (IO 7010h) returns the following bits.  Low-bit first.
 
 First 4 bits: 0
@@ -72,10 +73,14 @@ public:
 	Variable var;
 
 	VirtualNetwork net;
+	class RealNetwork *realNet;
 
 	virtual const char *DeviceName(void) const{return "REX3586";}
 
 	RatocREX3586(class FMTownsCommon *ptr);
+	~RatocREX3586();
+
+	void StartRealNetwork(void);
 
 	void UpdatePIC(void);
 

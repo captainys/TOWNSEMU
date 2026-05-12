@@ -1,18 +1,22 @@
-#include "network_thread.h"
+#include <iostream>
+#include "real_network.h"
 
-NetworkThread::NetworkThread()
+#ifdef _WIN32
+	#include <windows.h>
+	#pragma comment(lib,"wsock32.lib")
+	typedef int socklen_t;
+#endif
+
+RealNetwork::RealNetwork()
 {
-	std::thread t(&NetworkThread::ThreadFunc,this);
-	workerThread=std::move(t);
 }
 
-NetworkThread::~NetworkThread()
+RealNetwork::~RealNetwork()
 {
-	stopThread=true;
-	workerThread.join();
+	End();
 }
 
-void NetworkThread::ThreadFunc(void)
+void RealNetwork::ThreadFunc(void)
 {
 	StartUp();
 
@@ -169,7 +173,46 @@ void NetworkThread::ThreadFunc(void)
 	CleanUp();
 }
 
-void NetworkThread::StartUp(void)
+void RealNetwork::Start(void)
+{
+	if(true!=started)
+	{
+		std::thread t(&RealNetwork::ThreadFunc,this);
+		workerThread=std::move(t);
+		started=true;
+	}
+	else
+	{
+		std::cout << "Error: RealNetwork is already running.\n";
+	}
+}
+void RealNetwork::End(void)
+{
+	if(true==started)
+	{
+		stopThread=true;
+		workerThread.join();
+		started=false;
+	}
+}
+
+// Called from the VM thread.
+void RealNetwork::RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t dstPort)
+{
+	TCPConnectionRequest req;
+	req.conn.IPv4Addr[0]=IPv4Addr[0];
+	req.conn.IPv4Addr[1]=IPv4Addr[1];
+	req.conn.IPv4Addr[2]=IPv4Addr[2];
+	req.conn.IPv4Addr[3]=IPv4Addr[3];
+	req.conn.dstPort=dstPort;
+	req.conn.VMPort=VMPort;
+
+	std::lock_guard <std::mutex> lock(TCPConnReqLock);
+	TCPConnReq.push_back(req);
+}
+
+
+void RealNetwork::StartUp(void)
 {
 #ifdef _WIN32
 	WORD wVersionRequested;
@@ -182,14 +225,14 @@ void NetworkThread::StartUp(void)
 	}
 #endif
 }
-void NetworkThread::CleanUp(void)
+void RealNetwork::CleanUp(void)
 {
 #ifdef _WIN32
 	WSACleanup();
 #endif
 }
 
-bool NetworkThread::TCPConnectionRequest:: DoConnect(void)
+bool RealNetwork::TCPConnectionRequest:: DoConnect(void)
 {
 	this->sock=socket(AF_INET,SOCK_STREAM,0);
 

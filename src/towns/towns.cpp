@@ -487,6 +487,11 @@ void FMTownsCommon::State::PowerOn(void)
 		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";
 	}
 
+	if(true==argv.enableLAN)
+	{
+		towns.rex3586.StartRealNetwork();
+	}
+
 	return result;
 }
 

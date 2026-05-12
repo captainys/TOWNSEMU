@@ -78,6 +78,8 @@ public:
 
 	bool removeInternalCD=false;
 
+	bool enableLAN=false;
+
 	// If not "", VM starts from this saved state.
 	std::string startUpStateFName;
 

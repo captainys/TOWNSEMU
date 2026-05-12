@@ -17,10 +17,23 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "towns.h"
 #include "rex3586.h"
 #include "miscutil.h"
+#include "real_network.h"
 
 RatocREX3586::RatocREX3586(class FMTownsCommon *ptr) : Device(ptr)
 {
+	realNet=new RealNetwork;
 }
+
+RatocREX3586::~RatocREX3586()
+{
+	delete realNet;
+}
+
+void RatocREX3586::StartRealNetwork(void)
+{
+	realNet->Start();
+}
+
 
 void RatocREX3586::PowerOn(void)
 {
