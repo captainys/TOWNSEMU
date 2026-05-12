@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "virtual_network.h"
+#include "real_network.h"
 #include "miscutil.h"
 
 
@@ -589,7 +590,23 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		TCPConn.push_back(conn);
 
 		// Not really, but pretend the connection was successful.
-		TCPConnectionEstablished(TCPConn.back(),recv);
+		if(ip.dstIP==DHCP_SERVER_IP ||
+		   ip.dstIP==ROUTER_IP ||
+		   ip.dstIP==DNS_IP)
+		{
+			TCPConnectionEstablished(TCPConn.back(),recv);
+		}
+		else
+		{
+			uint8_t IP[4]=
+			{
+				ip.dstIP>>24,
+				ip.dstIP>>16,
+				ip.dstIP>>8,
+				ip.dstIP
+			};
+			realNet->RequestTCPConnection(tcp.srcPort,IP,tcp.dstPort);
+		}
 	}
 }
 
@@ -654,5 +671,33 @@ void  VirtualNetwork::TCPConnectionEstablished(TCPConnection &conn,PacketReceive
 
 void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 {
+	std::lock_guard <std::mutex> lock(realNet->clientsLock);
+	for(auto &cli : realNet->clients)
+	{
+		if(RealNetwork::STATE_JUST_CONNECTED==cli.state)
+		{
+			cli.state=RealNetwork::STATE_CONNECTED;
 
+			uint32_t IPv4=0;
+			IPv4=cli.conn.IPv4Addr[0];
+			IPv4<<=8;
+			IPv4|=cli.conn.IPv4Addr[1];
+			IPv4<<=8;
+			IPv4|=cli.conn.IPv4Addr[2];
+			IPv4<<=8;
+			IPv4|=cli.conn.IPv4Addr[3];
+			for(auto &virConn : TCPConn)
+			{
+				if(virConn.ipHdr.dstIP==IPv4 &&
+				   virConn.tcpHdr.srcPort==cli.conn.VMPort)
+				{
+					TCPConnectionEstablished(virConn,recv);
+				}
+			}
+		}
+		else if(cli.state==RealNetwork::STATE_CONNECTED && 0<cli.recvBuf.size())
+		{
+			// Packet came in.
+		}
+	}
 }
