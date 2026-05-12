@@ -22,22 +22,22 @@
 	#include <winsock2.h>
 	#include <windows.h>
 	#pragma comment(lib,"wsock32.lib")
-typedef int socklen_t;
-
+	typedef int socklen_t;
 #else
-#include <unistd.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <strings.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/poll.h>
-typedef int SOCKET;
-typedef struct sockaddr SOCKADDR;
-typedef struct sockaddr_in SOCKADDR_IN;
-#define INVALID_SOCKET -1
-#define SOCKET_ERROR -1
+	#include <unistd.h>
+	#include <netdb.h>
+	#include <netinet/in.h>
+	#include <strings.h>
+	#include <arpa/inet.h>
+	#include <sys/types.h>
+	#include <sys/socket.h>
+	#include <sys/poll.h>
+	typedef int SOCKET;
+	typedef struct sockaddr SOCKADDR;
+	typedef struct sockaddr_in SOCKADDR_IN;
+	#define INVALID_SOCKET -1
+	#define SOCKET_ERROR -1
+	#define closesocket close
 #endif
 
 
@@ -64,6 +64,7 @@ public:
 	friend class NetworkThread;
 	public:
 		int state;
+		bool bytesIncoming=false;
 		std::vector <uint8_t> recvBuf;
 		SOCKET sock;
 		Connection conn;
@@ -87,7 +88,8 @@ public:
 	std::vector <TCPConnectionRequest> TCPConnReq;
 	std::mutex TCPConnReqLock;
 
-	std::atomic_int state;
+	std::vector <uint16_t> TCPDisconnectReq;
+	std::mutex TCPDisconnectReqLock;
 
 
 	// Starts the thread.
