@@ -300,7 +300,7 @@ void VirtualNetwork::RecalculateTCPHeaderCheckSum(size_t len,uint8_t data[],uint
 	}
 }
 
-void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv)
+void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet)
 {
 	if(len<36)
 	{
@@ -379,7 +379,7 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 			data+=tcp.GetTotalLength();
 			len-=tcp.GetTotalLength();
 
-			ProcessTCP_Packet(ether,ip,tcp,len,data,recv);
+			ProcessTCP_Packet(ether,ip,tcp,len,data,recv,realNet);
 		}
 		else if(0x11==ip.protocol) // UDP
 		{
@@ -572,7 +572,7 @@ void VirtualNetwork::ProcessARP_Packet(EthernetHeader ether,size_t len,const uin
 	}
 }
 
-void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv)
+void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet)
 {
 	if(tcp.flags&TCP_FLAG_SYN)
 	{
@@ -581,55 +581,78 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 			std::cout << "SYN\n";
 		}
 
+		TCPConnection conn;
+		conn.ethernetHdr=ether;
+		conn.ipHdr=ip;
+		conn.tcpHdr=tcp;
+		conn.state=STATE_PENDING;
+		TCPConn.push_back(conn);
+
 		// Not really, but pretend the connection was successful.
-		std::swap(ether.srcMAC,ether.dstMAC);
-		std::swap(ip.srcIP,ip.dstIP);
-		std::swap(tcp.srcPort,tcp.dstPort);
-		tcp.flags|=TCP_FLAG_ACK;
-		tcp.ackNum=tcp.sequenceNum+1;
-		tcp.sequenceNum=sequenceNumSource++;
-
-		std::vector <uint8_t> data;
-		AddEthernetHeader(data,ether);
-
-		for(auto str : miscutil::MakeDump(data.size(),data.data()))
-		{
-			std::cout << str << "\n";
-		}
-		std::cout << "--1--\n";
-
-		size_t IPHeaderPos=data.size();
-		AddIPHeader(data,ip);
-
-		for(auto str : miscutil::MakeDump(data.size(),data.data()))
-		{
-			std::cout << str << "\n";
-		}
-		std::cout << "--2--\n";
-
-		RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
-
-		for(auto str : miscutil::MakeDump(data.size(),data.data()))
-		{
-			std::cout << str << "\n";
-		}
-		std::cout << "--3--\n";
-
-		size_t TCPHeaderPos=data.size();
-		AddTCPHeader(data,tcp);
-		for(auto str : miscutil::MakeDump(data.size(),data.data()))
-		{
-			std::cout << str << "\n";
-		}
-		std::cout << "--4--\n";
-		RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
-
-		for(auto str : miscutil::MakeDump(data.size(),data.data()))
-		{
-			std::cout << str << "\n";
-		}
-		std::cout << "--5--\n";
-
-		recv->ReceivePacket(data.size(),data.data());
+		TCPConnectionEstablished(TCPConn.back(),recv);
 	}
+}
+
+void  VirtualNetwork::TCPConnectionEstablished(TCPConnection &conn,PacketReceiver *recv)
+{
+	conn.state=STATE_ESTABLISHED;
+
+	auto ether=conn.ethernetHdr;
+	auto ip=conn.ipHdr;
+	auto tcp=conn.tcpHdr;
+
+	std::swap(ether.srcMAC,ether.dstMAC);
+	std::swap(ip.srcIP,ip.dstIP);
+	std::swap(tcp.srcPort,tcp.dstPort);
+	tcp.flags|=TCP_FLAG_ACK;
+	tcp.ackNum=tcp.sequenceNum+1;
+	tcp.sequenceNum=sequenceNumSource++;
+
+	std::vector <uint8_t> data;
+	AddEthernetHeader(data,ether);
+
+	for(auto str : miscutil::MakeDump(data.size(),data.data()))
+	{
+		std::cout << str << "\n";
+	}
+	std::cout << "--1--\n";
+
+	size_t IPHeaderPos=data.size();
+	AddIPHeader(data,ip);
+
+	for(auto str : miscutil::MakeDump(data.size(),data.data()))
+	{
+		std::cout << str << "\n";
+	}
+	std::cout << "--2--\n";
+
+	RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+
+	for(auto str : miscutil::MakeDump(data.size(),data.data()))
+	{
+		std::cout << str << "\n";
+	}
+	std::cout << "--3--\n";
+
+	size_t TCPHeaderPos=data.size();
+	AddTCPHeader(data,tcp);
+	for(auto str : miscutil::MakeDump(data.size(),data.data()))
+	{
+		std::cout << str << "\n";
+	}
+	std::cout << "--4--\n";
+	RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
+
+	for(auto str : miscutil::MakeDump(data.size(),data.data()))
+	{
+		std::cout << str << "\n";
+	}
+	std::cout << "--5--\n";
+
+	recv->ReceivePacket(data.size(),data.data());
+}
+
+void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
+{
+
 }

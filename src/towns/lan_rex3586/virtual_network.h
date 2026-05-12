@@ -3,6 +3,8 @@
 
 #include "cpputil.h"
 
+class RealNetwork;
+
 class VirtualNetwork
 {
 public:
@@ -156,12 +158,29 @@ public:
 	};
 
 
+	enum
+	{
+		STATE_PENDING,
+		STATE_ESTABLISHED,
+	};
+	class TCPConnection
+	{
+	public:
+		int state=STATE_PENDING;
+		EthernetHeader ethernetHdr;
+		IPHeader ipHdr;
+		TCPHeader tcpHdr;
+	};
+
+
 	class PacketReceiver
 	{
 	public:
 		// Virtual Network -> Adapter
 		virtual void ReceivePacket(size_t len,const uint8_t data[])=0;
 	};
+
+	std::vector <TCPConnection> TCPConn;
 
 	bool monitorTX=true,monitorRX=true;
 	uint32_t sequenceNumSource=59673459;
@@ -193,18 +212,19 @@ public:
 
 
 	// Adapter -> Virtual Network
-	void TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv);
+	void TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet);
 protected:
 	void ProcessUDP_DHCP_Packet(EthernetHeader ether,IPHeader ip,UDPHeader udp,size_t len,const uint8_t data[],PacketReceiver *recv);
 	std::vector <uint8_t> MakeDHCPReturnPacket(EthernetHeader ether,IPHeader ip,UDPHeader udp,DHCPOption opt);
 
 	void ProcessARP_Packet(EthernetHeader ether,size_t len,const uint8_t data[],PacketReceiver *recv);
 
-	void ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv);
+	void ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet);
 
+	void TCPConnectionEstablished(TCPConnection &conn,PacketReceiver *recv);
+	
 public:
-	// Polling.
-	void Poll(PacketReceiver *recv);
+	void Polling(PacketReceiver *recv,class RealNetwork *realNet);
 };
 
 

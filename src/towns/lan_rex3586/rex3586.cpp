@@ -56,7 +56,7 @@ void RatocREX3586::Reset(void)
 
 void RatocREX3586::RealPolling(void)
 {
-	
+	net.Polling(this,realNet);
 }
 
 void RatocREX3586::UpdatePIC(void)
@@ -174,7 +174,7 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 						std::cout << str << "\n";
 					}
 				}
-				net.TransmitPacket(state.TXPacket.size(),state.TXPacket.data(),this);
+				net.TransmitPacket(state.TXPacket.size(),state.TXPacket.data(),this,realNet);
 				state.TXPacket.clear();
 				UpdatePIC();
 			}
