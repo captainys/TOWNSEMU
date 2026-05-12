@@ -54,6 +54,11 @@ void RatocREX3586::Reset(void)
 	}
 }
 
+void RatocREX3586::RealPolling(void)
+{
+	
+}
+
 void RatocREX3586::UpdatePIC(void)
 {
 	bool irr=(true==state.RXIntEN && 0!=state.RXPacket.size()); // What about TX?  What can trigger TX INT?
@@ -74,13 +79,12 @@ void RatocREX3586::ReceivePacket(size_t len,const uint8_t data[])
 
 	if(true==var.monitorRxPacket)
 	{
+		std::cout << "RX: " << state.RXPacket.size() << "\n";
 		for(auto str : miscutil::MakeDump(state.RXPacket.size(),state.RXPacket.data()))
 		{
 			std::cout << str << "\n";
 		}
 	}
-
-std::cout << "RX: " << state.RXPacket.size() << "\n";
 }
 
 void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)

@@ -333,6 +333,11 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Add a command to run in Free TOWNS OS (Tsugaru OS).\n";
 	std::cout << "  The command will be executed when YAMAND.COM is ready to accept a command.\n";
 
+	std::cout << "-REX3586\n";
+	std::cout << "  Enable NAT for Ratoc REX3586 LAN card.  By default the LAN is disabled.\n";
+	std::cout << "-NOREX3586\n";
+	std::cout << "  Disable NAT for Ratoc REX3586 LAN card enabled by earlier argument.\n";
+
 	std::cout << "-VERBOSE\n";
 	std::cout << "  Additional console output.\n";
 }
@@ -1191,6 +1196,14 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 				return false;
 			}
 			++i;
+		}
+		else if("-REX3586"==ARG)
+		{
+			enableLAN=true;
+		}
+		else if("-NOREX3586"==ARG)
+		{
+			enableLAN=false;
 		}
 		else if("-CONSCMD"==ARG && i+1<argc)
 		{

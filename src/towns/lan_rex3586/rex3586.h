@@ -67,6 +67,7 @@ public:
 	class Variable
 	{
 	public:
+		bool enabled=false;
 		bool monitorTxPacket=true;
 		bool monitorRxPacket=true;
 	};
@@ -81,6 +82,16 @@ public:
 	~RatocREX3586();
 
 	void StartRealNetwork(void);
+
+	inline void Polling(void)
+	{
+		if(true==var.enabled)
+		{
+			RealPolling();
+		}
+	}
+
+	void RealPolling(void);
 
 	void UpdatePIC(void);
 

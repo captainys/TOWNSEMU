@@ -489,6 +489,7 @@ void FMTownsCommon::State::PowerOn(void)
 
 	if(true==argv.enableLAN)
 	{
+		towns.rex3586.var.enabled=true;
 		towns.rex3586.StartRealNetwork();
 	}
 
