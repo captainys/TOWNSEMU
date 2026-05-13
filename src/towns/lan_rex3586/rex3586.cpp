@@ -87,6 +87,11 @@ void RatocREX3586::ReceivePacket(size_t len,const uint8_t data[])
 	}
 }
 
+bool RatocREX3586::RxReady(void) const
+{
+	return 0==state.RXPacket.size();
+}
+
 void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 {
 	state.regs[state.GetCurrentRegisterBank()][ioport-TOWNSIO_LAN_REX3586_TX_STATUS]=data;

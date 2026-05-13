@@ -65,6 +65,19 @@ public:
 		uint16_t VMPort;
 		uint8_t IPv4Addr[4];
 		uint16_t dstPort;
+
+		uint32_t GetIPUint32(void) const
+		{
+			uint32_t ip;
+			ip=IPv4Addr[0];
+			ip<<=8;
+			ip|=IPv4Addr[1];
+			ip<<=8;
+			ip|=IPv4Addr[2];
+			ip<<=8;
+			ip|=IPv4Addr[3];
+			return ip;
+		}
 	};
 
 	class Client

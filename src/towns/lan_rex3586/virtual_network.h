@@ -60,6 +60,9 @@ public:
 		TCP_FLAG_URG=32,
 		TCP_FLAG_ECE=64,
 		TCP_FLAG_CWR=128,
+
+		TCP_MAX_LENGTH=1500,
+		TCP_WINDOW_SIZE=0x2000,
 	};
 
 	class EthernetHeader
@@ -178,6 +181,7 @@ public:
 	public:
 		// Virtual Network -> Adapter
 		virtual void ReceivePacket(size_t len,const uint8_t data[])=0;
+		virtual bool RxReady(void) const=0;
 	};
 
 	std::vector <TCPConnection> TCPConn;
@@ -223,6 +227,7 @@ protected:
 	void ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet);
 
 	void TCPConnectionEstablished(TCPConnection &conn,PacketReceiver *recv);
+	void ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_t data[],PacketReceiver *recv);
 	
 public:
 	void Polling(PacketReceiver *recv,class RealNetwork *realNet);

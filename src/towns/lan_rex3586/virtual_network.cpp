@@ -618,13 +618,13 @@ void  VirtualNetwork::TCPConnectionEstablished(TCPConnection &conn,PacketReceive
 	std::swap(conn.ipHdr.srcIP,conn.ipHdr.dstIP);
 	std::swap(conn.tcpHdr.srcPort,conn.tcpHdr.dstPort);
 
+	conn.tcpHdr.flags|=TCP_FLAG_ACK;
+	conn.tcpHdr.ackNum=conn.tcpHdr.sequenceNum+1;
+	conn.tcpHdr.sequenceNum=sequenceNumSource++;
+
 	auto ether=conn.ethernetHdr;
 	auto ip=conn.ipHdr;
 	auto tcp=conn.tcpHdr;
-
-	tcp.flags|=TCP_FLAG_ACK;
-	tcp.ackNum=tcp.sequenceNum+1;
-	tcp.sequenceNum=sequenceNumSource++;
 
 	std::vector <uint8_t> data;
 	AddEthernetHeader(data,ether);
@@ -668,6 +668,45 @@ void  VirtualNetwork::TCPConnectionEstablished(TCPConnection &conn,PacketReceive
 	std::cout << "--5--\n";
 
 	recv->ReceivePacket(data.size(),data.data());
+
+	++conn.tcpHdr.sequenceNum;
+}
+
+void VirtualNetwork::ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_t recvdata[],PacketReceiver *recv)
+{
+	std::cout << "--7--\n";
+
+	conn.tcpHdr.dataOffset_reservedBits=0x50; // No options.
+	conn.tcpHdr.flags=TCP_FLAG_PSH|TCP_FLAG_ACK;
+	conn.tcpHdr.windowSize=TCP_WINDOW_SIZE;
+
+	conn.ipHdr.len=20+20+len; // 20 bytes for IP header, 20 bytes TCP Header without Option, plus data length.
+
+	std::vector <uint8_t> data;
+	AddEthernetHeader(data,conn.ethernetHdr);
+
+	size_t IPHeaderPos=data.size();
+	AddIPHeader(data,conn.ipHdr);
+	RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+
+	size_t TCPHeaderPos=data.size();
+	AddTCPHeader(data,conn.tcpHdr);
+
+	data.insert(data.end(),recvdata,recvdata+len);
+
+	RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,conn.ipHdr.srcIP,conn.ipHdr.dstIP);
+
+	std::cout << "--6--\n";
+	for(auto str : miscutil::MakeDump(data.size(),data.data()))
+	{
+		std::cout << str << "\n";
+	}
+
+	std::cout << "--7--\n";
+
+	recv->ReceivePacket(data.size(),data.data());
+
+	conn.tcpHdr.sequenceNum+=len;
 }
 
 void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
@@ -684,26 +723,31 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 				std::cout << "Connection Established\n";
 			}
 
-			uint32_t IPv4=0;
-			IPv4=cli.conn.IPv4Addr[0];
-			IPv4<<=8;
-			IPv4|=cli.conn.IPv4Addr[1];
-			IPv4<<=8;
-			IPv4|=cli.conn.IPv4Addr[2];
-			IPv4<<=8;
-			IPv4|=cli.conn.IPv4Addr[3];
 			for(auto &virConn : TCPConn)
 			{
-				if(virConn.ipHdr.dstIP==IPv4 &&
+				if(virConn.ipHdr.dstIP==cli.conn.GetIPUint32() &&
 				   virConn.tcpHdr.srcPort==cli.conn.VMPort)
 				{
 					TCPConnectionEstablished(virConn,recv);
+					break;
 				}
 			}
 		}
-		else if(cli.state==RealNetwork::STATE_CONNECTED && 0<cli.recvBuf.size())
+		else if(cli.state==RealNetwork::STATE_CONNECTED && 0<cli.recvBuf.size() && true==recv->RxReady())
 		{
-			// Packet came in.
+			for(auto &virConn : TCPConn)
+			{
+				// src and dst swapped in TCPConnectionEstablished.
+				if(virConn.ipHdr.srcIP==cli.conn.GetIPUint32() &&
+				   virConn.tcpHdr.dstPort==cli.conn.VMPort)
+				{
+					size_t send_bytes=std::min<size_t>(cli.recvBuf.size(),TCP_MAX_LENGTH);
+					ReceivedTCPData(virConn,send_bytes,cli.recvBuf.data(),recv);
+					cli.recvBuf.erase(cli.recvBuf.begin(),cli.recvBuf.begin()+send_bytes);
+					break;
+				}
+			}
 		}
 	}
 }
+

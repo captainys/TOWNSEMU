@@ -96,6 +96,7 @@ public:
 	void UpdatePIC(void);
 
 	void ReceivePacket(size_t len,const uint8_t data[]) override;
+	bool RxReady(void) const override;
 
 	void PowerOn(void) override;
 	void Reset(void) override;
