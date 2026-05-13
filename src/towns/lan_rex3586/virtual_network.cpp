@@ -575,6 +575,8 @@ void VirtualNetwork::ProcessARP_Packet(EthernetHeader ether,size_t len,const uin
 
 void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet)
 {
+	TCPConnection *thisConn=nullptr;
+
 	if(tcp.flags&TCP_FLAG_SYN)
 	{
 		if(monitorTX)
@@ -588,6 +590,7 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		conn.tcpHdr=tcp;
 		conn.state=STATE_PENDING;
 		TCPConn.push_back(conn);
+		thisConn=&TCPConn.back();
 
 		// Not really, but pretend the connection was successful.
 		if(ip.dstIP==DHCP_SERVER_IP ||
@@ -606,6 +609,138 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 				ip.dstIP
 			};
 			realNet->RequestTCPConnection(tcp.srcPort,IP,tcp.dstPort);
+		}
+	}
+	if(tcp.flags&TCP_FLAG_ACK)
+	{
+		for(auto &conn : TCPConn)
+		{
+			if(conn.ipHdr.dstIP==ip.srcIP &&
+			   conn.tcpHdr.srcPort==tcp.dstPort)
+			{
+				thisConn=&conn;
+				if(true==monitorTCP)
+				{
+					std::cout << "Ack from VM.\n";
+					std::cout << "  Seq#=" << cpputil::Uitox(tcp.sequenceNum) << "\n";
+					std::cout << "  Ack#=" << cpputil::Uitox(tcp.ackNum) << "\n";
+				}
+				if(true==conn.waitingAck && conn.unacknowledgedSeq==tcp.ackNum)
+				{
+					if(true==monitorTCP)
+					{
+						std::cout << "Acknowledged " << cpputil::Uitox(tcp.ackNum);
+					}
+					conn.waitingAck=false;
+				}
+				break;
+			}
+		}
+	}
+
+	size_t optPtr=0;
+	bool optErr=false,optEnd=false;
+	while(optPtr<tcp.GetOptionLength() && true!=optErr && true!=optEnd)
+	{
+		switch(tcp.options[optPtr])
+		{
+		case TCP_OPTION_END: //0,
+			optEnd=true;
+			++optPtr;
+			break;
+		case TCP_OPTION_NOP: //1,
+			++optPtr;
+			break;
+		case TCP_OPTION_MSS: //2,
+			if(optPtr+1<tcp.GetOptionLength())
+			{
+				if(4==tcp.options[optPtr+1] && nullptr!=thisConn)
+				{
+					thisConn->MSS=GetWordBE(tcp.options+optPtr+2);
+					std::cout << "TCP Option MSS=" << thisConn->MSS << "\n";
+				}
+				else
+				{
+					optErr=true; // Something went wrong.
+				}
+				optPtr+=tcp.options[optPtr+1];
+			}
+			else
+			{
+				optErr=true;
+			}
+			break;
+		case TCP_OPTION_WSCALE: //3,
+			std::cout << "WSCALE option is present.  Should omit in the ACK|SYN packet.\n";
+			if(optPtr+1<tcp.GetOptionLength())
+			{
+				optPtr+=tcp.options[optPtr+1];
+			}
+			else
+			{
+				optErr=true;
+			}
+			break;
+		case TCP_OPTION_SACK_PERM: //4,
+			if(optPtr+1<tcp.GetOptionLength())
+			{
+				optPtr+=tcp.options[optPtr+1];
+			}
+			else
+			{
+				optErr=true;
+			}
+			break;
+		case TCP_OPTION_SACK: //5,
+			if(optPtr+1<tcp.GetOptionLength())
+			{
+				optPtr+=tcp.options[optPtr+1];
+			}
+			else
+			{
+				optErr=true;
+			}
+			break;
+		case TCP_OPTION_TIMESTAMP: //8,
+			if(optPtr+1<tcp.GetOptionLength())
+			{
+				optPtr+=tcp.options[optPtr+1];
+			}
+			else
+			{
+				optErr=true;
+			}
+			break;
+		case TCP_OPTION_TIMEOUT: //28,
+			if(optPtr+1<tcp.GetOptionLength())
+			{
+				optPtr+=tcp.options[optPtr+1];
+			}
+			else
+			{
+				optErr=true;
+			}
+			break;
+		case TCP_OPTION_AUTH_OPT: //29,
+			if(optPtr+1<tcp.GetOptionLength())
+			{
+				optPtr+=tcp.options[optPtr+1];
+			}
+			else
+			{
+				optErr=true;
+			}
+			break;
+		case TCP_OPTION_MPTCP: //30,
+			if(optPtr+1<tcp.GetOptionLength())
+			{
+				optPtr+=tcp.options[optPtr+1];
+			}
+			else
+			{
+				optErr=true;
+			}
+			break;
 		}
 	}
 }
@@ -669,7 +804,18 @@ void  VirtualNetwork::TCPConnectionEstablished(TCPConnection &conn,PacketReceive
 
 	recv->ReceivePacket(data.size(),data.data());
 
+	++conn.ipHdr.fragID; // Is it necessary?
 	++conn.tcpHdr.sequenceNum;
+
+	if(true==monitorTCP)
+	{
+		std::cout << "After Sending SYN|ACK to VM\n";
+		std::cout << "  Seq#=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << "\n";
+		std::cout << "  Ack#=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
+	}
+
+	conn.waitingAck=true;
+	conn.unacknowledgedSeq=conn.tcpHdr.sequenceNum;
 }
 
 void VirtualNetwork::ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_t recvdata[],PacketReceiver *recv)
@@ -706,7 +852,18 @@ void VirtualNetwork::ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_
 
 	recv->ReceivePacket(data.size(),data.data());
 
+	++conn.ipHdr.fragID; // Is it necessary?
 	conn.tcpHdr.sequenceNum+=len;
+
+	if(true==monitorTCP)
+	{
+		std::cout << "After Sending " << len << " bytes of data\n";
+		std::cout << "  Seq#=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << "\n";
+		std::cout << "  Ack#=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
+	}
+
+	conn.waitingAck=true;
+	conn.unacknowledgedSeq=conn.tcpHdr.sequenceNum;
 }
 
 void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
@@ -738,10 +895,12 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 			for(auto &virConn : TCPConn)
 			{
 				// src and dst swapped in TCPConnectionEstablished.
-				if(virConn.ipHdr.srcIP==cli.conn.GetIPUint32() &&
+				if(true!=virConn.waitingAck &&
+				   virConn.ipHdr.srcIP==cli.conn.GetIPUint32() &&
 				   virConn.tcpHdr.dstPort==cli.conn.VMPort)
 				{
 					size_t send_bytes=std::min<size_t>(cli.recvBuf.size(),TCP_MAX_LENGTH);
+					send_bytes=std::min<size_t>(send_bytes,virConn.MSS);
 					ReceivedTCPData(virConn,send_bytes,cli.recvBuf.data(),recv);
 					cli.recvBuf.erase(cli.recvBuf.begin(),cli.recvBuf.begin()+send_bytes);
 					break;

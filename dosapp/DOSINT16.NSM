@@ -38,8 +38,8 @@ INT_16H_IS_KEY_READY:
 						; [BX+10] Return FLAGS
 						JE		NO_KEY_IN_BUFFER
 
-						MOV		[BX],DL
-						AND		BYTE [BX+10],0xFF-EFLAGS_ZF
+						MOV		[SS:BX],DL
+						AND		BYTE [SS:BX+10],0xFF-EFLAGS_ZF
 
 						POP		AX
 						POP		BX
@@ -47,7 +47,7 @@ INT_16H_IS_KEY_READY:
 						IRET
 
 NO_KEY_IN_BUFFER:
-						OR		BYTE [BX+10],EFLAGS_ZF
+						OR		BYTE [SS:BX+10],EFLAGS_ZF
 						POP		AX
 						POP		BX
 						POP		DX
@@ -67,7 +67,7 @@ INT_16H_KEY_READ:
 						MOV		DL,0
 NO_KEY_READ:
 						MOV		BX,SP
-						MOV		[BX],DL
+						MOV		[SS:BX],DL
 
 						POP		AX
 						POP		BX

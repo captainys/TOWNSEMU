@@ -63,6 +63,17 @@ public:
 
 		TCP_MAX_LENGTH=1500,
 		TCP_WINDOW_SIZE=0x2000,
+
+		TCP_OPTION_END=0,
+		TCP_OPTION_NOP=1,
+		TCP_OPTION_MSS=2,
+		TCP_OPTION_WSCALE=3,
+		TCP_OPTION_SACK_PERM=4,
+		TCP_OPTION_SACK=5,
+		TCP_OPTION_TIMESTAMP=8,
+		TCP_OPTION_TIMEOUT=28,
+		TCP_OPTION_AUTH_OPT=29,
+		TCP_OPTION_MPTCP=30,
 	};
 
 	class EthernetHeader
@@ -170,6 +181,11 @@ public:
 	{
 	public:
 		int state=STATE_PENDING;
+		uint16_t MSS=1024; // Tentatively make it 1K.
+
+		bool waitingAck=false;
+		uint32_t unacknowledgedSeq=0;
+
 		EthernetHeader ethernetHdr;
 		IPHeader ipHdr;
 		TCPHeader tcpHdr;
