@@ -614,13 +614,14 @@ void  VirtualNetwork::TCPConnectionEstablished(TCPConnection &conn,PacketReceive
 {
 	conn.state=STATE_ESTABLISHED;
 
+	std::swap(conn.ethernetHdr.srcMAC,conn.ethernetHdr.dstMAC);
+	std::swap(conn.ipHdr.srcIP,conn.ipHdr.dstIP);
+	std::swap(conn.tcpHdr.srcPort,conn.tcpHdr.dstPort);
+
 	auto ether=conn.ethernetHdr;
 	auto ip=conn.ipHdr;
 	auto tcp=conn.tcpHdr;
 
-	std::swap(ether.srcMAC,ether.dstMAC);
-	std::swap(ip.srcIP,ip.dstIP);
-	std::swap(tcp.srcPort,tcp.dstPort);
 	tcp.flags|=TCP_FLAG_ACK;
 	tcp.ackNum=tcp.sequenceNum+1;
 	tcp.sequenceNum=sequenceNumSource++;

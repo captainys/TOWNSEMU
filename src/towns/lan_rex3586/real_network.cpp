@@ -7,6 +7,8 @@
 	typedef int socklen_t;
 #endif
 
+#define THREAD_PROGRESS(x) // {std::cout << "T" << (x) << "\n";}
+
 RealNetwork::RealNetwork()
 {
 }
@@ -22,6 +24,8 @@ void RealNetwork::ThreadFunc(void)
 
 	while(true!=stopThread)
 	{
+		THREAD_PROGRESS("1");
+
 		if(0==clients.size())
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -29,16 +33,13 @@ void RealNetwork::ThreadFunc(void)
 		else
 		{
 		#ifdef _WIN32
-			std::lock_guard <std::mutex> lock(clientsLock);
-
 			// --- Windows Path: select ---
 			fd_set readfds;
 			FD_ZERO(&readfds);
-			
+
 			for(auto &cli : clients)
 			{
-				cli.bytesIncoming=false;
-				FD_SET(cli.sock, &readfds);
+				FD_SET(cli.sock, &readfds); // cli.sock is not accessed from outside of Network Thread
 			}
 
 			// 10ms timeout
@@ -48,6 +49,7 @@ void RealNetwork::ThreadFunc(void)
 			// nfds is ignored on Windows, but usually set to 0 or max fd + 1
 			if (0<select(0,&readfds,NULL,NULL,&tv))
 			{
+				std::lock_guard <std::mutex> lock(clientsLock);
 				for(auto &cli : clients)
 				{
 					if(FD_ISSET(cli.sock,&readfds))
@@ -58,13 +60,9 @@ void RealNetwork::ThreadFunc(void)
 			}
 		#else
 			// --- POSIX Path: poll ---
-			std::lock_guard <std::mutex> lock(clientsLock);
-
 			std::vector<struct pollfd> fds;
 			for(auto &cli : clients)
 			{
-				cli.bytesIncoming=false;
-
 				struct pollfd pfd;
 				pfd.fd=cli.sock;
 				pfd.events=POLLIN;
@@ -74,6 +72,7 @@ void RealNetwork::ThreadFunc(void)
 			// poll uses milliseconds (10ms)
 			if (0<poll(fds.data(),(nfds_t)fds.size(),10)) 
 			{
+				std::lock_guard <std::mutex> lock(clientsLock);
 				for(auto &fd : fds)
 				{
 					if (fd.revents & POLLIN) 
@@ -116,7 +115,7 @@ void RealNetwork::ThreadFunc(void)
 				}
 			}
 		}
-
+		THREAD_PROGRESS("2");
 		{
 			// Process connection requests.
 			std::lock_guard <std::mutex> lock(TCPConnReqLock);
@@ -152,6 +151,7 @@ void RealNetwork::ThreadFunc(void)
 			}
 			TCPConnReq.clear();
 		}
+		THREAD_PROGRESS("3");
 		{
 			std::lock_guard <std::mutex> lock(TCPDisconnectReqLock);
 			for(auto port : TCPDisconnectReq)
@@ -173,9 +173,14 @@ void RealNetwork::ThreadFunc(void)
 			}
 			TCPDisconnectReq.clear();
 		}
+		THREAD_PROGRESS("4");
 	}
 
+	THREAD_PROGRESS("Fin");
+
 	CleanUp();
+
+	THREAD_PROGRESS(".");
 }
 
 void RealNetwork::Start(void)
