@@ -325,7 +325,7 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 
 	if(true==monitorTX)
 	{
-		std::cout << "Net TX Packet.\n";
+		std::cout << "Net TX Packet (VM->Router).\n";
 		std::cout << "Src MAC " << cpputil::U64tox(ether.srcMAC) << "\n";
 		std::cout << "Dst MAC " << cpputil::U64tox(ether.dstMAC) << "\n";
 	}
@@ -629,11 +629,53 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 				{
 					if(true==monitorTCP)
 					{
-						std::cout << "Acknowledged " << cpputil::Uitox(tcp.ackNum);
+						std::cout << "Acknowledged " << cpputil::Uitox(tcp.ackNum) << "\n";
 					}
 					conn.waitingAck=false;
 				}
 				break;
+			}
+		}
+	}
+	if(tcp.flags&TCP_FLAG_PSH)
+	{
+		for(auto &conn : TCPConn)
+		{
+			if(conn.ipHdr.dstIP==ip.srcIP &&
+			   conn.tcpHdr.srcPort==tcp.dstPort)
+			{
+				++conn.ipHdr.fragID; // Is it necessary?
+
+				if(true==monitorTCP)
+				{
+					std::cout << "Acknowledging PSH\n";
+					std::cout << "  Incoming seqNum=" << cpputil::Uitox(tcp.sequenceNum) << "\n";
+					std::cout << "  Incoming ackNum=" << cpputil::Uitox(tcp.ackNum) << "\n";
+					std::cout << "  Current seqNum =" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << "\n";
+					std::cout << "  Current ackNum =" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
+				}
+
+				auto tcp=conn.tcpHdr;
+			
+				tcp.flags=TCP_FLAG_ACK;
+
+				std::vector <uint8_t> data;
+				AddEthernetHeader(data,conn.ethernetHdr);
+
+				size_t IPHeaderPos=data.size();
+				AddIPHeader(data,conn.ipHdr);
+
+				RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+
+				size_t TCPHeaderPos=data.size();
+				AddTCPHeader(data,tcp);
+
+				RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
+
+				recv->ReceivePacket(data.size(),data.data());
+
+				// Apparently ACK packet with no data doesn't increment the sequence number.
+
 			}
 		}
 	}
@@ -764,43 +806,15 @@ void  VirtualNetwork::TCPConnectionEstablished(TCPConnection &conn,PacketReceive
 	std::vector <uint8_t> data;
 	AddEthernetHeader(data,ether);
 
-	for(auto str : miscutil::MakeDump(data.size(),data.data()))
-	{
-		std::cout << str << "\n";
-	}
-	std::cout << "--1--\n";
-
 	size_t IPHeaderPos=data.size();
 	AddIPHeader(data,ip);
 
-	for(auto str : miscutil::MakeDump(data.size(),data.data()))
-	{
-		std::cout << str << "\n";
-	}
-	std::cout << "--2--\n";
-
 	RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
-
-	for(auto str : miscutil::MakeDump(data.size(),data.data()))
-	{
-		std::cout << str << "\n";
-	}
-	std::cout << "--3--\n";
 
 	size_t TCPHeaderPos=data.size();
 	AddTCPHeader(data,tcp);
-	for(auto str : miscutil::MakeDump(data.size(),data.data()))
-	{
-		std::cout << str << "\n";
-	}
-	std::cout << "--4--\n";
-	RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
 
-	for(auto str : miscutil::MakeDump(data.size(),data.data()))
-	{
-		std::cout << str << "\n";
-	}
-	std::cout << "--5--\n";
+	RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
 
 	recv->ReceivePacket(data.size(),data.data());
 
@@ -841,14 +855,6 @@ void VirtualNetwork::ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_
 	data.insert(data.end(),recvdata,recvdata+len);
 
 	RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,conn.ipHdr.srcIP,conn.ipHdr.dstIP);
-
-	std::cout << "--6--\n";
-	for(auto str : miscutil::MakeDump(data.size(),data.data()))
-	{
-		std::cout << str << "\n";
-	}
-
-	std::cout << "--7--\n";
 
 	recv->ReceivePacket(data.size(),data.data());
 

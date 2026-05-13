@@ -68,6 +68,7 @@ void RatocREX3586::UpdatePIC(void)
 
 void RatocREX3586::ReceivePacket(size_t len,const uint8_t data[])
 {
+	// MB86965 Datasheet p.36 Table 24.  Bit6 and 7 should be zero.  Bit5 is "GOOD PKT" flag should be one for no error.  Bit0-4 Errors.
 	state.RXPacket.push_back(0x20); // Linux at1700.c requires the (first_byte&0xF0)==0x20.  PD3586.COM assumes error if b0 is set.
 	state.RXPacket.push_back(0);    // Meaning unknown
 
@@ -172,6 +173,7 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 		case TOWNSIO_LAN_REX3586_TX_START: //	0x700A,
 			if(0x81==(data&0x81)) // Apparently it is the trigger.
 			{
+				net.TransmitPacket(state.TXPacket.size(),state.TXPacket.data(),this,realNet);
 				if(true==var.monitorTxPacket)
 				{
 					for(auto str : miscutil::MakeDump(state.TXPacket.size(),state.TXPacket.data()))
@@ -179,7 +181,6 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 						std::cout << str << "\n";
 					}
 				}
-				net.TransmitPacket(state.TXPacket.size(),state.TXPacket.data(),this,realNet);
 				state.TXPacket.clear();
 				UpdatePIC();
 			}
@@ -204,6 +205,14 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 	switch(ioport)
 	{
 	case TOWNSIO_LAN_REX3586_TX_STATUS: //	0x7000,
+		if(true==net.TxReady)
+		{
+			data=0x80;
+		}
+		else
+		{
+			data=0;
+		}
 		break;
 	case TOWNSIO_LAN_REX3586_RX_STATUS: //	0x7001,
 		if(0==state.RXPacket.size())

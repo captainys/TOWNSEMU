@@ -186,6 +186,8 @@ public:
 		bool waitingAck=false;
 		uint32_t unacknowledgedSeq=0;
 
+		std::vector <uint8_t> TxData;
+	
 		EthernetHeader ethernetHdr;
 		IPHeader ipHdr;
 		TCPHeader tcpHdr;
@@ -200,6 +202,7 @@ public:
 		virtual bool RxReady(void) const=0;
 	};
 
+	bool TxReady=true;
 	std::vector <TCPConnection> TCPConn;
 
 	bool monitorTX=true,monitorRX=true;
