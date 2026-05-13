@@ -88,6 +88,7 @@ public:
 	};
 
 	bool started=false;
+	bool monitor=true;
 
 	std::atomic_bool stopThread=false;
 	std::thread workerThread;

@@ -45,7 +45,6 @@ void RealNetwork::ThreadFunc(void)
 			timeval tv;
 			tv.tv_sec = 0;
 			tv.tv_usec = 10000; 
-
 			// nfds is ignored on Windows, but usually set to 0 or max fd + 1
 			if (0<select(0,&readfds,NULL,NULL,&tv))
 			{
@@ -90,12 +89,12 @@ void RealNetwork::ThreadFunc(void)
 					}
 				}
 			}
-		#endif			
+		#endif
 			auto next=clients.begin();
 			for(auto iter=next; clients.end()!=iter; iter=next)
 			{
 				next=iter;
-				++iter;
+				++next;
 
 				auto &cli=*iter;
 				if(true==cli.bytesIncoming)
@@ -124,6 +123,12 @@ void RealNetwork::ThreadFunc(void)
 			unsigned int nConnected=0;
 			for(auto &req : TCPConnReq)
 			{
+				if(true==monitor)
+				{
+					std::cout << "Handling Connection Request\n";
+					std::cout << int(req.conn.IPv4Addr[0]) << "." << int(req.conn.IPv4Addr[1]) << "." << int(req.conn.IPv4Addr[2]) << "." << int(req.conn.IPv4Addr[3]) << ":";
+					std::cout << int(req.conn.dstPort) << "\n";
+				}
 				req.connected=req.DoConnect();
 				if(true==req.connected)
 				{
@@ -177,6 +182,7 @@ void RealNetwork::Start(void)
 {
 	if(true!=started)
 	{
+		std::cout << "Starting RealNetwork.\n";
 		std::thread t(&RealNetwork::ThreadFunc,this);
 		workerThread=std::move(t);
 		started=true;
@@ -240,6 +246,8 @@ bool RealNetwork::TCPConnectionRequest:: DoConnect(void)
 	addr.sin_family=AF_INET;
 	addr.sin_port=htons(conn.dstPort);
 
+std::cout << "2\n";
+
 #ifdef _WIN32
 	addr.sin_addr.S_un.S_un_b.s_b1=conn.IPv4Addr[0];
 	addr.sin_addr.S_un.S_un_b.s_b2=conn.IPv4Addr[1];
@@ -256,11 +264,12 @@ bool RealNetwork::TCPConnectionRequest:: DoConnect(void)
 
 	if(connect(sock,(SOCKADDR *)&addr,sizeof(SOCKADDR_IN))!=0)
 	{
-#ifdef _WIN32
+		std::cout << "Connection Error\n";
+	#ifdef _WIN32
 		closesocket(sock);
-#else
+	#else
 		close(sock);
-#endif
+	#endif
 		return false;
 	}
 

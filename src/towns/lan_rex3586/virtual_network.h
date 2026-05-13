@@ -183,6 +183,7 @@ public:
 	std::vector <TCPConnection> TCPConn;
 
 	bool monitorTX=true,monitorRX=true;
+	bool monitorTCP=true;
 	uint32_t sequenceNumSource=59673459;
 
 	static uint64_t GetMAC(const uint8_t data[]);

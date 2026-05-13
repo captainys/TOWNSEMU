@@ -678,6 +678,11 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 		{
 			cli.state=RealNetwork::STATE_CONNECTED;
 
+			if(true==monitorTCP)
+			{
+				std::cout << "Connection Established\n";
+			}
+
 			uint32_t IPv4=0;
 			IPv4=cli.conn.IPv4Addr[0];
 			IPv4<<=8;
