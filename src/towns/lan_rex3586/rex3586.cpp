@@ -95,6 +95,11 @@ bool RatocREX3586::RxReady(void) const
 
 void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 {
+	if(TOWNSIO_LAN_REX3586_ALT_TX_STATUS<=ioport)
+	{
+		ioport-=0x100;
+	}
+
 	state.regs[state.GetCurrentRegisterBank()][ioport-TOWNSIO_LAN_REX3586_TX_STATUS]=data;
 
 	switch(ioport)
@@ -201,6 +206,11 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 
 unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 {
+	if(TOWNSIO_LAN_REX3586_ALT_TX_STATUS<=ioport)
+	{
+		ioport-=0x100;
+	}
+
 	unsigned int data=state.regs[state.GetCurrentRegisterBank()][ioport-TOWNSIO_LAN_REX3586_TX_STATUS];
 	switch(ioport)
 	{
@@ -360,6 +370,11 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 
 unsigned int RatocREX3586::IOReadWord(unsigned int ioport)
 {
+	if(TOWNSIO_LAN_REX3586_ALT_TX_STATUS<=ioport)
+	{
+		ioport-=0x100;
+	}
+
 	if(2==state.GetCurrentRegisterBank() && TOWNSIO_LAN_REX3586_BUFFMEMPORT_L==ioport)
 	{
 		if(2<=state.RXPacket.size())
