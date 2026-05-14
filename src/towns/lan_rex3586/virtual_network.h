@@ -95,6 +95,11 @@ public:
 		uint16_t checkSum;
 		uint32_t srcIP;
 		uint32_t dstIP;
+
+		const size_t GetHeaderLength(void) const
+		{
+			return 20;
+		}
 	};
 	class TCPHeader
 	{
@@ -123,6 +128,35 @@ public:
 		{
 			size_t L=(dataOffset_reservedBits>>4);
 			return L*4;
+		}
+		void StripOptions(void)
+		{
+			dataOffset_reservedBits=0x50;
+		}
+		void NOPWindowScale(void)
+		{
+			for(size_t i=0; i<GetOptionLength(); )
+			{
+				if(TCP_OPTION_END==options[i])
+				{
+					break;
+				}
+				else if(TCP_OPTION_NOP==options[i])
+				{
+					++i;
+				}
+				else if(TCP_OPTION_WSCALE==options[i] && i+1<GetOptionLength())
+				{
+					size_t optionSize=options[i+1];
+					// i+optionSize<=GetOptionLength()
+					optionSize=std::min(optionSize,GetOptionLength()-i);
+					memset(options+i,TCP_OPTION_NOP,optionSize);
+				}
+				else if(i+1<GetOptionLength())
+				{
+					i+=options[i+1];
+				}
+			}
 		}
 	};
 	class UDPHeader

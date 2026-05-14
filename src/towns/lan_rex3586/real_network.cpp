@@ -174,6 +174,43 @@ void RealNetwork::ThreadFunc(void)
 			TCPDisconnectReq.clear();
 		}
 		THREAD_PROGRESS("4");
+		{
+			std::lock_guard <std::mutex> lock(clientsLock);
+			for(auto &cli : clients)
+			{
+				if(0<cli.sendBuf.size())
+				{
+					bool ready=false;
+				#ifdef _WIN32
+					fd_set set;
+					timeval wait;
+					wait.tv_sec=0;
+					wait.tv_usec=100;
+					FD_ZERO(&set);
+					FD_SET(cli.sock,&set);
+					if(select(1,NULL,&set,NULL,&wait)>=1)
+					{
+						ready=true;
+					}
+				#else
+					struct pollfd pfd;
+					pfd.fd=internal->sock;
+					pfd.events=POLLOUT;
+					pfd.revents=0;
+					if(poll(&pfd,1,1)>=1)
+					{
+						ready=true;
+					}
+				#endif
+					if(true==ready)
+					{
+						send(cli.sock,(char *)cli.sendBuf.data(),cli.sendBuf.size(),0);
+						cli.sendBuf.clear();
+					}
+				}
+			}
+		}
+		THREAD_PROGRESS("4");
 	}
 
 	THREAD_PROGRESS("Fin");

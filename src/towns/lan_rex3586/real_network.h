@@ -86,7 +86,8 @@ public:
 	public:
 		int state;
 		bool bytesIncoming=false;
-		std::vector <uint8_t> recvBuf;
+		std::vector <uint8_t> recvBuf; // VM <- Outside
+		std::vector <uint8_t> sendBuf; // VM -> Outside
 		SOCKET sock;
 		Connection conn;
 	};

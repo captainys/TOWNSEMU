@@ -577,6 +577,11 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 {
 	TCPConnection *thisConn=nullptr;
 
+	if(monitorTX)
+	{
+		std::cout << "TCP Packet VM->Router\n";
+	}
+
 	if(tcp.flags&TCP_FLAG_SYN)
 	{
 		if(monitorTX)
@@ -624,12 +629,15 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 					std::cout << "Ack from VM.\n";
 					std::cout << "  Seq#=" << cpputil::Uitox(tcp.sequenceNum) << "\n";
 					std::cout << "  Ack#=" << cpputil::Uitox(tcp.ackNum) << "\n";
+					std::cout << "Current\n";
+					std::cout << "  Seq#=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << "\n";
+					std::cout << "  Ack#=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
 				}
 				if(true==conn.waitingAck && conn.unacknowledgedSeq==tcp.ackNum)
 				{
 					if(true==monitorTCP)
 					{
-						std::cout << "Acknowledged " << cpputil::Uitox(tcp.ackNum) << "\n";
+						std::cout << "VM Acknowledged " << cpputil::Uitox(tcp.ackNum) << "\n";
 					}
 					conn.waitingAck=false;
 				}
@@ -655,27 +663,40 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 					std::cout << "  Current ackNum =" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
 				}
 
-				auto tcp=conn.tcpHdr;
-			
-				tcp.flags=TCP_FLAG_ACK;
+				size_t dataLen=ip.len-ip.GetHeaderLength()-tcp.GetTotalLength();
+				conn.tcpHdr.ackNum+=dataLen;
 
-				std::vector <uint8_t> data;
-				AddEthernetHeader(data,conn.ethernetHdr);
+				{
+					//Acknowledge PSH
+					auto tcp=conn.tcpHdr;
+					auto ip=conn.ipHdr;
+					
+					tcp.flags=TCP_FLAG_ACK;
+					tcp.StripOptions();
 
-				size_t IPHeaderPos=data.size();
-				AddIPHeader(data,conn.ipHdr);
+					ip.len=ip.GetHeaderLength()+tcp.GetTotalLength();
 
-				RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+					std::vector <uint8_t> data;
+					AddEthernetHeader(data,conn.ethernetHdr);
 
-				size_t TCPHeaderPos=data.size();
-				AddTCPHeader(data,tcp);
+					size_t IPHeaderPos=data.size();
+					AddIPHeader(data,ip);
 
-				RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
+					RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
 
-				recv->ReceivePacket(data.size(),data.data());
+					size_t TCPHeaderPos=data.size();
+					AddTCPHeader(data,tcp);
 
-				// Apparently ACK packet with no data doesn't increment the sequence number.
+					// No payload.
 
+					RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
+
+					recv->ReceivePacket(data.size(),data.data());
+
+					// Apparently ACK packet with no data doesn't increment the sequence number.
+				}
+
+				conn.TxData.insert(conn.TxData.end(),data,data+dataLen);
 			}
 		}
 	}
@@ -803,6 +824,7 @@ void  VirtualNetwork::TCPConnectionEstablished(TCPConnection &conn,PacketReceive
 	auto ip=conn.ipHdr;
 	auto tcp=conn.tcpHdr;
 
+	tcp.NOPWindowScale();
 	std::vector <uint8_t> data;
 	AddEthernetHeader(data,ether);
 
@@ -818,6 +840,7 @@ void  VirtualNetwork::TCPConnectionEstablished(TCPConnection &conn,PacketReceive
 
 	recv->ReceivePacket(data.size(),data.data());
 
+	conn.tcpHdr.StripOptions();
 	++conn.ipHdr.fragID; // Is it necessary?
 	++conn.tcpHdr.sequenceNum;
 
@@ -834,8 +857,6 @@ void  VirtualNetwork::TCPConnectionEstablished(TCPConnection &conn,PacketReceive
 
 void VirtualNetwork::ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_t recvdata[],PacketReceiver *recv)
 {
-	std::cout << "--7--\n";
-
 	conn.tcpHdr.dataOffset_reservedBits=0x50; // No options.
 	conn.tcpHdr.flags=TCP_FLAG_PSH|TCP_FLAG_ACK;
 	conn.tcpHdr.windowSize=TCP_WINDOW_SIZE;
@@ -896,7 +917,7 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 				}
 			}
 		}
-		else if(cli.state==RealNetwork::STATE_CONNECTED && 0<cli.recvBuf.size() && true==recv->RxReady())
+		else if(cli.state==RealNetwork::STATE_CONNECTED)
 		{
 			for(auto &virConn : TCPConn)
 			{
@@ -905,11 +926,19 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 				   virConn.ipHdr.srcIP==cli.conn.GetIPUint32() &&
 				   virConn.tcpHdr.dstPort==cli.conn.VMPort)
 				{
-					size_t send_bytes=std::min<size_t>(cli.recvBuf.size(),TCP_MAX_LENGTH);
-					send_bytes=std::min<size_t>(send_bytes,virConn.MSS);
-					ReceivedTCPData(virConn,send_bytes,cli.recvBuf.data(),recv);
-					cli.recvBuf.erase(cli.recvBuf.begin(),cli.recvBuf.begin()+send_bytes);
-					break;
+					if(0<cli.recvBuf.size() && true==recv->RxReady())
+					{
+						size_t send_bytes=std::min<size_t>(cli.recvBuf.size(),TCP_MAX_LENGTH);
+						send_bytes=std::min<size_t>(send_bytes,virConn.MSS);
+						ReceivedTCPData(virConn,send_bytes,cli.recvBuf.data(),recv);
+						cli.recvBuf.erase(cli.recvBuf.begin(),cli.recvBuf.begin()+send_bytes);
+						break;
+					}
+					else if(0<virConn.TxData.size())
+					{
+						cli.sendBuf.insert(cli.sendBuf.end(),virConn.TxData.begin(),virConn.TxData.end());
+						virConn.TxData.clear();
+					}
 				}
 			}
 		}
