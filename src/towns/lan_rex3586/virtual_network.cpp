@@ -608,10 +608,10 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		{
 			uint8_t IP[4]=
 			{
-				ip.dstIP>>24,
-				ip.dstIP>>16,
-				ip.dstIP>>8,
-				ip.dstIP
+				uint8_t(ip.dstIP>>24),
+				uint8_t(ip.dstIP>>16),
+				uint8_t(ip.dstIP>>8),
+				uint8_t(ip.dstIP)
 			};
 			realNet->RequestTCPConnection(tcp.srcPort,IP,tcp.dstPort);
 		}
