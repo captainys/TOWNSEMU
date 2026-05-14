@@ -681,14 +681,11 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 
 					size_t IPHeaderPos=data.size();
 					AddIPHeader(data,ip);
-
 					RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
 
 					size_t TCPHeaderPos=data.size();
 					AddTCPHeader(data,tcp);
-
 					// No payload.
-
 					RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
 
 					recv->ReceivePacket(data.size(),data.data());
@@ -702,12 +699,14 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 	}
 	if(TCP_FLAG_FIN&tcp.flags)
 	{
-		for(auto &conn : TCPConn)
+		for(auto iter=TCPConn.begin(); TCPConn.end()!=iter;)
 		{
+			auto &conn=*iter;
+			bool deleted=false;
 			if(conn.ipHdr.dstIP==ip.srcIP &&
 			   conn.tcpHdr.srcPort==tcp.dstPort)
 			{
-				if(STATE_FIN_SENT==conn.state)
+				if(STATE_FIN_SENT==conn.state) // Closing from the remote host
 				{
 					conn.tcpHdr.StripOptions(); // Just in case.
 					conn.tcpHdr.flags=TCP_FLAG_ACK;
@@ -727,8 +726,46 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 
 					recv->ReceivePacket(data.size(),data.data());
 
-					conn.state=STATE_CLOSED;
+					iter=TCPConn.erase(iter); // conn.state=STATE_CLOSED;
+					deleted=true;
 				}
+				else // Closing from the VM.
+				{
+					//Acknowledge FIN
+					++conn.tcpHdr.ackNum;
+
+					auto &tcp=conn.tcpHdr; // At this point forget incoming tcp- and ip-headers.
+					auto &ip=conn.ipHdr;
+
+					tcp.flags=TCP_FLAG_ACK;
+					tcp.StripOptions();
+
+					ip.len=ip.GetHeaderLength()+tcp.GetTotalLength();
+
+					std::vector <uint8_t> data;
+					AddEthernetHeader(data,conn.ethernetHdr);
+
+					size_t IPHeaderPos=data.size();
+					AddIPHeader(data,ip);
+					RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+
+					size_t TCPHeaderPos=data.size();
+					AddTCPHeader(data,tcp);
+					// No payload.
+					RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
+
+					recv->ReceivePacket(data.size(),data.data());
+
+					conn.state=STATE_FIN_RECEIVED;
+					if(true==monitorTCP)
+					{
+						std::cout << "FIN initiated from the VM.\n";
+					}
+				}
+			}
+			if(true!=deleted)
+			{
+				++iter;
 			}
 		}
 	}

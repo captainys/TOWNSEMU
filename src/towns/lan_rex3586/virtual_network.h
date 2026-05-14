@@ -214,6 +214,7 @@ public:
 		STATE_CLOSING_FROM_ROUTER,
 		STATE_FIN_SENT, // Closing from the remote, and FIN|ACK has been sent to the VM.
 		STATE_CLOSED,
+		STATE_FIN_RECEIVED, // VM initiated FIN.
 	};
 	class TCPConnection
 	{
