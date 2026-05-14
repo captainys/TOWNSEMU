@@ -98,7 +98,13 @@ void RealNetwork::ThreadFunc(void)
 				auto &cli=*iter;
 				if(true==cli.bytesIncoming)
 				{
+					std::lock_guard <std::mutex> lock(clientsLock);
 					cli.bytesIncoming=false;
+
+					if(true==monitor)
+					{
+						std::cout << "Received from Dst Port:" << cli.conn.dstPort << " to VM Port:" << cli.conn.VMPort << "\n";
+					}
 
 					const int bufLen=4096;
 					uint8_t buf[bufLen];
@@ -106,7 +112,14 @@ void RealNetwork::ThreadFunc(void)
 					if(SOCKET_ERROR==nBytesRecv || 0==nBytesRecv)
 					{
 						closesocket(cli.sock);
-						clients.erase(iter);
+						if(0==cli.recvBuf.size())
+						{
+							cli.state=STATE_DISCONNECTED;
+						}
+						else
+						{
+							cli.state=STATE_DISCONNECTED_BUT_DATA_LEFTOVER;
+						}
 					}
 					else
 					{

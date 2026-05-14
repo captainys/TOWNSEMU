@@ -893,9 +893,45 @@ void VirtualNetwork::ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_
 	conn.unacknowledgedSeq=conn.tcpHdr.sequenceNum;
 }
 
+void VirtualNetwork::TCPInitiateFIN(TCPConnection &conn,PacketReceiver *recv)
+{
+	conn.tcpHdr.flags=TCP_FLAG_ACK|TCP_FLAG_FIN;
+	conn.tcpHdr.StripOptions(); // Just in case
+	conn.ipHdr.len=conn.ipHdr.GetHeaderLength()+conn.tcpHdr.GetTotalLength();
+
+	std::vector <uint8_t> data;
+
+	AddEthernetHeader(data,conn.ethernetHdr);
+
+	size_t IPHeaderPos=data.size();
+	AddIPHeader(data,conn.ipHdr);
+	RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+
+	size_t TCPHeaderPos=data.size();
+	AddTCPHeader(data,conn.tcpHdr);
+	RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,conn.ipHdr.srcIP,conn.ipHdr.dstIP);
+
+	recv->ReceivePacket(data.size(),data.data());
+
+	++conn.ipHdr.fragID; // Is it necessary?
+
+	++conn.tcpHdr.sequenceNum;
+
+	conn.state=STATE_FIN_SENT;
+}
+
 void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 {
 	std::lock_guard <std::mutex> lock(realNet->clientsLock);
+	for(auto &cli : realNet->clients)
+	{
+		if(0<cli.recvBuf.size())
+		{
+			std::cout << "Recv Data Present for VMPort:" << cli.conn.VMPort << " dstPort:" << cli.conn.dstPort << "\n";
+			std::cout << "(" << recv->RxReady() << ")\n";
+		}
+	}
+
 	for(auto &cli : realNet->clients)
 	{
 		if(RealNetwork::STATE_JUST_CONNECTED==cli.state)
@@ -917,7 +953,7 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 				}
 			}
 		}
-		else if(cli.state==RealNetwork::STATE_CONNECTED)
+		else if(RealNetwork::STATE_CONNECTED==cli.state || RealNetwork::STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state)
 		{
 			for(auto &virConn : TCPConn)
 			{
@@ -932,6 +968,13 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 						send_bytes=std::min<size_t>(send_bytes,virConn.MSS);
 						ReceivedTCPData(virConn,send_bytes,cli.recvBuf.data(),recv);
 						cli.recvBuf.erase(cli.recvBuf.begin(),cli.recvBuf.begin()+send_bytes);
+
+						if(RealNetwork::STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state &&
+						   0==cli.recvBuf.size())
+						{
+							cli.state=RealNetwork::STATE_DISCONNECTED;
+							virConn.state=STATE_CLOSING_FROM_ROUTER; // Need to send FIN.
+						}
 						break;
 					}
 					else if(0<virConn.TxData.size())
@@ -940,6 +983,29 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 						virConn.TxData.clear();
 					}
 				}
+			}
+		}
+	}
+
+	for(auto iter=realNet->clients.begin(); realNet->clients.end()!=iter; )
+	{
+		if(RealNetwork::STATE_DISCONNECTED==iter->state)
+		{
+			iter=realNet->clients.erase(iter);
+		}
+		else
+		{
+			++iter;	
+		}
+	}
+
+	if(true==recv->RxReady())
+	{
+		for(auto &virConn : TCPConn)
+		{
+			if(STATE_CLOSING_FROM_ROUTER==virConn.state)
+			{
+				TCPInitiateFIN(virConn,recv);
 			}
 		}
 	}

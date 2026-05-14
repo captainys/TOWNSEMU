@@ -57,6 +57,7 @@ public:
 		STATE_DISCONNECTED,
 		STATE_JUST_CONNECTED,  // Connected, but the VM thread does not know yet.
 		STATE_CONNECTED,       // Connection established, VM thread knows about it.
+		STATE_DISCONNECTED_BUT_DATA_LEFTOVER,
 	};
 
 	class Connection
@@ -80,7 +81,7 @@ public:
 		}
 	};
 
-	class Client
+	class Client // After naming it as Client, I realized it's more like a server.  Anyways...
 	{
 	friend class RealNetwork;
 	public:

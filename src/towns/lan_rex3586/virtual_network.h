@@ -210,6 +210,9 @@ public:
 	{
 		STATE_PENDING,
 		STATE_ESTABLISHED,
+		STATE_CLOSING_FROM_ROUTER,
+		STATE_FIN_SENT,
+		STATE_CLOSED,
 	};
 	class TCPConnection
 	{
@@ -281,7 +284,9 @@ protected:
 
 	void TCPConnectionEstablished(TCPConnection &conn,PacketReceiver *recv);
 	void ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_t data[],PacketReceiver *recv);
-	
+
+	void TCPInitiateFIN(TCPConnection &conn,PacketReceiver *recv);
+
 public:
 	void Polling(PacketReceiver *recv,class RealNetwork *realNet);
 };
