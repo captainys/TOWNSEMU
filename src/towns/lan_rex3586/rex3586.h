@@ -50,7 +50,8 @@ public:
 	public:
 		unsigned int ROMReadPtr=0;
 		unsigned char regs[NUM_REG_BANKS][NUM_REGS];
-		uint64_t MAC=0x464C59494E47; // "FLYING"
+		uint64_t MAC=0x00C0D0350582LL; // Is Windows 95 driver assuming MAC starts with 00C0D0 or 00803D?
+		// 0x464C59494E47; // "FLYING"
 		uint8_t config[2]={0,0};
 		bool TXIntEN=false,RXIntEN=false;
 		uint8_t INTNum=4; // 4 by REX3586.COM,  10 by Linux driver.  Apparently controlled by 7010H
