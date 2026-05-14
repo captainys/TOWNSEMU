@@ -1,6 +1,7 @@
 #ifndef VIRTUAL_NETWORK_H_IS_INCLUDED
 #define VIRTUAL_NETWORK_H_IS_INCLUDED
 
+#include <string.h>
 #include "cpputil.h"
 
 class RealNetwork;

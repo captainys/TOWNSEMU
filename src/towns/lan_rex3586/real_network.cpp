@@ -207,7 +207,7 @@ void RealNetwork::ThreadFunc(void)
 					}
 				#else
 					struct pollfd pfd;
-					pfd.fd=internal->sock;
+					pfd.fd=cli.sock;
 					pfd.events=POLLOUT;
 					pfd.revents=0;
 					if(poll(&pfd,1,1)>=1)
