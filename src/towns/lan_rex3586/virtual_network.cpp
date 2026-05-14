@@ -449,6 +449,8 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 	std::vector <uint8_t> DATA;
 	DATA.resize(512);
 
+	size_t IPHeaderPos=14;
+	size_t UDPHeaderPos=34;
 	auto data=DATA.data();
 
 	switch(opt.msgType)
@@ -462,9 +464,10 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 		data[13]=0;
 
 		// IP layer
+		IPHeaderPos=14;
 		data[14]=0x45; // version=4, header length=5 words (5*4=20 bytes).
 		data[15]=0;    // QoS
-		PutWordBE(data+16,0x148); // Length : Is the length always 0x148?
+		PutWordBE(data+16,0); // Length : Tentative.  Should be the total length minus IPHeaderPos.
 		PutWordBE(data+18,0); // Fragment ID
 		PutWordBE(data+20,0); // Fragment Offset or Flags  (Looks like 0xC000 for flags, 0x3FFF for offset)
 		data[22]=0x40; // TTL
@@ -473,12 +476,11 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 		PutDwordBE(data+26,DHCP_SERVER_IP); // Src IP
 		PutDwordBE(data+30,VM_DHCP_IP);     // Dst IP
 
-		RecalculateIPHeaderCheckSum(20,data+14);
-
 		// UDP
+		UDPHeaderPos=34;
 		PutWordBE(data+34,DHCP_SERVER_PORT);
 		PutWordBE(data+36,DHCP_CLIENT_PORT);
-		PutWordBE(data+38,0x134); // Length
+		PutWordBE(data+38,0); // Length: Tentative.
 		PutWordBE(data+40,0);     // UDP checksum is optional according to PD3586
 		data[42]=2; // Is this same as DHCP_MSG_REPLY?
 		data[43]=1; // net type
@@ -526,6 +528,14 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 			ptr+=4;
 
 			data[ptr++]=DHCP_OPTION_END;
+
+
+			PutWordBE(data+38,ptr-UDPHeaderPos); // UDP Length: Header + Payload
+
+			size_t IPv4Len=ptr-IPHeaderPos;
+			PutWordBE(data+16,IPv4Len);
+			RecalculateIPHeaderCheckSum(20,data+IPHeaderPos); // Now I can calculate IP checksum.
+
 
 			DATA.resize(ptr);
 		}

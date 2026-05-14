@@ -65,6 +65,10 @@ void RatocREX3586::UpdatePIC(void)
 	         (true==state.TXIntEN && 0!=(state.txState&TXSTATE_TXDONE)); // What about TX?  What can trigger TX INT?
 	FMTownsCommon *towns=(FMTownsCommon *)vmPtr;
 	towns->pic.SetInterruptRequestBit(state.INTNum,irr);
+	if(true==irr)
+	{
+		std::cout << "REX3586 Interrupt Request on " << cpputil::Ubtox(state.INTNum) << "\n";
+	}
 }
 
 void RatocREX3586::ReceivePacket(size_t len,const uint8_t data[])
@@ -144,7 +148,7 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 		}
 
 		// According to Linux FM TOWNS REX 3586 driver, high-4 bits control the IRQ.
-		switch(data&0x10)
+		switch(data&0xF0)
 		{
 		case 0x10:
 			state.INTNum=4;
