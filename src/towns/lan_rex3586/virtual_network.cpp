@@ -308,7 +308,7 @@ void VirtualNetwork::RecalculateTCPHeaderCheckSum(size_t len,uint8_t data[],uint
 
 void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet)
 {
-	if(len<36)
+	if(len<34)
 	{
 		if(true==monitorTX)
 		{
@@ -318,12 +318,6 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 	}
 
 	IPHeader ip;
-
-
-	size_t totalLen=cpputil::GetWord(data);
-
-	data+=2;
-	len-=2;
 
 	// The Ethernet (Layer 2) Header
 	EthernetHeader ether=DecodeEthernetHeader(14,data);

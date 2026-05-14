@@ -85,11 +85,12 @@ void RatocREX3586::ReceivePacket(size_t len,const uint8_t data[])
 
 	if(true==var.monitorRxPacket)
 	{
-		std::cout << "RX: " << state.RXPacket.size() << "\n";
+		std::cout << "RX(Router->VM): " << state.RXPacket.size() << " bytes\n";
 		for(auto str : miscutil::MakeDump(state.RXPacket.size(),state.RXPacket.data()))
 		{
 			std::cout << str << "\n";
 		}
+		std::cout << "\n";
 	}
 }
 
@@ -178,18 +179,33 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 			// b0-b6=1 immediately starts tx.
 			if(0x81==(data&0x81)) // Apparently it is the trigger.
 			{
-				net.TransmitPacket(state.TXPacket.size(),state.TXPacket.data(),this,realNet);
-				if(true==var.monitorTxPacket)
+				size_t ptr=0;
+				while(ptr+1<state.TXPacket.size())
 				{
-					for(auto str : miscutil::MakeDump(state.TXPacket.size(),state.TXPacket.data()))
+					size_t bytes=state.TXPacket[ptr]|(state.TXPacket[ptr+1]<<8); // This word is Intel byte order.
+
+					bytes=std::min<size_t>(bytes,state.TXPacket.size()-ptr-2);
+
+					if(true==var.monitorTxPacket)
 					{
-						std::cout << str << "\n";
+						std::cout << "TX(VM->Router):" << bytes << " bytes\n";
+						for(auto str : miscutil::MakeDump(bytes,state.TXPacket.data()+ptr+2))
+						{
+							std::cout << str << "\n";
+						}
+						std::cout << "\n";
 					}
+					net.TransmitPacket(bytes,state.TXPacket.data()+ptr+2,this,realNet);
+					ptr+=bytes+2;
 				}
 				state.txState&=(~TXSTATE_TXPKTRCD);
 				state.TXPacket.clear();
 				state.txState|=TXSTATE_TXDONE;
 				UpdatePIC();
+			}
+			else if(0!=(data&0x80))
+			{
+				std::cout << "TX_START: " << cpputil::Ubtox(data) << " : Don't know what to do.\n";
 			}
 			break;
 		case TOWNSIO_LAN_REX3586_16COLL: //		0x700B,
