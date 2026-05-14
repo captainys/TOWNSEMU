@@ -55,11 +55,16 @@ bool VirtualNetwork::DHCPOption::Decode(size_t len,const uint8_t data[])
 				paramReqList.push_back(data[2+i]);
 			}
 			break;
+		case DHCP_OPTION_MAC_ADDRESS: // 0x3D
+			{
+				// Should be same as the Ethernet header's MAC address.
+			}
+			break;
 		case DHCP_OPTION_END: //0xFF
 			return true;
 		default:
-			std::cout << "Undefined DHCP option:" << cpputil::Ubtox(data[0]) <<"\n";
-			return false;
+			std::cout << "Warning: Undefined DHCP option:" << cpputil::Ubtox(data[0]) <<"\n";
+			break;
 		}
 
 		auto optlen=data[1];
