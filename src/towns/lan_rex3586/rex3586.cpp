@@ -61,7 +61,8 @@ void RatocREX3586::RealPolling(void)
 
 void RatocREX3586::UpdatePIC(void)
 {
-	bool irr=(true==state.RXIntEN && 0!=state.RXPacket.size()); // What about TX?  What can trigger TX INT?
+	bool irr=(true==state.RXIntEN && 0!=(state.rxState&RXSTATE_RXPKT)) ||
+	         (true==state.TXIntEN && 0!=(state.txState&TXSTATE_TXDONE)); // What about TX?  What can trigger TX INT?
 	FMTownsCommon *towns=(FMTownsCommon *)vmPtr;
 	towns->pic.SetInterruptRequestBit(state.INTNum,irr);
 }
@@ -76,6 +77,10 @@ void RatocREX3586::ReceivePacket(size_t len,const uint8_t data[])
 	state.RXPacket.push_back(len>>8);
 
 	state.RXPacket.insert(state.RXPacket.end(),data,data+len);
+	if(0<len)
+	{
+		state.rxState|=RXSTATE_RXPKT;
+	}
 	UpdatePIC();
 
 	if(true==var.monitorRxPacket)
@@ -105,20 +110,12 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 	switch(ioport)
 	{
 	case TOWNSIO_LAN_REX3586_TX_STATUS: //	0x7000,
-		if(0x82==(data&0x82))
-		{
-			// Looks like it clears TX status.
-			// state.TXPacket.clear();
-			UpdatePIC();
-		}
+		state.txState&=(~data);
+		UpdatePIC();
 		break;
 	case TOWNSIO_LAN_REX3586_RX_STATUS: //	0x7001,
-		if(0x81==(data&0x81))
-		{
-			// Looks like it clears RX status.
-			// state.RXPacket.clear();  But doesn't look to clear the data.
-			UpdatePIC();
-		}
+		state.rxState&=(~data);
+		UpdatePIC();
 		break;
 	case TOWNSIO_LAN_REX3586_TX_INTEN: //	0x7002,
 		state.TXIntEN=(0x82==(data&0x82));
@@ -176,6 +173,9 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 			state.TXPacket.push_back(data);
 			break;
 		case TOWNSIO_LAN_REX3586_TX_START: //	0x700A,
+			// b7: Start Tx
+			// b0-b6: Packet count
+			// b0-b6=1 immediately starts tx.
 			if(0x81==(data&0x81)) // Apparently it is the trigger.
 			{
 				net.TransmitPacket(state.TXPacket.size(),state.TXPacket.data(),this,realNet);
@@ -186,7 +186,9 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 						std::cout << str << "\n";
 					}
 				}
+				state.txState&=(~TXSTATE_TXPKTRCD);
 				state.TXPacket.clear();
+				state.txState|=TXSTATE_TXDONE;
 				UpdatePIC();
 			}
 			break;
@@ -215,24 +217,10 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 	switch(ioport)
 	{
 	case TOWNSIO_LAN_REX3586_TX_STATUS: //	0x7000,
-		if(true==net.TxReady)
-		{
-			data=0x80;
-		}
-		else
-		{
-			data=0;
-		}
+		data=state.txState;
 		break;
 	case TOWNSIO_LAN_REX3586_RX_STATUS: //	0x7001,
-		if(0==state.RXPacket.size())
-		{
-			data=0;
-		}
-		else
-		{
-			data=0xFF;
-		}
+		data=state.rxState;
 		break;
 	case TOWNSIO_LAN_REX3586_TX_INTEN: //	0x7002,
 		break;
@@ -334,6 +322,10 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 			{
 				data=state.RXPacket[0];
 				state.RXPacket.erase(state.RXPacket.begin());
+				if(0==state.RXPacket.size())
+				{
+					state.rxState&=(~RXSTATE_RXPKT);
+				}
 			}
 			else
 			{
@@ -345,6 +337,10 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 			{
 				data=state.RXPacket[0];
 				state.RXPacket.erase(state.RXPacket.begin());
+				if(0==state.RXPacket.size())
+				{
+					state.rxState&=(~RXSTATE_RXPKT);
+				}
 			}
 			else
 			{
@@ -382,12 +378,17 @@ unsigned int RatocREX3586::IOReadWord(unsigned int ioport)
 			uint16_t data=state.RXPacket[0]|(state.RXPacket[1]<<8);
 			state.RXPacket.erase(state.RXPacket.begin());
 			state.RXPacket.erase(state.RXPacket.begin());
+			if(0==state.RXPacket.size())
+			{
+				state.rxState&=(~RXSTATE_RXPKT);
+			}
 			return data;
 		}
 		else if(1==state.RXPacket.size())
 		{
 			uint16_t data=state.RXPacket[0];
 			state.RXPacket.erase(state.RXPacket.begin());
+			state.rxState&=(~RXSTATE_RXPKT);
 			return data;
 		}
 		else

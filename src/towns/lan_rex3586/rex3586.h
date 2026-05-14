@@ -45,6 +45,26 @@ public:
 		NUM_REGS=0x20,
 	};
 
+	enum
+	{
+		TXSTATE_TXDONE=0x80,
+		TXSTATE_NETBUSY=0x40,
+		TXSTATE_TXPKTRCD=0x20,
+		TXSTATE_CRLOST=0x10,
+		TXSTATE_JABBER=0x08,
+		TXSTATE_COL=0x04,
+		TXSTATE_COL16=0x02,
+
+		RXSTATE_RXPKT=0x80,
+		RXSTATE_BUS_TS_ERR=0x40,
+		RXSTATE_DMA_EOP=0x20,
+		RXSTATE_RMT_9900H=0x10,
+		RXSTATE_SHORT_PKT=0x08,
+		RXSTATE_ALIGN_ERR=0x04,
+		RXSTATE_CRC_ERR=0x02,
+		RXSTATE_OVERFLOW=0x01,
+	};
+
 	class State
 	{
 	public:
@@ -56,6 +76,8 @@ public:
 		bool TXIntEN=false,RXIntEN=false;
 		uint8_t INTNum=4; // 4 by REX3586.COM,  10 by Linux driver.  Apparently controlled by 7010H
 
+		uint8_t txState=0,rxState=0;
+		
 		unsigned int GetCurrentRegisterBank(void) const // Apparently Config 1 Bits 2-3 are the bank.
 		{
 			return (config[1]>>2)&3;
