@@ -85,8 +85,8 @@ void RatocREX3586::ReceivePacket(size_t len,const uint8_t data[])
 
 	if(true==var.monitorRxPacket)
 	{
-		std::cout << "RX(Router->VM): " << state.RXPacket.size() << " bytes\n";
-		for(auto str : miscutil::MakeDump(state.RXPacket.size(),state.RXPacket.data()))
+		std::cout << "RX(Router->VM): " << len << " bytes\n";
+		for(auto str : miscutil::MakeDump(len,data))
 		{
 			std::cout << str << "\n";
 		}
@@ -189,6 +189,7 @@ void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 					if(true==var.monitorTxPacket)
 					{
 						std::cout << "TX(VM->Router):" << bytes << " bytes\n";
+						std::cout << cpputil::Ubtox(state.TXPacket[ptr]) << " " << cpputil::Ubtox(state.TXPacket[ptr+1]) << "\n";
 						for(auto str : miscutil::MakeDump(bytes,state.TXPacket.data()+ptr+2))
 						{
 							std::cout << str << "\n";
