@@ -700,6 +700,38 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 			}
 		}
 	}
+	if(TCP_FLAG_FIN&tcp.flags)
+	{
+		for(auto &conn : TCPConn)
+		{
+			if(conn.ipHdr.dstIP==ip.srcIP &&
+			   conn.tcpHdr.srcPort==tcp.dstPort)
+			{
+				if(STATE_FIN_SENT==conn.state)
+				{
+					conn.tcpHdr.StripOptions(); // Just in case.
+					conn.tcpHdr.flags=TCP_FLAG_ACK;
+					conn.tcpHdr.ackNum=tcp.sequenceNum+1;
+					conn.ipHdr.len=conn.ipHdr.GetHeaderLength()+conn.tcpHdr.GetTotalLength();
+
+					std::vector <uint8_t> data;
+					AddEthernetHeader(data,conn.ethernetHdr);
+
+					size_t IPHeaderPos=data.size();
+					AddIPHeader(data,conn.ipHdr);
+					RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+
+					size_t TCPHeaderPos=data.size();
+					AddTCPHeader(data,conn.tcpHdr);
+					RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
+
+					recv->ReceivePacket(data.size(),data.data());
+
+					conn.state=STATE_CLOSED;
+				}
+			}
+		}
+	}
 
 	size_t optPtr=0;
 	bool optErr=false,optEnd=false;
