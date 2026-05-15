@@ -1159,14 +1159,14 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 {
 	{
 		std::lock_guard <std::mutex> lock(realNet->clientsLock);
-		for(auto &cli : realNet->clients)
-		{
-			if(0<cli.recvBuf.size())
-			{
-				std::cout << "Recv Data Present for VMPort:" << cli.conn.VMPort << " dstPort:" << cli.conn.dstPort << "\n";
-				std::cout << "(" << recv->RxReady() << ")\n";
-			}
-		}
+		// for(auto &cli : realNet->clients)
+		// {
+		// 	if(0<cli.recvBuf.size())
+		// 	{
+		// 		std::cout << "Recv Data Present for VMPort:" << cli.conn.VMPort << " dstPort:" << cli.conn.dstPort << "\n";
+		// 		std::cout << "(" << recv->RxReady() << ")\n";
+		// 	}
+		// }
 
 		for(auto &cli : realNet->clients)
 		{
