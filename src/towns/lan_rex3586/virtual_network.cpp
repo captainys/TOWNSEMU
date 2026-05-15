@@ -814,6 +814,12 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		conn.ipHdr=ip;
 		conn.tcpHdr=tcp;
 		conn.state=STATE_PENDING;
+
+		// Swap src and dst to use it for packet back to the VM.
+		std::swap(conn.ethernetHdr.srcMAC,conn.ethernetHdr.dstMAC);
+		std::swap(conn.ipHdr.srcIP,conn.ipHdr.dstIP);
+		std::swap(conn.tcpHdr.srcPort,conn.tcpHdr.dstPort);
+
 		TCPConn.push_back(conn);
 		thisConn=&TCPConn.back();
 
@@ -1104,10 +1110,6 @@ void  VirtualNetwork::TCPConnectionEstablished(TCPConnection &conn,PacketReceive
 {
 	conn.state=STATE_ESTABLISHED;
 
-	std::swap(conn.ethernetHdr.srcMAC,conn.ethernetHdr.dstMAC);
-	std::swap(conn.ipHdr.srcIP,conn.ipHdr.dstIP);
-	std::swap(conn.tcpHdr.srcPort,conn.tcpHdr.dstPort);
-
 	conn.tcpHdr.flags|=TCP_FLAG_ACK;
 	conn.tcpHdr.ackNum=conn.tcpHdr.sequenceNum+1;
 	conn.tcpHdr.sequenceNum=sequenceNumSource++;
@@ -1243,9 +1245,9 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 
 				for(auto &virConn : TCPConn)
 				{
-					if(virConn.ipHdr.dstIP==cli.conn.GetIPUint32() &&
-					   virConn.tcpHdr.srcPort==cli.conn.VMPort &&
-					   virConn.tcpHdr.dstPort==cli.conn.dstPort)
+					if(virConn.ipHdr.srcIP==cli.conn.GetIPUint32() &&
+					   virConn.tcpHdr.dstPort==cli.conn.VMPort &&
+					   virConn.tcpHdr.srcPort==cli.conn.dstPort)
 					{
 						TCPConnectionEstablished(virConn,recv);
 						break;
