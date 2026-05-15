@@ -54,6 +54,11 @@ public:
 
 	enum
 	{
+		DNS_SERVER_PORT=0x35,
+	};
+
+	enum
+	{
 		TCP_FLAG_FIN=1,
 		TCP_FLAG_SYN=2,
 		TCP_FLAG_RST=4,
@@ -247,6 +252,7 @@ public:
 
 	bool monitorTX=true,monitorRX=true;
 	bool monitorTCP=true;
+	bool monitorDNS=true;
 	uint32_t sequenceNumSource=59673459;
 
 	static uint64_t GetMAC(const uint8_t data[]);
@@ -282,6 +288,9 @@ protected:
 	std::vector <uint8_t> MakeDHCPReturnPacket(EthernetHeader ether,IPHeader ip,UDPHeader udp,DHCPOption opt);
 
 	void ProcessARP_Packet(EthernetHeader ether,size_t len,const uint8_t data[],PacketReceiver *recv);
+
+	void ProcessUDP_DNS_Packet(EthernetHeader ether,IPHeader ip,UDPHeader udp,size_t len,const uint8_t data[]);
+
 
 	void ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet);
 

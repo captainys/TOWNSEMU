@@ -415,6 +415,14 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 					ProcessUDP_DHCP_Packet(ether,ip,udp,len,data,recv);
 				}
 			}
+			else if(DNS_IP==ip.dstIP && DNS_SERVER_PORT==udp.dstPort)
+			{
+				if(true==monitorDNS)
+				{
+					std::cout << "UDP Packet to DNS.\n";
+				}
+				ProcessUDP_DNS_Packet(ether,ip,udp,len,data);
+			}
 		}
 	}
 	else if(TYPE_ARP==ether.type)
@@ -550,6 +558,11 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 	}
 
 	return DATA;
+}
+
+void VirtualNetwork::ProcessUDP_DNS_Packet(EthernetHeader ether,IPHeader ip,UDPHeader udp,size_t len,const uint8_t data[])
+{
+	
 }
 
 void VirtualNetwork::ProcessARP_Packet(EthernetHeader ether,size_t len,const uint8_t data[],PacketReceiver *recv)
