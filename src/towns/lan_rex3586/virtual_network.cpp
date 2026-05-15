@@ -1223,6 +1223,14 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 							cli.sendBuf.insert(cli.sendBuf.end(),virConn.TxData.begin(),virConn.TxData.end());
 							virConn.TxData.clear();
 						}
+						if(STATE_FIN_RECEIVED==virConn.state)
+						{
+							cli.FIN_initiated_from_VM=true;
+							if(true==monitorTCP)
+							{
+								std::cout << "VM initiated FIN and Real Network notified.\n";
+							}
+						}
 					}
 				}
 			}

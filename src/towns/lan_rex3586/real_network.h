@@ -87,6 +87,12 @@ public:
 	public:
 		int state;
 		bool bytesIncoming=false;
+
+		// Closing connection from VM >>
+		bool FIN_initiated_from_VM=false;
+		bool ShutdownInitiated=false;
+		// Closing connection from VM <<
+
 		std::vector <uint8_t> recvBuf; // VM <- Outside
 		std::vector <uint8_t> sendBuf; // VM -> Outside
 		SOCKET sock;

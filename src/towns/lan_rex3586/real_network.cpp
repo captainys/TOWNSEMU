@@ -227,6 +227,16 @@ void RealNetwork::ThreadFunc(void)
 						cli.sendBuf.clear();
 					}
 				}
+
+				if(true==cli.FIN_initiated_from_VM && true!=cli.ShutdownInitiated)
+				{
+					if(true==monitor)
+					{
+						std::cout << "Shutdown Initiated VMPort:" << cli.conn.VMPort << " DstPort:" << cli.conn.dstPort << "\n";
+					}
+					cli.ShutdownInitiated=true;
+					shutdown(cli.sock,SD_SEND);
+				}
 			}
 		}
 		THREAD_PROGRESS("4");
