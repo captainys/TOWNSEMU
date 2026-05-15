@@ -782,12 +782,13 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 			realNet->RequestTCPConnection(tcp.srcPort,IP,tcp.dstPort);
 		}
 	}
-	if(tcp.flags&TCP_FLAG_ACK)
+	if(tcp.flags&TCP_FLAG_ACK) // ACK VM->Router
 	{
 		for(auto &conn : TCPConn)
 		{
 			if(conn.ipHdr.dstIP==ip.srcIP &&
-			   conn.tcpHdr.srcPort==tcp.dstPort)
+			   conn.tcpHdr.srcPort==tcp.dstPort && // Remote (Outside) Port
+			   conn.tcpHdr.dstPort==tcp.srcPort)   // Local (VM) Port
 			{
 				thisConn=&conn;
 				if(true==monitorTCP)
@@ -816,13 +817,14 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		for(auto &conn : TCPConn)
 		{
 			if(conn.ipHdr.dstIP==ip.srcIP &&
-			   conn.tcpHdr.srcPort==tcp.dstPort)
+			   conn.tcpHdr.srcPort==tcp.dstPort && // Remote (Outside) port
+			   conn.tcpHdr.dstPort==tcp.srcPort)   // Local (VM) port
 			{
 				++conn.ipHdr.fragID; // Is it necessary?
 
 				if(true==monitorTCP)
 				{
-					std::cout << "Acknowledging PSH\n";
+					std::cout << "Acknowledging PSH from VM\n";
 					std::cout << "  Incoming seqNum=" << cpputil::Uitox(tcp.sequenceNum) << "\n";
 					std::cout << "  Incoming ackNum=" << cpputil::Uitox(tcp.ackNum) << "\n";
 					std::cout << "  Current seqNum =" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << "\n";
@@ -870,7 +872,8 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 			auto &conn=*iter;
 			bool deleted=false;
 			if(conn.ipHdr.dstIP==ip.srcIP &&
-			   conn.tcpHdr.srcPort==tcp.dstPort)
+			   conn.tcpHdr.srcPort==tcp.dstPort && // Remote (Outside) port
+			   conn.tcpHdr.dstPort==tcp.srcPort)   // Local (VM) port
 			{
 				if(STATE_FIN_SENT==conn.state) // Closing from the remote host
 				{
@@ -1182,7 +1185,8 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 				for(auto &virConn : TCPConn)
 				{
 					if(virConn.ipHdr.dstIP==cli.conn.GetIPUint32() &&
-					virConn.tcpHdr.srcPort==cli.conn.VMPort)
+					   virConn.tcpHdr.srcPort==cli.conn.VMPort &&
+					   virConn.tcpHdr.dstPort==cli.conn.dstPort)
 					{
 						TCPConnectionEstablished(virConn,recv);
 						break;
@@ -1195,8 +1199,9 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 				{
 					// src and dst swapped in TCPConnectionEstablished.
 					if(true!=virConn.waitingAck &&
-					virConn.ipHdr.srcIP==cli.conn.GetIPUint32() &&
-					virConn.tcpHdr.dstPort==cli.conn.VMPort)
+					   virConn.ipHdr.srcIP==cli.conn.GetIPUint32() &&
+					   virConn.tcpHdr.dstPort==cli.conn.VMPort &&
+					   virConn.tcpHdr.srcPort==cli.conn.dstPort)
 					{
 						if(0<cli.recvBuf.size() && true==recv->RxReady())
 						{

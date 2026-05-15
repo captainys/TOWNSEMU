@@ -37,9 +37,15 @@ void RealNetwork::ThreadFunc(void)
 			fd_set readfds;
 			FD_ZERO(&readfds);
 
+			int i=0;
 			for(auto &cli : clients)
 			{
 				FD_SET(cli.sock, &readfds); // cli.sock is not accessed from outside of Network Thread
+				++i;
+			}
+			if(64<i)
+			{
+				std::cout << "FD_SET overflow!\n";
 			}
 
 			// 10ms timeout
