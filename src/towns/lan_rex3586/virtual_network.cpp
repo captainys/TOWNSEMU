@@ -425,7 +425,7 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 				}
 				len-=8;
 				data+=8;
-				ProcessUDP_DNS_Packet(ether,ip,udp,len,data);
+				ProcessUDP_DNS_Packet(ether,ip,udp,len,data,realNet);
 			}
 		}
 	}
@@ -564,7 +564,7 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 	return DATA;
 }
 
-void VirtualNetwork::ProcessUDP_DNS_Packet(EthernetHeader ether,IPHeader ip,UDPHeader udp,size_t len,const uint8_t data[])
+void VirtualNetwork::ProcessUDP_DNS_Packet(EthernetHeader ether,IPHeader ip,UDPHeader udp,size_t len,const uint8_t data[],RealNetwork *realNet)
 {
 	std::string hostname;
 	size_t ptr=12;
@@ -588,7 +588,15 @@ void VirtualNetwork::ProcessUDP_DNS_Packet(EthernetHeader ether,IPHeader ip,UDPH
 		std::cout << "DNS Inquiry:" << hostname << "\n";
 	}
 
-	// realNet->RequestDNS(hostname);
+	realNet->RequestDNS(hostname);
+
+	DNSRequest req;
+	req.ethernetHdr=ether;
+	req.ipHdr=ip;
+	req.udpHdr=udp;
+	req.udpPayload.insert(req.udpPayload.end(),data,data+len);
+	req.hostname=hostname;
+	DNSReq.push_back(req);
 }
 
 void VirtualNetwork::ProcessARP_Packet(EthernetHeader ether,size_t len,const uint8_t data[],PacketReceiver *recv)

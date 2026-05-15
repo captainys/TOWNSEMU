@@ -225,7 +225,7 @@ public:
 	class DNSRequest
 	{
 	public:
-		EthernetHeader etherHdr;
+		EthernetHeader ethernetHdr;
 		IPHeader ipHdr;
 		UDPHeader udpHdr;
 		std::vector <uint8_t> udpPayload;
@@ -270,6 +270,7 @@ public:
 
 	bool TxReady=true;
 	std::vector <TCPConnection> TCPConn;
+	std::vector <DNSRequest> DNSReq;
 
 	bool monitorTX=true,monitorRX=true;
 	bool monitorTCP=true;
@@ -310,7 +311,7 @@ protected:
 
 	void ProcessARP_Packet(EthernetHeader ether,size_t len,const uint8_t data[],PacketReceiver *recv);
 
-	void ProcessUDP_DNS_Packet(EthernetHeader ether,IPHeader ip,UDPHeader udp,size_t len,const uint8_t data[]);
+	void ProcessUDP_DNS_Packet(EthernetHeader ether,IPHeader ip,UDPHeader udp,size_t len,const uint8_t data[],RealNetwork *realNet);
 
 
 	void ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet);

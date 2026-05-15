@@ -224,6 +224,29 @@ void RealNetwork::ThreadFunc(void)
 			}
 		}
 		THREAD_PROGRESS("4");
+		{
+			std::lock_guard <std::mutex> lock(DNSRequestLock);
+			for(auto &req : DNSReq)
+			{
+				if(DNS_REQUESTED==req.state)
+				{
+					struct hostent *table=gethostbyname(req.hostname.c_str());
+					if(nullptr==table)
+					{
+						req.state=DNS_NOT_FOUND;
+					}
+					else
+					{
+						req.state=DNS_FOUND;
+						req.ipAddr[0]=((unsigned char *)table->h_addr_list[0])[0];
+						req.ipAddr[1]=((unsigned char *)table->h_addr_list[0])[1];
+						req.ipAddr[2]=((unsigned char *)table->h_addr_list[0])[2];
+						req.ipAddr[3]=((unsigned char *)table->h_addr_list[0])[3];
+					}
+				}
+			}
+		}
+		THREAD_PROGRESS("5");
 	}
 
 	THREAD_PROGRESS("Fin");
