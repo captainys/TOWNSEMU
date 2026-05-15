@@ -234,6 +234,10 @@ void RealNetwork::ThreadFunc(void)
 					if(nullptr==table)
 					{
 						req.state=DNS_NOT_FOUND;
+						if(true==monitor)
+						{
+							std::cout << "Host " << req.hostname << " not found.\n";
+						}
 					}
 					else
 					{
@@ -242,6 +246,10 @@ void RealNetwork::ThreadFunc(void)
 						req.ipAddr[1]=((unsigned char *)table->h_addr_list[0])[1];
 						req.ipAddr[2]=((unsigned char *)table->h_addr_list[0])[2];
 						req.ipAddr[3]=((unsigned char *)table->h_addr_list[0])[3];
+						if(true==monitor)
+						{
+							std::cout << "Host " << req.hostname << " " << uint32_t(req.ipAddr[0]) << "." << uint32_t(req.ipAddr[1]) << "." << uint32_t(req.ipAddr[2]) << "." << uint32_t(req.ipAddr[3]) << "\n";
+						}
 					}
 				}
 			}

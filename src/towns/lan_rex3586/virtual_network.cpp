@@ -259,6 +259,16 @@ void VirtualNetwork::AddARPHeader(std::vector <uint8_t> &DATA,const ARPHeader &h
 	PutDwordBE(data+24,hdr.dstIP);
 }
 
+void VirtualNetwork::AddUDPHeader(std::vector <uint8_t> &data,const UDPHeader &udp)
+{
+	size_t ptr=data.size();
+	data.resize(ptr+8);
+	PutWordBE(data.data()+ptr,udp.srcPort);
+	PutWordBE(data.data()+ptr+2,udp.dstPort);
+	PutWordBE(data.data()+ptr+4,udp.len);
+	PutWordBE(data.data()+ptr+6,udp.checkSum);
+}
+
 VirtualNetwork::TCPHeader VirtualNetwork::DecodeTCPHeader(size_t len,const uint8_t data[])
 {
 	TCPHeader hdr;
@@ -597,6 +607,106 @@ void VirtualNetwork::ProcessUDP_DNS_Packet(EthernetHeader ether,IPHeader ip,UDPH
 	req.udpPayload.insert(req.udpPayload.end(),data,data+len);
 	req.hostname=hostname;
 	DNSReq.push_back(req);
+}
+
+void VirtualNetwork::SendDNSReplyFoundToVM(DNSRequest &req,PacketReceiver *recv)
+{
+	auto ether=req.ethernetHdr;
+	auto ip=req.ipHdr;
+	auto udp=req.udpHdr;
+
+	std::swap(ether.srcMAC,ether.dstMAC);
+	std::swap(ip.srcIP,ip.dstIP);
+	std::swap(udp.srcPort,udp.dstPort);
+
+	udp.checkSum=0; // Decline to calculate checksum.
+
+	std::vector <uint8_t> data;
+	AddEthernetHeader(data,ether);
+
+	size_t ipHeaderPos=data.size();
+	AddIPHeader(data,ip);
+
+	size_t udpHeaderPos=data.size();
+	AddUDPHeader(data,udp);
+
+	size_t udpPayloadPos=data.size();
+	data.insert(data.end(),req.udpPayload.begin(),req.udpPayload.end());
+
+	data[udpPayloadPos+2]=0x81; // Standard Response, No Error.
+	data[udpPayloadPos+3]=0x80;
+
+	data[udpPayloadPos+7]=1;  // One answer
+
+	data.push_back(0xC0); // Pointer to the name in the original inquiry.
+	data.push_back(0x0C);
+
+	data.push_back(0); // Type A
+	data.push_back(1);
+
+	data.push_back(0); // Class IN
+	data.push_back(1);
+
+	data.push_back(0); // TTL
+	data.push_back(0);
+	data.push_back(0);
+	data.push_back(60); // 60sec
+
+	data.push_back(0); // Data length
+	data.push_back(4);
+
+	data.push_back(req.ipAddr[0]);
+	data.push_back(req.ipAddr[1]);
+	data.push_back(req.ipAddr[2]);
+	data.push_back(req.ipAddr[3]);
+
+	size_t ipLen=data.size()-ipHeaderPos;
+	PutWordBE(data.data()+ipHeaderPos+2,ipLen);
+	RecalculateIPHeaderCheckSum(ip.GetHeaderLength(),data.data()+ipHeaderPos);
+
+	size_t udpLen=data.size()-udpHeaderPos;
+	PutWordBE(data.data()+udpHeaderPos+4,udpLen);
+
+	recv->ReceivePacket(data.size(),data.data());
+}
+
+void VirtualNetwork::SendDNSReplyNotFoundToVM(DNSRequest &req,PacketReceiver *recv)
+{
+	auto ether=req.ethernetHdr;
+	auto ip=req.ipHdr;
+	auto udp=req.udpHdr;
+
+	udp.checkSum=0; // Decline to calculate checksum.
+
+	std::swap(ether.srcMAC,ether.dstMAC);
+	std::swap(ip.srcIP,ip.dstIP);
+	std::swap(udp.srcPort,udp.dstPort);
+
+	std::vector <uint8_t> data;
+	AddEthernetHeader(data,ether);
+
+	size_t ipHeaderPos=data.size();
+	AddIPHeader(data,ip);
+
+	size_t udpHeaderPos=data.size();
+	AddUDPHeader(data,udp);
+
+	size_t udpPayloadPos=data.size();
+	data.insert(data.end(),req.udpPayload.begin(),req.udpPayload.end());
+
+	data[udpPayloadPos+2]=0x81; // Standard Response
+	data[udpPayloadPos+3]=0x83; // NXDOMAIN Error
+
+	data[udpPayloadPos+7]=0;  // Zero answer
+
+	size_t ipLen=data.size()-ipHeaderPos;
+	PutWordBE(data.data()+ipHeaderPos+2,ipLen);
+	RecalculateIPHeaderCheckSum(ip.GetHeaderLength(),data.data()+ipHeaderPos);
+
+	size_t udpLen=data.size()-udpHeaderPos;
+	PutWordBE(data.data()+udpHeaderPos+4,udpLen);
+
+	recv->ReceivePacket(data.size(),data.data());
 }
 
 void VirtualNetwork::ProcessARP_Packet(EthernetHeader ether,size_t len,const uint8_t data[],PacketReceiver *recv)
@@ -1047,83 +1157,112 @@ void VirtualNetwork::TCPInitiateFIN(TCPConnection &conn,PacketReceiver *recv)
 
 void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 {
-	std::lock_guard <std::mutex> lock(realNet->clientsLock);
-	for(auto &cli : realNet->clients)
 	{
-		if(0<cli.recvBuf.size())
+		std::lock_guard <std::mutex> lock(realNet->clientsLock);
+		for(auto &cli : realNet->clients)
 		{
-			std::cout << "Recv Data Present for VMPort:" << cli.conn.VMPort << " dstPort:" << cli.conn.dstPort << "\n";
-			std::cout << "(" << recv->RxReady() << ")\n";
-		}
-	}
-
-	for(auto &cli : realNet->clients)
-	{
-		if(RealNetwork::STATE_JUST_CONNECTED==cli.state)
-		{
-			cli.state=RealNetwork::STATE_CONNECTED;
-
-			if(true==monitorTCP)
+			if(0<cli.recvBuf.size())
 			{
-				std::cout << "Connection Established\n";
+				std::cout << "Recv Data Present for VMPort:" << cli.conn.VMPort << " dstPort:" << cli.conn.dstPort << "\n";
+				std::cout << "(" << recv->RxReady() << ")\n";
 			}
+		}
 
-			for(auto &virConn : TCPConn)
+		for(auto &cli : realNet->clients)
+		{
+			if(RealNetwork::STATE_JUST_CONNECTED==cli.state)
 			{
-				if(virConn.ipHdr.dstIP==cli.conn.GetIPUint32() &&
-				   virConn.tcpHdr.srcPort==cli.conn.VMPort)
+				cli.state=RealNetwork::STATE_CONNECTED;
+
+				if(true==monitorTCP)
 				{
-					TCPConnectionEstablished(virConn,recv);
-					break;
+					std::cout << "Connection Established\n";
 				}
-			}
-		}
-		else if(RealNetwork::STATE_CONNECTED==cli.state || RealNetwork::STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state)
-		{
-			for(auto &virConn : TCPConn)
-			{
-				// src and dst swapped in TCPConnectionEstablished.
-				if(true!=virConn.waitingAck &&
-				   virConn.ipHdr.srcIP==cli.conn.GetIPUint32() &&
-				   virConn.tcpHdr.dstPort==cli.conn.VMPort)
-				{
-					if(0<cli.recvBuf.size() && true==recv->RxReady())
-					{
-						size_t send_bytes=std::min<size_t>(cli.recvBuf.size(),TCP_MAX_LENGTH);
-						send_bytes=std::min<size_t>(send_bytes,virConn.MSS);
-						ReceivedTCPData(virConn,send_bytes,cli.recvBuf.data(),recv);
-						cli.recvBuf.erase(cli.recvBuf.begin(),cli.recvBuf.begin()+send_bytes);
 
-						if(RealNetwork::STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state &&
-						   0==cli.recvBuf.size())
-						{
-							cli.state=RealNetwork::STATE_DISCONNECTED;
-							virConn.state=STATE_CLOSING_FROM_ROUTER; // Need to send FIN.
-						}
+				for(auto &virConn : TCPConn)
+				{
+					if(virConn.ipHdr.dstIP==cli.conn.GetIPUint32() &&
+					virConn.tcpHdr.srcPort==cli.conn.VMPort)
+					{
+						TCPConnectionEstablished(virConn,recv);
 						break;
 					}
-					else if(0<virConn.TxData.size())
+				}
+			}
+			else if(RealNetwork::STATE_CONNECTED==cli.state || RealNetwork::STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state)
+			{
+				for(auto &virConn : TCPConn)
+				{
+					// src and dst swapped in TCPConnectionEstablished.
+					if(true!=virConn.waitingAck &&
+					virConn.ipHdr.srcIP==cli.conn.GetIPUint32() &&
+					virConn.tcpHdr.dstPort==cli.conn.VMPort)
 					{
-						cli.sendBuf.insert(cli.sendBuf.end(),virConn.TxData.begin(),virConn.TxData.end());
-						virConn.TxData.clear();
+						if(0<cli.recvBuf.size() && true==recv->RxReady())
+						{
+							size_t send_bytes=std::min<size_t>(cli.recvBuf.size(),TCP_MAX_LENGTH);
+							send_bytes=std::min<size_t>(send_bytes,virConn.MSS);
+							ReceivedTCPData(virConn,send_bytes,cli.recvBuf.data(),recv);
+							cli.recvBuf.erase(cli.recvBuf.begin(),cli.recvBuf.begin()+send_bytes);
+
+							if(RealNetwork::STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state &&
+							0==cli.recvBuf.size())
+							{
+								cli.state=RealNetwork::STATE_DISCONNECTED;
+								virConn.state=STATE_CLOSING_FROM_ROUTER; // Need to send FIN.
+							}
+							break;
+						}
+						else if(0<virConn.TxData.size())
+						{
+							cli.sendBuf.insert(cli.sendBuf.end(),virConn.TxData.begin(),virConn.TxData.end());
+							virConn.TxData.clear();
+						}
 					}
 				}
 			}
 		}
-	}
 
-	for(auto iter=realNet->clients.begin(); realNet->clients.end()!=iter; )
+		for(auto iter=realNet->clients.begin(); realNet->clients.end()!=iter; )
+		{
+			if(RealNetwork::STATE_DISCONNECTED==iter->state)
+			{
+				iter=realNet->clients.erase(iter);
+			}
+			else
+			{
+				++iter;	
+			}
+		}
+	}
 	{
-		if(RealNetwork::STATE_DISCONNECTED==iter->state)
+		std::lock_guard<std::mutex> lock(realNet->DNSRequestLock);
+		for(auto &vReq : DNSReq)
 		{
-			iter=realNet->clients.erase(iter);
-		}
-		else
-		{
-			++iter;	
+			for(auto iter=realNet->DNSReq.begin(); realNet->DNSReq.end()!=iter; )
+			{
+				auto &rReq=*iter;
+				if(RealNetwork::DNS_REQUESTED!=rReq.state && vReq.hostname==rReq.hostname)
+				{
+					if(RealNetwork::DNS_FOUND==rReq.state)
+					{
+						vReq.state=DNS_FOUND;
+						memcpy(vReq.ipAddr,rReq.ipAddr,sizeof(rReq.ipAddr));
+					}
+					else
+					{
+						vReq.state=DNS_NOT_FOUND;
+					}
+					iter=realNet->DNSReq.erase(iter);
+				}
+				else
+				{
+					++iter;
+				}
+			}
 		}
 	}
-
+	
 	if(true==recv->RxReady())
 	{
 		for(auto &virConn : TCPConn)
@@ -1131,6 +1270,29 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 			if(STATE_CLOSING_FROM_ROUTER==virConn.state)
 			{
 				TCPInitiateFIN(virConn,recv);
+			}
+		}
+		for(auto iter=DNSReq.begin(); iter!=DNSReq.end();)
+		{
+			auto &req=*iter;
+			if(DNS_REQUESTED==iter->state)
+			{
+				++iter;
+			}
+			else if(DNS_FOUND==req.state)
+			{
+				SendDNSReplyFoundToVM(req,recv);
+				iter=DNSReq.erase(iter);
+			}
+			else if(DNS_NOT_FOUND==req.state)
+			{
+				SendDNSReplyNotFoundToVM(req,recv);
+				iter=DNSReq.erase(iter);
+			}
+			else
+			{
+				// Unknown state
+				std::cout << "DNS Request fell to an unknown state.\n";
 			}
 		}
 	}

@@ -298,6 +298,8 @@ public:
 	static ARPHeader DecodeARPHeader(size_t len,const uint8_t data[]);
 	static void AddARPHeader(std::vector <uint8_t> &data,const ARPHeader &hdr);
 
+	static void AddUDPHeader(std::vector <uint8_t> &data,const UDPHeader &hdr);
+
 	static TCPHeader DecodeTCPHeader(size_t len,const uint8_t data[]);
 	static void AddTCPHeader(std::vector <uint8_t> &data,TCPHeader &hdr);
 	static void RecalculateTCPHeaderCheckSum(size_t len,uint8_t data[],uint32_t srcIP,uint32_t dstIP);
@@ -312,7 +314,8 @@ protected:
 	void ProcessARP_Packet(EthernetHeader ether,size_t len,const uint8_t data[],PacketReceiver *recv);
 
 	void ProcessUDP_DNS_Packet(EthernetHeader ether,IPHeader ip,UDPHeader udp,size_t len,const uint8_t data[],RealNetwork *realNet);
-
+	void SendDNSReplyFoundToVM(DNSRequest &req,PacketReceiver *recv);
+	void SendDNSReplyNotFoundToVM(DNSRequest &req,PacketReceiver *recv);
 
 	void ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet);
 
