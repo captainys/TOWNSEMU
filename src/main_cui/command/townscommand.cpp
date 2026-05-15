@@ -355,6 +355,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["TGDRV"]=DUMP_TGDRV;
 	dumpableMap["IO"]=DUMP_IOLIST;
 	dumpableMap["IOLIST"]=DUMP_IOLIST;
+	dumpableMap["NET"]=DUMP_LAN;
+	dumpableMap["LAN"]=DUMP_LAN;
 
 
 	breakEventMap["ICW1"]=   BREAK_ON_PIC_IWC1;
@@ -3186,6 +3188,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 				{
 					std::cout << "No known io in this range.\n";
 				}
+			}
+			break;
+		case DUMP_LAN:
+			for(auto str : towns.rex3586.GetStatusText())
+			{
+				std::cout << str << "\n";
 			}
 			break;
 		}

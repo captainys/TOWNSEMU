@@ -316,6 +316,7 @@ public:
 		DUMP_SAVESTATEM,
 		DUMP_TGDRV,
 		DUMP_IOLIST,
+		DUMP_LAN,
 	};
 
 	enum
