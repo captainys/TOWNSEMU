@@ -102,6 +102,21 @@ public:
 		bool DoConnect(void);
 	};
 
+
+	enum
+	{
+		DNS_REQUESTED,
+		DNS_FOUND,
+		DNS_NOT_FOUND,
+	};
+	class DNSRequest
+	{
+	public:
+		int state=DNS_REQUESTED;
+		std::string hostname;
+		uint8_t ipAddr[4]={0,0,0,0};
+	};
+
 	bool started=false;
 	bool monitor=true;
 
@@ -117,6 +132,8 @@ public:
 	std::vector <uint16_t> TCPDisconnectReq;
 	std::mutex TCPDisconnectReqLock;
 
+	std::vector <DNSRequest> DNSReq;
+	std::mutex DNSRequestLock;
 
 public:
 	// In the VM thread.
@@ -132,6 +149,7 @@ public:
 	// Called from the VM thread.
 	void RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t port);
 
+	void RequestDNS(std::string hostname);
 
 
 	// In the network thread.

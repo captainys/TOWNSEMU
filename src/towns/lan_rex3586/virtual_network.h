@@ -173,7 +173,11 @@ public:
 		uint16_t dstPort;
 		uint16_t len;
 		uint16_t checkSum;
+	};
 
+	class DHCPInfo
+	{
+	public:
 		// Apparently from this byte is already DHCP data.
 		uint8_t messageType;
 		uint8_t netType;
@@ -212,6 +216,23 @@ public:
 		bool Decode(size_t len,const uint8_t data[]);
 	};
 
+	enum
+	{
+		DNS_REQUESTED,
+		DNS_FOUND,
+		DNS_NOT_FOUND,
+	};
+	class DNSRequest
+	{
+	public:
+		EthernetHeader etherHdr;
+		IPHeader ipHdr;
+		UDPHeader udpHdr;
+		std::vector <uint8_t> udpPayload;
+		std::string hostname;
+		uint8_t ipAddr[4];
+		int state=DNS_REQUESTED;
+	};
 
 	enum
 	{
@@ -284,8 +305,8 @@ public:
 	// Adapter -> Virtual Network
 	void TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet);
 protected:
-	void ProcessUDP_DHCP_Packet(EthernetHeader ether,IPHeader ip,UDPHeader udp,size_t len,const uint8_t data[],PacketReceiver *recv);
-	std::vector <uint8_t> MakeDHCPReturnPacket(EthernetHeader ether,IPHeader ip,UDPHeader udp,DHCPOption opt);
+	void ProcessUDP_DHCP_Packet(EthernetHeader ether,IPHeader ip,UDPHeader udp,DHCPInfo dhcp,size_t len,const uint8_t data[],PacketReceiver *recv);
+	std::vector <uint8_t> MakeDHCPReturnPacket(EthernetHeader ether,IPHeader ip,UDPHeader udp,DHCPInfo dhcp,DHCPOption opt);
 
 	void ProcessARP_Packet(EthernetHeader ether,size_t len,const uint8_t data[],PacketReceiver *recv);
 

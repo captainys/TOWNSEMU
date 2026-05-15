@@ -272,6 +272,14 @@ void RealNetwork::RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4]
 	TCPConnReq.push_back(req);
 }
 
+void RealNetwork::RequestDNS(std::string hostname)
+{
+	DNSRequest req;
+	req.hostname=hostname;
+
+	std::lock_guard <std::mutex> lock(DNSRequestLock);
+	DNSReq.push_back(req);
+}
 
 void RealNetwork::StartUp(void)
 {

@@ -389,13 +389,6 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 			udp.dstPort=GetWordBE(data+2);
 			udp.len=GetWordBE(data+4);
 			udp.checkSum=GetWordBE(data+6);
-			udp.messageType=data[8];
-			udp.netType=data[9];
-			udp.MAClen=data[10];
-			udp.hop=data[11];
-			udp.transactionID=GetDwordBE(data+12);
-			// From +16 to +36 are vague.  Prob Seconds Elapsed(word), BOOTP flags(word), ClientIP(DW), MyIP(DW), ServerIP(DW), RelayIP(DW).
-			udp.MAC=GetMAC(data+36);
 
 			if(true==monitorTX)
 			{
@@ -404,6 +397,15 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 
 			if(0xFFFFFFFF==ip.dstIP && DHCP_CLIENT_PORT==udp.srcPort && DHCP_SERVER_PORT==udp.dstPort) // Broadcast and DHCP port
 			{
+				DHCPInfo dhcp;
+				dhcp.messageType=data[8];
+				dhcp.netType=data[9];
+				dhcp.MAClen=data[10];
+				dhcp.hop=data[11];
+				dhcp.transactionID=GetDwordBE(data+12);
+				// From +16 to +36 are vague.  Prob Seconds Elapsed(word), BOOTP flags(word), ClientIP(DW), MyIP(DW), ServerIP(DW), RelayIP(DW).
+				dhcp.MAC=GetMAC(data+36);
+
 				// Must be DHCP
 				uint32_t magicNumber=GetDwordBE(data+0xF4);
 				if(0x63825363==magicNumber)
@@ -412,7 +414,7 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 					{
 						std::cout << "DHCP Packet\n";
 					}
-					ProcessUDP_DHCP_Packet(ether,ip,udp,len,data,recv);
+					ProcessUDP_DHCP_Packet(ether,ip,udp,dhcp,len,data,recv);
 				}
 			}
 			else if(DNS_IP==ip.dstIP && DNS_SERVER_PORT==udp.dstPort)
@@ -421,6 +423,8 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 				{
 					std::cout << "UDP Packet to DNS.\n";
 				}
+				len-=8;
+				data+=8;
 				ProcessUDP_DNS_Packet(ether,ip,udp,len,data);
 			}
 		}
@@ -432,12 +436,12 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 }
 
 void VirtualNetwork::ProcessUDP_DHCP_Packet(
-    EthernetHeader ether,IPHeader ip,UDPHeader udp,size_t len,const uint8_t data[],PacketReceiver *recv)
+    EthernetHeader ether,IPHeader ip,UDPHeader udp,DHCPInfo dhcp,size_t len,const uint8_t data[],PacketReceiver *recv)
 {
 	DHCPOption opt;
 	if(true==opt.Decode(len-0xF8,data+0xF8))
 	{
-		auto DHCPReturn=MakeDHCPReturnPacket(ether,ip,udp,opt);
+		auto DHCPReturn=MakeDHCPReturnPacket(ether,ip,udp,dhcp,opt);
 		if(0<DHCPReturn.size())
 		{
 			recv->ReceivePacket(DHCPReturn.size(),DHCPReturn.data());
@@ -452,7 +456,7 @@ void VirtualNetwork::ProcessUDP_DHCP_Packet(
 	}
 }
 
-std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,IPHeader ip,UDPHeader udp,DHCPOption opt)
+std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,IPHeader ip,UDPHeader udp,DHCPInfo dhcp,DHCPOption opt)
 {
 	std::vector <uint8_t> DATA;
 	DATA.resize(512);
@@ -494,7 +498,7 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 		data[43]=1; // net type
 		data[44]=6; // 6-byte MAC address
 		data[45]=0; // hop
-		PutDwordBE(data+46,udp.transactionID);
+		PutDwordBE(data+46,dhcp.transactionID);
 		PutDwordBE(data+58,VM_DHCP_IP);
 		PutDwordBE(data+62,DHCP_SERVER_IP);
 		PutMAC(data+70,ether.srcMAC);
@@ -562,7 +566,29 @@ std::vector <uint8_t> VirtualNetwork::MakeDHCPReturnPacket(EthernetHeader ether,
 
 void VirtualNetwork::ProcessUDP_DNS_Packet(EthernetHeader ether,IPHeader ip,UDPHeader udp,size_t len,const uint8_t data[])
 {
-	
+	std::string hostname;
+	size_t ptr=12;
+	while(ptr<len && 0!=data[ptr])
+	{
+		if(0<hostname.size())
+		{
+			hostname.push_back('.');
+		}
+
+		size_t count=data[ptr++];
+		while(ptr<len && 0<count)
+		{
+			hostname.push_back(data[ptr++]);
+			--count;
+		}
+	}
+
+	if(true==monitorDNS)
+	{
+		std::cout << "DNS Inquiry:" << hostname << "\n";
+	}
+
+	// realNet->RequestDNS(hostname);
 }
 
 void VirtualNetwork::ProcessARP_Packet(EthernetHeader ether,size_t len,const uint8_t data[],PacketReceiver *recv)
