@@ -1,4 +1,5 @@
 #include <iostream>
+#include "cpputil.h"
 #include "real_network.h"
 
 #ifdef _WIN32
@@ -326,6 +327,57 @@ void RealNetwork::RequestDNS(std::string hostname)
 
 	std::lock_guard <std::mutex> lock(DNSRequestLock);
 	DNSReq.push_back(req);
+}
+
+void RealNetwork::AddStatusText(std::vector <std::string> &text) const
+{
+	{
+		std::lock_guard <std::mutex> lock(clientsLock);
+		for(auto &cli : clients)
+		{
+			std::string str;
+			str="TCP VMPort:";
+			str+=cpputil::Ustox(cli.conn.VMPort);
+			str+="H IP:";
+			str+=cpputil::Uitox(cli.conn.GetIPUint32());
+			str+="H Remote Port:";
+			str+=cpputil::Ustox(cli.conn.dstPort);
+			str.push_back(' ');
+			switch(cli.state)
+			{
+			case STATE_DISCONNECTED:
+				str+="DISCONNECTED";
+				break;
+			case STATE_JUST_CONNECTED:  // Connected, but the VM thread does not know yet.
+				str+="DISCONNECTED";
+				break;
+			case STATE_CONNECTED:       // Connection established, VM thread knows about it.
+				str+="DISCONNECTED";
+				break;
+			case STATE_DISCONNECTED_BUT_DATA_LEFTOVER:
+				str+="DISCONNECTED";
+				break;
+			}
+
+			str+=" RecvBuf:";
+			str+=cpputil::Ustox(cli.recvBuf.size());
+			str+="H bytes";
+
+			str+=" SendBuf:";
+			str+=cpputil::Ustox(cli.sendBuf.size());
+			str+="H bytes";
+
+			if(true==cli.FIN_initiated_from_VM)
+			{
+				str+=" FIN-from-VM";
+			}
+			if(true==cli.ShutdownInitiated)
+			{
+				str+=" Shutdown";
+			}
+			text.push_back(str);
+		}
+	}
 }
 
 void RealNetwork::StartUp(void)

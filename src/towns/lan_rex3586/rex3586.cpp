@@ -420,6 +420,16 @@ unsigned int RatocREX3586::IOReadWord(unsigned int ioport)
 	return Device::IOReadWord(ioport);
 }
 
+std::vector <std::string> RatocREX3586::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+	text.push_back("--Virtual Network (VM Side)--");
+	net.AddStatusText(text);
+	text.push_back("--Real Network (Outside)--");
+	realNet->AddStatusText(text);
+	return text;
+}
+
 uint32_t RatocREX3586::SerializeVersion(void) const
 {
 	return 0; // **** Not state-save target yet.  Uncomment townsstate.cpp in DeviceToLoad/SaveState when ready.

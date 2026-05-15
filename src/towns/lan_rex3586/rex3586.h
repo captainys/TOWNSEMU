@@ -124,6 +124,8 @@ public:
 	void PowerOn(void) override;
 	void Reset(void) override;
 
+	std::vector <std::string> GetStatusText(void) const;
+
 	void IOWriteByte(unsigned int ioport,unsigned int data) override;
 	unsigned int IOReadByte(unsigned int ioport) override;
 

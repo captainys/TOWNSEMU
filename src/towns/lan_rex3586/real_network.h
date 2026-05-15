@@ -130,16 +130,16 @@ public:
 	std::thread workerThread;
 
 	std::list <Client> clients;
-	std::mutex clientsLock;
+	mutable std::mutex clientsLock;
 
 	std::vector <TCPConnectionRequest> TCPConnReq;
-	std::mutex TCPConnReqLock;
+	mutable std::mutex TCPConnReqLock;
 
 	std::vector <uint16_t> TCPDisconnectReq;
-	std::mutex TCPDisconnectReqLock;
+	mutable std::mutex TCPDisconnectReqLock;
 
 	std::vector <DNSRequest> DNSReq;
-	std::mutex DNSRequestLock;
+	mutable std::mutex DNSRequestLock;
 
 public:
 	// In the VM thread.
@@ -156,6 +156,8 @@ public:
 	void RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t port);
 
 	void RequestDNS(std::string hostname);
+
+	void AddStatusText(std::vector <std::string> &text) const;
 
 
 	// In the network thread.

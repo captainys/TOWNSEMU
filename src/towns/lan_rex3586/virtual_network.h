@@ -2,6 +2,8 @@
 #define VIRTUAL_NETWORK_H_IS_INCLUDED
 
 #include <string.h>
+#include <string>
+#include <vector>
 #include "cpputil.h"
 
 class RealNetwork;
@@ -303,6 +305,8 @@ public:
 	static TCPHeader DecodeTCPHeader(size_t len,const uint8_t data[]);
 	static void AddTCPHeader(std::vector <uint8_t> &data,TCPHeader &hdr);
 	static void RecalculateTCPHeaderCheckSum(size_t len,uint8_t data[],uint32_t srcIP,uint32_t dstIP);
+
+	void AddStatusText(std::vector <std::string> &text) const;
 
 
 	// Adapter -> Virtual Network

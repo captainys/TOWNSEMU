@@ -316,6 +316,60 @@ void VirtualNetwork::RecalculateTCPHeaderCheckSum(size_t len,uint8_t data[],uint
 	}
 }
 
+void VirtualNetwork::AddStatusText(std::vector <std::string> &text) const
+{
+	for(auto &conn : TCPConn)
+	{
+		std::string str;
+		str="TCP VMPort:"+cpputil::Ustox(conn.tcpHdr.dstPort)+"H RemoteIP:"+cpputil::Uitox(conn.ipHdr.srcIP)+"H RemotePort:"+cpputil::Ustox(conn.tcpHdr.srcPort)+" ";
+		switch(conn.state)
+		{
+		case STATE_PENDING:
+			str+="PENDING";
+			break;
+		case STATE_ESTABLISHED:
+			str+="EST";
+			break;
+		case STATE_CLOSING_FROM_ROUTER:
+			str+="CLOSING_FROM_REMOTE";
+			break;
+		case STATE_FIN_SENT: // Closing from the remote, and FIN|ACK has been sent to the VM.
+			str+="CLOSING_FROM_REMOTE";
+			break;
+		case STATE_CLOSED:
+			str+="CLOSED";
+			break;
+		case STATE_FIN_RECEIVED: // VM initiated FIN.
+			str+="CLOSING_FROM_VM";
+			break;
+		}
+
+		str.push_back(' ');
+		str+="TxBuf:"+cpputil::Uitox(conn.TxData.size())+"H bytes";
+		text.push_back(str);
+	}
+	for(auto &req : DNSReq)
+	{
+		std::string str;
+		str="DNS Req Hostname="+req.hostname;
+		str.push_back(' ');
+		switch(req.state)
+		{
+ 		case DNS_REQUESTED:
+			str+="REQUESTED";
+			break;
+		case DNS_FOUND:
+			str+="FOUND";
+			break;
+		case DNS_NOT_FOUND:
+			str+="NOT_FOUND";
+			break;
+		}
+		text.push_back(str);
+	}
+}
+
+
 void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet)
 {
 	if(len<34)
@@ -745,7 +799,7 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 
 	if(monitorTX)
 	{
-		std::cout << "TCP Packet VM->Router\n";
+		std::cout << "TCP Packet VM->Router  Port:"+cpputil::Ustox(tcp.srcPort)+"H->"+cpputil::Ustox(tcp.dstPort)+"H IP:"+cpputil::Uitox(ip.srcIP)+"H->"+cpputil::Uitox(ip.dstIP)+"H\n";;
 	}
 
 	if(tcp.flags&TCP_FLAG_SYN)
@@ -1114,6 +1168,11 @@ void VirtualNetwork::ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_
 	data.insert(data.end(),recvdata,recvdata+len);
 
 	RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,conn.ipHdr.srcIP,conn.ipHdr.dstIP);
+
+	if(true==monitorTCP)
+	{
+		std::cout << "TCP Packet Remote->VM  Port:"+cpputil::Ustox(conn.tcpHdr.srcPort)+"H->"+cpputil::Ustox(conn.tcpHdr.dstPort)+"H IP:"+cpputil::Uitox(conn.ipHdr.srcIP)+"H->"+cpputil::Uitox(conn.ipHdr.dstIP)+"H\n";;
+	}
 
 	recv->ReceivePacket(data.size(),data.data());
 
