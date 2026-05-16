@@ -133,6 +133,8 @@ public:
 
 	FsGuiTextBox *RS232CtoTCPTxt=nullptr;
 
+	FsGuiButton *enableLANBtn=nullptr;
+
 	ProfileDialog(FsGuiMainCanvas *canvasPtr);
 
 	void Make(const UiText &ui);

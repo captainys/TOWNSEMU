@@ -711,6 +711,15 @@ void ProfileDialog::Make(const UiText &ui)
 		EndAddTabItem();
 	}
 
+	{
+		auto tabId=AddTab(tab,ui("/profile/lan","LAN"));
+		BeginAddTabItem(tab,tabId);
+
+		enableLANBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/enableLAN","Enable LAN Card (Ratoc REX3586)"),YSTRUE);
+
+		EndAddTabItem();
+	}
+
 	tab->SelectCurrentTab(mainTabId);
 
 	runBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,ui("/profile/start","START!"),YSTRUE);
@@ -1478,6 +1487,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.differentialMouseIntegration=(YSTRUE==diffMouseBtn->GetCheck());
 
+	profile.enableLAN=(YSTRUE==enableLANBtn->GetCheck());
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -1743,6 +1754,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	RS232CtoTCPTxt->SetText(profile.RS232CtoTCPAddr.c_str());
 
 	diffMouseBtn->SetCheck(profile.differentialMouseIntegration ? YSTRUE : YSFALSE);
+
+	enableLANBtn->SetCheck(profile.enableLAN ? YSTRUE : YSFALSE);
 }
 
 void ProfileDialog::SetDefaultFMVolume(void)

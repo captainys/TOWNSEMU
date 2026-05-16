@@ -342,6 +342,9 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back("DIFFMOUS ");
 	text.back()+=(differentialMouseIntegration ? "1" : "0");
 
+	text.push_back("ENABLLAN ");
+	text.back()+=(enableLAN ? "1" : "0");
+
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
@@ -848,6 +851,10 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		else if("DIFFMOUS"==argv[0] && 2<=argv.size())
 		{
 			differentialMouseIntegration=atoi(argv[1].c_str());
+		}
+		else if("ENABLLAN"==argv[0] && 2<=argv.size())
+		{
+			enableLAN=(0!=atoi(argv[1].c_str()));
 		}
 		else
 		{
