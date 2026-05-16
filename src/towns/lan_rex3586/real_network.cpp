@@ -145,10 +145,29 @@ void RealNetwork::ThreadFunc(void)
 		}
 		THREAD_PROGRESS("2");
 		{
+			// Problem: connect function may block long time if the server does not respond.
+			// Solution:
+			//   Lock
+			//   Make a copy of TCPConnReq
+			//   Unlock
+
+			//   Do all connections.
+
+			//   (VirtualNetwork may add TCPConnReq while connecting.)
+
+			//   Lock
+			//   Compare exisiting request and connected requests and copy connected flags of matching requests.
+
+			std::vector <TCPConnectionRequest> TCPConnReqCopy;
+			{
+				std::lock_guard <std::mutex> lock(TCPConnReqLock);
+				TCPConnReqCopy=TCPConnReq;
+			}
+
+
 			// Process connection requests.
-			std::lock_guard <std::mutex> lock(TCPConnReqLock);
 			unsigned int nConnected=0;
-			for(auto &req : TCPConnReq)
+			for(auto &req : TCPConnReqCopy)
 			{
 				if(true==monitor)
 				{
@@ -164,6 +183,31 @@ void RealNetwork::ThreadFunc(void)
 			}
 			if(0<nConnected)
 			{
+				{
+					std::lock_guard <std::mutex> lock(TCPConnReqLock);
+					for(auto &copy : TCPConnReqCopy)
+					{
+						bool matched=false;
+						for(auto &req : TCPConnReq)
+						{
+							if(copy.conn.IPv4Addr[0]==req.conn.IPv4Addr[0]	&&
+							   copy.conn.IPv4Addr[1]==req.conn.IPv4Addr[1]	&&
+							   copy.conn.IPv4Addr[2]==req.conn.IPv4Addr[2]	&&
+							   copy.conn.IPv4Addr[3]==req.conn.IPv4Addr[3]	&&
+							   copy.conn.dstPort==req.conn.dstPort	&&
+							   copy.conn.VMPort==req.conn.VMPort)
+							{
+								req=copy;
+								matched=true;
+								break;
+							}
+						}
+						if(true!=matched && true==copy.connected)
+						{
+							closesocket(copy.sock);
+						}
+					}
+				}
 				std::lock_guard <std::mutex> lock(clientsLock);
 				for(auto &req : TCPConnReq)
 				{
