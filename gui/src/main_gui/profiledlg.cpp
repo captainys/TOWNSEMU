@@ -712,10 +712,10 @@ void ProfileDialog::Make(const UiText &ui)
 	}
 
 	{
-		auto tabId=AddTab(tab,ui("/profile/lan","LAN"));
+		auto tabId=AddTab(tab,ui("/profile/LAN","LAN"));
 		BeginAddTabItem(tab,tabId);
 
-		enableLANBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/enableLAN","Enable LAN Card (Ratoc REX3586)"),YSTRUE);
+		enableLANBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/LAN/enableLAN","Enable LAN Card (Ratoc REX3586)"),YSTRUE);
 
 		EndAddTabItem();
 	}

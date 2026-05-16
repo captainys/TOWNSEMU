@@ -229,6 +229,9 @@ UITXT
 +/profile/tgdrv    ファイル共有
 +/profile/tgdrv/info TGDRVを使うと、津軽内とホストOS間でファイルを共有することができます。共有するディレクトリを選んで、\n津軽内でTGDRV.COMを実行すると有効になります。TGDRV.COMはユーティリティディスク (TsugaruUtil.D77)に\nあります。\nなお、LinuxやmacOSから使うときは、ファイルに大文字・小文字の差があるので、アルファベットはすべて大\n文字である必要があります。ファイル名は最大で8文字＋3文字拡張子フォーマットである必要があります。\nTowns MENUから利用するためには、バージョンが2.1以上である必要があります。1.1ではTowns MENUにドライ\nブが現れません。\nファイルダイアログで共有ドライブを指定するときは、共有ドライブ内のファイルをひとつセレクタで選んで\nください。
 
++/profile/LAN LAN
++/profile/LAN/enableLAN LANカード(Ratoc REX3586)を有効にする
+
 +/profile/start FM TOWNS起動!
 +/profile/autostart プロファイルを開くと同時にFM TOWNSを起動する
 +/profile/separateprocess 別プロセスでVMを起動
