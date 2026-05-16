@@ -121,7 +121,15 @@ void RealNetwork::ThreadFunc(void)
 						closesocket(cli.sock);
 						if(0==cli.recvBuf.size())
 						{
-							cli.state=STATE_DISCONNECTED;
+							if(true==monitor)
+							{
+								std::cout << "R1 Disconnected VMPort:" << uint16_t(cli.conn.VMPort) << " RemotePort:" << uint16_t(cli.conn.dstPort);
+								std::cout << "IP:" << uint16_t(cli.conn.IPv4Addr[0]) << ".";
+								std::cout << uint16_t(cli.conn.IPv4Addr[1]) << ".";
+								std::cout << uint16_t(cli.conn.IPv4Addr[2]) << ".";
+								std::cout << uint16_t(cli.conn.IPv4Addr[3]) << "\n";
+							}
+							cli.state=STATE_DISCONNECTED_NEED_TO_SEND_FIN;
 						}
 						else
 						{
@@ -397,13 +405,16 @@ void RealNetwork::AddStatusText(std::vector <std::string> &text) const
 				str+="DISCONNECTED";
 				break;
 			case STATE_JUST_CONNECTED:  // Connected, but the VM thread does not know yet.
-				str+="DISCONNECTED";
+				str+="JUST_CONNECTED";
 				break;
 			case STATE_CONNECTED:       // Connection established, VM thread knows about it.
-				str+="DISCONNECTED";
+				str+="CONNECTED";
 				break;
 			case STATE_DISCONNECTED_BUT_DATA_LEFTOVER:
-				str+="DISCONNECTED";
+				str+="DISCONNECTED_WITH_LEFTOVER";
+				break;
+			case STATE_DISCONNECTED_NEED_TO_SEND_FIN:
+				str+="DISCONNECTED_NEED_TO_SEND_FIN";
 				break;
 			}
 

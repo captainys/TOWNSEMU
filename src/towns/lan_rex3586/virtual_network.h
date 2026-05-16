@@ -291,6 +291,8 @@ public:
 
 	static uint16_t TestTCPCheckSum(size_t len,const uint8_t data[],uint32_t srcIP,uint32_t dstIP);
 
+	static std::string FormatIPAddress(uint32_t IP);
+
 	static EthernetHeader DecodeEthernetHeader(size_t len,const uint8_t data[]);
 	static void AddEthernetHeader(std::vector <uint8_t> &data,const EthernetHeader &hdr);
 

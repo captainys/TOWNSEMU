@@ -178,6 +178,19 @@ uint16_t VirtualNetwork::TestTCPCheckSum(size_t len,const uint8_t data[],uint32_
 	return CalcIPCheckSum(allData.size(),allData.data());
 }
 
+std::string VirtualNetwork::FormatIPAddress(uint32_t IP)
+{
+	std::string str;
+	str=cpputil::Uitoa(IP>>24);
+	str.push_back('.');
+	str+=cpputil::Uitoa((IP>>16)&255);
+	str.push_back('.');
+	str+=cpputil::Uitoa((IP>>8)&255);
+	str.push_back('.');
+	str+=cpputil::Uitoa(IP&255);
+	return str;
+}
+
 VirtualNetwork::EthernetHeader VirtualNetwork::DecodeEthernetHeader(size_t len,const uint8_t data[])
 {
 	EthernetHeader hdr;
@@ -799,7 +812,8 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 
 	if(monitorTX)
 	{
-		std::cout << "TCP Packet VM->Router  Port:"+cpputil::Ustox(tcp.srcPort)+"H->"+cpputil::Ustox(tcp.dstPort)+"H IP:"+cpputil::Uitox(ip.srcIP)+"H->"+cpputil::Uitox(ip.dstIP)+"H\n";;
+		std::cout << "TCP Packet VM->Router  Port:" << uint32_t(tcp.srcPort) << "->" << uint32_t(tcp.dstPort);
+		std::cout << " IP:" << FormatIPAddress(ip.srcIP) << "->" << FormatIPAddress(ip.dstIP) << "\n";
 	}
 
 	if(tcp.flags&TCP_FLAG_SYN)
@@ -831,7 +845,7 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 				{
 					std::cout << "SYN requested for already-existing connection.\n";
 				}
-				existing.state=STATE_PENDING;
+				existing=conn;
 				thisConn=&existing;
 				break;
 			}
@@ -1193,7 +1207,8 @@ void VirtualNetwork::ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_
 
 	if(true==monitorTCP)
 	{
-		std::cout << "TCP Packet Remote->VM  Port:"+cpputil::Ustox(conn.tcpHdr.srcPort)+"H->"+cpputil::Ustox(conn.tcpHdr.dstPort)+"H IP:"+cpputil::Uitox(conn.ipHdr.srcIP)+"H->"+cpputil::Uitox(conn.ipHdr.dstIP)+"H\n";;
+		std::cout << "TCP Packet Remote->VM  Port:" << uint16_t(conn.tcpHdr.srcPort) << "->" << uint16_t(conn.tcpHdr.dstPort);
+		std::cout << " IP:" << FormatIPAddress(conn.ipHdr.srcIP) << "->" << FormatIPAddress(conn.ipHdr.dstIP) << "\n";
 	}
 
 	recv->ReceivePacket(data.size(),data.data());
@@ -1293,6 +1308,11 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 
 							if(RealNetwork::STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state && 0==cli.recvBuf.size())
 							{
+								if(true==monitorTCP)
+								{
+									std::cout << "V1 Disconnected VMPort:" << uint16_t(cli.conn.VMPort) << " RemotePort:" << uint16_t(cli.conn.dstPort);
+									std::cout << "IP:" << FormatIPAddress(cli.conn.GetIPUint32()) << "\n";
+								}
 								cli.state=RealNetwork::STATE_DISCONNECTED;
 								virConn.state=STATE_CLOSING_FROM_ROUTER; // Need to send FIN.
 							}
@@ -1305,12 +1325,25 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 						}
 						if(STATE_FIN_RECEIVED==virConn.state)
 						{
-							cli.FIN_initiated_from_VM=true;
-							if(true==monitorTCP)
+							if(true==monitorTCP && true!=cli.FIN_initiated_from_VM)
 							{
 								std::cout << "VM initiated FIN and Real Network notified.\n";
 							}
+							cli.FIN_initiated_from_VM=true;
 						}
+					}
+				}
+			}
+			else if(RealNetwork::STATE_DISCONNECTED_NEED_TO_SEND_FIN==cli.state)
+			{
+				for(auto &virConn : TCPConn)
+				{
+					// src and dst swapped in TCPConnectionEstablished.
+					if(virConn.ipHdr.srcIP==cli.conn.GetIPUint32() &&
+					   virConn.tcpHdr.dstPort==cli.conn.VMPort &&
+					   virConn.tcpHdr.srcPort==cli.conn.dstPort)
+					{
+						virConn.state=STATE_CLOSING_FROM_ROUTER;
 					}
 				}
 			}

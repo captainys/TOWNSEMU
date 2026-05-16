@@ -58,6 +58,7 @@ public:
 		STATE_JUST_CONNECTED,  // Connected, but the VM thread does not know yet.
 		STATE_CONNECTED,       // Connection established, VM thread knows about it.
 		STATE_DISCONNECTED_BUT_DATA_LEFTOVER,
+		STATE_DISCONNECTED_NEED_TO_SEND_FIN,
 	};
 
 	class Connection
