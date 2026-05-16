@@ -401,9 +401,7 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 
 	if(true==monitorTX)
 	{
-		std::cout << "Net TX Packet (VM->Router).\n";
-		std::cout << "Src MAC " << cpputil::U64tox(ether.srcMAC) << "\n";
-		std::cout << "Dst MAC " << cpputil::U64tox(ether.dstMAC) << "\n";
+		std::cout << "Net TX Packet (VM->Router) "  << "SrcMAC " << cpputil::U64tox(ether.srcMAC) << " " << "DstMAC " << cpputil::U64tox(ether.dstMAC) << "\n";
 	}
 
 	data+=14;
@@ -425,9 +423,12 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 
 		if(true==monitorTX)
 		{
-			std::cout << "SRC IP:" << cpputil::Uitox(ip.srcIP) << "DST IP:" << cpputil::Uitox(ip.dstIP) << "\n";
-			std::cout << "IPv4 tells that the length is " << ip.len << " bytes.\n";
-			std::cout << "What sent from the VM is " << len << " bytes.\n";
+			std::cout << "SRC IP:" << cpputil::Uitox(ip.srcIP) << "DST IP:" << cpputil::Uitox(ip.dstIP) << " " << len << "bytes\n";
+			if(ip.len!=len)
+			{
+				std::cout << "IPv4 tells that the length is " << ip.len << " bytes.\n";
+				std::cout << "What sent from the VM is " << len << " bytes.\n";
+			}
 		}
 
 		if(len<ip.len)
@@ -441,16 +442,11 @@ void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiv
 
 		if(0x06==ip.protocol) // TCP
 		{
-			if(true==monitorTX)
-			{
-				std::cout << "TCP\n";
-			}
-
 			TCPHeader tcp=DecodeTCPHeader(len,data);
 
 			if(monitorTX)
 			{
-				std::cout << "CheckSumTest:" << cpputil::Ustox(TestTCPCheckSum(len,data,ip.srcIP,ip.dstIP)) << "\n";
+				std::cout << "TCP  CheckSumTest:" << cpputil::Ustox(TestTCPCheckSum(len,data,ip.srcIP,ip.dstIP)) << "\n";
 			}
 
 			data+=tcp.GetTotalLength();
@@ -887,12 +883,8 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 				thisConn=&conn;
 				if(true==monitorTCP)
 				{
-					std::cout << "Ack from VM.\n";
-					std::cout << "  Seq#=" << cpputil::Uitox(tcp.sequenceNum) << "\n";
-					std::cout << "  Ack#=" << cpputil::Uitox(tcp.ackNum) << "\n";
-					std::cout << "Current\n";
-					std::cout << "  Seq#=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << "\n";
-					std::cout << "  Ack#=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
+					std::cout << "Ack from VM  " << "  Seq#=" << cpputil::Uitox(tcp.sequenceNum) << "  Ack#=" << cpputil::Uitox(tcp.ackNum) << "\n";
+					std::cout << "Current      " << "  Seq#=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << "  Ack#=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
 				}
 				if(true==conn.waitingAck && conn.unacknowledgedSeq==tcp.ackNum)
 				{
@@ -918,11 +910,8 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 
 				if(true==monitorTCP)
 				{
-					std::cout << "Acknowledging PSH from VM\n";
-					std::cout << "  Incoming seqNum=" << cpputil::Uitox(tcp.sequenceNum) << "\n";
-					std::cout << "  Incoming ackNum=" << cpputil::Uitox(tcp.ackNum) << "\n";
-					std::cout << "  Current seqNum =" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << "\n";
-					std::cout << "  Current ackNum =" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
+					std::cout << "Acknowledging PSH from VM Incoming seq=" << cpputil::Uitox(tcp.sequenceNum) << " ack=" << cpputil::Uitox(tcp.ackNum) << "\n";
+					std::cout << "                          Current  seq=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << " ack=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
 				}
 
 				size_t dataLen=ip.len-ip.GetHeaderLength()-tcp.GetTotalLength();
@@ -1032,6 +1021,23 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 			}
 		}
 	}
+	if(TCP_FLAG_RST&tcp.flags)
+	{
+		std::cout << "TCP_FLAG_RST not handling now.\n";
+	}
+	if(TCP_FLAG_URG&tcp.flags)
+	{
+		std::cout << "TCP_FLAG_URG not handling now.\n";
+	}
+	if(TCP_FLAG_ECE&tcp.flags)
+	{
+		std::cout << "TCP_FLAG_ECE not handling now.\n";
+	}
+	if(TCP_FLAG_CWR&tcp.flags)
+	{
+		std::cout << "TCP_FLAG_CWR not handling now.\n";
+	}
+
 
 	size_t optPtr=0;
 	bool optErr=false,optEnd=false;
@@ -1343,7 +1349,11 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 					   virConn.tcpHdr.dstPort==cli.conn.VMPort &&
 					   virConn.tcpHdr.srcPort==cli.conn.dstPort)
 					{
-						virConn.state=STATE_CLOSING_FROM_ROUTER;
+						if(STATE_FIN_SENT!=virConn.state)
+						{
+							virConn.state=STATE_CLOSING_FROM_ROUTER;
+							cli.state=RealNetwork::STATE_DISCONNECTED; // Once notify, real-network side can be gone.
+						}
 					}
 				}
 			}
