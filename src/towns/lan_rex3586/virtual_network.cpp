@@ -820,15 +820,35 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		std::swap(conn.ipHdr.srcIP,conn.ipHdr.dstIP);
 		std::swap(conn.tcpHdr.srcPort,conn.tcpHdr.dstPort);
 
-		TCPConn.push_back(conn);
-		thisConn=&TCPConn.back();
+		for(auto &existing : TCPConn)
+		{
+			if(ip.dstIP==existing.ipHdr.srcIP &&  // Src & Dst are flipped.
+			   tcp.dstPort==existing.tcpHdr.srcPort &&
+			   tcp.srcPort==existing.tcpHdr.dstPort)
+			{
+				// Port already exists.
+				if(true==monitorTCP)
+				{
+					std::cout << "SYN requested for already-existing connection.\n";
+				}
+				existing.state=STATE_PENDING;
+				thisConn=&existing;
+				break;
+			}
+		}
+		
+		if(nullptr==thisConn)
+		{
+			TCPConn.push_back(conn);
+			thisConn=&TCPConn.back();
+		}
 
 		// Not really, but pretend the connection was successful.
 		if(ip.dstIP==DHCP_SERVER_IP ||
 		   ip.dstIP==ROUTER_IP ||
 		   ip.dstIP==DNS_IP)
 		{
-			TCPConnectionEstablished(TCPConn.back(),recv);
+			TCPConnectionEstablished(*thisConn,recv);
 		}
 		else
 		{
@@ -1271,8 +1291,7 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 							ReceivedTCPData(virConn,send_bytes,cli.recvBuf.data(),recv);
 							cli.recvBuf.erase(cli.recvBuf.begin(),cli.recvBuf.begin()+send_bytes);
 
-							if(RealNetwork::STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state &&
-							0==cli.recvBuf.size())
+							if(RealNetwork::STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state && 0==cli.recvBuf.size())
 							{
 								cli.state=RealNetwork::STATE_DISCONNECTED;
 								virConn.state=STATE_CLOSING_FROM_ROUTER; // Need to send FIN.

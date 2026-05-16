@@ -308,6 +308,55 @@ void RealNetwork::End(void)
 // Called from the VM thread.
 void RealNetwork::RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t dstPort)
 {
+	{
+		std::lock_guard <std::mutex> lock(clientsLock);
+		for(auto &cli : clients)
+		{
+			if(cli.conn.IPv4Addr[0]==IPv4Addr[0] &&
+			   cli.conn.IPv4Addr[1]==IPv4Addr[1] &&
+			   cli.conn.IPv4Addr[2]==IPv4Addr[2] &&
+			   cli.conn.IPv4Addr[3]==IPv4Addr[3] &&
+			   cli.conn.dstPort==dstPort &&
+			   cli.conn.VMPort==VMPort)
+			{
+				if(STATE_JUST_CONNECTED==cli.state)
+				{
+					// Leave it.  In the next polling, it will be Established.
+					return;
+				}
+				if(STATE_CONNECTED==cli.state)
+				{
+					cli.state=STATE_JUST_CONNECTED;
+					return;
+				}
+				if(STATE_DISCONNECTED==cli.state || STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state)
+				{
+					std::cout << "Matched Disconnected Port.\n";
+					cli.conn.IPv4Addr[0]=0xFF;
+					cli.conn.IPv4Addr[1]=0xFF;
+					cli.conn.IPv4Addr[2]=0xFF;
+					cli.conn.IPv4Addr[3]=0xFF;
+					break;
+				}
+			}
+		}
+	}
+
+	std::lock_guard <std::mutex> lock(TCPConnReqLock);
+	for(auto &req : TCPConnReq)
+	{
+		if(req.conn.IPv4Addr[0]==IPv4Addr[0] &&
+		   req.conn.IPv4Addr[1]==IPv4Addr[1] &&
+		   req.conn.IPv4Addr[2]==IPv4Addr[2] &&
+		   req.conn.IPv4Addr[3]==IPv4Addr[3] &&
+		   req.conn.dstPort==dstPort &&
+		   req.conn.VMPort==VMPort)
+		{
+			// If the request is already in, do nothing.
+			return;
+		}
+	}
+
 	TCPConnectionRequest req;
 	req.conn.IPv4Addr[0]=IPv4Addr[0];
 	req.conn.IPv4Addr[1]=IPv4Addr[1];
@@ -316,7 +365,6 @@ void RealNetwork::RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4]
 	req.conn.dstPort=dstPort;
 	req.conn.VMPort=VMPort;
 
-	std::lock_guard <std::mutex> lock(TCPConnReqLock);
 	TCPConnReq.push_back(req);
 }
 
