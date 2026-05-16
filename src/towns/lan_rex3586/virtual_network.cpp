@@ -347,7 +347,7 @@ void VirtualNetwork::AddStatusText(std::vector <std::string> &text) const
 			str+="CLOSING_FROM_REMOTE";
 			break;
 		case STATE_FIN_SENT: // Closing from the remote, and FIN|ACK has been sent to the VM.
-			str+="CLOSING_FROM_REMOTE";
+			str+="CLOSING_FIN_SENT";
 			break;
 		case STATE_CLOSED:
 			str+="CLOSED";

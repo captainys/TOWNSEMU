@@ -419,6 +419,15 @@ unsigned int RatocREX3586::IOReadWord(unsigned int ioport)
 std::vector <std::string> RatocREX3586::GetStatusText(void) const
 {
 	std::vector <std::string> text;
+	std::string str;
+
+	text.push_back("Ratoc REX3586");
+
+	str="TX Buffer filled:"+cpputil::Uitoa(state.TXPacket.size())+" bytes";
+	text.push_back(str);
+	str="RX Buffer filled:"+cpputil::Uitoa(state.RXPacket.size())+" bytes";
+	text.push_back(str);
+	
 	text.push_back("--Virtual Network (VM Side)--");
 	net.AddStatusText(text);
 	text.push_back("--Real Network (Outside)--");
