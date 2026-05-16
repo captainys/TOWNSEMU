@@ -385,6 +385,29 @@ void RealNetwork::RequestDNS(std::string hostname)
 	DNSReq.push_back(req);
 }
 
+void RealNetwork::ResetReceived(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t dstPort)
+{
+	std::lock_guard <std::mutex> lock(clientsLock);
+	for(auto iter=clients.begin(); clients.end()!=iter; )
+	{
+		if(iter->conn.VMPort==VMPort &&
+		   iter->conn.IPv4Addr[0]==IPv4Addr[0] &&
+		   iter->conn.IPv4Addr[1]==IPv4Addr[1] &&
+		   iter->conn.IPv4Addr[2]==IPv4Addr[2] &&
+		   iter->conn.IPv4Addr[3]==IPv4Addr[3] &&
+		   iter->conn.dstPort==dstPort &&
+		   iter->conn.VMPort==VMPort)
+		{
+			closesocket(iter->sock);
+			iter=clients.erase(iter);
+		}
+		else
+		{
+			++iter;
+		}
+	}
+}
+
 void RealNetwork::AddStatusText(std::vector <std::string> &text) const
 {
 	{

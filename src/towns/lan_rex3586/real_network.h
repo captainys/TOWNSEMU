@@ -160,6 +160,7 @@ public:
 
 	void AddStatusText(std::vector <std::string> &text) const;
 
+	void ResetReceived(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t port);
 
 	// In the network thread.
 	void ThreadFunc(void);

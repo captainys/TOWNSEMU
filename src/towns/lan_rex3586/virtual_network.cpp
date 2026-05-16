@@ -812,11 +812,40 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		std::cout << " IP:" << FormatIPAddress(ip.srcIP) << "->" << FormatIPAddress(ip.dstIP) << "\n";
 	}
 
+	if(TCP_FLAG_RST&tcp.flags)
+	{
+		if(monitorTX)
+		{
+			std::cout << "TCP_FLAG_RST\n";
+		}
+
+		const uint8_t IP[4]=
+		{
+			uint8_t(ip.dstIP>>24),
+			uint8_t(ip.dstIP>>16),
+			uint8_t(ip.dstIP>>8),
+			uint8_t(ip.dstIP)
+		};
+		realNet->ResetReceived(tcp.srcPort,IP,tcp.dstPort);
+
+		for(auto iter=TCPConn.begin(); TCPConn.end()!=iter; ++iter)
+		{
+			if(iter->ipHdr.dstIP==ip.srcIP &&
+			   iter->tcpHdr.srcPort==tcp.dstPort && // Remote (Outside) Port
+			   iter->tcpHdr.dstPort==tcp.srcPort)   // Local (VM) Port
+			{
+				TCPConn.erase(iter);
+				break;
+			}
+		}
+		return;
+	}
+
 	if(tcp.flags&TCP_FLAG_SYN)
 	{
 		if(monitorTX)
 		{
-			std::cout << "SYN\n";
+			std::cout << "TCP_FLAG_SYN\n";
 		}
 
 		TCPConnection conn;
@@ -1020,10 +1049,6 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 				++iter;
 			}
 		}
-	}
-	if(TCP_FLAG_RST&tcp.flags)
-	{
-		std::cout << "TCP_FLAG_RST not handling now.\n";
 	}
 	if(TCP_FLAG_URG&tcp.flags)
 	{
