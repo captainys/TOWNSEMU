@@ -631,6 +631,16 @@ void RealNetwork::ResetReceived(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16
 	}
 }
 
+void RealNetwork::RequestPortForwarding(uint16_t VMPort,uint16_t HostPort)
+{
+	PortForwarding lstn;
+	lstn.VMPort=VMPort;
+	lstn.HostPort=HostPort;
+
+	std::lock_guard <std::mutex> lock(portForwardingLock);
+	portForwarding.push_back(lstn);
+}
+
 void RealNetwork::AddStatusText(std::vector <std::string> &text) const
 {
 	{
@@ -713,6 +723,7 @@ void RealNetwork::AddStatusText(std::vector <std::string> &text) const
 				str+="!! UNDEFINED STATE !!";
 				break;
 			}
+			text.push_back(str);
 		}
 	}
 }

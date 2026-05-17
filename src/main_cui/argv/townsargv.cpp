@@ -337,6 +337,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Enable NAT for Ratoc REX3586 LAN card.  By default the LAN is disabled.\n";
 	std::cout << "-NOREX3586\n";
 	std::cout << "  Disable NAT for Ratoc REX3586 LAN card enabled by earlier argument.\n";
+	std::cout << "-PORTFWD VMPort HostPort\n";
+	std::cout << "  Enable Port Forwarding VMPort is the port Tsugaru sees.\n";
+	std::cout << "  And HostPort is the port open to outside.\n";
+	std::cout << "  You may also have to open port in the Firewall of the host OS.\n";
 
 	std::cout << "-VERBOSE\n";
 	std::cout << "  Additional console output.\n";
@@ -1204,6 +1208,14 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-NOREX3586"==ARG)
 		{
 			enableLAN=false;
+		}
+		else if("-PORTFWD"==ARG && i+2<argc)
+		{
+			std::pair <uint16_t,uint16_t> fwd;
+			fwd.first=cpputil::Atoi(argv[i+1]);
+			fwd.second=cpputil::Atoi(argv[i+2]);
+			portForwarding.push_back(fwd);
+			i+=2;
 		}
 		else if("-CONSCMD"==ARG && i+1<argc)
 		{

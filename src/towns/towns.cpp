@@ -491,6 +491,10 @@ void FMTownsCommon::State::PowerOn(void)
 	{
 		towns.rex3586.var.enabled=true;
 		towns.rex3586.StartRealNetwork();
+		for(auto fwd : argv.portForwarding)
+		{
+			towns.rex3586.net.RequestPortForwarding(towns.rex3586.realNet,fwd.first,fwd.second);
+		}
 	}
 
 	return result;

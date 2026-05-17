@@ -261,7 +261,6 @@ public:
 		TCPHeader tcpHdr;
 	};
 
-
 	class PacketReceiver
 	{
 	public:
@@ -307,6 +306,10 @@ public:
 	static TCPHeader DecodeTCPHeader(size_t len,const uint8_t data[]);
 	static void AddTCPHeader(std::vector <uint8_t> &data,TCPHeader &hdr);
 	static void RecalculateTCPHeaderCheckSum(size_t len,uint8_t data[],uint32_t srcIP,uint32_t dstIP);
+
+
+	static void RequestPortForwarding(RealNetwork *realNet,uint16_t VMPort,uint16_t HostPort);
+
 
 	void AddStatusText(std::vector <std::string> &text) const;
 

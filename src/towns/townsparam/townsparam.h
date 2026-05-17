@@ -8,6 +8,7 @@
 #include <vector>
 #include <unordered_map>
 #include <utility>
+#include <utility>
 #include <stdint.h>
 #include "townsdef.h"
 #include "i486.h" // Need FidelityLevel.
@@ -79,6 +80,7 @@ public:
 	bool removeInternalCD=false;
 
 	bool enableLAN=false;
+	std::vector <std::pair <uint16_t,uint16_t> > portForwarding;
 
 	// If not "", VM starts from this saved state.
 	std::string startUpStateFName;

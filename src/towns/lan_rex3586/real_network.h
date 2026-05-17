@@ -182,6 +182,8 @@ public:
 
 	void ResetReceived(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t port);
 
+	void RequestPortForwarding(uint16_t VMPort,uint16_t HostPort);
+
 	// In the network thread.
 	void ThreadFunc(void);
 private:

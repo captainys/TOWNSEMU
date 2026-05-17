@@ -329,6 +329,11 @@ void VirtualNetwork::RecalculateTCPHeaderCheckSum(size_t len,uint8_t data[],uint
 	}
 }
 
+void VirtualNetwork::RequestPortForwarding(RealNetwork *realNet,uint16_t VMPort,uint16_t HostPort)
+{
+	realNet->RequestPortForwarding(VMPort,HostPort);
+}
+
 void VirtualNetwork::AddStatusText(std::vector <std::string> &text) const
 {
 	for(auto &conn : TCPConn)

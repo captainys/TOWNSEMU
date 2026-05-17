@@ -345,6 +345,13 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back("ENABLLAN ");
 	text.back()+=(enableLAN ? "1" : "0");
 
+	for(auto fwd : portForwarding)
+	{
+		sstream.str("");
+		sstream << "PORTFWRD " << fwd.first << " " << fwd.second;
+		text.push_back(sstream.str());
+	}
+
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
@@ -855,6 +862,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		else if("ENABLLAN"==argv[0] && 2<=argv.size())
 		{
 			enableLAN=(0!=atoi(argv[1].c_str()));
+		}
+		else if("PORTFWRD"==argv[0] && 3<=argv.size())
+		{
+			std::pair <uint16_t,uint16_t> fwd;
+			fwd.first=atoi(argv[1].c_str());
+			fwd.second=atoi(argv[2].c_str());
+			portForwarding.push_back(fwd);
 		}
 		else
 		{
