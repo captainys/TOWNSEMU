@@ -665,6 +665,7 @@ enum
 	TOWNSIO_CMOS_SAVE_PIC2=         0x3A6E, // PIC2 setting is saved when switching to the protected mode.
 	TOWNSIO_CMOS_SAVE_TIMER_INT=    0x3A70, // Timer INT Ctrl (60H) is saved when switching to the protected mode.
 	TOWNSIO_CMOS_SCSI_DETECT=       0x3AC4,
+	TOWNSIO_CMOS_TBIOS_TYPE=        0x3AD8, // b7:1 Use high-res/full-color TBIOS
 	TOWNSIO_CMOS_TBIOS_PHYSADDR=    0x3B90,
 	TOWNSIO_CMOS_SAVE_NMI_MASK=     0x3C16, // NMI Mask (I/O 28H) is saved when switching to the protected mode.
 	TOWNSIO_CMOS_FAST_PWRON_MEMTEST=0x3C1A, // b0:Skip majority of memory test if set  b1:Skip ALL memory test if set  b2:Memory Diagnostic Mode 2  b7:Test ROM,DMAC,PIT
@@ -672,6 +673,7 @@ enum
 	TOWNSIO_CMOS_CPU_INIT_DL=       0x3C26, // Saves initial value of DL on power-on.
 	TOWNSIO_CMOS_BOOT_DEV=          0x3C28, // 80H:CD 20H-23H:FD 10H-14H:SCSI 4AH:ICM
 	TOWNSIO_CMOS_FAST_MODE=         0x3c2A,
+	TOWNSIO_CMOS_CD_BOOT_SETTINGS_IN_FD=0x3C32, // b0:1 Read settings from FD when starting Towns OS from CD.
 
 	TOWNSIO_LAN_REX3586_TX_STATUS=	0x7000,
 	TOWNSIO_LAN_REX3586_RX_STATUS=	0x7001,
