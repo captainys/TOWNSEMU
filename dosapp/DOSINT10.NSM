@@ -8,8 +8,97 @@
 						JMP		SHORT MAIN
 
 
+RETURN_AX				EQU		2
+RETURN_BX				EQU		4
+RETURN_CX				EQU		6
+RETURN_DX				EQU		8
+RETURN_SI				EQU		10
+RETURN_DI				EQU		12
+RETURN_DS				EQU		14
+RETURN_ES				EQU		16
+RETURN_CS				EQU		18
+RETURN_IP				EQU		20
+RETURN_FLAGS			EQU		22
+
 INT_10H:
+						PUSH	ES
+						PUSH	DS
+						PUSH	DI
+						PUSH	SI
+						PUSH	DX
+						PUSH	CX
+						PUSH	BX
+						PUSH	AX
+						PUSH	BP
+						MOV		BP,SP
+
+						; [BP]  Prev BP
+						; [BP+2] AX
+						; [BP+4] BX
+						; [BP+6] CX
+						; [BP+8] DX
+						; [BP+10] SI
+						; [BP+12] DI
+						; [BP+14] DS
+						; [BP+16] ES
+						; [BP+18] CS
+						; [BP+20] IP
+						; [BP+22] FLAGS
+
+						CMP		AH,2
+						JE		INT10H_02_GOTOXY
+						CMP		AH,3
+						JE		INT10H_03_WHEREXY
+						CMP		AH,6
+						JE		INT10H_06_SCROLL_SCREEN
+						CMP		AH,9
+						JE		INT10H_09_WRITECHAR
+						CMP		AH,12H
+						JE		INT10H_12H_VIDEO
+
+INT10H_EXIT:
+						POP		BP
+						POP		AX
+						POP		BX
+						POP		CX
+						POP		DX
+						POP		SI
+						POP		DI
+						POP		DS
+						POP		ES
 						IRET
+
+INT10H_02_GOTOXY:
+						; DH  Row
+						; DL  Column
+						; Just translate to INT 91H AH=0DH
+						MOV		AH,0DH
+						INT 	91H
+						JMP		INT10H_EXIT
+
+INT10H_03_WHEREXY:
+						MOV		AH,0EH
+						INT		91H
+						MOV		[BP+RETURN_DX],DX
+						MOV		WORD [BP+RETURN_CX],000FH  ; Looks like it is the cursor shape.  Y=0(CH) to 15(CL).
+						JMP		INT10H_EXIT
+
+
+INT10H_06_SCROLL_SCREEN:
+						JMP		INT10H_EXIT
+
+
+INT10H_09_WRITECHAR:
+						; Just translate to INT 91H AH=0DH
+						MOV		AH,0DH
+						INT		91H
+						JMP		INT10H_EXIT
+
+INT10H_12H_VIDEO:
+						; If nothing happens to BL, the program assumes it is not an EGA card.
+						JMP		INT10H_EXIT
+
+
 
 RESIDENT_END:
 
