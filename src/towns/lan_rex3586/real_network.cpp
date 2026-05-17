@@ -6,6 +6,8 @@
 	#include <windows.h>
 	#pragma comment(lib,"wsock32.lib")
 	typedef int socklen_t;
+#else
+	#define SD_SEND SHUT_WR
 #endif
 
 #define THREAD_PROGRESS(x) // {std::cout << "T" << (x) << "\n";}
