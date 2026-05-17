@@ -326,6 +326,183 @@ void RealNetwork::ThreadFunc(void)
 			}
 		}
 		THREAD_PROGRESS("5");
+		{
+			portForwardingLock.lock();
+			auto portForwardingCopy=portForwarding;
+			portForwardingLock.unlock();
+
+			uint32_t newListen=0;
+			for(auto &port : portForwardingCopy)
+			{
+				if(STATE_NOT_LISTENING==port.state)
+				{
+					port.sock=socket(AF_INET,SOCK_STREAM,0);
+					if(INVALID_SOCKET!=port.sock)
+					{
+					#ifndef _WIN32
+						struct linger lingerOpt;
+						lingerOpt.l_onoff=1;
+						lingerOpt.l_linger=10;
+						setsockopt(port.sock,SOL_SOCKET,SO_LINGER,(void *)&lingerOpt,sizeof(lingerOpt));
+					#endif
+
+						SOCKADDR_IN addr;
+						addr.sin_family=AF_INET;
+						addr.sin_port=htons(port.HostPort);
+						addr.sin_addr.s_addr=INADDR_ANY;
+						if(0!=bind(port.sock,(SOCKADDR *)&addr,sizeof(SOCKADDR_IN)))
+						{
+							closesocket(port.sock);
+							port.sock=INVALID_SOCKET;
+							continue;
+						}
+						if(0!=listen(port.sock,listen_max))
+						{
+							closesocket(port.sock);
+							port.sock=INVALID_SOCKET;
+							continue;
+						}
+						port.state=STATE_LISTENING;
+						++newListen;
+					}
+				}
+			}
+
+			if(0<newListen)
+			{
+				std::lock_guard <std::mutex> lock(portForwardingLock);
+				for(auto &port : portForwarding)
+				{
+					for(auto &copy : portForwardingCopy)
+					{
+						if(port.VMPort==copy.VMPort &&
+						   port.HostPort==copy.HostPort &&
+						   STATE_NOT_LISTENING==port.state &&
+						   STATE_LISTENING==copy.state)
+						{
+							port=copy;
+						}
+					}
+				}
+			}
+
+			// Check incoming connections.
+		#ifdef _WIN32
+			// --- Windows Path: select ---
+			fd_set readfds;
+			FD_ZERO(&readfds);
+
+			int i=0;
+			for(auto &lstn : portForwardingCopy)
+			{
+				lstn.connectionIncoming=false;
+				if(STATE_LISTENING==lstn.state)
+				{
+					FD_SET(lstn.sock, &readfds); // cli.sock is not accessed from outside of Network Thread
+					++i;
+				}
+			}
+			if(64<i)
+			{
+				std::cout << "FD_SET overflow!\n";
+			}
+
+			// 10ms timeout
+			timeval tv;
+			tv.tv_sec = 0;
+			tv.tv_usec = 10000; 
+			// nfds is ignored on Windows, but usually set to 0 or max fd + 1
+			if (0<select(0,&readfds,NULL,NULL,&tv))
+			{
+				for(auto &lstn : portForwardingCopy)
+				{
+					if(FD_ISSET(lstn.sock,&readfds))
+					{
+						lstn.connectionIncoming=true;
+					}
+				}
+			}
+		#else
+			// --- POSIX Path: poll ---
+			std::vector<struct pollfd> fds;
+			for(auto &lstn : portForwardingCopy)
+			{
+				struct pollfd pfd;
+				pfd.fd=lstn.sock;
+				pfd.events=POLLIN;
+				fds.push_back(pfd);
+			}
+
+			// poll uses milliseconds (10ms)
+			if (0<poll(fds.data(),(nfds_t)fds.size(),10)) 
+			{
+				for(auto &fd : fds)
+				{
+					if (fd.revents & POLLIN) 
+					{
+						for(auto &lstn : portForwardingCopyo)
+						{
+							if(lstn.sock==fd.fd)
+							{
+								lstn.connectionIncoming=true;
+								break;
+							}
+						}
+					}
+				}
+			}
+		#endif
+			for(auto lstn : portForwardingCopy)
+			{
+				if(true==lstn.connectionIncoming)
+				{
+					socklen_t addrlen=sizeof(SOCKADDR_IN);
+					SOCKADDR_IN addr;
+					SOCKET sock=accept(lstn.sock,(SOCKADDR *)&addr,&addrlen);
+					if(INVALID_SOCKET!=sock)
+					{
+					#ifdef _WIN32
+						BOOL b=TRUE;
+						setsockopt(sock,IPPROTO_TCP,TCP_NODELAY,(char *)&b,sizeof(b));
+					#endif
+						#ifdef _WIN32
+						uint16_t remotePort=addr.sin_port;
+						uint8_t ipAddr[4]=
+						{
+							addr.sin_addr.S_un.S_un_b.s_b1,
+							addr.sin_addr.S_un.S_un_b.s_b2,
+							addr.sin_addr.S_un.S_un_b.s_b3,
+							addr.sin_addr.S_un.S_un_b.s_b4,
+						};
+						#else
+						uint16_t remotePort=addr.sin_port;
+						uint8_t ipAddr[4]=
+						{
+							(addr.sin_addr.s_addr>>24)&255,
+							(addr.sin_addr.s_addr>>16)&255,
+							(addr.sin_addr.s_addr>> 8)&255,
+							addr.sin_addr.s_addr     &255,
+						};
+						#endif
+
+						Client newCli;
+						newCli.state=STATE_JUST_ACCEPTED;
+						newCli.sock=sock;
+						newCli.conn.VMPort=lstn.VMPort;
+						newCli.conn.dstPort=remotePort;
+						newCli.conn.IPv4Addr[0]=ipAddr[0];
+						newCli.conn.IPv4Addr[1]=ipAddr[1];
+						newCli.conn.IPv4Addr[2]=ipAddr[2];
+						newCli.conn.IPv4Addr[3]=ipAddr[3];
+
+						clientsLock.lock();
+						clients.push_back(newCli);
+						clientsLock.unlock();
+					}
+				}
+			}
+		}
+		THREAD_PROGRESS("6");
 	}
 
 	THREAD_PROGRESS("Fin");
@@ -485,6 +662,12 @@ void RealNetwork::AddStatusText(std::vector <std::string> &text) const
 			case STATE_DISCONNECTED_NEED_TO_SEND_FIN:
 				str+="DISCONNECTED_NEED_TO_SEND_FIN";
 				break;
+			case STATE_JUST_ACCEPTED:
+				str+="JUST_ACCEPTED";
+				break;
+			default:
+				str+="!! UNDEFINED STATE !!";
+				break;
 			}
 
 			str+=" RecvBuf:";
@@ -504,6 +687,32 @@ void RealNetwork::AddStatusText(std::vector <std::string> &text) const
 				str+=" Shutdown";
 			}
 			text.push_back(str);
+		}
+	}
+	{
+		std::lock_guard <std::mutex> lock(portForwardingLock);
+		for(auto &lstn : portForwarding)
+		{
+			std::string str="Port Fwd  VMPort:";
+			str+=cpputil::Ustox(lstn.VMPort);
+			str+="H HostPort:";
+			str+=cpputil::Ustox(lstn.HostPort);
+			str.push_back('H');
+
+			str.push_back(' ');
+
+			switch(lstn.state)
+			{
+			case STATE_NOT_LISTENING:
+				str+="NOT_LISTENING";
+				break;
+			case STATE_LISTENING:
+				str+="LISTENING";
+				break;
+			default:
+				str+="!! UNDEFINED STATE !!";
+				break;
+			}
 		}
 	}
 }

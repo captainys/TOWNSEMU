@@ -59,7 +59,14 @@ public:
 		STATE_CONNECTED,       // Connection established, VM thread knows about it.
 		STATE_DISCONNECTED_BUT_DATA_LEFTOVER,
 		STATE_DISCONNECTED_NEED_TO_SEND_FIN,
+
+		STATE_JUST_ACCEPTED,
+
+		STATE_NOT_LISTENING,
+		STATE_LISTENING,
 	};
+
+	const uint32_t listen_max=8;
 
 	class Connection
 	{
@@ -96,8 +103,18 @@ public:
 
 		std::vector <uint8_t> recvBuf; // VM <- Outside
 		std::vector <uint8_t> sendBuf; // VM -> Outside
-		SOCKET sock;
+		SOCKET sock=INVALID_SOCKET;
 		Connection conn;
+	};
+
+	class PortForwarding
+	{
+	friend class RealNetwork;
+	public:
+		uint32_t VMPort,HostPort;  // Forward incoming connection to Host's port to VM's VMPort.
+		SOCKET sock=INVALID_SOCKET;
+		uint32_t state=STATE_NOT_LISTENING;
+		bool connectionIncoming=false;
 	};
 
 	class TCPConnectionRequest
@@ -141,6 +158,9 @@ public:
 
 	std::vector <DNSRequest> DNSReq;
 	mutable std::mutex DNSRequestLock;
+
+	std::vector <PortForwarding> portForwarding;
+	mutable std::mutex portForwardingLock;
 
 public:
 	// In the VM thread.
