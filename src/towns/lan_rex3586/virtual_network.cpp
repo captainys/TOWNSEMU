@@ -357,9 +357,20 @@ void VirtualNetwork::AddStatusText(std::vector <std::string> &text) const
 		case STATE_CLOSED:
 			str+="CLOSED";
 			break;
-		case STATE_FIN_RECEIVED: // VM initiated FIN.
-			str+="CLOSING_FROM_VM";
+
+		case STATE_VM_INITIATED_FIN:               // VM initiated FIN.  Router received FIN|ACK from the VM.
+			str+="VM_INITIATED_FIN";
 			break;
+		case STATE_VM_INITIATED_FIN_WAIT_SHUTDOWN: // Real-Network layer notified.  Waiting for shutdown to complete.
+			str+="VM_INITIATED_FIN_WAIT_SHUTDOWN";
+			break;
+		case STATE_VM_INITIATED_FIN_SHUTDOWN_DONE: // Real-Network layer notified.  Waiting for shutdown to complete.
+			str+="VM_INITIATED_FIN_SHUTDOWN_DONE";
+			break;
+		case STATE_VM_INITIATED_FIN_SENT_FINACK:   // Real-Network layer shutdown completed.  Sent FIN|ACK to VM.
+			str+="VM_INITIATED_FIN_SENT_FINACK";
+			break;
+
 		case STATE_ACCEPTED:
 			str+="ACCEPTED";
 			break;
@@ -982,8 +993,7 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 				std::cout << "Current      " << "  Seq#=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << "  Ack#=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
 			}
 
-			// This logic is not quite right.
-			/* if(STATE_FIN_SENT==conn.state) // Closing from the VM.  Final acknowledgement.
+			if(STATE_VM_INITIATED_FIN_SENT_FINACK==conn.state) // Closing from the VM.  Final acknowledgement.
 			{
 				if(true==monitorTCP)
 				{
@@ -992,8 +1002,7 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 				TCPConn.erase(connPtr);
 				connPtr=TCPConn.end();
 			}
-			else*/
-			if(true==conn.waitingAck && conn.unacknowledgedSeq==tcp.ackNum)
+			else if(true==conn.waitingAck && conn.unacknowledgedSeq==tcp.ackNum)
 			{
 				if(true==monitorTCP)
 				{
@@ -1106,7 +1115,7 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 
 				recv->ReceivePacket(data.size(),data.data());
 
-				conn.state=STATE_FIN_RECEIVED;
+				conn.state=STATE_VM_INITIATED_FIN;
 				if(true==monitorTCP)
 				{
 					std::cout << "FIN initiated from the VM.\n";
@@ -1322,7 +1331,7 @@ void VirtualNetwork::ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_
 	conn.unacknowledgedSeq=conn.tcpHdr.sequenceNum;
 }
 
-void VirtualNetwork::TCPInitiateFIN(TCPConnection &conn,PacketReceiver *recv)
+void VirtualNetwork::TCPSendFINACK(TCPConnection &conn,PacketReceiver *recv,uint32_t nextState)
 {
 	conn.tcpHdr.flags=TCP_FLAG_ACK|TCP_FLAG_FIN;
 	conn.tcpHdr.StripOptions(); // Just in case
@@ -1346,7 +1355,7 @@ void VirtualNetwork::TCPInitiateFIN(TCPConnection &conn,PacketReceiver *recv)
 
 	++conn.tcpHdr.sequenceNum;
 
-	conn.state=STATE_FIN_SENT;
+	conn.state=nextState;
 }
 
 void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
@@ -1471,12 +1480,13 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 							cli.sendBuf.insert(cli.sendBuf.end(),virConn.TxData.begin(),virConn.TxData.end());
 							virConn.TxData.clear();
 						}
-						if(STATE_FIN_RECEIVED==virConn.state)
+						if(STATE_VM_INITIATED_FIN==virConn.state)
 						{
 							if(true==monitorTCP && true!=cli.FIN_initiated_from_VM)
 							{
 								std::cout << "VM initiated FIN and Real Network notified.\n";
 							}
+							virConn.state=STATE_VM_INITIATED_FIN_WAIT_SHUTDOWN;
 							cli.FIN_initiated_from_VM=true;
 						}
 					}
@@ -1491,7 +1501,12 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 					   virConn.tcpHdr.dstPort==cli.conn.VMPort &&
 					   virConn.tcpHdr.srcPort==cli.conn.dstPort)
 					{
-						if(STATE_FIN_SENT!=virConn.state)
+						if(STATE_VM_INITIATED_FIN_WAIT_SHUTDOWN==virConn.state)
+						{
+							virConn.state=STATE_VM_INITIATED_FIN_SHUTDOWN_DONE;
+							cli.state=RealNetwork::STATE_DISCONNECTED; // Once notify, real-network side can be gone.
+						}
+						else if(STATE_FIN_SENT!=virConn.state)
 						{
 							virConn.state=STATE_CLOSING_FROM_ROUTER;
 							cli.state=RealNetwork::STATE_DISCONNECTED; // Once notify, real-network side can be gone.
@@ -1547,7 +1562,11 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 		{
 			if(STATE_CLOSING_FROM_ROUTER==virConn.state)
 			{
-				TCPInitiateFIN(virConn,recv);
+				TCPSendFINACK(virConn,recv,STATE_FIN_SENT);
+			}
+			else if(STATE_VM_INITIATED_FIN_SHUTDOWN_DONE==virConn.state)
+			{
+				TCPSendFINACK(virConn,recv,STATE_VM_INITIATED_FIN_SENT_FINACK);
 			}
 			else if(STATE_ACCEPTED==virConn.state)
 			{
@@ -1563,7 +1582,6 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 				RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,virConn.ipHdr.srcIP,virConn.ipHdr.dstIP);
 
 				recv->ReceivePacket(data.size(),data.data());
-
 				virConn.state=STATE_ACCEPTED_SYN_SENT;
 			}
 		}

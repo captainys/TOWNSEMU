@@ -249,7 +249,11 @@ public:
 		STATE_CLOSING_FROM_ROUTER,
 		STATE_FIN_SENT, // Closing from the remote, and FIN|ACK has been sent to the VM.
 		STATE_CLOSED,
-		STATE_FIN_RECEIVED, // VM initiated FIN.
+
+		STATE_VM_INITIATED_FIN,               // VM initiated FIN.  Router received FIN|ACK from the VM.
+		STATE_VM_INITIATED_FIN_WAIT_SHUTDOWN, // Real-Network layer notified.  Waiting for shutdown to complete.
+		STATE_VM_INITIATED_FIN_SHUTDOWN_DONE, // Real-Network layer disconnected.
+		STATE_VM_INITIATED_FIN_SENT_FINACK,   // Real-Network layer shutdown completed.  Sent FIN|ACK to VM.
 
 		STATE_ACCEPTED, // Incoming connection from outside.
 		STATE_ACCEPTED_SYN_SENT,
@@ -341,7 +345,7 @@ protected:
 	void TCPConnectionEstablished(TCPConnection &conn,PacketReceiver *recv);
 	void ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_t data[],PacketReceiver *recv);
 
-	void TCPInitiateFIN(TCPConnection &conn,PacketReceiver *recv);
+	void TCPSendFINACK(TCPConnection &conn,PacketReceiver *recv,uint32_t nextState);
 
 public:
 	void Polling(PacketReceiver *recv,class RealNetwork *realNet);
