@@ -441,7 +441,7 @@ Vec2i TownsCRTC::GetLowResPageZoom2X(unsigned char page) const
 			zoom[1]*=4;
 		}
 	}
-	else if(3==CLKSEL() && 0x29D==state.crtcReg[REG_HST])
+	else if(3==CLKSEL() && (0x29D == state.crtcReg[REG_HST] || 0x2BD == state.crtcReg[REG_HST]))
 	{
 		// VING games use this settings.  Apparently zoom-x needs to be interpreted as 4+(pageZoom&15).
 		// Chase HQ        HST=029DH  ZOOM=1111H  Zoom2X=5
@@ -452,6 +452,7 @@ Vec2i TownsCRTC::GetLowResPageZoom2X(unsigned char page) const
 		// New Zealand Story  N/A
 		// Alshark Opening HST=029DH  ZOOM=0000H  Zoom2X=2
 		// Freeware Collection 8 Oh!FM TOWNS Cover Picture Collection  HST=029DH  ZOOM=0000H  Zoom2X=2
+		// Ningyou Tsukai  HST=02BDH  ZOOM=1111H  Zoom2X=5
 		zoom[0]=2+3*(pageZoom&15); // Is it right?
 		zoom[1]*=2;
 	}
@@ -580,7 +581,7 @@ Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 		wid/=2;
 		hei*=2;
 	}
-	else if(3==CLKSEL() && 0x29D==state.crtcReg[REG_HST]) // VING Setting
+	else if(3==CLKSEL() && (0x29D==state.crtcReg[REG_HST] || 0x2BD==state.crtcReg[REG_HST])) // VING(0x29D) or Ningyou Tukai(0x2BD) Setting 
 	{
 		// VING games use this settings.  Apparently zoom-x needs to be interpreted as 4+(pageZoom&15).
 		// Chase HQ        HDS0=0082H  HDE0=00282H (Diff=512)  HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
@@ -600,6 +601,9 @@ Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 		//                 HDS0=0082H  HDE0=0282H  (Diff=512)  HST=029DH  ZOOM=4242H  Zoom2X=8  wid=640
 		//                 HDS0=0082H  HDE0=0282H  (Diff=512)  HST=029DH  ZOOM=4343H  Zoom2X=11 wid=640
 		//                 HDS0=0082H  HDE0=0282H  (Diff=512)  HST=029DH  ZOOM=5353H  Zoom2X=11 wid=640
+
+		// Ningyou Tsukai (Metal&Lace)
+		//                 HDS0=008AH  HDE0=028AH  (Diff=512)  HST=02BDH  ZOOM=1111H  Zoom2X=5  wid=640
 
 		// Looks like zoom2X=5 -> wid*5/4
 		//            zoom2X=2 -> wid*4/4
