@@ -231,6 +231,9 @@ UITXT
 
 +/profile/LAN LAN
 +/profile/LAN/enableLAN LANカード(Ratoc REX3586)を有効にする
++profile/LAN/caution ** 警告 **\nFM TOWNSで動作するOSはいずれも今のレベルのセキュリティがありません。LAN機能を使っ\nて外部と送受信した情報は漏洩する危険があります。重要な情報は決して送受信しないよ\nうに注意してください。\nLAN機能を有効にするときは、TGDRVを無効にすることを強く推奨します。\nLAN機能は現在実験的な実装です。LAN機能のステートはセーブはできません。
+
+
 
 +/profile/start FM TOWNS起動!
 +/profile/autostart プロファイルを開くと同時にFM TOWNSを起動する
