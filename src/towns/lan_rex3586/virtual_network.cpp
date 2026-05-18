@@ -826,10 +826,12 @@ void VirtualNetwork::ProcessARP_Packet(EthernetHeader ether,size_t len,const uin
 
 void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet)
 {
+	size_t payloadLen=ip.len-ip.GetHeaderLength()-tcp.GetTotalLength();
+
 	if(monitorTX)
 	{
 		std::cout << "TCP Packet VM->Router  Port:" << uint32_t(tcp.srcPort) << "->" << uint32_t(tcp.dstPort);
-		std::cout << " IP:" << FormatIPAddress(ip.srcIP) << "->" << FormatIPAddress(ip.dstIP) << "\n";
+		std::cout << " IP:" << FormatIPAddress(ip.srcIP) << "->" << FormatIPAddress(ip.dstIP) << " Payload " << payloadLen << " bytes.\n";
 	}
 
 	if(TCP_FLAG_RST&tcp.flags)
@@ -1026,8 +1028,7 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 				std::cout << "                          Current  seq=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << " ack=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
 			}
 
-			size_t dataLen=ip.len-ip.GetHeaderLength()-tcp.GetTotalLength();
-			conn.tcpHdr.ackNum+=dataLen;
+			conn.tcpHdr.ackNum+=payloadLen;
 
 			{
 				//Acknowledge PSH
@@ -1056,7 +1057,7 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 				// Apparently ACK packet with no data doesn't increment the sequence number.
 			}
 
-			conn.TxData.insert(conn.TxData.end(),data,data+dataLen);
+			conn.TxData.insert(conn.TxData.end(),data,data+payloadLen);
 		}
 	}
 	if(TCP_FLAG_FIN&tcp.flags)
