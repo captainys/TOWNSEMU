@@ -1014,6 +1014,7 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 				}
 				TCPConn.erase(connPtr);
 				connPtr=TCPConn.end();
+				return; // Don't worry about it no more.
 			}
 			else if(true==conn.waitingAck && conn.unacknowledgedSeq==tcp.ackNum)
 			{
@@ -1030,14 +1031,11 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		if(TCPConn.end()!=connPtr)
 		{
 			auto &conn=*connPtr;
-
 			if(true==monitorTCP)
 			{
-				std::cout << "Acknowledging PSH from VM Incoming seq=" << cpputil::Uitox(tcp.sequenceNum) << " ack=" << cpputil::Uitox(tcp.ackNum) << "\n";
-				std::cout << "                          Current  seq=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << " ack=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
+				std::cout << "PSH from VM Incoming seq=" << cpputil::Uitox(tcp.sequenceNum) << " ack=" << cpputil::Uitox(tcp.ackNum) << "\n";
+				std::cout << "            Current  seq=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << " ack=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
 			}
-
-			TCPSendPureAckToVM(conn.ethernetHdr,conn.ipHdr,conn.tcpHdr,tcp.sequenceNum,0,payloadLen,recv);
 		}
 	}
 	if(TCP_FLAG_FIN&tcp.flags)
@@ -1056,17 +1054,17 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 
 				TCPConn.erase(connPtr); // conn.state=STATE_CLOSED;
 				connPtr=TCPConn.end();
+				return; // Don't worry about it no more.
 			}
 			else // Closing from the VM.
 			{
-				//Acknowledge FIN
-				TCPSendPureAckToVM(conn.ethernetHdr,conn.ipHdr,conn.tcpHdr,tcp.sequenceNum,1,payloadLen,recv);
-
-				conn.state=STATE_VM_INITIATED_FIN;
 				if(true==monitorTCP)
 				{
 					std::cout << "FIN initiated from the VM.\n";
 				}
+
+				ackNumConsumption=1;
+				conn.state=STATE_VM_INITIATED_FIN;
 			}
 		}
 	}
@@ -1083,6 +1081,11 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		std::cout << "TCP_FLAG_CWR not handling now.\n";
 	}
 
+	if(TCPConn.end()!=connPtr && 0<ackNumConsumption+payloadLen)
+	{
+		auto &conn=*connPtr;
+		TCPSendPureAckToVM(conn.ethernetHdr,conn.ipHdr,conn.tcpHdr,tcp.sequenceNum,ackNumConsumption,payloadLen,recv);
+	}
 
 	size_t optPtr=0;
 	bool optErr=false,optEnd=false;
