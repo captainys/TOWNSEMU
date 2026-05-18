@@ -981,7 +981,9 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 				std::cout << "Ack from VM  " << "  Seq#=" << cpputil::Uitox(tcp.sequenceNum) << "  Ack#=" << cpputil::Uitox(tcp.ackNum) << "\n";
 				std::cout << "Current      " << "  Seq#=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << "  Ack#=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
 			}
-			if(STATE_FIN_SENT==conn.state) // Closing from the VM.  Final acknowledgement.
+
+			// This logic is not quite right.
+			/* if(STATE_FIN_SENT==conn.state) // Closing from the VM.  Final acknowledgement.
 			{
 				if(true==monitorTCP)
 				{
@@ -990,7 +992,8 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 				TCPConn.erase(connPtr);
 				connPtr=TCPConn.end();
 			}
-			else if(true==conn.waitingAck && conn.unacknowledgedSeq==tcp.ackNum)
+			else*/
+			if(true==conn.waitingAck && conn.unacknowledgedSeq==tcp.ackNum)
 			{
 				if(true==monitorTCP)
 				{
@@ -1049,74 +1052,65 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 	}
 	if(TCP_FLAG_FIN&tcp.flags)
 	{
-		for(auto iter=TCPConn.begin(); TCPConn.end()!=iter;)
+		if(TCPConn.end()!=connPtr)
 		{
-			auto &conn=*iter;
-			bool deleted=false;
-			if(conn.ipHdr.dstIP==ip.srcIP &&
-			   conn.tcpHdr.srcPort==tcp.dstPort && // Remote (Outside) port
-			   conn.tcpHdr.dstPort==tcp.srcPort)   // Local (VM) port
+			auto &conn=*connPtr;
+
+			if(STATE_FIN_SENT==conn.state) // Closing from the remote host
 			{
-				if(STATE_FIN_SENT==conn.state) // Closing from the remote host
-				{
-					conn.tcpHdr.StripOptions(); // Just in case.
-					conn.tcpHdr.flags=TCP_FLAG_ACK;
-					conn.tcpHdr.ackNum=tcp.sequenceNum+1;
-					conn.ipHdr.len=conn.ipHdr.GetHeaderLength()+conn.tcpHdr.GetTotalLength();
+				conn.tcpHdr.StripOptions(); // Just in case.
+				conn.tcpHdr.flags=TCP_FLAG_ACK;
+				conn.tcpHdr.ackNum=tcp.sequenceNum+1;
+				conn.ipHdr.len=conn.ipHdr.GetHeaderLength()+conn.tcpHdr.GetTotalLength();
 
-					std::vector <uint8_t> data;
-					AddEthernetHeader(data,conn.ethernetHdr);
+				std::vector <uint8_t> data;
+				AddEthernetHeader(data,conn.ethernetHdr);
 
-					size_t IPHeaderPos=data.size();
-					AddIPHeader(data,conn.ipHdr);
-					RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+				size_t IPHeaderPos=data.size();
+				AddIPHeader(data,conn.ipHdr);
+				RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
 
-					size_t TCPHeaderPos=data.size();
-					AddTCPHeader(data,conn.tcpHdr);
-					RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
+				size_t TCPHeaderPos=data.size();
+				AddTCPHeader(data,conn.tcpHdr);
+				RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
 
-					recv->ReceivePacket(data.size(),data.data());
+				recv->ReceivePacket(data.size(),data.data());
 
-					iter=TCPConn.erase(iter); // conn.state=STATE_CLOSED;
-					deleted=true;
-				}
-				else // Closing from the VM.
-				{
-					//Acknowledge FIN
-					++conn.tcpHdr.ackNum;
-
-					auto &tcp=conn.tcpHdr; // At this point forget incoming tcp- and ip-headers.
-					auto &ip=conn.ipHdr;
-
-					tcp.flags=TCP_FLAG_ACK;
-					tcp.StripOptions();
-
-					ip.len=ip.GetHeaderLength()+tcp.GetTotalLength();
-
-					std::vector <uint8_t> data;
-					AddEthernetHeader(data,conn.ethernetHdr);
-
-					size_t IPHeaderPos=data.size();
-					AddIPHeader(data,ip);
-					RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
-
-					size_t TCPHeaderPos=data.size();
-					AddTCPHeader(data,tcp);
-					// No payload.
-					RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
-
-					recv->ReceivePacket(data.size(),data.data());
-
-					conn.state=STATE_FIN_RECEIVED;
-					if(true==monitorTCP)
-					{
-						std::cout << "FIN initiated from the VM.\n";
-					}
-				}
+				TCPConn.erase(connPtr); // conn.state=STATE_CLOSED;
+				connPtr=TCPConn.end();
 			}
-			if(true!=deleted)
+			else // Closing from the VM.
 			{
-				++iter;
+				//Acknowledge FIN
+				++conn.tcpHdr.ackNum;
+
+				auto &tcp=conn.tcpHdr; // At this point forget incoming tcp- and ip-headers.
+				auto &ip=conn.ipHdr;
+
+				tcp.flags=TCP_FLAG_ACK;
+				tcp.StripOptions();
+
+				ip.len=ip.GetHeaderLength()+tcp.GetTotalLength();
+
+				std::vector <uint8_t> data;
+				AddEthernetHeader(data,conn.ethernetHdr);
+
+				size_t IPHeaderPos=data.size();
+				AddIPHeader(data,ip);
+				RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+
+				size_t TCPHeaderPos=data.size();
+				AddTCPHeader(data,tcp);
+				// No payload.
+				RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
+
+				recv->ReceivePacket(data.size(),data.data());
+
+				conn.state=STATE_FIN_RECEIVED;
+				if(true==monitorTCP)
+				{
+					std::cout << "FIN initiated from the VM.\n";
+				}
 			}
 		}
 	}
