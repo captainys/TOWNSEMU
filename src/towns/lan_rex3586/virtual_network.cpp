@@ -348,11 +348,11 @@ void VirtualNetwork::AddStatusText(std::vector <std::string> &text) const
 		case STATE_ESTABLISHED:
 			str+="EST";
 			break;
-		case STATE_CLOSING_FROM_ROUTER:
+		case STATE_CLOSING_FROM_REMOTE:
 			str+="CLOSING_FROM_REMOTE";
 			break;
-		case STATE_FIN_SENT: // Closing from the remote, and FIN|ACK has been sent to the VM.
-			str+="CLOSING_FIN_SENT";
+		case STATE_CLOSING_FROM_REMOTE_SENT_FINACK: // Closing from the remote, and FIN|ACK has been sent to the VM.
+			str+="CLOSING_FROM_REMOVE_SENT_FINACK";
 			break;
 		case STATE_CLOSED:
 			str+="CLOSED";
@@ -1065,7 +1065,7 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		{
 			auto &conn=*connPtr;
 
-			if(STATE_FIN_SENT==conn.state) // Closing from the remote host
+			if(STATE_CLOSING_FROM_REMOTE_SENT_FINACK==conn.state) // Closing from the remote host
 			{
 				conn.tcpHdr.StripOptions(); // Just in case.
 				conn.tcpHdr.flags=TCP_FLAG_ACK;
@@ -1471,7 +1471,7 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 									std::cout << "IP:" << FormatIPAddress(cli.conn.GetIPUint32()) << "\n";
 								}
 								cli.state=RealNetwork::STATE_DISCONNECTED;
-								virConn.state=STATE_CLOSING_FROM_ROUTER; // Need to send FIN.
+								virConn.state=STATE_CLOSING_FROM_REMOTE; // Need to send FIN.
 							}
 							break;
 						}
@@ -1506,9 +1506,9 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 							virConn.state=STATE_VM_INITIATED_FIN_SHUTDOWN_DONE;
 							cli.state=RealNetwork::STATE_DISCONNECTED; // Once notify, real-network side can be gone.
 						}
-						else if(STATE_FIN_SENT!=virConn.state)
+						else if(STATE_CLOSING_FROM_REMOTE!=virConn.state && STATE_CLOSING_FROM_REMOTE_SENT_FINACK!=virConn.state)
 						{
-							virConn.state=STATE_CLOSING_FROM_ROUTER;
+							virConn.state=STATE_CLOSING_FROM_REMOTE;
 							cli.state=RealNetwork::STATE_DISCONNECTED; // Once notify, real-network side can be gone.
 						}
 					}
@@ -1560,9 +1560,9 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 	{
 		for(auto &virConn : TCPConn)
 		{
-			if(STATE_CLOSING_FROM_ROUTER==virConn.state)
+			if(STATE_CLOSING_FROM_REMOTE==virConn.state)
 			{
-				TCPSendFINACK(virConn,recv,STATE_FIN_SENT);
+				TCPSendFINACK(virConn,recv,STATE_CLOSING_FROM_REMOTE_SENT_FINACK);
 			}
 			else if(STATE_VM_INITIATED_FIN_SHUTDOWN_DONE==virConn.state)
 			{

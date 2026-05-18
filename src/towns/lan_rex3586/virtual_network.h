@@ -246,10 +246,24 @@ public:
 	{
 		STATE_PENDING,
 		STATE_ESTABLISHED,
-		STATE_CLOSING_FROM_ROUTER,
-		STATE_FIN_SENT, // Closing from the remote, and FIN|ACK has been sent to the VM.
 		STATE_CLOSED,
 
+		// Disconnect from Real-Network
+		// (1) Real network disconnected (recv() returns 0 or -1)
+		// (2) Router sends VM  FIN|ACK   TCPInitiateFIN (Real:STATE_CLOSING_FROM_ROUTER,  Virtual:ESTABLISHED->FIN_SENT)
+		// (3) VM replies with ACK for (2)
+		// (4) VM sends Router  FIN|ACK
+		// (5) Router replies with ACK for (4)
+		STATE_CLOSING_FROM_REMOTE,             // Used to be STATE_CLOSING_FROM_ROUTER,
+		STATE_CLOSING_FROM_REMOTE_SENT_FINACK, // Used to be STATE_SENT_FIN,  Closing from the remote, and FIN|ACK has been sent to the VM.
+
+		// Disconnect from VM
+		// (1) VM sends Router  FIN|ACK
+		// (2) Router notifies real-network about the disconnection.  Real network initiates Shutdown
+		// (3) Router replies VM with ACK for (1)
+		// (4) Wait until real-network disconnects (recv() returns 0 or -1)
+		// (5) Router sends VM  FIN|ACK   TCPInitiateFIN (Real:STATE_CLOSING_FROM_ROUTER,  Virtual:ESTABLISHED->FIN_SENT)
+		// (6) VM replies Router with  ACK for (5)
 		STATE_VM_INITIATED_FIN,               // VM initiated FIN.  Router received FIN|ACK from the VM.
 		STATE_VM_INITIATED_FIN_WAIT_SHUTDOWN, // Real-Network layer notified.  Waiting for shutdown to complete.
 		STATE_VM_INITIATED_FIN_SHUTDOWN_DONE, // Real-Network layer disconnected.
