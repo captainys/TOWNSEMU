@@ -815,8 +815,6 @@ void VirtualNetwork::ProcessARP_Packet(EthernetHeader ether,size_t len,const uin
 
 void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet)
 {
-	TCPConnection *thisConn=nullptr;
-
 	if(monitorTX)
 	{
 		std::cout << "TCP Packet VM->Router  Port:" << uint32_t(tcp.srcPort) << "->" << uint32_t(tcp.dstPort);
@@ -915,6 +913,7 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		std::swap(conn.ipHdr.srcIP,conn.ipHdr.dstIP);
 		std::swap(conn.tcpHdr.srcPort,conn.tcpHdr.dstPort);
 
+		TCPConnection *thisConn=nullptr;
 		for(auto &existing : TCPConn)
 		{
 			if(ip.dstIP==existing.ipHdr.srcIP &&  // Src & Dst are flipped.
@@ -1003,52 +1002,49 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 	}
 	if(tcp.flags&TCP_FLAG_PSH)
 	{
-		for(auto &conn : TCPConn)
+		if(TCPConn.end()!=connPtr)
 		{
-			if(conn.ipHdr.dstIP==ip.srcIP &&
-			   conn.tcpHdr.srcPort==tcp.dstPort && // Remote (Outside) port
-			   conn.tcpHdr.dstPort==tcp.srcPort)   // Local (VM) port
+			auto &conn=*connPtr;
+
+			++conn.ipHdr.fragID; // Is it necessary?
+
+			if(true==monitorTCP)
 			{
-				++conn.ipHdr.fragID; // Is it necessary?
-
-				if(true==monitorTCP)
-				{
-					std::cout << "Acknowledging PSH from VM Incoming seq=" << cpputil::Uitox(tcp.sequenceNum) << " ack=" << cpputil::Uitox(tcp.ackNum) << "\n";
-					std::cout << "                          Current  seq=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << " ack=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
-				}
-
-				size_t dataLen=ip.len-ip.GetHeaderLength()-tcp.GetTotalLength();
-				conn.tcpHdr.ackNum+=dataLen;
-
-				{
-					//Acknowledge PSH
-					auto tcp=conn.tcpHdr;
-					auto ip=conn.ipHdr;
-					
-					tcp.flags=TCP_FLAG_ACK;
-					tcp.StripOptions();
-
-					ip.len=ip.GetHeaderLength()+tcp.GetTotalLength();
-
-					std::vector <uint8_t> data;
-					AddEthernetHeader(data,conn.ethernetHdr);
-
-					size_t IPHeaderPos=data.size();
-					AddIPHeader(data,ip);
-					RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
-
-					size_t TCPHeaderPos=data.size();
-					AddTCPHeader(data,tcp);
-					// No payload.
-					RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
-
-					recv->ReceivePacket(data.size(),data.data());
-
-					// Apparently ACK packet with no data doesn't increment the sequence number.
-				}
-
-				conn.TxData.insert(conn.TxData.end(),data,data+dataLen);
+				std::cout << "Acknowledging PSH from VM Incoming seq=" << cpputil::Uitox(tcp.sequenceNum) << " ack=" << cpputil::Uitox(tcp.ackNum) << "\n";
+				std::cout << "                          Current  seq=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << " ack=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
 			}
+
+			size_t dataLen=ip.len-ip.GetHeaderLength()-tcp.GetTotalLength();
+			conn.tcpHdr.ackNum+=dataLen;
+
+			{
+				//Acknowledge PSH
+				auto tcp=conn.tcpHdr;
+				auto ip=conn.ipHdr;
+				
+				tcp.flags=TCP_FLAG_ACK;
+				tcp.StripOptions();
+
+				ip.len=ip.GetHeaderLength()+tcp.GetTotalLength();
+
+				std::vector <uint8_t> data;
+				AddEthernetHeader(data,conn.ethernetHdr);
+
+				size_t IPHeaderPos=data.size();
+				AddIPHeader(data,ip);
+				RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+
+				size_t TCPHeaderPos=data.size();
+				AddTCPHeader(data,tcp);
+				// No payload.
+				RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
+
+				recv->ReceivePacket(data.size(),data.data());
+
+				// Apparently ACK packet with no data doesn't increment the sequence number.
+			}
+
+			conn.TxData.insert(conn.TxData.end(),data,data+dataLen);
 		}
 	}
 	if(TCP_FLAG_FIN&tcp.flags)
@@ -1154,10 +1150,10 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		case TCP_OPTION_MSS: //2,
 			if(optPtr+1<tcp.GetOptionLength())
 			{
-				if(4==tcp.options[optPtr+1] && nullptr!=thisConn)
+				if(4==tcp.options[optPtr+1] && TCPConn.end()!=connPtr)
 				{
-					thisConn->MSS=GetWordBE(tcp.options+optPtr+2);
-					std::cout << "TCP Option MSS=" << thisConn->MSS << "\n";
+					connPtr->MSS=GetWordBE(tcp.options+optPtr+2);
+					std::cout << "TCP Option MSS=" << connPtr->MSS << "\n";
 				}
 				else
 				{
