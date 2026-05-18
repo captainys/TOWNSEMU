@@ -1060,29 +1060,7 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 			else // Closing from the VM.
 			{
 				//Acknowledge FIN
-				++conn.tcpHdr.ackNum;
-
-				auto &tcp=conn.tcpHdr; // At this point forget incoming tcp- and ip-headers.
-				auto &ip=conn.ipHdr;
-
-				tcp.flags=TCP_FLAG_ACK;
-				tcp.StripOptions();
-
-				ip.len=ip.GetHeaderLength()+tcp.GetTotalLength();
-
-				std::vector <uint8_t> data;
-				AddEthernetHeader(data,conn.ethernetHdr);
-
-				size_t IPHeaderPos=data.size();
-				AddIPHeader(data,ip);
-				RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
-
-				size_t TCPHeaderPos=data.size();
-				AddTCPHeader(data,tcp);
-				// No payload.
-				RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
-
-				recv->ReceivePacket(data.size(),data.data());
+				TCPSendPureAckToVM(conn.ethernetHdr,conn.ipHdr,conn.tcpHdr,tcp.sequenceNum,1,payloadLen,recv);
 
 				conn.state=STATE_VM_INITIATED_FIN;
 				if(true==monitorTCP)
