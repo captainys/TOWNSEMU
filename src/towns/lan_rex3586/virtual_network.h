@@ -356,6 +356,8 @@ protected:
 
 	void ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet);
 
+	static void TCPSendPureAckToVM(EthernetHeader ether,IPHeader &ip,TCPHeader &tcp,uint32_t incoming_seq_num,uint32_t ackConsumption,uint32_t payloadLength,PacketReceiver *recv);
+
 	void TCPConnectionEstablished(TCPConnection &conn,PacketReceiver *recv);
 	void ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_t data[],PacketReceiver *recv);
 

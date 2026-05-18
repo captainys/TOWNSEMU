@@ -1031,42 +1031,13 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		{
 			auto &conn=*connPtr;
 
-			++conn.ipHdr.fragID; // Is it necessary?
-
 			if(true==monitorTCP)
 			{
 				std::cout << "Acknowledging PSH from VM Incoming seq=" << cpputil::Uitox(tcp.sequenceNum) << " ack=" << cpputil::Uitox(tcp.ackNum) << "\n";
 				std::cout << "                          Current  seq=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << " ack=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
 			}
 
-			conn.tcpHdr.ackNum+=payloadLen;
-
-			{
-				//Acknowledge PSH
-				auto tcp=conn.tcpHdr;
-				auto ip=conn.ipHdr;
-				
-				tcp.flags=TCP_FLAG_ACK;
-				tcp.StripOptions();
-
-				ip.len=ip.GetHeaderLength()+tcp.GetTotalLength();
-
-				std::vector <uint8_t> data;
-				AddEthernetHeader(data,conn.ethernetHdr);
-
-				size_t IPHeaderPos=data.size();
-				AddIPHeader(data,ip);
-				RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
-
-				size_t TCPHeaderPos=data.size();
-				AddTCPHeader(data,tcp);
-				// No payload.
-				RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
-
-				recv->ReceivePacket(data.size(),data.data());
-
-				// Apparently ACK packet with no data doesn't increment the sequence number.
-			}
+			TCPSendPureAckToVM(conn.ethernetHdr,conn.ipHdr,conn.tcpHdr,tcp.sequenceNum,0,payloadLen,recv);
 		}
 	}
 	if(TCP_FLAG_FIN&tcp.flags)
@@ -1077,23 +1048,11 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 
 			if(STATE_CLOSING_FROM_REMOTE_SENT_FINACK==conn.state) // Closing from the remote host
 			{
-				conn.tcpHdr.StripOptions(); // Just in case.
-				conn.tcpHdr.flags=TCP_FLAG_ACK;
-				conn.tcpHdr.ackNum=tcp.sequenceNum+1;
-				conn.ipHdr.len=conn.ipHdr.GetHeaderLength()+conn.tcpHdr.GetTotalLength();
-
-				std::vector <uint8_t> data;
-				AddEthernetHeader(data,conn.ethernetHdr);
-
-				size_t IPHeaderPos=data.size();
-				AddIPHeader(data,conn.ipHdr);
-				RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
-
-				size_t TCPHeaderPos=data.size();
-				AddTCPHeader(data,conn.tcpHdr);
-				RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
-
-				recv->ReceivePacket(data.size(),data.data());
+				if(monitorTCP)
+				{
+					std::cout << "Closing from the remote host.  Final ACK.\n";
+				}
+				TCPSendPureAckToVM(conn.ethernetHdr,conn.ipHdr,conn.tcpHdr,tcp.sequenceNum,1,payloadLen,recv);
 
 				TCPConn.erase(connPtr); // conn.state=STATE_CLOSED;
 				connPtr=TCPConn.end();
@@ -1252,6 +1211,35 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 			break;
 		}
 	}
+}
+
+void VirtualNetwork::TCPSendPureAckToVM(EthernetHeader ether,IPHeader &ip,TCPHeader &tcp,uint32_t incoming_seq_num,uint32_t ackConsumption,uint32_t payloadLength,PacketReceiver *recv)
+{
+	auto prevAckNum=tcp.ackNum;
+
+	++ip.fragID; // Is it necessary?
+	tcp.ackNum=incoming_seq_num+ackConsumption+payloadLength;
+
+	tcp.flags=TCP_FLAG_ACK;
+	tcp.StripOptions();
+
+	ip.len=ip.GetHeaderLength()+tcp.GetTotalLength();
+
+	std::vector <uint8_t> data;
+	AddEthernetHeader(data,ether);
+
+	size_t IPHeaderPos=data.size();
+	AddIPHeader(data,ip);
+	RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+
+	size_t TCPHeaderPos=data.size();
+	AddTCPHeader(data,tcp);
+	// No payload.
+	RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,ip.srcIP,ip.dstIP);
+
+	recv->ReceivePacket(data.size(),data.data());
+
+	tcp.ackNum=std::max(tcp.ackNum,prevAckNum);
 }
 
 void  VirtualNetwork::TCPConnectionEstablished(TCPConnection &conn,PacketReceiver *recv)
