@@ -717,6 +717,17 @@ void ProfileDialog::Make(const UiText &ui)
 
 		enableLANBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/LAN/enableLAN","Enable LAN Card (Ratoc REX3586)"),YSTRUE);
 
+		AddStaticText(0,FSKEY_NULL,
+			ui("profile/LAN/caution",
+			"!!! CAUTION !!!\n"
+			"Any operating systems run on FM TOWNS does not have the security features that meet\n"
+			"today's standard.  Any network transaction can be stolen by anyone monitoring the\n"
+			"packets.\n"
+			"ABSOLUTELY DO NOT TRANSMIT SENSITIVE INFORMATION over the network.\n"
+			"It is highly recommended to turn off TGDRV when using LAN feature of Tsugaru.\n"
+			"LAN is highly experimental at this point.  LAN status is not state-saved.\n")
+			,YSTRUE);
+
 		EndAddTabItem();
 	}
 

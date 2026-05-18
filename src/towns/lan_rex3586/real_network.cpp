@@ -444,7 +444,7 @@ void RealNetwork::ThreadFunc(void)
 				{
 					if (fd.revents & POLLIN) 
 					{
-						for(auto &lstn : portForwardingCopyo)
+						for(auto &lstn : portForwardingCopy)
 						{
 							if(lstn.sock==fd.fd)
 							{
@@ -482,10 +482,10 @@ void RealNetwork::ThreadFunc(void)
 						uint16_t remotePort=addr.sin_port;
 						uint8_t ipAddr[4]=
 						{
-							(addr.sin_addr.s_addr>>24)&255,
-							(addr.sin_addr.s_addr>>16)&255,
-							(addr.sin_addr.s_addr>> 8)&255,
-							addr.sin_addr.s_addr     &255,
+							uint8_t((addr.sin_addr.s_addr>>24)&255),
+							uint8_t((addr.sin_addr.s_addr>>16)&255),
+							uint8_t((addr.sin_addr.s_addr>> 8)&255),
+							uint8_t( addr.sin_addr.s_addr     &255),
 						};
 						#endif
 

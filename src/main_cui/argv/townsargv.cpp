@@ -1204,6 +1204,13 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-REX3586"==ARG)
 		{
 			enableLAN=true;
+			std::cout << "!!! CAUTION !!!\n";
+			std::cout << "Any operating systems run on FM TOWNS does not have the security features that meet\n";
+			std::cout << "today's standard.  Any network transaction can be stolen by anyone monitoring the\n";
+			std::cout << "packets.\n";
+			std::cout << "ABSOLUTELY DO NOT TRANSMIT SENSITIVE INFORMATION over the network.\n";
+			std::cout << "It is highly recommended to turn off TGDRV when using LAN feature of Tsugaru.\n";
+			std::cout << "LAN is highly experimental at this point.  LAN status is not state-saved.\n";
 		}
 		else if("-NOREX3586"==ARG)
 		{
