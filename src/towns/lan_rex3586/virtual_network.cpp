@@ -32,7 +32,7 @@ bool VirtualNetwork::DHCPOption::Decode(size_t len,const uint8_t data[])
 		switch(data[0])
 		{
 		case DHCP_OPTION_HOSTNAME: //0x0C,
-			for(int i=0; i<data[1]; ++i)
+			for(int i=0; i<data[1] && 2+i<len; ++i) // 2+i<len is redundant with the above length check, but just in case.
 			{
 				hostName.push_back(data[2+i]);
 			}
@@ -313,7 +313,10 @@ void VirtualNetwork::AddTCPHeader(std::vector <uint8_t> &data,TCPHeader &hdr)
 	PutWordBE (data.data()+pos+14,hdr.windowSize);
 	PutWordBE (data.data()+pos+16,0); // Put checksum 0 tentatively.
 	PutWordBE (data.data()+pos+18,hdr.urgentPointer);
-	memcpy(data.data()+pos+20,hdr.options,totalLen-20);
+	if(20<totalLen)
+	{
+		memcpy(data.data()+pos+20,hdr.options,totalLen-20);
+	}
 }
 
 void VirtualNetwork::RecalculateTCPHeaderCheckSum(size_t len,uint8_t data[],uint32_t srcIP,uint32_t dstIP)

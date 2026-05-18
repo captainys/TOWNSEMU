@@ -29,7 +29,11 @@ void RealNetwork::ThreadFunc(void)
 	{
 		THREAD_PROGRESS("1");
 
-		if(0==clients.size())
+		clientsLock.lock();
+		auto clients_size=clients.size();
+		clientsLock.unlock();
+
+		if(0==clients_size)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
@@ -40,15 +44,21 @@ void RealNetwork::ThreadFunc(void)
 			fd_set readfds;
 			FD_ZERO(&readfds);
 
-			int i=0;
-			for(auto &cli : clients)
 			{
-				FD_SET(cli.sock, &readfds); // cli.sock is not accessed from outside of Network Thread
-				++i;
-			}
-			if(64<i)
-			{
-				std::cout << "FD_SET overflow!\n";
+				std::lock_guard <std::mutex> lock(clientsLock);
+				int i=0;
+				for(auto &cli : clients)
+				{
+					if(i<FD_SETSIZE)
+					{
+						FD_SET(cli.sock, &readfds); // cli.sock is not accessed from outside of Network Thread
+					}
+					++i;
+				}
+				if(64<i)
+				{
+					std::cout << "FD_SET overflow!\n";
+				}
 			}
 
 			// 10ms timeout
@@ -70,12 +80,15 @@ void RealNetwork::ThreadFunc(void)
 		#else
 			// --- POSIX Path: poll ---
 			std::vector<struct pollfd> fds;
-			for(auto &cli : clients)
 			{
-				struct pollfd pfd;
-				pfd.fd=cli.sock;
-				pfd.events=POLLIN;
-				fds.push_back(pfd);
+				std::lock_guard <std::mutex> lock(clientsLock);
+				for(auto &cli : clients)
+				{
+					struct pollfd pfd;
+					pfd.fd=cli.sock;
+					pfd.events=POLLIN;
+					fds.push_back(pfd);
+				}
 			}
 
 			// poll uses milliseconds (10ms)
@@ -98,49 +111,51 @@ void RealNetwork::ThreadFunc(void)
 				}
 			}
 		#endif
-			auto next=clients.begin();
-			for(auto iter=next; clients.end()!=iter; iter=next)
+			std::lock_guard <std::mutex> lock(clientsLock);
 			{
-				next=iter;
-				++next;
-
-				auto &cli=*iter;
-				if(true==cli.bytesIncoming)
+				auto next=clients.begin();
+				for(auto iter=next; clients.end()!=iter; iter=next)
 				{
-					std::lock_guard <std::mutex> lock(clientsLock);
-					cli.bytesIncoming=false;
+					next=iter;
+					++next;
 
-					if(true==monitor)
+					auto &cli=*iter;
+					if(true==cli.bytesIncoming)
 					{
-						std::cout << "Received from Dst Port:" << cli.conn.dstPort << " to VM Port:" << cli.conn.VMPort << "\n";
-					}
+						cli.bytesIncoming=false;
 
-					const int bufLen=4096;
-					uint8_t buf[bufLen];
-					int nBytesRecv=recv(cli.sock,(char *)buf,sizeof(buf),0);
-					if(SOCKET_ERROR==nBytesRecv || 0==nBytesRecv)
-					{
-						closesocket(cli.sock);
-						if(0==cli.recvBuf.size())
+						if(true==monitor)
 						{
-							if(true==monitor)
+							std::cout << "Received from Dst Port:" << cli.conn.dstPort << " to VM Port:" << cli.conn.VMPort << "\n";
+						}
+
+						const int bufLen=4096;
+						uint8_t buf[bufLen];
+						int nBytesRecv=recv(cli.sock,(char *)buf,sizeof(buf),0);
+						if(SOCKET_ERROR==nBytesRecv || 0==nBytesRecv)
+						{
+							closesocket(cli.sock);
+							if(0==cli.recvBuf.size())
 							{
-								std::cout << "R1 Disconnected VMPort:" << uint16_t(cli.conn.VMPort) << " RemotePort:" << uint16_t(cli.conn.dstPort);
-								std::cout << " IP:" << uint16_t(cli.conn.IPv4Addr[0]) << ".";
-								std::cout << uint16_t(cli.conn.IPv4Addr[1]) << ".";
-								std::cout << uint16_t(cli.conn.IPv4Addr[2]) << ".";
-								std::cout << uint16_t(cli.conn.IPv4Addr[3]) << "\n";
+								if(true==monitor)
+								{
+									std::cout << "R1 Disconnected VMPort:" << uint16_t(cli.conn.VMPort) << " RemotePort:" << uint16_t(cli.conn.dstPort);
+									std::cout << " IP:" << uint16_t(cli.conn.IPv4Addr[0]) << ".";
+									std::cout << uint16_t(cli.conn.IPv4Addr[1]) << ".";
+									std::cout << uint16_t(cli.conn.IPv4Addr[2]) << ".";
+									std::cout << uint16_t(cli.conn.IPv4Addr[3]) << "\n";
+								}
+								cli.state=STATE_DISCONNECTED_NEED_TO_SEND_FIN;
 							}
-							cli.state=STATE_DISCONNECTED_NEED_TO_SEND_FIN;
+							else
+							{
+								cli.state=STATE_DISCONNECTED_BUT_DATA_LEFTOVER;
+							}
 						}
 						else
 						{
-							cli.state=STATE_DISCONNECTED_BUT_DATA_LEFTOVER;
+							cli.recvBuf.insert(cli.recvBuf.end(),buf,buf+nBytesRecv);
 						}
-					}
-					else
-					{
-						cli.recvBuf.insert(cli.recvBuf.end(),buf,buf+nBytesRecv);
 					}
 				}
 			}
@@ -223,7 +238,9 @@ void RealNetwork::ThreadFunc(void)
 					}
 				}
 			}
+			TCPConnReqLock.lock();
 			TCPConnReq.clear();
+			TCPConnReqLock.unlock();
 		}
 		THREAD_PROGRESS("3");
 		{
@@ -402,7 +419,10 @@ void RealNetwork::ThreadFunc(void)
 				lstn.connectionIncoming=false;
 				if(STATE_LISTENING==lstn.state)
 				{
-					FD_SET(lstn.sock, &readfds); // cli.sock is not accessed from outside of Network Thread
+					if(i<FD_SETSIZE)
+					{
+						FD_SET(lstn.sock, &readfds); // cli.sock is not accessed from outside of Network Thread
+					}
 					++i;
 				}
 			}

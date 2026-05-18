@@ -141,7 +141,8 @@ public:
 		}
 		size_t GetTotalLength(void) const
 		{
-			size_t L=(dataOffset_reservedBits>>4);
+			size_t L=(dataOffset_reservedBits>>4)&0x0F; // 0x0F shouldn't be necessary, but just in case.
+			L=std::max<size_t>(5,L);
 			return L*4;
 		}
 		void StripOptions(void)
