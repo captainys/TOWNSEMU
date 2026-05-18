@@ -99,6 +99,11 @@ bool RatocREX3586::RxReady(void) const
 	return 0==state.RXPacket.size();
 }
 
+uint64_t RatocREX3586::GetMACAddress(void) const
+{
+	return state.MAC;
+}
+
 void RatocREX3586::IOWriteByte(unsigned int ioport,unsigned int data)
 {
 	if(TOWNSIO_LAN_REX3586_ALT_TX_STATUS<=ioport)

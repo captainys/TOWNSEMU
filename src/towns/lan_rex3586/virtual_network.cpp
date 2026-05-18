@@ -360,6 +360,12 @@ void VirtualNetwork::AddStatusText(std::vector <std::string> &text) const
 		case STATE_FIN_RECEIVED: // VM initiated FIN.
 			str+="CLOSING_FROM_VM";
 			break;
+		case STATE_ACCEPTED:
+			str+="ACCEPTED";
+			break;
+		case STATE_ACCEPTED_SYN_SENT:
+			str+="ACCEPTED";
+			break;
 		}
 
 		str.push_back(' ');
@@ -846,6 +852,51 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		return;
 	}
 
+	if((tcp.flags&(TCP_FLAG_SYN|TCP_FLAG_ACK))==(TCP_FLAG_SYN|TCP_FLAG_ACK))
+	{
+		if(monitorTX)
+		{
+			std::cout << "TCP_FLAG_SYN|TCP_FLAG_ACK\n";
+		}
+
+		for(auto &conn : TCPConn)
+		{
+			if(ip.dstIP==conn.ipHdr.srcIP &&  // Src & Dst are flipped.
+			   tcp.dstPort==conn.tcpHdr.srcPort &&
+			   tcp.srcPort==conn.tcpHdr.dstPort)
+			{
+				if(true==monitorTCP)
+				{
+					std::cout << "Hand shake with the incoming connection.\n";
+				}
+				conn.tcpHdr.StripOptions();
+				conn.tcpHdr.flags=TCP_FLAG_ACK;
+				conn.tcpHdr.ackNum=tcp.sequenceNum+1;
+				++conn.tcpHdr.sequenceNum;
+				++conn.ipHdr.fragID;
+
+				conn.ipHdr.len=conn.ipHdr.GetHeaderLength()+conn.tcpHdr.GetTotalLength();
+
+				conn.state=STATE_ESTABLISHED;
+
+				std::vector <uint8_t> data;
+				AddEthernetHeader(data,conn.ethernetHdr);
+
+				size_t IPHeaderPos=data.size();
+				AddIPHeader(data,conn.ipHdr);
+				RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+
+				size_t TCPHeaderPos=data.size();
+				AddTCPHeader(data,conn.tcpHdr);
+				RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,conn.ipHdr.srcIP,conn.ipHdr.dstIP);
+
+				recv->ReceivePacket(data.size(),data.data());
+
+				return; // All done.
+			}
+		}
+	}
+
 	if(tcp.flags&TCP_FLAG_SYN)
 	{
 		if(monitorTX)
@@ -908,8 +959,10 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 	}
 	if(tcp.flags&TCP_FLAG_ACK) // ACK VM->Router
 	{
-		for(auto &conn : TCPConn)
+		for(auto iter=TCPConn.begin(); TCPConn.end()!=iter; ++iter)
 		{
+			auto &conn=*iter;
+
 			if(conn.ipHdr.dstIP==ip.srcIP &&
 			   conn.tcpHdr.srcPort==tcp.dstPort && // Remote (Outside) Port
 			   conn.tcpHdr.dstPort==tcp.srcPort)   // Local (VM) Port
@@ -920,7 +973,15 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 					std::cout << "Ack from VM  " << "  Seq#=" << cpputil::Uitox(tcp.sequenceNum) << "  Ack#=" << cpputil::Uitox(tcp.ackNum) << "\n";
 					std::cout << "Current      " << "  Seq#=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << "  Ack#=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
 				}
-				if(true==conn.waitingAck && conn.unacknowledgedSeq==tcp.ackNum)
+				if(STATE_FIN_SENT==conn.state) // Closing from the VM.  Final acknowledgement.
+				{
+					if(true==monitorTCP)
+					{
+						std::cout << "Final ACK from the VM.\n";
+					}
+					iter=TCPConn.erase(iter);
+				}
+				else if(true==conn.waitingAck && conn.unacknowledgedSeq==tcp.ackNum)
 				{
 					if(true==monitorTCP)
 					{
@@ -1305,6 +1366,20 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 
 		for(auto &cli : realNet->clients)
 		{
+			if(RealNetwork::STATE_ACCEPTED_NOTIFIED==cli.state)
+			{
+				for(auto &virConn : TCPConn)
+				{
+					if(virConn.ipHdr.srcIP==cli.conn.GetIPUint32() &&
+					   virConn.tcpHdr.dstPort==cli.conn.VMPort &&
+					   virConn.tcpHdr.srcPort==cli.conn.dstPort &&
+					   STATE_ESTABLISHED==virConn.state)
+					{
+						cli.state=RealNetwork::STATE_CONNECTED;
+					}
+				}
+			}
+
 			if(RealNetwork::STATE_JUST_CONNECTED==cli.state)
 			{
 				cli.state=RealNetwork::STATE_CONNECTED;
@@ -1324,6 +1399,45 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 						break;
 					}
 				}
+			}
+			else if(RealNetwork::STATE_JUST_ACCEPTED==cli.state)
+			{
+				cli.state=RealNetwork::STATE_ACCEPTED_NOTIFIED;
+
+				TCPConnection conn;
+				conn.state=STATE_ACCEPTED;
+				conn.MSS=1024;
+				conn.ethernetHdr.srcMAC=MAC_ROUTER;
+				conn.ethernetHdr.dstMAC=recv->GetMACAddress();
+				conn.ethernetHdr.type=TYPE_IPV4;
+
+				conn.ipHdr.version_headerLen=0x45;
+				conn.ipHdr.len=0; // Tentative
+				conn.ipHdr.QoS=0;
+				conn.ipHdr.fragID=0;
+				conn.ipHdr.flagOrFragOffset=0;
+				conn.ipHdr.TTL=60;
+				conn.ipHdr.protocol=PROTOCOL_TCP;
+				conn.ipHdr.checkSum=0; // Tentative
+				conn.ipHdr.srcIP=cli.conn.GetIPUint32();
+				conn.ipHdr.dstIP=VM_DHCP_IP;
+
+				conn.tcpHdr.srcPort=cli.conn.dstPort;
+				conn.tcpHdr.dstPort=cli.conn.VMPort;
+				conn.tcpHdr.sequenceNum=sequenceNumSource++;
+				conn.tcpHdr.ackNum=0;
+				conn.tcpHdr.dataOffset_reservedBits=0x60;  // 0x50: No Option   MSS Takes 4 bytes.  0x60 is good.
+				conn.tcpHdr.flags=TCP_FLAG_SYN;
+				conn.tcpHdr.windowSize=0xFFFF;
+				conn.tcpHdr.checkSum=0; // Tentative.
+				conn.tcpHdr.urgentPointer=0;
+				conn.tcpHdr.options[0]=TCP_OPTION_MSS;
+				conn.tcpHdr.options[1]=4;
+				PutWordBE(conn.tcpHdr.options+2,1460);
+
+				conn.ipHdr.len=conn.ipHdr.GetHeaderLength()+conn.tcpHdr.GetTotalLength();
+
+				TCPConn.push_back(conn);
 			}
 			else if(RealNetwork::STATE_CONNECTED==cli.state || RealNetwork::STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state)
 			{
@@ -1436,6 +1550,23 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 			if(STATE_CLOSING_FROM_ROUTER==virConn.state)
 			{
 				TCPInitiateFIN(virConn,recv);
+			}
+			else if(STATE_ACCEPTED==virConn.state)
+			{
+				std::vector <uint8_t> data;
+				AddEthernetHeader(data,virConn.ethernetHdr);
+
+				size_t IPHeaderPos=data.size();
+				AddIPHeader(data,virConn.ipHdr);
+				RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+
+				size_t TCPHeaderPos=data.size();
+				AddTCPHeader(data,virConn.tcpHdr);
+				RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,virConn.ipHdr.srcIP,virConn.ipHdr.dstIP);
+
+				recv->ReceivePacket(data.size(),data.data());
+
+				virConn.state=STATE_ACCEPTED_SYN_SENT;
 			}
 		}
 		for(auto iter=DNSReq.begin(); iter!=DNSReq.end();)

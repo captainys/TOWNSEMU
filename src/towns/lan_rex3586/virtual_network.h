@@ -33,6 +33,12 @@ public:
 
 	enum
 	{
+		PROTOCOL_TCP=6,
+		PROTOCOL_UDP=17,
+	};
+
+	enum
+	{
 		DHCP_CLIENT_PORT=0x44,
 		DHCP_SERVER_PORT=0x43,
 
@@ -244,6 +250,9 @@ public:
 		STATE_FIN_SENT, // Closing from the remote, and FIN|ACK has been sent to the VM.
 		STATE_CLOSED,
 		STATE_FIN_RECEIVED, // VM initiated FIN.
+
+		STATE_ACCEPTED, // Incoming connection from outside.
+		STATE_ACCEPTED_SYN_SENT,
 	};
 	class TCPConnection
 	{
@@ -267,6 +276,7 @@ public:
 		// Virtual Network -> Adapter
 		virtual void ReceivePacket(size_t len,const uint8_t data[])=0;
 		virtual bool RxReady(void) const=0;
+		virtual uint64_t GetMACAddress(void) const=0;
 	};
 
 	bool TxReady=true;

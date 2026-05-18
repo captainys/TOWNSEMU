@@ -120,6 +120,7 @@ public:
 
 	void ReceivePacket(size_t len,const uint8_t data[]) override;
 	bool RxReady(void) const override;
+	uint64_t GetMACAddress(void) const override;
 
 	void PowerOn(void) override;
 	void Reset(void) override;

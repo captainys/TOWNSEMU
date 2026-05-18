@@ -126,7 +126,7 @@ void RealNetwork::ThreadFunc(void)
 							if(true==monitor)
 							{
 								std::cout << "R1 Disconnected VMPort:" << uint16_t(cli.conn.VMPort) << " RemotePort:" << uint16_t(cli.conn.dstPort);
-								std::cout << "IP:" << uint16_t(cli.conn.IPv4Addr[0]) << ".";
+								std::cout << " IP:" << uint16_t(cli.conn.IPv4Addr[0]) << ".";
 								std::cout << uint16_t(cli.conn.IPv4Addr[1]) << ".";
 								std::cout << uint16_t(cli.conn.IPv4Addr[2]) << ".";
 								std::cout << uint16_t(cli.conn.IPv4Addr[3]) << "\n";
@@ -278,6 +278,10 @@ void RealNetwork::ThreadFunc(void)
 				#endif
 					if(true==ready)
 					{
+						if(true==monitor)
+						{
+							std::cout << cli.sendBuf.size() << " bytes from VMPort " << cli.conn.VMPort << " sent to remote port " << cli.conn.dstPort << "\n";
+						}
 						send(cli.sock,(char *)cli.sendBuf.data(),cli.sendBuf.size(),0);
 						cli.sendBuf.clear();
 					}
@@ -674,6 +678,9 @@ void RealNetwork::AddStatusText(std::vector <std::string> &text) const
 				break;
 			case STATE_JUST_ACCEPTED:
 				str+="JUST_ACCEPTED";
+				break;
+			case STATE_ACCEPTED_NOTIFIED:
+				str+="ACCEPTED_NOTIFIED";
 				break;
 			default:
 				str+="!! UNDEFINED STATE !!";
