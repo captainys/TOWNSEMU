@@ -827,6 +827,7 @@ void VirtualNetwork::ProcessARP_Packet(EthernetHeader ether,size_t len,const uin
 void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeader tcp,size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet)
 {
 	size_t payloadLen=ip.len-ip.GetHeaderLength()-tcp.GetTotalLength();
+	uint32_t ackNumConsumption=0;
 
 	if(monitorTX)
 	{
@@ -868,6 +869,10 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		if(monitorTX)
 		{
 			std::cout << "TCP_FLAG_SYN|TCP_FLAG_ACK\n";
+		}
+		if(0<payloadLen)
+		{
+			std::cout << "!!! SYN came with payload !!!\n";
 		}
 
 		for(auto &conn : TCPConn)
@@ -982,7 +987,13 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 			break;
 		}
 	}
-	
+
+	if(TCPConn.end()!=connPtr)
+	{
+		// Deliver data regardless of the flags.
+		connPtr->TxData.insert(connPtr->TxData.end(),data,data+payloadLen);
+	}
+
 	if(tcp.flags&TCP_FLAG_ACK) // ACK VM->Router
 	{
 		if(TCPConn.end()!=connPtr)
@@ -1056,8 +1067,6 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 
 				// Apparently ACK packet with no data doesn't increment the sequence number.
 			}
-
-			conn.TxData.insert(conn.TxData.end(),data,data+payloadLen);
 		}
 	}
 	if(TCP_FLAG_FIN&tcp.flags)
