@@ -957,39 +957,47 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 			realNet->RequestTCPConnection(tcp.srcPort,IP,tcp.dstPort);
 		}
 	}
+
+	auto connPtr=TCPConn.end();
+	for(auto iter=TCPConn.begin(); TCPConn.end()!=iter; ++iter)
+	{
+		auto &conn=*iter;
+		if(conn.ipHdr.dstIP==ip.srcIP &&
+			conn.tcpHdr.srcPort==tcp.dstPort && // Remote (Outside) Port
+			conn.tcpHdr.dstPort==tcp.srcPort)   // Local (VM) Port
+		{
+			connPtr=iter;
+			break;
+		}
+	}
+	
 	if(tcp.flags&TCP_FLAG_ACK) // ACK VM->Router
 	{
-		for(auto iter=TCPConn.begin(); TCPConn.end()!=iter; ++iter)
+		if(TCPConn.end()!=connPtr)
 		{
-			auto &conn=*iter;
+			auto &conn=*connPtr;
 
-			if(conn.ipHdr.dstIP==ip.srcIP &&
-			   conn.tcpHdr.srcPort==tcp.dstPort && // Remote (Outside) Port
-			   conn.tcpHdr.dstPort==tcp.srcPort)   // Local (VM) Port
+			if(true==monitorTCP)
 			{
-				thisConn=&conn;
+				std::cout << "Ack from VM  " << "  Seq#=" << cpputil::Uitox(tcp.sequenceNum) << "  Ack#=" << cpputil::Uitox(tcp.ackNum) << "\n";
+				std::cout << "Current      " << "  Seq#=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << "  Ack#=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
+			}
+			if(STATE_FIN_SENT==conn.state) // Closing from the VM.  Final acknowledgement.
+			{
 				if(true==monitorTCP)
 				{
-					std::cout << "Ack from VM  " << "  Seq#=" << cpputil::Uitox(tcp.sequenceNum) << "  Ack#=" << cpputil::Uitox(tcp.ackNum) << "\n";
-					std::cout << "Current      " << "  Seq#=" << cpputil::Uitox(conn.tcpHdr.sequenceNum) << "  Ack#=" << cpputil::Uitox(conn.tcpHdr.ackNum) << "\n";
+					std::cout << "Final ACK from the VM.\n";
 				}
-				if(STATE_FIN_SENT==conn.state) // Closing from the VM.  Final acknowledgement.
+				TCPConn.erase(connPtr);
+				connPtr=TCPConn.end();
+			}
+			else if(true==conn.waitingAck && conn.unacknowledgedSeq==tcp.ackNum)
+			{
+				if(true==monitorTCP)
 				{
-					if(true==monitorTCP)
-					{
-						std::cout << "Final ACK from the VM.\n";
-					}
-					iter=TCPConn.erase(iter);
+					std::cout << "VM Acknowledged " << cpputil::Uitox(tcp.ackNum) << "\n";
 				}
-				else if(true==conn.waitingAck && conn.unacknowledgedSeq==tcp.ackNum)
-				{
-					if(true==monitorTCP)
-					{
-						std::cout << "VM Acknowledged " << cpputil::Uitox(tcp.ackNum) << "\n";
-					}
-					conn.waitingAck=false;
-				}
-				break;
+				conn.waitingAck=false;
 			}
 		}
 	}
