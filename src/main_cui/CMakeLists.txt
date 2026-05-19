@@ -1512,8 +1512,7 @@ add_test(
 		"FAIL"
 	)
 
-# WATTCP's FTP client uses keyboard BIOS directly.  (DOS INT 10H is redirected to TOWNS INT 90H by DOSINT10H.COM)
-# -CONSCMD option does not work.  At least it can make sure FTP client can establish connection.
+# Turned out, WATTCP/FTP accepts redirection.  Problem solved.
 add_test(
 	NAME NET_FTP
 	COMMAND
@@ -1549,3 +1548,25 @@ add_test(
 		-CONSCMD
 		"FAIL"
 	)
+
+# -PORTFWD 21 2122 option forwards TOWNS's port 21 to Host's 2122
+##add_test(
+#	NAME NET_FTPSVR
+#	COMMAND
+#		python
+#		"${CMAKE_SOURCE_DIR}/tests/ftp_client.py"
+#		"${CMAKE_SOURCE_DIR}/tests/html"
+#		"${TARGET_EXE}"
+#		"${TOWNSEMU_TEST}/ROM_DEV"
+#		-COPYFILE
+#		"${TOWNSEMU_TEST}/DISKIMG/NETTEST.BIN"
+#		"${CMAKE_BINARY_DIR}/NETTEST.BIN"
+#		-REX3586
+#		-PORTFWD 21 2122
+#		-FD0
+#		"${CMAKE_BINARY_DIR}/NETTEST.BIN"
+#		-BOOTKEY
+#		F0
+#		-CONSCMD
+#		"FTPSRV"
+#	)
