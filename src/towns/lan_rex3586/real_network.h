@@ -6,7 +6,6 @@
 #include <thread>
 #include <atomic>
 #include <list>
-#include <list>
 #include <mutex>
 
 #include <stdio.h>
@@ -148,7 +147,7 @@ public:
 	std::atomic_bool stopThread=false;
 	std::thread workerThread;
 
-	std::list <Client> clients;
+	std::vector <Client> clients;
 	mutable std::mutex clientsLock;
 
 	std::vector <TCPConnectionRequest> TCPConnReq;
