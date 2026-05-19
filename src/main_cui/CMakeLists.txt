@@ -1507,7 +1507,45 @@ add_test(
 		-CONSCMD
 		"htget -o index.html http://10.0.2.172:8080/index.html"
 		-CONSCMD
-		"IF EXIST INDEX.HTML THEN SUCCESS"
+		"IF EXIST INDEX.HTML SUCCESS"
+		-CONSCMD
+		"FAIL"
+	)
+
+# WATTCP's FTP client uses keyboard BIOS directly.  (DOS INT 10H is redirected to TOWNS INT 90H by DOSINT10H.COM)
+# -CONSCMD option does not work.  At least it can make sure FTP client can establish connection.
+add_test(
+	NAME NET_FTP
+	COMMAND
+		python
+		"${CMAKE_SOURCE_DIR}/tests/ftp_client.py"
+		"${CMAKE_SOURCE_DIR}/tests/html"
+		"${TARGET_EXE}"
+		"${TOWNSEMU_TEST}/ROM_DEV"
+		-COPYFILE
+		"${TOWNSEMU_TEST}/DISKIMG/NETTEST.BIN"
+		"${CMAKE_BINARY_DIR}/NETTEST.BIN"
+		-REX3586
+		-FD0
+		"${CMAKE_BINARY_DIR}/NETTEST.BIN"
+		-BOOTKEY
+		F0
+		-CONSCMD
+		"echo testuser > param"
+		-CONSCMD
+		"echo password >> param"
+		-CONSCMD
+		"echo dir >> param"
+		-CONSCMD
+		"echo get index.html >> param"
+		-CONSCMD
+		"echo dir >> param"
+		-CONSCMD
+		"echo bye >> param"
+		-CONSCMD
+		"ftp -port 2121 10.0.2.172 < param"
+		-CONSCMD
+		"IF EXIST INDEX.HTML SUCCESS"
 		-CONSCMD
 		"FAIL"
 	)
