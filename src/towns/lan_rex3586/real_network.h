@@ -95,6 +95,7 @@ public:
 	public:
 		int state;
 		bool bytesIncoming=false;
+		bool stateChanged=false;
 
 		// Closing connection from VM >>
 		bool FIN_initiated_from_VM=false;
@@ -187,6 +188,8 @@ public:
 	// In the network thread.
 	void ThreadFunc(void);
 private:
+	void CheckTCPConnectionIncomingData(void);
+	static void CheckTCPConnectionIncomingData_Isolated(std::vector <Client> &clients,bool monitor);
 	void StartUp(void);
 	void CleanUp(void);
 };

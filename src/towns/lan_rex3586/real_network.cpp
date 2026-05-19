@@ -29,137 +29,8 @@ void RealNetwork::ThreadFunc(void)
 	{
 		THREAD_PROGRESS("1");
 
-		clientsLock.lock();
-		auto clients_size=clients.size();
-		clientsLock.unlock();
+		CheckTCPConnectionIncomingData();
 
-		if(0==clients_size)
-		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
-		}
-		else
-		{
-		#ifdef _WIN32
-			// --- Windows Path: select ---
-			fd_set readfds;
-			FD_ZERO(&readfds);
-
-			{
-				std::lock_guard <std::mutex> lock(clientsLock);
-				int i=0;
-				for(auto &cli : clients)
-				{
-					if(i<FD_SETSIZE)
-					{
-						FD_SET(cli.sock, &readfds); // cli.sock is not accessed from outside of Network Thread
-					}
-					++i;
-				}
-				if(64<i)
-				{
-					std::cout << "FD_SET overflow!\n";
-				}
-			}
-
-			// 10ms timeout
-			timeval tv;
-			tv.tv_sec = 0;
-			tv.tv_usec = 10000; 
-			// nfds is ignored on Windows, but usually set to 0 or max fd + 1
-			if (0<select(0,&readfds,NULL,NULL,&tv))
-			{
-				std::lock_guard <std::mutex> lock(clientsLock);
-				for(auto &cli : clients)
-				{
-					if(FD_ISSET(cli.sock,&readfds))
-					{
-						cli.bytesIncoming=true;
-					}
-				}
-			}
-		#else
-			// --- POSIX Path: poll ---
-			std::vector<struct pollfd> fds;
-			{
-				std::lock_guard <std::mutex> lock(clientsLock);
-				for(auto &cli : clients)
-				{
-					struct pollfd pfd;
-					pfd.fd=cli.sock;
-					pfd.events=POLLIN;
-					fds.push_back(pfd);
-				}
-			}
-
-			// poll uses milliseconds (10ms)
-			if (0<poll(fds.data(),(nfds_t)fds.size(),10)) 
-			{
-				std::lock_guard <std::mutex> lock(clientsLock);
-				for(auto &fd : fds)
-				{
-					if (fd.revents & POLLIN) 
-					{
-						for(auto &cli : clients)
-						{
-							if(cli.sock==fd.fd)
-							{
-								cli.bytesIncoming=true;
-								break;
-							}
-						}
-					}
-				}
-			}
-		#endif
-			std::lock_guard <std::mutex> lock(clientsLock);
-			{
-				auto next=clients.begin();
-				for(auto iter=next; clients.end()!=iter; iter=next)
-				{
-					next=iter;
-					++next;
-
-					auto &cli=*iter;
-					if(true==cli.bytesIncoming)
-					{
-						cli.bytesIncoming=false;
-
-						if(true==monitor)
-						{
-							std::cout << "Received from Dst Port:" << cli.conn.dstPort << " to VM Port:" << cli.conn.VMPort << "\n";
-						}
-
-						const int bufLen=4096;
-						uint8_t buf[bufLen];
-						int nBytesRecv=recv(cli.sock,(char *)buf,sizeof(buf),0);
-						if(SOCKET_ERROR==nBytesRecv || 0==nBytesRecv)
-						{
-							closesocket(cli.sock);
-							if(0==cli.recvBuf.size())
-							{
-								if(true==monitor)
-								{
-									std::cout << "R1 Disconnected VMPort:" << uint16_t(cli.conn.VMPort) << " RemotePort:" << uint16_t(cli.conn.dstPort);
-									std::cout << " IP:" << uint16_t(cli.conn.IPv4Addr[0]) << ".";
-									std::cout << uint16_t(cli.conn.IPv4Addr[1]) << ".";
-									std::cout << uint16_t(cli.conn.IPv4Addr[2]) << ".";
-									std::cout << uint16_t(cli.conn.IPv4Addr[3]) << "\n";
-								}
-								cli.state=STATE_DISCONNECTED_NEED_TO_SEND_FIN;
-							}
-							else
-							{
-								cli.state=STATE_DISCONNECTED_BUT_DATA_LEFTOVER;
-							}
-						}
-						else
-						{
-							cli.recvBuf.insert(cli.recvBuf.end(),buf,buf+nBytesRecv);
-						}
-					}
-				}
-			}
-		}
 		THREAD_PROGRESS("2");
 		{
 			// Problem: connect function may block long time if the server does not respond.
@@ -534,6 +405,169 @@ void RealNetwork::ThreadFunc(void)
 	CleanUp();
 
 	THREAD_PROGRESS(".");
+}
+
+void RealNetwork::CheckTCPConnectionIncomingData(void)
+{
+	clientsLock.lock();
+	auto clientsCopy=clients;
+	clientsLock.unlock();
+
+	CheckTCPConnectionIncomingData_Isolated(clientsCopy,monitor);
+
+	clientsLock.lock();
+	for(auto &copy : clientsCopy)
+	{
+		if(true==copy.bytesIncoming || true==copy.stateChanged)
+		{
+			for(auto &cli : clients)
+			{
+				if(cli.sock==copy.sock)
+				{
+					cli.recvBuf.insert(cli.recvBuf.end(),copy.recvBuf.begin(),copy.recvBuf.end());
+					if(true==copy.stateChanged)
+					{
+						cli.state=copy.state;
+					}
+				}
+			}
+		}
+	}
+	clientsLock.unlock();
+}
+
+void RealNetwork::CheckTCPConnectionIncomingData_Isolated(std::vector <Client> &clients,bool monitor)
+{
+	if(0==clients.size())
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+	else
+	{
+		for(auto &cli : clients)
+		{
+			cli.stateChanged=false;
+			cli.bytesIncoming=false;
+			// cli.recvBuf.clear();  Hold off recvBuf.clear() here.  If leftover data exist matters.
+		}
+	#ifdef _WIN32
+		// --- Windows Path: select ---
+		fd_set readfds;
+		FD_ZERO(&readfds);
+
+		int i=0;
+		for(auto &cli : clients)
+		{
+			if(i<FD_SETSIZE)
+			{
+				FD_SET(cli.sock, &readfds); // cli.sock is not accessed from outside of Network Thread
+			}
+			++i;
+		}
+		if(64<i)
+		{
+			std::cout << "FD_SET overflow!\n";
+		}
+
+		// 10ms timeout
+		timeval tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = 10000; 
+		// nfds is ignored on Windows, but usually set to 0 or max fd + 1
+		if (0<select(0,&readfds,NULL,NULL,&tv))
+		{
+			for(auto &cli : clients)
+			{
+				if(FD_ISSET(cli.sock,&readfds))
+				{
+					cli.bytesIncoming=true;
+				}
+			}
+		}
+	#else
+		// --- POSIX Path: poll ---
+		std::vector<struct pollfd> fds;
+		{
+			for(auto &cli : clients)
+			{
+				struct pollfd pfd;
+				pfd.fd=cli.sock;
+				pfd.events=POLLIN;
+				fds.push_back(pfd);
+			}
+		}
+
+		// poll uses milliseconds (10ms)
+		if (0<poll(fds.data(),(nfds_t)fds.size(),10)) 
+		{
+			for(auto &fd : fds)
+			{
+				if (fd.revents & POLLIN) 
+				{
+					for(auto &cli : clients)
+					{
+						if(cli.sock==fd.fd)
+						{
+							cli.bytesIncoming=true;
+							break;
+						}
+					}
+				}
+			}
+		}
+	#endif
+		auto next=clients.begin();
+		for(auto iter=next; clients.end()!=iter; iter=next)
+		{
+			next=iter;
+			++next;
+
+			auto &cli=*iter;
+			if(true==cli.bytesIncoming)
+			{
+				if(true==monitor)
+				{
+					std::cout << "Received from Dst Port:" << cli.conn.dstPort << " to VM Port:" << cli.conn.VMPort << "\n";
+				}
+
+				const int bufLen=4096;
+				uint8_t buf[bufLen];
+				int nBytesRecv=recv(cli.sock,(char *)buf,sizeof(buf),0);
+				if(SOCKET_ERROR==nBytesRecv || 0==nBytesRecv)
+				{
+					closesocket(cli.sock);
+					if(0==cli.recvBuf.size())
+					{
+						if(true==monitor)
+						{
+							std::cout << "R1 Disconnected VMPort:" << uint16_t(cli.conn.VMPort) << " RemotePort:" << uint16_t(cli.conn.dstPort);
+							std::cout << " IP:" << uint16_t(cli.conn.IPv4Addr[0]) << ".";
+							std::cout << uint16_t(cli.conn.IPv4Addr[1]) << ".";
+							std::cout << uint16_t(cli.conn.IPv4Addr[2]) << ".";
+							std::cout << uint16_t(cli.conn.IPv4Addr[3]) << "\n";
+						}
+						cli.state=STATE_DISCONNECTED_NEED_TO_SEND_FIN;
+						cli.stateChanged=true;
+					}
+					else
+					{
+						if(true==monitor)
+						{
+							std::cout << "R2 Disconnected VMPort:" << uint16_t(cli.conn.VMPort) << " RemotePort:" << uint16_t(cli.conn.dstPort);
+						}
+						cli.state=STATE_DISCONNECTED_BUT_DATA_LEFTOVER;
+						cli.stateChanged=true;
+					}
+					cli.recvBuf.clear();  // Now clear.
+				}
+				else
+				{
+					cli.recvBuf.clear();
+					cli.recvBuf.insert(cli.recvBuf.end(),buf,buf+nBytesRecv);
+				}
+			}
+		}
+	}
 }
 
 void RealNetwork::Start(void)
