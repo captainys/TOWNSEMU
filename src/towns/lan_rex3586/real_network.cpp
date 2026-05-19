@@ -239,6 +239,13 @@ void RealNetwork::CheckTCPConnectionRequest(void)
 			std::cout << "Handling Connection Request\n";
 			std::cout << int(req.conn.IPv4Addr[0]) << "." << int(req.conn.IPv4Addr[1]) << "." << int(req.conn.IPv4Addr[2]) << "." << int(req.conn.IPv4Addr[3]) << ":";
 			std::cout << int(req.conn.dstPort) << "\n";
+			if(req.conn.IPv4Addr[0]!=req.conn.realIPv4Addr[0] ||
+			   req.conn.IPv4Addr[1]!=req.conn.realIPv4Addr[1] ||
+			   req.conn.IPv4Addr[2]!=req.conn.realIPv4Addr[2] ||
+			   req.conn.IPv4Addr[3]!=req.conn.realIPv4Addr[3])
+			{
+				std::cout << "(Real IP)"<< int(req.conn.realIPv4Addr[0]) << "." << int(req.conn.realIPv4Addr[1]) << "." << int(req.conn.realIPv4Addr[2]) << "." << int(req.conn.realIPv4Addr[3]) << ":";
+			}
 		}
 		req.connected=req.DoConnect();
 		if(true==req.connected)
@@ -611,6 +618,11 @@ void RealNetwork::End(void)
 // Called from the VM thread.
 void RealNetwork::RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t dstPort)
 {
+	RequestTCPConnection(VMPort,IPv4Addr,dstPort,IPv4Addr);
+}
+
+void RealNetwork::RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t dstPort,const uint8_t realIPv4Addr[4])
+{
 	{
 		std::lock_guard <std::mutex> lock(clientsLock);
 		for(auto &cli : clients)
@@ -665,9 +677,12 @@ void RealNetwork::RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4]
 	req.conn.IPv4Addr[1]=IPv4Addr[1];
 	req.conn.IPv4Addr[2]=IPv4Addr[2];
 	req.conn.IPv4Addr[3]=IPv4Addr[3];
+	req.conn.realIPv4Addr[0]=realIPv4Addr[0];
+	req.conn.realIPv4Addr[1]=realIPv4Addr[1];
+	req.conn.realIPv4Addr[2]=realIPv4Addr[2];
+	req.conn.realIPv4Addr[3]=realIPv4Addr[3];
 	req.conn.dstPort=dstPort;
 	req.conn.VMPort=VMPort;
-
 	TCPConnReq.push_back(req);
 }
 
@@ -832,12 +847,12 @@ bool RealNetwork::TCPConnectionRequest:: DoConnect(void)
 	addr.sin_port=htons(conn.dstPort);
 
 #ifdef _WIN32
-	addr.sin_addr.S_un.S_un_b.s_b1=conn.IPv4Addr[0];
-	addr.sin_addr.S_un.S_un_b.s_b2=conn.IPv4Addr[1];
-	addr.sin_addr.S_un.S_un_b.s_b3=conn.IPv4Addr[2];
-	addr.sin_addr.S_un.S_un_b.s_b4=conn.IPv4Addr[3];
+	addr.sin_addr.S_un.S_un_b.s_b1=conn.realIPv4Addr[0];
+	addr.sin_addr.S_un.S_un_b.s_b2=conn.realIPv4Addr[1];
+	addr.sin_addr.S_un.S_un_b.s_b3=conn.realIPv4Addr[2];
+	addr.sin_addr.S_un.S_un_b.s_b4=conn.realIPv4Addr[3];
 #else
-	memcpy(&addr.sin_addr.s_addr,conn.IPv4Addr,4);
+	memcpy(&addr.sin_addr.s_addr,conn.realIPv4Addr,4);
 #endif
 
 	for(int sainit=0; sainit<8; sainit++)

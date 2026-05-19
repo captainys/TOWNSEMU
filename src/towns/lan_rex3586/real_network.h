@@ -74,6 +74,7 @@ public:
 		uint16_t VMPort;
 		uint8_t IPv4Addr[4];
 		uint16_t dstPort;
+		uint8_t realIPv4Addr[4]={0,0,0,0};  // For forwarding 10.0.2.101 to the host OS.
 
 		uint32_t GetIPUint32(void) const
 		{
@@ -176,6 +177,8 @@ public:
 
 	// Called from the VM thread.
 	void RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t port);
+
+	void RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t port,const uint8_t realIPV4Addr[4]);
 
 	void RequestDNS(std::string hostname);
 

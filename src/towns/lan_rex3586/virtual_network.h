@@ -27,6 +27,7 @@ public:
 		DHCP_SERVER_IP=0x0A000202, // 10.0.2.2
 		ROUTER_IP=0x0A000202,
 		DNS_IP=0x0A000202,
+		HOST_IP=0x0A0002AC,        // 10.0.2.172 to connect to the host.
 
 		VM_DHCP_IP=0x0A00020F,     // 10.0.2.15
 	};

@@ -800,7 +800,7 @@ void VirtualNetwork::SendDNSReplyNotFoundToVM(DNSRequest &req,PacketReceiver *re
 void VirtualNetwork::ProcessARP_Packet(EthernetHeader ether,size_t len,const uint8_t data[],PacketReceiver *recv)
 {
 	ARPHeader arp=DecodeARPHeader(len,data);
-	if(arp.dstIP==ROUTER_IP)
+	if(ROUTER_IP==arp.dstIP || HOST_IP==arp.dstIP)
 	{
 		// Asking ROUTER IP?
 		ether.dstMAC=ether.srcMAC;
@@ -808,9 +808,9 @@ void VirtualNetwork::ProcessARP_Packet(EthernetHeader ether,size_t len,const uin
 
 		arp.messageType=2; // Reply
 		arp.srcMAC=MAC_ROUTER;
-		arp.srcIP=ROUTER_IP;
-		arp.dstMAC=MAC_ROUTER;
-		arp.dstIP=ROUTER_IP;
+		arp.srcIP=arp.dstIP;
+		arp.dstMAC=MAC_ROUTER; // Questionable
+		arp.dstIP=arp.dstIP;   // Questionable
 
 		std::vector <uint8_t> data;
 		AddEthernetHeader(data,ether);
@@ -965,9 +965,29 @@ void VirtualNetwork::ProcessTCP_Packet(EthernetHeader ether,IPHeader ip,TCPHeade
 		{
 			TCPConnectionEstablished(*thisConn,recv);
 		}
+		else if(ip.dstIP==HOST_IP)
+		{
+			const uint8_t IP[4]=
+			{
+				uint8_t(ip.dstIP>>24),
+				uint8_t(ip.dstIP>>16),
+				uint8_t(ip.dstIP>>8),
+				uint8_t(ip.dstIP)
+			};
+			const uint8_t realIP[4]={127,0,0,1};
+
+			if(true==monitorTCP)
+			{
+				std::cout << "Translate IP Address ";
+				std::cout << int(IP[0]) << " " << int(IP[1]) << " " << int(IP[2]) << " " << int(IP[3]);
+				std::cout << " to localhost.\n";
+			}
+
+			realNet->RequestTCPConnection(tcp.srcPort,IP,tcp.dstPort,realIP);
+		}
 		else
 		{
-			uint8_t IP[4]=
+			const uint8_t IP[4]=
 			{
 				uint8_t(ip.dstIP>>24),
 				uint8_t(ip.dstIP>>16),
