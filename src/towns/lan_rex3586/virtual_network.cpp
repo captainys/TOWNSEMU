@@ -1438,6 +1438,18 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 					   virConn.tcpHdr.dstPort==cli.conn.VMPort &&
 					   virConn.tcpHdr.srcPort==cli.conn.dstPort)
 					{
+						if(RealNetwork::STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state && 0==cli.recvBuf.size())
+						{
+							if(true==monitorTCP)
+							{
+								std::cout << "V1 Disconnected VMPort:" << uint16_t(cli.conn.VMPort) << " RemotePort:" << uint16_t(cli.conn.dstPort);
+								std::cout << "IP:" << FormatIPAddress(cli.conn.GetIPUint32()) << "\n";
+							}
+							cli.state=RealNetwork::STATE_DISCONNECTED;
+							virConn.state=STATE_CLOSING_FROM_REMOTE; // Need to send FIN.
+							break;
+						}
+
 						if(0<cli.recvBuf.size() && true==recv->RxReady())
 						{
 							size_t send_bytes=std::min<size_t>(cli.recvBuf.size(),TCP_MAX_LENGTH);
@@ -1445,16 +1457,17 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 							ReceivedTCPData(virConn,send_bytes,cli.recvBuf.data(),recv);
 							cli.recvBuf.erase(cli.recvBuf.begin(),cli.recvBuf.begin()+send_bytes);
 
-							if(RealNetwork::STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state && 0==cli.recvBuf.size())
-							{
-								if(true==monitorTCP)
-								{
-									std::cout << "V1 Disconnected VMPort:" << uint16_t(cli.conn.VMPort) << " RemotePort:" << uint16_t(cli.conn.dstPort);
-									std::cout << "IP:" << FormatIPAddress(cli.conn.GetIPUint32()) << "\n";
-								}
-								cli.state=RealNetwork::STATE_DISCONNECTED;
-								virConn.state=STATE_CLOSING_FROM_REMOTE; // Need to send FIN.
-							}
+							// Don't check:
+							// if(RealNetwork::STATE_DISCONNECTED_BUT_DATA_LEFTOVER==cli.state && 0==cli.recvBuf.size())
+							// here.
+							// There is a race condition.  VirtualNetwork may finish processing the recvBuf while the 
+							// RealNetwork is processing the recv on the copied clients.
+							// The sequence is 
+							//   1. There's leftover data in the recvBuf.
+							//   2. RealNetwork makes a copy of clients, at this time the copy thinks leftover in recvBuf.
+							//   3. VirtualNetwork processes the leftover data.  recvBuf is now empty.
+							//   4. RealNetwork receives connection-close from the remote, change state to STATE_DISCONNECTED_BUT_DATA_LEFTOVER
+							//   5. Since recvBuf is empty, never reaches this line.
 							break;
 						}
 						else if(0<virConn.TxData.size())

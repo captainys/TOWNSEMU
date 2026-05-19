@@ -190,6 +190,12 @@ public:
 private:
 	void CheckTCPConnectionIncomingData(void);
 	static void CheckTCPConnectionIncomingData_Isolated(std::vector <Client> &clients,bool monitor);
+	void CheckTCPConnectionRequest(void);
+	void CheckTCPDisconnectionRequest(void);
+	void CheckTCPConnectionOutboundData(void);
+	void CheckDNSRequest(void);
+	void CheckTCPPortForwarding(void);
+
 	void StartUp(void);
 	void CleanUp(void);
 };

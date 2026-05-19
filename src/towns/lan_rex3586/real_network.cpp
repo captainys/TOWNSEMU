@@ -28,382 +28,22 @@ void RealNetwork::ThreadFunc(void)
 	while(true!=stopThread)
 	{
 		THREAD_PROGRESS("1");
-
 		CheckTCPConnectionIncomingData();
-
 		THREAD_PROGRESS("2");
-		{
-			// Problem: connect function may block long time if the server does not respond.
-			// Solution:
-			//   Lock
-			//   Make a copy of TCPConnReq
-			//   Unlock
-
-			//   Do all connections.
-
-			//   (VirtualNetwork may add TCPConnReq while connecting.)
-
-			//   Lock
-			//   Compare exisiting request and connected requests and copy connected flags of matching requests.
-
-			std::vector <TCPConnectionRequest> TCPConnReqCopy;
-			{
-				std::lock_guard <std::mutex> lock(TCPConnReqLock);
-				TCPConnReqCopy=TCPConnReq;
-			}
-
-
-			// Process connection requests.
-			unsigned int nConnected=0;
-			for(auto &req : TCPConnReqCopy)
-			{
-				if(true==monitor)
-				{
-					std::cout << "Handling Connection Request\n";
-					std::cout << int(req.conn.IPv4Addr[0]) << "." << int(req.conn.IPv4Addr[1]) << "." << int(req.conn.IPv4Addr[2]) << "." << int(req.conn.IPv4Addr[3]) << ":";
-					std::cout << int(req.conn.dstPort) << "\n";
-				}
-				req.connected=req.DoConnect();
-				if(true==req.connected)
-				{
-					++nConnected;
-				}
-			}
-			if(0<nConnected)
-			{
-				{
-					std::lock_guard <std::mutex> lock(TCPConnReqLock);
-					for(auto &copy : TCPConnReqCopy)
-					{
-						bool matched=false;
-						for(auto &req : TCPConnReq)
-						{
-							if(copy.conn.IPv4Addr[0]==req.conn.IPv4Addr[0]	&&
-							   copy.conn.IPv4Addr[1]==req.conn.IPv4Addr[1]	&&
-							   copy.conn.IPv4Addr[2]==req.conn.IPv4Addr[2]	&&
-							   copy.conn.IPv4Addr[3]==req.conn.IPv4Addr[3]	&&
-							   copy.conn.dstPort==req.conn.dstPort	&&
-							   copy.conn.VMPort==req.conn.VMPort)
-							{
-								req=copy;
-								matched=true;
-								break;
-							}
-						}
-						if(true!=matched && true==copy.connected)
-						{
-							closesocket(copy.sock);
-						}
-					}
-				}
-				std::lock_guard <std::mutex> lock(clientsLock);
-				for(auto &req : TCPConnReq)
-				{
-					if(true==req.connected)
-					{
-						Client cli;
-						cli.conn=req.conn;
-						cli.sock=req.sock;
-						cli.state=STATE_JUST_CONNECTED;
-						clients.push_back(cli);
-					}
-				}
-			}
-			TCPConnReqLock.lock();
-			TCPConnReq.clear();
-			TCPConnReqLock.unlock();
-		}
+		CheckTCPConnectionRequest();
 		THREAD_PROGRESS("3");
-		{
-			std::lock_guard <std::mutex> lock(TCPDisconnectReqLock);
-			for(auto port : TCPDisconnectReq)
-			{
-				std::lock_guard <std::mutex> lock2(clientsLock);
-				for(auto iter=clients.begin(); clients.end()!=iter; )
-				{
-					if(iter->conn.VMPort==port)
-					{
-						closesocket(iter->sock);
-						iter = clients.erase(iter);
-					}
-					else
-					{
-						// Only advance iterator if no erase happened
-						++iter;
-					}
-				}
-			}
-			TCPDisconnectReq.clear();
-		}
+		CheckTCPDisconnectionRequest();
 		THREAD_PROGRESS("4");
-		{
-			std::lock_guard <std::mutex> lock(clientsLock);
-			for(auto &cli : clients)
-			{
-				if(0<cli.sendBuf.size())
-				{
-					bool ready=false;
-				#ifdef _WIN32
-					fd_set set;
-					timeval wait;
-					wait.tv_sec=0;
-					wait.tv_usec=100;
-					FD_ZERO(&set);
-					FD_SET(cli.sock,&set);
-					if(select(1,NULL,&set,NULL,&wait)>=1)
-					{
-						ready=true;
-					}
-				#else
-					struct pollfd pfd;
-					pfd.fd=cli.sock;
-					pfd.events=POLLOUT;
-					pfd.revents=0;
-					if(poll(&pfd,1,1)>=1)
-					{
-						ready=true;
-					}
-				#endif
-					if(true==ready)
-					{
-						if(true==monitor)
-						{
-							std::cout << cli.sendBuf.size() << " bytes from VMPort " << cli.conn.VMPort << " sent to remote port " << cli.conn.dstPort << "\n";
-						}
-						send(cli.sock,(char *)cli.sendBuf.data(),cli.sendBuf.size(),0);
-						cli.sendBuf.clear();
-					}
-				}
-
-				if(true==cli.FIN_initiated_from_VM && true!=cli.ShutdownInitiated)
-				{
-					if(true==monitor)
-					{
-						std::cout << "Shutdown Initiated VMPort:" << cli.conn.VMPort << " DstPort:" << cli.conn.dstPort << "\n";
-					}
-					cli.ShutdownInitiated=true;
-					shutdown(cli.sock,SD_SEND);
-				}
-			}
-		}
+		CheckTCPConnectionOutboundData();
 		THREAD_PROGRESS("4");
-		{
-			std::lock_guard <std::mutex> lock(DNSRequestLock);
-			for(auto &req : DNSReq)
-			{
-				if(DNS_REQUESTED==req.state)
-				{
-					struct hostent *table=gethostbyname(req.hostname.c_str());
-					if(nullptr==table)
-					{
-						req.state=DNS_NOT_FOUND;
-						if(true==monitor)
-						{
-							std::cout << "Host " << req.hostname << " not found.\n";
-						}
-					}
-					else
-					{
-						req.state=DNS_FOUND;
-						req.ipAddr[0]=((unsigned char *)table->h_addr_list[0])[0];
-						req.ipAddr[1]=((unsigned char *)table->h_addr_list[0])[1];
-						req.ipAddr[2]=((unsigned char *)table->h_addr_list[0])[2];
-						req.ipAddr[3]=((unsigned char *)table->h_addr_list[0])[3];
-						if(true==monitor)
-						{
-							std::cout << "Host " << req.hostname << " " << uint32_t(req.ipAddr[0]) << "." << uint32_t(req.ipAddr[1]) << "." << uint32_t(req.ipAddr[2]) << "." << uint32_t(req.ipAddr[3]) << "\n";
-						}
-					}
-				}
-			}
-		}
+		CheckDNSRequest();
 		THREAD_PROGRESS("5");
-		{
-			portForwardingLock.lock();
-			auto portForwardingCopy=portForwarding;
-			portForwardingLock.unlock();
-
-			uint32_t newListen=0;
-			for(auto &port : portForwardingCopy)
-			{
-				if(STATE_NOT_LISTENING==port.state)
-				{
-					port.sock=socket(AF_INET,SOCK_STREAM,0);
-					if(INVALID_SOCKET!=port.sock)
-					{
-					#ifndef _WIN32
-						struct linger lingerOpt;
-						lingerOpt.l_onoff=1;
-						lingerOpt.l_linger=10;
-						setsockopt(port.sock,SOL_SOCKET,SO_LINGER,(void *)&lingerOpt,sizeof(lingerOpt));
-					#endif
-
-						SOCKADDR_IN addr;
-						addr.sin_family=AF_INET;
-						addr.sin_port=htons(port.HostPort);
-						addr.sin_addr.s_addr=INADDR_ANY;
-						if(0!=bind(port.sock,(SOCKADDR *)&addr,sizeof(SOCKADDR_IN)))
-						{
-							closesocket(port.sock);
-							port.sock=INVALID_SOCKET;
-							continue;
-						}
-						if(0!=listen(port.sock,listen_max))
-						{
-							closesocket(port.sock);
-							port.sock=INVALID_SOCKET;
-							continue;
-						}
-						port.state=STATE_LISTENING;
-						++newListen;
-					}
-				}
-			}
-
-			if(0<newListen)
-			{
-				std::lock_guard <std::mutex> lock(portForwardingLock);
-				for(auto &port : portForwarding)
-				{
-					for(auto &copy : portForwardingCopy)
-					{
-						if(port.VMPort==copy.VMPort &&
-						   port.HostPort==copy.HostPort &&
-						   STATE_NOT_LISTENING==port.state &&
-						   STATE_LISTENING==copy.state)
-						{
-							port=copy;
-						}
-					}
-				}
-			}
-
-			// Check incoming connections.
-		#ifdef _WIN32
-			// --- Windows Path: select ---
-			fd_set readfds;
-			FD_ZERO(&readfds);
-
-			int i=0;
-			for(auto &lstn : portForwardingCopy)
-			{
-				lstn.connectionIncoming=false;
-				if(STATE_LISTENING==lstn.state)
-				{
-					if(i<FD_SETSIZE)
-					{
-						FD_SET(lstn.sock, &readfds); // cli.sock is not accessed from outside of Network Thread
-					}
-					++i;
-				}
-			}
-			if(64<i)
-			{
-				std::cout << "FD_SET overflow!\n";
-			}
-
-			// 10ms timeout
-			timeval tv;
-			tv.tv_sec = 0;
-			tv.tv_usec = 10000; 
-			// nfds is ignored on Windows, but usually set to 0 or max fd + 1
-			if (0<select(0,&readfds,NULL,NULL,&tv))
-			{
-				for(auto &lstn : portForwardingCopy)
-				{
-					if(FD_ISSET(lstn.sock,&readfds))
-					{
-						lstn.connectionIncoming=true;
-					}
-				}
-			}
-		#else
-			// --- POSIX Path: poll ---
-			std::vector<struct pollfd> fds;
-			for(auto &lstn : portForwardingCopy)
-			{
-				struct pollfd pfd;
-				pfd.fd=lstn.sock;
-				pfd.events=POLLIN;
-				fds.push_back(pfd);
-			}
-
-			// poll uses milliseconds (10ms)
-			if (0<poll(fds.data(),(nfds_t)fds.size(),10)) 
-			{
-				for(auto &fd : fds)
-				{
-					if (fd.revents & POLLIN) 
-					{
-						for(auto &lstn : portForwardingCopy)
-						{
-							if(lstn.sock==fd.fd)
-							{
-								lstn.connectionIncoming=true;
-								break;
-							}
-						}
-					}
-				}
-			}
-		#endif
-			for(auto lstn : portForwardingCopy)
-			{
-				if(true==lstn.connectionIncoming)
-				{
-					socklen_t addrlen=sizeof(SOCKADDR_IN);
-					SOCKADDR_IN addr;
-					SOCKET sock=accept(lstn.sock,(SOCKADDR *)&addr,&addrlen);
-					if(INVALID_SOCKET!=sock)
-					{
-					#ifdef _WIN32
-						BOOL b=TRUE;
-						setsockopt(sock,IPPROTO_TCP,TCP_NODELAY,(char *)&b,sizeof(b));
-					#endif
-						#ifdef _WIN32
-						uint16_t remotePort=addr.sin_port;
-						uint8_t ipAddr[4]=
-						{
-							addr.sin_addr.S_un.S_un_b.s_b1,
-							addr.sin_addr.S_un.S_un_b.s_b2,
-							addr.sin_addr.S_un.S_un_b.s_b3,
-							addr.sin_addr.S_un.S_un_b.s_b4,
-						};
-						#else
-						uint16_t remotePort=addr.sin_port;
-						uint8_t ipAddr[4]=
-						{
-							uint8_t((addr.sin_addr.s_addr>>24)&255),
-							uint8_t((addr.sin_addr.s_addr>>16)&255),
-							uint8_t((addr.sin_addr.s_addr>> 8)&255),
-							uint8_t( addr.sin_addr.s_addr     &255),
-						};
-						#endif
-
-						Client newCli;
-						newCli.state=STATE_JUST_ACCEPTED;
-						newCli.sock=sock;
-						newCli.conn.VMPort=lstn.VMPort;
-						newCli.conn.dstPort=remotePort;
-						newCli.conn.IPv4Addr[0]=ipAddr[0];
-						newCli.conn.IPv4Addr[1]=ipAddr[1];
-						newCli.conn.IPv4Addr[2]=ipAddr[2];
-						newCli.conn.IPv4Addr[3]=ipAddr[3];
-
-						clientsLock.lock();
-						clients.push_back(newCli);
-						clientsLock.unlock();
-					}
-				}
-			}
-		}
+		CheckTCPPortForwarding();
 		THREAD_PROGRESS("6");
 	}
 
 	THREAD_PROGRESS("Fin");
-
 	CleanUp();
-
 	THREAD_PROGRESS(".");
 }
 
@@ -565,6 +205,380 @@ void RealNetwork::CheckTCPConnectionIncomingData_Isolated(std::vector <Client> &
 					cli.recvBuf.clear();
 					cli.recvBuf.insert(cli.recvBuf.end(),buf,buf+nBytesRecv);
 				}
+			}
+		}
+	}
+}
+
+void RealNetwork::CheckTCPConnectionRequest(void)
+{
+	// Problem: connect function may block long time if the server does not respond.
+	// Solution:
+	//   Lock
+	//   Make a copy of TCPConnReq
+	//   Unlock
+
+	//   Do all connections.
+
+	//   (VirtualNetwork may add TCPConnReq while connecting.)
+
+	//   Lock
+	//   Compare exisiting request and connected requests and copy connected flags of matching requests.
+
+	TCPConnReqLock.lock();
+	auto TCPConnReqCopy=TCPConnReq;
+	TCPConnReqLock.unlock();
+
+
+	// Process connection requests.
+	unsigned int nConnected=0;
+	for(auto &req : TCPConnReqCopy)
+	{
+		if(true==monitor)
+		{
+			std::cout << "Handling Connection Request\n";
+			std::cout << int(req.conn.IPv4Addr[0]) << "." << int(req.conn.IPv4Addr[1]) << "." << int(req.conn.IPv4Addr[2]) << "." << int(req.conn.IPv4Addr[3]) << ":";
+			std::cout << int(req.conn.dstPort) << "\n";
+		}
+		req.connected=req.DoConnect();
+		if(true==req.connected)
+		{
+			++nConnected;
+		}
+	}
+	if(0<nConnected)
+	{
+		{
+			std::lock_guard <std::mutex> lock(TCPConnReqLock);
+			for(auto &copy : TCPConnReqCopy)
+			{
+				bool matched=false;
+				for(auto &req : TCPConnReq)
+				{
+					if(copy.conn.IPv4Addr[0]==req.conn.IPv4Addr[0]	&&
+						copy.conn.IPv4Addr[1]==req.conn.IPv4Addr[1]	&&
+						copy.conn.IPv4Addr[2]==req.conn.IPv4Addr[2]	&&
+						copy.conn.IPv4Addr[3]==req.conn.IPv4Addr[3]	&&
+						copy.conn.dstPort==req.conn.dstPort	&&
+						copy.conn.VMPort==req.conn.VMPort)
+					{
+						req=copy;
+						matched=true;
+						break;
+					}
+				}
+				if(true!=matched && true==copy.connected)
+				{
+					// In case the connection request is withdrawn while connecting, do not leak a socket.
+					closesocket(copy.sock);
+				}
+			}
+		}
+		std::lock_guard <std::mutex> lock(clientsLock);
+		for(auto &req : TCPConnReqCopy)
+		{
+			if(true==req.connected)
+			{
+				Client cli;
+				cli.conn=req.conn;
+				cli.sock=req.sock;
+				cli.state=STATE_JUST_CONNECTED;
+				clients.push_back(cli);
+			}
+		}
+	}
+	TCPConnReqLock.lock();
+	// Question:  Should I keep failed request and try again?  Or, don't bother?
+	TCPConnReq.clear();
+	TCPConnReqLock.unlock();
+}
+
+void RealNetwork::CheckTCPDisconnectionRequest(void)
+{
+	TCPDisconnectReqLock.lock();
+	auto TCPDisconnectReqCopy=TCPDisconnectReq;
+	TCPDisconnectReq.clear();
+	TCPDisconnectReqLock.unlock();
+
+	for(auto port : TCPDisconnectReqCopy)
+	{
+		std::lock_guard <std::mutex> lock2(clientsLock);
+		for(auto iter=clients.begin(); clients.end()!=iter; )
+		{
+			if(iter->conn.VMPort==port)
+			{
+				closesocket(iter->sock);
+				iter = clients.erase(iter);
+			}
+			else
+			{
+				// Only advance iterator if no erase happened
+				++iter;
+			}
+		}
+	}
+}
+
+void RealNetwork::CheckTCPConnectionOutboundData(void)
+{
+	std::lock_guard <std::mutex> lock(clientsLock);
+	for(auto &cli : clients)
+	{
+		if(0<cli.sendBuf.size())
+		{
+			bool ready=false;
+		#ifdef _WIN32
+			fd_set set;
+			timeval wait;
+			wait.tv_sec=0;
+			wait.tv_usec=100;
+			FD_ZERO(&set);
+			FD_SET(cli.sock,&set);
+			if(select(1,NULL,&set,NULL,&wait)>=1)
+			{
+				ready=true;
+			}
+		#else
+			struct pollfd pfd;
+			pfd.fd=cli.sock;
+			pfd.events=POLLOUT;
+			pfd.revents=0;
+			if(poll(&pfd,1,1)>=1)
+			{
+				ready=true;
+			}
+		#endif
+			if(true==ready)
+			{
+				if(true==monitor)
+				{
+					std::cout << cli.sendBuf.size() << " bytes from VMPort " << cli.conn.VMPort << " sent to remote port " << cli.conn.dstPort << "\n";
+				}
+				send(cli.sock,(char *)cli.sendBuf.data(),cli.sendBuf.size(),0);
+				cli.sendBuf.clear();
+			}
+		}
+
+		if(true==cli.FIN_initiated_from_VM && true!=cli.ShutdownInitiated)
+		{
+			if(true==monitor)
+			{
+				std::cout << "Shutdown Initiated VMPort:" << cli.conn.VMPort << " DstPort:" << cli.conn.dstPort << "\n";
+			}
+			cli.ShutdownInitiated=true;
+			shutdown(cli.sock,SD_SEND);
+		}
+	}
+}
+
+void RealNetwork::CheckDNSRequest(void)
+{
+	std::lock_guard <std::mutex> lock(DNSRequestLock);
+	for(auto &req : DNSReq)
+	{
+		if(DNS_REQUESTED==req.state)
+		{
+			struct hostent *table=gethostbyname(req.hostname.c_str());
+			if(nullptr==table)
+			{
+				req.state=DNS_NOT_FOUND;
+				if(true==monitor)
+				{
+					std::cout << "Host " << req.hostname << " not found.\n";
+				}
+			}
+			else
+			{
+				req.state=DNS_FOUND;
+				req.ipAddr[0]=((unsigned char *)table->h_addr_list[0])[0];
+				req.ipAddr[1]=((unsigned char *)table->h_addr_list[0])[1];
+				req.ipAddr[2]=((unsigned char *)table->h_addr_list[0])[2];
+				req.ipAddr[3]=((unsigned char *)table->h_addr_list[0])[3];
+				if(true==monitor)
+				{
+					std::cout << "Host " << req.hostname << " " << uint32_t(req.ipAddr[0]) << "." << uint32_t(req.ipAddr[1]) << "." << uint32_t(req.ipAddr[2]) << "." << uint32_t(req.ipAddr[3]) << "\n";
+				}
+			}
+		}
+	}
+}
+
+void RealNetwork::CheckTCPPortForwarding(void)
+{
+	portForwardingLock.lock();
+	auto portForwardingCopy=portForwarding;
+	portForwardingLock.unlock();
+
+	uint32_t newListen=0;
+	for(auto &port : portForwardingCopy)
+	{
+		if(STATE_NOT_LISTENING==port.state)
+		{
+			port.sock=socket(AF_INET,SOCK_STREAM,0);
+			if(INVALID_SOCKET!=port.sock)
+			{
+			#ifndef _WIN32
+				struct linger lingerOpt;
+				lingerOpt.l_onoff=1;
+				lingerOpt.l_linger=10;
+				setsockopt(port.sock,SOL_SOCKET,SO_LINGER,(void *)&lingerOpt,sizeof(lingerOpt));
+			#endif
+
+				SOCKADDR_IN addr;
+				addr.sin_family=AF_INET;
+				addr.sin_port=htons(port.HostPort);
+				addr.sin_addr.s_addr=INADDR_ANY;
+				if(0!=bind(port.sock,(SOCKADDR *)&addr,sizeof(SOCKADDR_IN)))
+				{
+					closesocket(port.sock);
+					port.sock=INVALID_SOCKET;
+					continue;
+				}
+				if(0!=listen(port.sock,listen_max))
+				{
+					closesocket(port.sock);
+					port.sock=INVALID_SOCKET;
+					continue;
+				}
+				port.state=STATE_LISTENING;
+				++newListen;
+			}
+		}
+	}
+
+	if(0<newListen)
+	{
+		std::lock_guard <std::mutex> lock(portForwardingLock);
+		for(auto &port : portForwarding)
+		{
+			for(auto &copy : portForwardingCopy)
+			{
+				if(port.VMPort==copy.VMPort &&
+					port.HostPort==copy.HostPort &&
+					STATE_NOT_LISTENING==port.state &&
+					STATE_LISTENING==copy.state)
+				{
+					port=copy;
+				}
+			}
+		}
+	}
+
+	// Check incoming connections.
+#ifdef _WIN32
+	// --- Windows Path: select ---
+	fd_set readfds;
+	FD_ZERO(&readfds);
+
+	int i=0;
+	for(auto &lstn : portForwardingCopy)
+	{
+		lstn.connectionIncoming=false;
+		if(STATE_LISTENING==lstn.state)
+		{
+			if(i<FD_SETSIZE)
+			{
+				FD_SET(lstn.sock, &readfds); // cli.sock is not accessed from outside of Network Thread
+			}
+			++i;
+		}
+	}
+	if(64<i)
+	{
+		std::cout << "FD_SET overflow!\n";
+	}
+
+	// 10ms timeout
+	timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 10000; 
+	// nfds is ignored on Windows, but usually set to 0 or max fd + 1
+	if (0<select(0,&readfds,NULL,NULL,&tv))
+	{
+		for(auto &lstn : portForwardingCopy)
+		{
+			if(FD_ISSET(lstn.sock,&readfds))
+			{
+				lstn.connectionIncoming=true;
+			}
+		}
+	}
+#else
+	// --- POSIX Path: poll ---
+	std::vector<struct pollfd> fds;
+	for(auto &lstn : portForwardingCopy)
+	{
+		struct pollfd pfd;
+		pfd.fd=lstn.sock;
+		pfd.events=POLLIN;
+		fds.push_back(pfd);
+	}
+
+	// poll uses milliseconds (10ms)
+	if (0<poll(fds.data(),(nfds_t)fds.size(),10)) 
+	{
+		for(auto &fd : fds)
+		{
+			if (fd.revents & POLLIN) 
+			{
+				for(auto &lstn : portForwardingCopy)
+				{
+					if(lstn.sock==fd.fd)
+					{
+						lstn.connectionIncoming=true;
+						break;
+					}
+				}
+			}
+		}
+	}
+#endif
+	for(auto lstn : portForwardingCopy)
+	{
+		if(true==lstn.connectionIncoming)
+		{
+			socklen_t addrlen=sizeof(SOCKADDR_IN);
+			SOCKADDR_IN addr;
+			SOCKET sock=accept(lstn.sock,(SOCKADDR *)&addr,&addrlen);
+			if(INVALID_SOCKET!=sock)
+			{
+			#ifdef _WIN32
+				BOOL b=TRUE;
+				setsockopt(sock,IPPROTO_TCP,TCP_NODELAY,(char *)&b,sizeof(b));
+			#endif
+				#ifdef _WIN32
+				uint16_t remotePort=addr.sin_port;
+				uint8_t ipAddr[4]=
+				{
+					addr.sin_addr.S_un.S_un_b.s_b1,
+					addr.sin_addr.S_un.S_un_b.s_b2,
+					addr.sin_addr.S_un.S_un_b.s_b3,
+					addr.sin_addr.S_un.S_un_b.s_b4,
+				};
+				#else
+				uint16_t remotePort=addr.sin_port;
+				uint8_t ipAddr[4]=
+				{
+					uint8_t((addr.sin_addr.s_addr>>24)&255),
+					uint8_t((addr.sin_addr.s_addr>>16)&255),
+					uint8_t((addr.sin_addr.s_addr>> 8)&255),
+					uint8_t( addr.sin_addr.s_addr     &255),
+				};
+				#endif
+
+				Client newCli;
+				newCli.state=STATE_JUST_ACCEPTED;
+				newCli.sock=sock;
+				newCli.conn.VMPort=lstn.VMPort;
+				newCli.conn.dstPort=remotePort;
+				newCli.conn.IPv4Addr[0]=ipAddr[0];
+				newCli.conn.IPv4Addr[1]=ipAddr[1];
+				newCli.conn.IPv4Addr[2]=ipAddr[2];
+				newCli.conn.IPv4Addr[3]=ipAddr[3];
+
+				clientsLock.lock();
+				clients.push_back(newCli);
+				clientsLock.unlock();
 			}
 		}
 	}
@@ -816,8 +830,6 @@ bool RealNetwork::TCPConnectionRequest:: DoConnect(void)
 	SOCKADDR_IN addr;
 	addr.sin_family=AF_INET;
 	addr.sin_port=htons(conn.dstPort);
-
-std::cout << "2\n";
 
 #ifdef _WIN32
 	addr.sin_addr.S_un.S_un_b.s_b1=conn.IPv4Addr[0];
