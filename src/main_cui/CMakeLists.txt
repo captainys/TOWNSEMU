@@ -1488,6 +1488,8 @@ add_test(
 		-DAMPERWIRELINE
 )
 
+# need:
+# pip install pyftpdlib
 add_test(
 	NAME NET_HTGET
 	COMMAND
@@ -1550,23 +1552,23 @@ add_test(
 	)
 
 # -PORTFWD 21 2122 option forwards TOWNS's port 21 to Host's 2122
-##add_test(
-#	NAME NET_FTPSVR
-#	COMMAND
-#		python
-#		"${CMAKE_SOURCE_DIR}/tests/ftp_client.py"
-#		"${CMAKE_SOURCE_DIR}/tests/html"
-#		"${TARGET_EXE}"
-#		"${TOWNSEMU_TEST}/ROM_DEV"
-#		-COPYFILE
-#		"${TOWNSEMU_TEST}/DISKIMG/NETTEST.BIN"
-#		"${CMAKE_BINARY_DIR}/NETTEST.BIN"
-#		-REX3586
-#		-PORTFWD 21 2122
-#		-FD0
-#		"${CMAKE_BINARY_DIR}/NETTEST.BIN"
-#		-BOOTKEY
-#		F0
-#		-CONSCMD
-#		"FTPSRV"
-#	)
+add_test(
+	NAME NET_FTPSVR
+	COMMAND
+		python
+		"${CMAKE_SOURCE_DIR}/tests/ftp_server.py"
+		"${CMAKE_BUILD_DIR}/tests"
+		"${TARGET_EXE}"
+		"${TOWNSEMU_TEST}/ROM_DEV"
+		-COPYFILE
+		"${TOWNSEMU_TEST}/DISKIMG/NETTEST.BIN"
+		"${CMAKE_BINARY_DIR}/NETTEST.BIN"
+		-REX3586
+		-PORTFWD 21 2122
+		-FD0
+		"${CMAKE_BINARY_DIR}/NETTEST.BIN"
+		-BOOTKEY
+		F0
+		-CONSCMD
+		"FTPSRV"
+	)
