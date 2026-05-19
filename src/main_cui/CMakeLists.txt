@@ -1557,7 +1557,7 @@ add_test(
 	COMMAND
 		python
 		"${CMAKE_SOURCE_DIR}/tests/ftp_server.py"
-		"${CMAKE_BUILD_DIR}/tests"
+		"${CMAKE_BINARY_DIR}/tests"
 		"${TARGET_EXE}"
 		"${TOWNSEMU_TEST}/ROM_DEV"
 		-COPYFILE
