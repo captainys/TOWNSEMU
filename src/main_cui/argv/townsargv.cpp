@@ -744,7 +744,7 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			fileNameAlias[LABEL]=argv[i+2];
 			i+=2;
 		}
-		else if("-SPCIALPATH"==ARG && i+2<argc)
+		else if("-SPECIALPATH"==ARG && i+2<argc)
 		{
 			std::pair <std::string,std::string> pair;
 			pair.first=argv[i+1];
