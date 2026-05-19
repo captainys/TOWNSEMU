@@ -225,8 +225,9 @@ void RealNetwork::CheckTCPConnectionRequest(void)
 	//   Lock
 	//   Compare exisiting request and connected requests and copy connected flags of matching requests.
 
+	std::vector <TCPConnectionRequest> TCPConnReqCopy;
 	TCPConnReqLock.lock();
-	auto TCPConnReqCopy=TCPConnReq;
+	std::swap(TCPConnReqCopy,TCPConnReq);
 	TCPConnReqLock.unlock();
 
 
@@ -255,32 +256,6 @@ void RealNetwork::CheckTCPConnectionRequest(void)
 	}
 	if(0<nConnected)
 	{
-		{
-			std::lock_guard <std::mutex> lock(TCPConnReqLock);
-			for(auto &copy : TCPConnReqCopy)
-			{
-				bool matched=false;
-				for(auto &req : TCPConnReq)
-				{
-					if(copy.conn.IPv4Addr[0]==req.conn.IPv4Addr[0]	&&
-						copy.conn.IPv4Addr[1]==req.conn.IPv4Addr[1]	&&
-						copy.conn.IPv4Addr[2]==req.conn.IPv4Addr[2]	&&
-						copy.conn.IPv4Addr[3]==req.conn.IPv4Addr[3]	&&
-						copy.conn.dstPort==req.conn.dstPort	&&
-						copy.conn.VMPort==req.conn.VMPort)
-					{
-						req=copy;
-						matched=true;
-						break;
-					}
-				}
-				if(true!=matched && true==copy.connected)
-				{
-					// In case the connection request is withdrawn while connecting, do not leak a socket.
-					closesocket(copy.sock);
-				}
-			}
-		}
 		std::lock_guard <std::mutex> lock(clientsLock);
 		for(auto &req : TCPConnReqCopy)
 		{
@@ -294,17 +269,16 @@ void RealNetwork::CheckTCPConnectionRequest(void)
 			}
 		}
 	}
-	TCPConnReqLock.lock();
-	// Question:  Should I keep failed request and try again?  Or, don't bother?
-	TCPConnReq.clear();
-	TCPConnReqLock.unlock();
+
+	// Question:  Should I re-add failed connection back to TCPConnReq?
 }
 
 void RealNetwork::CheckTCPDisconnectionRequest(void)
 {
+	std::vector <uint16_t> TCPDisconnectReqCopy;
+
 	TCPDisconnectReqLock.lock();
-	auto TCPDisconnectReqCopy=TCPDisconnectReq;
-	TCPDisconnectReq.clear();
+	std::swap(TCPDisconnectReqCopy,TCPDisconnectReq);
 	TCPDisconnectReqLock.unlock();
 
 	for(auto port : TCPDisconnectReqCopy)
@@ -684,6 +658,11 @@ void RealNetwork::RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4]
 	req.conn.dstPort=dstPort;
 	req.conn.VMPort=VMPort;
 	TCPConnReq.push_back(req);
+
+	if(true==monitor)
+	{
+		std::cout << "TCP Connection Request\n";
+	}
 }
 
 void RealNetwork::RequestDNS(std::string hostname)
@@ -787,6 +766,16 @@ void RealNetwork::AddStatusText(std::vector <std::string> &text) const
 				str+=" Shutdown";
 			}
 			text.push_back(str);
+		}
+	}
+	{
+		std::lock_guard <std::mutex> lock(TCPConnReqLock);
+		for(auto &req : TCPConnReq)
+		{
+			std::cout << "Connection Request ";
+			std::cout << "VMPort:" << req.conn.VMPort;
+			std::cout << "IP:" << int(req.conn.IPv4Addr[0]) << "."  << int(req.conn.IPv4Addr[1]) << "."  << int(req.conn.IPv4Addr[2]) << "."  << int(req.conn.IPv4Addr[3]) << "\n";
+			std::cout << "RealIP:" << int(req.conn.realIPv4Addr[0]) << "."  << int(req.conn.realIPv4Addr[1]) << "."  << int(req.conn.realIPv4Addr[2]) << "."  << int(req.conn.realIPv4Addr[3]) << "\n";
 		}
 	}
 	{
