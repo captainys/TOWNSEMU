@@ -5,6 +5,8 @@ set(TOWNSEMU_TEST ${CMAKE_CURRENT_SOURCE_DIR}/../../../TOWNSEMU_TEST)
 set(SYMTABLE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../symtables)
 set(TESTDATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../testdata)
 
+set(TARGET_EXE $<TARGET_NAME:${TARGET_NAME}>)
+
 
 add_executable(Tsugaru_CUI MACOSX_BUNDLE main.cpp ../resources/tsugaru_icon.rc)
 target_link_libraries(${TARGET_NAME} 
@@ -1485,3 +1487,27 @@ add_test(
 		00C7:000018AC@5
 		-DAMPERWIRELINE
 )
+
+add_test(
+	NAME NET_HTGET
+	COMMAND
+		python
+		"${CMAKE_SOURCE_DIR}/tests/http_client.py"
+		"${CMAKE_SOURCE_DIR}/tests/html"
+		"${TARGET_EXE}"
+		"${TOWNSEMU_TEST}/ROM_DEV"
+		-COPYFILE
+		"${TOWNSEMU_TEST}/DISKIMG/NETTEST.BIN"
+		"${CMAKE_BINARY_DIR}/NETTEST.BIN"
+		-REX3586
+		-FD0
+		"${CMAKE_BINARY_DIR}/NETTEST.BIN"
+		-BOOTKEY
+		F0
+		-CONSCMD
+		"htget -o index.html http://10.0.2.172:8080/index.html"
+		-CONSCMD
+		"IF EXIST INDEX.HTML THEN SUCCESS"
+		-CONSCMD
+		"FAIL"
+	)
