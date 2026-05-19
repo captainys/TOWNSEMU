@@ -504,7 +504,6 @@ void i486DXFidelityLayer <FIDELITY>::Push16(Memory &mem,unsigned int value)
 {
 	FIDELITY fidelity;
 
-	NUM_BYTES_MASK;
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
 
@@ -516,7 +515,7 @@ void i486DXFidelityLayer <FIDELITY>::Push16(Memory &mem,unsigned int value)
 
 	fidelity.RestoreESPHighWord(addressSize,ESP,savedESP);
 
-	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
+	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(addressSize==16 ? 0xffff : 0xffffffff));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToStore);
 
 	if(fidelity.CheckExceptionInHighFidelityMode(*this))
@@ -541,7 +540,6 @@ void i486DXFidelityLayer <FIDELITY>::Push32(Memory &mem,unsigned int value)
 {
 	FIDELITY fidelity;
 
-	NUM_BYTES_MASK;
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
 
@@ -553,7 +551,7 @@ void i486DXFidelityLayer <FIDELITY>::Push32(Memory &mem,unsigned int value)
 
 	fidelity.RestoreESPHighWord(addressSize,ESP,savedESP);
 
-	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
+	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(addressSize==16 ? 0xffff : 0xffffffff));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToStore);
 
 	if(fidelity.CheckExceptionInHighFidelityMode(*this))
@@ -574,7 +572,6 @@ unsigned int i486DXFidelityLayer <FIDELITY>::Pop16(Memory &mem)
 {
 	FIDELITY fidelity;
 
-	NUM_BYTES_MASK;
 	unsigned int value;
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
@@ -583,7 +580,7 @@ unsigned int i486DXFidelityLayer <FIDELITY>::Pop16(Memory &mem)
 	class FIDELITY::SavedESP savedESP;
 	fidelity.SaveESP(savedESP,addressSize,ESP);
 
-	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
+	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(addressSize==16 ? 0xffff : 0xffffffff));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToPop);
 	if(nullptr!=accessPtr)
 	{
@@ -606,7 +603,6 @@ unsigned int i486DXFidelityLayer <FIDELITY>::Pop32(Memory &mem)
 {
 	FIDELITY fidelity;
 
-	NUM_BYTES_MASK;
 	unsigned int value;
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
@@ -615,7 +611,7 @@ unsigned int i486DXFidelityLayer <FIDELITY>::Pop32(Memory &mem)
 	class FIDELITY::SavedESP savedESP;
 	fidelity.SaveESP(savedESP,addressSize,ESP);
 
-	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
+	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(addressSize==16 ? 0xffff : 0xffffffff));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToPop);
 	if(nullptr!=accessPtr)
 	{
@@ -635,7 +631,6 @@ void i486DXFidelityLayer <FIDELITY>::Push(Memory &mem,unsigned int operandSize,u
 {
 	FIDELITY fidelity;
 
-	NUM_BYTES_MASK;
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
 
@@ -647,7 +642,7 @@ void i486DXFidelityLayer <FIDELITY>::Push(Memory &mem,unsigned int operandSize,u
 
 	fidelity.RestoreESPHighWord(addressSize,ESP,savedESP);
 
-	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
+	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(addressSize==16 ? 0xffff : 0xffffffff));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToStore);
 	if(nullptr!=accessPtr)
 	{
@@ -681,7 +676,6 @@ void i486DXFidelityLayer <FIDELITY>::Pop(uint32_t &firstPop,uint32_t &secondPop,
 {
 	FIDELITY fidelity;
 
-	NUM_BYTES_MASK;
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
 	const unsigned int bytesToPop=(operandSize>>3)*2;
@@ -689,7 +683,7 @@ void i486DXFidelityLayer <FIDELITY>::Pop(uint32_t &firstPop,uint32_t &secondPop,
 	class FIDELITY::SavedESP savedESP;
 	fidelity.SaveESP(savedESP,addressSize,ESP);
 
-	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
+	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(addressSize==16 ? 0xffff : 0xffffffff));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToPop);
 	if(nullptr!=accessPtr)
 	{
@@ -728,7 +722,6 @@ void i486DXFidelityLayer <FIDELITY>::Push(Memory &mem,unsigned int operandSize,u
 {
 	FIDELITY fidelity;
 
-	NUM_BYTES_MASK;
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
 
@@ -740,7 +733,7 @@ void i486DXFidelityLayer <FIDELITY>::Push(Memory &mem,unsigned int operandSize,u
 
 	fidelity.RestoreESPHighWord(addressSize,ESP,savedESP);
 
-	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
+	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(addressSize==16 ? 0xffff : 0xffffffff));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToStore);
 	if(nullptr!=accessPtr)
 	{
@@ -778,7 +771,6 @@ void i486DXFidelityLayer <FIDELITY>::Pop(uint32_t &firstPop,uint32_t &secondPop,
 {
 	FIDELITY fidelity;
 
-	NUM_BYTES_MASK;
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
 	const unsigned int bytesToPop=(operandSize>>3)*3;
@@ -786,7 +778,7 @@ void i486DXFidelityLayer <FIDELITY>::Pop(uint32_t &firstPop,uint32_t &secondPop,
 	class FIDELITY::SavedESP savedESP;
 	fidelity.SaveESP(savedESP,addressSize,ESP);
 
-	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
+	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(addressSize==16 ? 0xffff : 0xffffffff));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToPop);
 	if(nullptr!=accessPtr)
 	{
