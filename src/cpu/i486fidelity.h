@@ -67,7 +67,7 @@ public:
 
 	inline bool CheckRETFtoOuterLevel(i486DXCommon &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL,uint16_t imm16){return false;};
 
-	constexpr bool CheckExceptionInHighFidelityMode(const i486DXCommon &) const{return false;}
+	static inline bool CheckExceptionInHighFidelityMode(const i486DXCommon &) {return false;}
 
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables
@@ -615,7 +615,7 @@ public:
 		}
 	}
 
-	inline static bool CheckExceptionInHighFidelityMode(const i486DXCommon &cpu)
+	static inline bool CheckExceptionInHighFidelityMode(const i486DXCommon &cpu)
 	{
 		return cpu.state.exception;
 	}
