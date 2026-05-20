@@ -3661,6 +3661,19 @@ public:
 		if(true==PagingEnabled())
 		{
 			physAddr=LinearAddressToPhysicalAddressRead(linearAddr,mem);
+
+			// This block is added to solve Windows 95 FTP crash.
+			// JMP destination had to raise Page Fault.  However, since it was returning
+			// ConstMemoryWindow for the physical address, FetchInstruction was reading
+			// a random location and caused a different exception.
+			// If Page Fault on Page Translation, it must return an empty ConstMemoryWindow.
+			FIDELITY fidelity;
+			if(true==fidelity.CheckExceptionInHighFidelityMode(*this))
+			{
+				MemoryAccess::ConstMemoryWindow memWin;
+				memWin.CleanUp();
+				return memWin;
+			}
 		}
 		auto memWin=mem.GetConstMemoryWindow(physAddr);
 		memWin.UpdateLinearBaseAddress(linearAddr);
