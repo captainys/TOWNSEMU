@@ -356,6 +356,13 @@ public:
 		if(true!=memWin.IsLinearAddressInRange(CSEIPLinear))
 		{
 			FUNCCLASS::GetConstMemoryWindow(cpu,memWin,inst.codeAddressSize,CS,offset,mem);
+			// If Page Fault, do not bother fetch instruction.
+			// By fetching, Page Fault may turn into Segmentation Violation.
+			// Page Fault must be prioritize.
+			if(true==cpu.state.exception)
+			{
+				return; // Page Fault -> Don't look at memory at all.
+			}
 		}
 		auto ptr=memWin.GetReadAccessPointer(CSEIPLinear);
 
