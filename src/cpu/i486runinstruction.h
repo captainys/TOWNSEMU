@@ -5904,7 +5904,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			   op2.offset;
 			if(OPER_REG32==op1.operandType)
 			{
-				FIDELITY::MaskHighWordIfSizeIs16(offset,inst.addressSize);
+				if(16==inst.addressSize)
+				{
+					offset&=0xFFFF;
+				}
 				state.reg32()[op1.reg-REG_EAX]=offset;
 			}
 			else if(OPER_REG16==op1.operandType)

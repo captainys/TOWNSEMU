@@ -110,8 +110,6 @@ public:
 	inline static bool SLDT_STR_LLDT_LTR_VERR_VERW_Cause_INT6_InRealModeVM86Mode(i486DXCommon &){return false;}
 
 	inline static void OnLock(i486DXCommon &){}
-
-	inline static void MaskHighWordIfSizeIs16(uint32_t &,int){}
 };
 
 class i486DXDefaultFidelityOperation : public i486DXLowFidelityOperation
@@ -932,14 +930,6 @@ public:
 	inline static void OnLock(i486DXCommon &cpu)
 	{
 		cpu.RaiseException(i486DXCommon::EXCEPTION_LOCK_MAYBE,0);
-	}
-
-	inline static void MaskHighWordIfSizeIs16(uint32_t &i,int sz)
-	{
-		if(16==sz)
-		{
-			i&=0xFFFF;
-		}
 	}
 };
 
