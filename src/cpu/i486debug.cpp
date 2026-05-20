@@ -580,6 +580,14 @@ void i486Debugger::HandleException(i486DXCommon &cpu,Memory &mem,unsigned int in
 		msg+=cpputil::Uitox(cpu.state.ESP());
 		ExternalBreak(msg);
 	}
+	auto find=breakOnExceptionAt.find(prevCSEIPLog);
+	if(find!=breakOnExceptionAt.end())
+	{
+		ExternalBreak(
+			"Exception at "+cpputil::Ustox(prevCSEIPLog.SEG)+":"+cpputil::Uitox(prevCSEIPLog.OFFSET)
+		);
+		lastBreakPointInfo=find->second;
+	}
 }
 
 void i486Debugger::SetBreakOnINT(unsigned int INTNum)
@@ -632,6 +640,24 @@ void i486Debugger::ClearBreakOnINT(void)
 void i486Debugger::ClearBreakOnINT(unsigned int INTNum)
 {
 	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].cond=BreakOnINTCondition::COND_NEVER;
+}
+
+void i486Debugger::BreakOnExceptionAt(i486DXCommon::FarPointer cseip)
+{
+	breakOnExceptionAt[cseip]=BreakPointInfo();
+}
+void i486Debugger::ClearBreakOnExceptionAt(i486DXCommon::FarPointer cseip)
+{
+	auto found=breakOnExceptionAt.find(cseip);
+	if(breakOnExceptionAt.end()!=found)
+	{
+		breakOnExceptionAt.erase(found);
+	}
+}
+void i486Debugger::ClearBreakOnExceptionAt(void)
+{
+	std::map <i486DXCommon::FarPointer,BreakPointInfo> empty;
+	std::swap(breakOnExceptionAt,empty);
 }
 
 std::vector <std::string> i486Debugger::GetCallStackText(const i486DXCommon &cpu) const

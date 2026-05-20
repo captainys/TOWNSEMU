@@ -368,6 +368,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["FDCREADADR"]=BREAK_ON_FDC_READADDRESS;
 	breakEventMap["FDCREADADDR"]=BREAK_ON_FDC_READADDRESS;
 	breakEventMap["INT"]=    BREAK_ON_INT;
+	breakEventMap["EXCEPTIONAT"]=BREAK_ON_EXCEPTION_AT;
+	breakEventMap["EXAT"]=BREAK_ON_EXCEPTION_AT;
 	breakEventMap["FOPEN"]=  BREAK_ON_FOPEN;
 	breakEventMap["RDCVRAM"]=BREAK_ON_CVRAM_READ;
 	breakEventMap["WRCVRAM"]=BREAK_ON_CVRAM_WRITE;
@@ -942,6 +944,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "INT n AX=hhhh" << std::endl;
 	std::cout << "INT n CSEIP=cs:eip EIP=eip" << std::endl;
 	std::cout << "  Break on interrupt.  Can specify specific multiple CS:EIP or EIP." << std::endl;
+	std::cout << "EXCEPTIONAT CS:EIP\n";
+	std::cout << "EXAT CS:EIP\n";
+	std::cout << "  Any exception at CS:EIP.\n";
 	std::cout << "FOPEN fileNameWildCard" << std::endl;
 	std::cout << "  Break when fopen,fcreate with the given file name." << std::endl;
 	std::cout << "RDCVRAM" << std::endl;
@@ -3892,6 +3897,20 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd,
 					return;
 				}
 				break;
+			case BREAK_ON_EXCEPTION_AT:
+				if(3<=cmd.argv.size())
+				{
+					auto farPtr=cmdutil::MakeFarPointer(cmd.argv[2],towns.CPU());
+					farPtr=towns.CPU().TranslateFarPointer(farPtr);
+					towns.debugger.BreakOnExceptionAt(farPtr);
+					std::cout << "Break on Exception At:" << farPtr.Format() << "\n";
+				}
+				else
+				{
+					PrintError(ERROR_TOO_FEW_ARGS);
+					return;
+				}
+				break;
 			case BREAK_ON_CVRAM_READ:
 				towns.physMem.FMRVRAMAccess.breakOnCVRAMRead=true;
 				break;
@@ -4155,10 +4174,26 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTownsCommon &towns,Command 
 			if(3<=cmd.argv.size())
 			{
 				towns.debugger.ClearBreakOnINT(cpputil::Xtoi(cmd.argv[2].c_str()));
+				std::cout << "Cleared break on INT " << cpputil::Ubtox(cpputil::Xtoi(cmd.argv[2].c_str())) << "H\n";
 			}
 			else
 			{
 				towns.debugger.ClearBreakOnINT();
+				std::cout << "Cleared all break on INT\n";
+			}
+			break;
+		case BREAK_ON_EXCEPTION_AT:
+			if(3<=cmd.argv.size())
+			{
+				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[2],towns.CPU());
+				farPtr=towns.CPU().TranslateFarPointer(farPtr);
+				towns.debugger.ClearBreakOnExceptionAt(farPtr);
+				std::cout << "Cleared break on Exception At:" << farPtr.Format() << "\n";
+			}
+			else
+			{
+				towns.debugger.ClearBreakOnExceptionAt();
+				std::cout << "Cleared all break on Exception\n";
 			}
 			break;
 		case BREAK_ON_FOPEN:

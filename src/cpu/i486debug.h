@@ -137,6 +137,7 @@ public:
 	VMBase *vmPtr=nullptr;
 
 	std::map <CS_EIP,BreakPointInfo> breakPoints;
+	std::map <CS_EIP,BreakPointInfo> breakOnExceptionAt;
 	BreakPointInfo lastBreakPointInfo;
 	bool breakOnCS[65536];
 	std::vector <bool> breakOnIORead,breakOnIOWrite;
@@ -374,6 +375,12 @@ public:
 	*/
 	void ClearBreakOnINT(void);
 	void ClearBreakOnINT(unsigned int INTNum);
+
+	/*! Break on exception at cs:eip.
+	*/
+	void BreakOnExceptionAt(i486DXCommon::FarPointer cseip);
+	void ClearBreakOnExceptionAt(i486DXCommon::FarPointer cseip);
+	void ClearBreakOnExceptionAt(void);
 
 	/*! Return formatted call-stack text.
 	*/
