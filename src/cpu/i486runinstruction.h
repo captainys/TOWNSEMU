@@ -3960,6 +3960,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 					auto cw=value.GetAsWord();
+					HANDLE_EXCEPTION_IF_ANY;
 					clocksPassed=state.fpuState.FLDCW(*this,cw);
 				}
 				break;
