@@ -67,9 +67,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 
 					if(INT_GENERAL_PROTECTION!=INTNum) // Prevent infinite recursion.
 					{
-						unsigned int Ibit=2;
-						unsigned int EXTbit=0; // 1 if external interrupt source.
-						RaiseException(EXCEPTION_GP,INTNum*8+Ibit+EXTbit); // EXT -> [1] 9-8 Error Code
+						RaiseException(EXCEPTION_GP,INTNum*8+EXCEPTION_GP_FLAG_IDT); // EXT -> [1] 9-8 Error Code
 						HandleException(false,mem,numInstBytesForCallStack);  // <- This will shoot INT 0BH
 					}
 
@@ -127,7 +125,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 			// If Software Interrupt && gateDPL<CPL, shoot GP exception.
 			if(true==SWI && gateDPL<CPL)
 			{
-				RaiseException(EXCEPTION_GP,INTNum*8); // What's +EXT?  ([1] pp.26-170)
+				RaiseException(EXCEPTION_GP,(INTNum*8)|EXCEPTION_GP_FLAG_IDT); // What's +EXT?  ([1] pp.26-170)
 				HandleException(false,mem,numInstBytesForCallStack);
 				return;
 			}
@@ -136,6 +134,8 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 			{
 				SegmentRegister newCS;
 				LoadSegmentRegister(newCS,desc.SEG,mem);
+
+				FIDELITY::AdjustNewCSDPLonINT(newCS,newCS.GetType(),CPL); // When 3==CPL, and new CS is CONFORMING, DPL must stay 3.
 
 				if(newCS.DPL<CPL)
 				{
@@ -161,7 +161,6 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 				{
 					Abort("Interrupt to lower-privilege level should raise exception.");
 				}
-
 
 				Push(mem,gateOperandSize,state.EFLAGS,state.CS().value,state.EIP+numInstBytesForReturn);
 				// Equivalent >>
@@ -189,6 +188,8 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 					state.CS().DPL=0;
 					// Just in case, set CPL to zero so that SS can be loaded.
 					// VM86 monitor is supposed to be ring 0.
+
+					// If Destination CS is not available, shoot GP.  To be done.
 
 					// INT instruction of [1].
 					auto TempEFLAGS=state.EFLAGS;
@@ -239,7 +240,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 
 			if(INT_GENERAL_PROTECTION!=INTNum) // Prevent infinite recursion.
 			{
-				RaiseException(EXCEPTION_GP,INTNum*8); // What's +EXT?  ([1] pp.26-170)
+				RaiseException(EXCEPTION_GP,(INTNum*8)|EXCEPTION_GP_FLAG_IDT); // What's +EXT?  ([1] pp.26-170)
 				HandleException(false,mem,numInstBytesForCallStack);
 			}
 

@@ -110,6 +110,8 @@ public:
 	inline static bool SLDT_STR_LLDT_LTR_VERR_VERW_Cause_INT6_InRealModeVM86Mode(i486DXCommon &){return false;}
 
 	inline static void OnLock(i486DXCommon &){}
+
+	inline static void AdjustNewCSDPLonINT(i486DXCommon::SegmentRegister &newCS,uint16_t newCSDescType,uint16_t CPL){};
 };
 
 class i486DXDefaultFidelityOperation : public i486DXLowFidelityOperation
@@ -930,6 +932,15 @@ public:
 	inline static void OnLock(i486DXCommon &cpu)
 	{
 		cpu.RaiseException(i486DXCommon::EXCEPTION_LOCK_MAYBE,0);
+	}
+
+	inline static void AdjustNewCSDPLonINT(i486DXCommon::SegmentRegister &newCS,uint16_t newCSDescType,uint16_t CPL)
+	{
+		// If INT from Ring 3, and if the new CS is a conforming CS, then new CS must stay CPL3.
+		if((i486DXCommon::SEGTYPE_CODE_CONFORMING_READABLE==newCSDescType || i486DXCommon::SEGTYPE_CODE_CONFORMING_EXECONLY==newCSDescType) && 3==CPL)
+		{
+			newCS.DPL=3;
+		}
 	}
 };
 

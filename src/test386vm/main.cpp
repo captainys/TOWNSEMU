@@ -180,10 +180,11 @@ int main(int ac,char *av[])
 			break;
 		}
 
-		// if(99999==ctr%100000)
-		// {
-		// 	std::cout << ctr << " " << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.GetEIP()) << std::endl;
-		// }
+		if(20<=vm.POSTCODE)
+		{
+		 	std::cout << ctr << " " << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.GetEIP()) << std::endl;
+			std::cout << cpputil::Uitox(cpu.GetEBX()) << " " << cpputil::Uitox(cpu.GetESP()) << "\n";
+		}
 
 		prevEIP=cpu.GetEIP();
 		prevCS=cpu.state.CS().value;
@@ -202,6 +203,10 @@ int main(int ac,char *av[])
 		if(true==cpu.state.exception)
 		{
 			cpu.Abort("Unhandled Exception.");
+		}
+		if(EIP==0xFE7F)
+		{
+			cpu.Abort("Abort");
 		}
 	}
 
