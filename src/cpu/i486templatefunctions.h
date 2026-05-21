@@ -125,7 +125,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 			// If Software Interrupt && gateDPL<CPL, shoot GP exception.
 			if(true==SWI && gateDPL<CPL)
 			{
-				RaiseException(EXCEPTION_GP,(INTNum*8)|EXCEPTION_GP_FLAG_IDT); // What's +EXT?  ([1] pp.26-170)
+				RaiseException(EXCEPTION_GP,(INTNum*8)|EXCEPTION_GP_FLAG_IDT); // If INTNum*8, always set IDT flag. (If no IDT, it should be attempted CS selector.)
 				HandleException(false,mem,numInstBytesForCallStack);
 				return;
 			}
@@ -240,7 +240,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 
 			if(INT_GENERAL_PROTECTION!=INTNum) // Prevent infinite recursion.
 			{
-				RaiseException(EXCEPTION_GP,(INTNum*8)|EXCEPTION_GP_FLAG_IDT); // What's +EXT?  ([1] pp.26-170)
+				RaiseException(EXCEPTION_GP,(INTNum*8)|EXCEPTION_GP_FLAG_IDT); // If INTNum*8, always set IDT flag. (If no IDT, it should be attempted CS selector.)
 				HandleException(false,mem,numInstBytesForCallStack);
 			}
 
