@@ -180,11 +180,23 @@ int main(int ac,char *av[])
 			break;
 		}
 
+
+		// Right now stopping in POSTCODE 20 Basic jump from user mode to kernel mode.     346 00005215 EA00000000D300 JMPF 00D3:0000 >>
 		if(20<=vm.POSTCODE)
 		{
-		 	std::cout << ctr << " " << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.GetEIP()) << std::endl;
+		 	std::cout << ctr << " " << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.GetEIP()) << " ";
 			std::cout << cpputil::Uitox(cpu.GetEBX()) << " " << cpputil::Uitox(cpu.GetESP()) << "\n";
 		}
+		if(EIP==0x5210)
+		{
+			triggered=true;
+		}
+		if(EIP==0xFE7F)
+		{
+			cpu.Abort("Abort");
+		}
+		// Right now stopping in POSTCODE 20 <<
+
 
 		prevEIP=cpu.GetEIP();
 		prevCS=cpu.state.CS().value;
@@ -203,10 +215,6 @@ int main(int ac,char *av[])
 		if(true==cpu.state.exception)
 		{
 			cpu.Abort("Unhandled Exception.");
-		}
-		if(EIP==0xFE7F)
-		{
-			cpu.Abort("Abort");
 		}
 	}
 

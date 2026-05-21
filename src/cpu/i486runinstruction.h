@@ -1112,6 +1112,8 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 		    mem);
 	}
 
+	unsigned int nextOpSize=opSize;
+
 	if(MODE_NATIVE!=state.mode) // <-> (true==IsInRealMode() || true==GetVM())
 	{
 		LoadSegmentRegister(state.CS(),newCS,mem);
@@ -1139,6 +1141,8 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 			{
 				auto ptr=GetCallGate(copyParamCount,newCS,mem);
 
+				nextOpSize=(DESC_TYPE_16BIT_CALL_GATE==descType ? 16 : 32);
+
 				if(0!=copyParamCount)
 				{
 					std::cout << "Call Gate with parameter count " << copyParamCount << " operand size " << opSize << std::endl;
@@ -1149,7 +1153,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 					debuggerPtr->ExternalBreak("Call Gate used with non-zero parameter count and 32-bit operand size.");
 				}
 
-				copyParamCount=copyParamCount*opSize/16;
+				copyParamCount=copyParamCount*nextOpSize/16;  // Looks like it is not operand size, but it is 16-bit call gate or 32-bit call gate.
 				uint32_t ESP=state.ESP();
 				if(16==GetStackAddressingSize())
 				{
@@ -1209,7 +1213,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 				LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCPL*8,mem),mem);
 				state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCPL*8,mem);
 			}
-			Push(mem,opSize,prevSS,prevESP);
+			Push(mem,nextOpSize,prevSS,prevESP);
 
 			for(int i=0; i<copyParamCount; ++i)
 			{
@@ -1218,7 +1222,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 		}
 	}
 
-	Push(mem,opSize,prevCS,returnEIP);
+	Push(mem,nextOpSize,prevCS,returnEIP);
 
 	FIDELITY::RestoreCSEIPIfException(*this,savedCSEIP);
 
@@ -7724,7 +7728,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			else
 			{
-				std::cout << "RETF to lower level with 0<IMM16." << std::endl;
+				std::cout << "RETF to lower level with IMM16=" << inst.EvalUimm16() << std::endl;
+				state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
 			}
 
 			if(16==state.CS().addressSize)
