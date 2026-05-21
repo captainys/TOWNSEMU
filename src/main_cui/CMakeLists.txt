@@ -5,7 +5,10 @@ set(TOWNSEMU_TEST ${CMAKE_CURRENT_SOURCE_DIR}/../../../TOWNSEMU_TEST)
 set(SYMTABLE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../symtables)
 set(TESTDATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../testdata)
 
-set(TARGET_EXE $<TARGET_NAME:${TARGET_NAME}>)
+set(TARGET_EXE $<TARGET_FILE:${TARGET_NAME}>)
+
+
+find_package(Python3 COMPONENTS Interpreter)
 
 
 add_executable(Tsugaru_CUI MACOSX_BUNDLE main.cpp ../resources/tsugaru_icon.rc)
@@ -1493,7 +1496,7 @@ add_test(
 add_test(
 	NAME NET_HTGET
 	COMMAND
-		python
+		Python3::Interpreter
 		"${CMAKE_SOURCE_DIR}/tests/http_client.py"
 		"${CMAKE_SOURCE_DIR}/tests/html"
 		"${TARGET_EXE}"
@@ -1512,13 +1515,14 @@ add_test(
 		"IF EXIST INDEX.HTML SUCCESS"
 		-CONSCMD
 		"FAIL"
+		-UNITTEST
 	)
 
 # Turned out, WATTCP/FTP accepts redirection.  Problem solved.
 add_test(
 	NAME NET_FTP
 	COMMAND
-		python
+		Python3::Interpreter
 		"${CMAKE_SOURCE_DIR}/tests/ftp_client.py"
 		"${CMAKE_SOURCE_DIR}/tests/html"
 		"${TARGET_EXE}"
@@ -1549,13 +1553,14 @@ add_test(
 		"IF EXIST INDEX.HTML SUCCESS"
 		-CONSCMD
 		"FAIL"
+		-UNITTEST
 	)
 
 # -PORTFWD 21 2122 option forwards TOWNS's port 21 to Host's 2122
 add_test(
 	NAME NET_FTPSVR
 	COMMAND
-		python
+		Python3::Interpreter
 		"${CMAKE_SOURCE_DIR}/tests/ftp_server.py"
 		"${CMAKE_BINARY_DIR}/tests"
 		"${TARGET_EXE}"
@@ -1571,4 +1576,5 @@ add_test(
 		F0
 		-CONSCMD
 		"FTPSRV"
+		-UNITTEST
 	)
