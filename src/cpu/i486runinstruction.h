@@ -7624,7 +7624,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 
 				// IRET to Virtual86 mode requires EFLAGS be loaded before the segment register.
-				auto CPL=state.CS().DPL;
+				auto prevCPL=state.CS().DPL;
 				LoadSegmentRegister(state.CS(),segRegValue,mem);
 				EIPIncrement=0;
 				if(true==enableCallStack)
@@ -7632,11 +7632,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					PopCallStack(state.CS().value,state.EIP);
 				}
 
-				if(state.CS().DPL>CPL && 0==(state.EFLAGS&EFLAGS_VIRTUAL86))
+				if(state.CS().DPL>prevCPL && 0==(state.EFLAGS&EFLAGS_VIRTUAL86))
 				{
-					// IRET to outer level
 					uint32_t TempESP,TempSS;
+
+					std::swap(prevCPL,state.CS().DPL); // SS may be inaccessible from CPL=3.  Restore previous CPL.
 					Pop(TempESP,TempSS,mem,inst.operandSize);
+					std::swap(state.CS().DPL,prevCPL); // Back to the new CPL.
+
 					LoadSegmentRegister(state.SS(),TempSS,mem);
 					state.ESP()=TempESP;
 
