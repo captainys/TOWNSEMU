@@ -23,7 +23,7 @@ public:
 	class SavedESPEBP
 	{
 	};
-	inline static void SaveESPEBP(SavedESPEBP &,uint8_t,uint32_t,uint32_t){}
+	inline static SavedESPEBP SaveESPEBP(uint8_t,uint32_t,uint32_t){SavedESPEBP saved;return saved;} // Should emit zero code.
 	constexpr bool HandleExceptionAndRestoreESPEBPIfAny(class i486DXCommon &,Memory &,uint32_t instNumBytes,SavedESPEBP) const{return false;}
 
 	class SavedECX
@@ -204,10 +204,12 @@ public:
 	public:
 		uint32_t ESP,EBP;
 	};
-	inline static void SaveESPEBP(SavedESPEBP &save,uint8_t,uint32_t ESP,uint32_t EBP)
+	inline static SavedESPEBP SaveESPEBP(uint8_t,uint32_t ESP,uint32_t EBP)
 	{
+		SavedESPEBP save;
 		save.ESP=ESP;
 		save.EBP=EBP;
+		return save;
 	}
 	inline static bool HandleExceptionAndRestoreESPEBPIfAny(i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem,uint32_t instNumBytes,SavedESPEBP ESP)
 	{

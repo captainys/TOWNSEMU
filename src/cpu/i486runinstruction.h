@@ -2104,8 +2104,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 	// Use the following as a pair.
 	#define SAVE_ESPEBP_BEFORE_ENTER \
-		typename FIDELITY::SavedESPEBP saved; \
-		FIDELITY::SaveESPEBP(saved,inst.addressSize,state.ESP(),state.EBP());
+		auto saved=FIDELITY::SaveESPEBP(inst.addressSize,state.ESP(),state.EBP());
 
 	#define HANDLE_EXCEPTION_ENTER \
 		if(true==fidelity.HandleExceptionAndRestoreESPEBPIfAny(*this,mem,inst.numBytes,saved)) \
