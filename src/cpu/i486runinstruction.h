@@ -7460,8 +7460,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			break;
 		}
 		{
-			typename FIDELITY::EFLAGS ioplBits;
-			FIDELITY::SaveEFLAGS(ioplBits,*this);
+			auto ioplBits=FIDELITY::SaveEFLAGS(*this);
 
 			// VM and RF flags must be preserved.
 			SAVE_ESP_BEFORE_PUSH_POP;
@@ -7519,8 +7518,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				SetIPorEIP(inst.operandSize,eip);
 				auto segRegValue=cs;
 
-				typename FIDELITY::EFLAGS ioplBits;
-				FIDELITY::SaveEFLAGS(ioplBits,*this);
+				auto ioplBits=FIDELITY::SaveEFLAGS(*this);
 				SetFLAGSorEFLAGS(inst.operandSize,eflags);
 				FIDELITY::RestoreIOPLBits(*this,ioplBits);
 				FIDELITY::RestoreIF(*this,ioplBits);
@@ -7572,8 +7570,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				SetIPorEIP(inst.operandSize,eip);
 				auto segRegValue=cs;
 
-				typename FIDELITY::EFLAGS ioplBits;
-				FIDELITY::SaveEFLAGS(ioplBits,*this);
+				auto ioplBits=FIDELITY::SaveEFLAGS(*this);
 				SetFLAGSorEFLAGS(inst.operandSize,eflags);
 
 				// The pseudo code in i486 Programmer's Reference Manual suggests that IRET in VM86 mode will cause #GP(0).

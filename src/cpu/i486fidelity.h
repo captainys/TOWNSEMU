@@ -96,12 +96,12 @@ public:
 	inline static void SetSegmentRegisterAttribBytes(uint16_t &attribBytes,uint16_t newAttrib){};
 
 	// Protect EFLAGS IOPL bits.
-	class EFLAGS
+	class SavedEFLAGS
 	{
 	};
-	inline static void SaveEFLAGS(EFLAGS &,const i486DXCommon &cpu){};
-	inline static void RestoreIOPLBits(i486DXCommon &cpu,const EFLAGS &){};
-	inline static void RestoreIF(i486DXCommon &cpu,const EFLAGS &){};
+	inline static SavedEFLAGS SaveEFLAGS(const i486DXCommon &cpu){SavedEFLAGS saved;return saved;};
+	inline static void RestoreIOPLBits(i486DXCommon &cpu,const SavedEFLAGS &){};
+	inline static void RestoreIF(i486DXCommon &cpu,const SavedEFLAGS &){};
 
 	inline static void BeforeRunOneInstruction(const i486DXCommon &,const i486DXCommon::Instruction &inst,i486Debugger *debuggerPtr){};
 	inline static void OnHandleException(const i486DXCommon &,i486Debugger *debuggerPtr){};
@@ -872,19 +872,18 @@ public:
 
 
 
-	class EFLAGS
+	class SavedEFLAGS
 	{
 	public:
 		uint32_t eflags;
 	};
-	inline static void SaveEFLAGS(EFLAGS &eflags,const i486DXCommon &cpu)
+	inline static SavedEFLAGS SaveEFLAGS(const i486DXCommon &cpu)
 	{
-		if(true!=cpu.IsInRealMode() && 0!=cpu.state.CS().DPL)
-		{
-			eflags.eflags=cpu.state.EFLAGS;
-		}
+		SavedEFLAGS eflags;
+		eflags.eflags=cpu.state.EFLAGS;
+		return eflags;
 	};
-	inline static void RestoreIOPLBits(i486DXCommon &cpu,const EFLAGS &eflags)
+	inline static void RestoreIOPLBits(i486DXCommon &cpu,const SavedEFLAGS &eflags)
 	{
 		if(true!=cpu.IsInRealMode() && 0!=cpu.state.CS().DPL)
 		{
@@ -892,7 +891,7 @@ public:
 			cpu.state.EFLAGS|=(eflags.eflags&i486DXCommon::EFLAGS_IOPL);
 		}
 	};
-	inline static void RestoreIF(i486DXCommon &cpu,const EFLAGS &eflags)
+	inline static void RestoreIF(i486DXCommon &cpu,const SavedEFLAGS &eflags)
 	{
 		if(true!=cpu.IsInRealMode() && cpu.GetIOPL()<cpu.state.CS().DPL)
 		{
