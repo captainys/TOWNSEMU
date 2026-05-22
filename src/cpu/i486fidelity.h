@@ -16,7 +16,7 @@ public:
 	class SavedESP
 	{
 	};
-	inline static void SaveESP(SavedESP &,uint8_t,uint32_t){}
+	inline static SavedESP SaveESP(uint8_t,uint32_t){SavedESP esp;return esp;} // Should emit zero code.
 	inline static void RestoreESPHighWord(uint8_t,uint32_t &,SavedESP){}
 	constexpr bool HandleExceptionAndRestoreESPIfAny(class i486DXCommon &,Memory &,uint32_t instNumBytes,SavedESP) const{return false;}
 
@@ -173,9 +173,11 @@ public:
 	public:
 		uint32_t ESP;
 	};
-	inline static void SaveESP(SavedESP &save,uint8_t,uint32_t ESP)
+	inline static SavedESP SaveESP(uint8_t,uint32_t ESP)
 	{
-		save.ESP=ESP;
+		SavedESP saved;
+		saved.ESP=ESP;
+		return saved;
 	}
 	inline void RestoreESPHighWord(uint8_t addressSize,uint32_t &ESP,SavedESP savedESP)
 	{

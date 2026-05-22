@@ -2092,8 +2092,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 	// Use the following as a pair.
 	#define SAVE_ESP_BEFORE_PUSH_POP \
-		typename FIDELITY::SavedESP savedESP; \
-		FIDELITY::SaveESP(savedESP,inst.addressSize,state.ESP());
+		auto savedESP=FIDELITY::SaveESP(inst.addressSize,state.ESP());
 
 	#define HANDLE_EXCEPTION_PUSH_POP \
 		if(true==fidelity.HandleExceptionAndRestoreESPIfAny(*this,mem,inst.numBytes,savedESP)) \
