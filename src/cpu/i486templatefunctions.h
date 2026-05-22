@@ -159,7 +159,12 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 				}
 				else if(CPL<newCS.DPL)
 				{
-					Abort("Interrupt to lower-privilege level should raise exception.");
+					// If Conforming CS, above AdjustNewCSDPLonINT should make CPL==newCS.DPL.
+					// If this condition is true, then, it means the new CS is not a conforming CS.
+					std::cout << "Interrupt to lower-privilege level.\n";
+					RaiseException(EXCEPTION_GP,desc.SEG);
+					HandleException(false,mem,numInstBytesForCallStack);
+					return;
 				}
 
 				Push(mem,gateOperandSize,state.EFLAGS,state.CS().value,state.EIP+numInstBytesForReturn);
