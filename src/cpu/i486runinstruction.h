@@ -2123,8 +2123,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 	// Use the following as a pair.
 	#define SAVE_ECX_BEFORE_STRINGOP \
-		typename FIDELITY::SavedECX savedECX; \
-		FIDELITY::SaveECX(savedECX,state.ECX());
+		auto savedECX=FIDELITY::SaveECX(state.ECX());
 
 	#define HANDLE_EXCEPTION_STRINGOP \
 		if(true==fidelity.HandleExceptionAndRestoreECXIfAny(*this,mem,inst.numBytes,savedECX)) \
@@ -2135,7 +2134,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 
 	#define UPDATED_SAVED_ECX_AFTER_STRINGOP \
-		FIDELITY::SaveECX(savedECX,state.ECX());
+		savedECX=FIDELITY::SaveECX(state.ECX());
 
 	#define FPU_TRAP \
 		if(true!=state.fpuState.enabled) \

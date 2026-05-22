@@ -29,7 +29,7 @@ public:
 	class SavedECX
 	{
 	};
-	inline static void SaveECX(SavedECX &,uint32_t){}
+	inline static SavedECX SaveECX(uint32_t){SavedECX saved;return saved;} // Should emit zero code.
 	constexpr bool HandleExceptionAndRestoreECXIfAny(class i486DXCommon &,Memory &,uint32_t instNumBytes,const SavedECX) const{return false;}
 
 	class SavedCSEIP
@@ -229,9 +229,11 @@ public:
 	public:
 		uint32_t ECX;
 	};
-	inline static void SaveECX(SavedECX &save,uint32_t ECX)
+	inline static SavedECX SaveECX(uint32_t ECX)
 	{
+		SavedECX save;
 		save.ECX=ECX;
+		return save;
 	}
 	inline bool HandleExceptionAndRestoreECXIfAny(i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem,uint32_t instNumBytes,const SavedECX ECX)
 	{
