@@ -7692,6 +7692,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				clocksPassed=18;
 			}
 			auto prevDPL=state.CS().DPL;
+			auto prevCS=state.CS();
 
 			uint32_t eip,cs;
 			SAVE_ESP_BEFORE_PUSH_POP;
@@ -7700,6 +7701,13 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 			LoadSegmentRegister(state.CS(),cs,mem);
 			HANDLE_EXCEPTION_PUSH_POP;
+
+			if(true==FIDELITY::CheckJMPFtoHigherPrivilege(state.CS(),prevCS))
+			{
+				state.CS()=prevCS; // Roll back.
+				RaiseException(EXCEPTION_GP,cs);
+				HANDLE_EXCEPTION_PUSH_POP;
+			}
 
 			SetIPorEIP(inst.operandSize,eip);
 			EIPIncrement=0;
