@@ -194,8 +194,6 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 					// Just in case, set CPL to zero so that SS can be loaded.
 					// VM86 monitor is supposed to be ring 0.
 
-					// If Destination CS is not available, shoot GP.  To be done.
-
 					// INT instruction of [1].
 					auto TempEFLAGS=state.EFLAGS;
 					auto TempSS=state.SS().value;
@@ -206,10 +204,25 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 
 					// if(fromInterruptGate)
 					{
-						state.EFLAGS&=~EFLAGS_INT_ENABLE;
+						state.EFLAGS&=~EFLAGS_INT_ENABLE; // Now can load CS.
 					}
 					// Is TR always 32-bit address size?
 					state.CS().DPL=0; // Change to CPL=0 before loading SS.
+
+					// If Destination CS is not available, shoot GP.  To be done.
+
+					i486DXCommon::SegmentRegister newCS;
+					LoadSegmentRegister(newCS,desc.SEG,mem);
+					// Destination needs to be non-conforming DPL 0.
+					if(0!=newCS.DPL || (SEGTYPE_CODE_NONCONFORMING_EXECONLY!=newCS.GetType() && SEGTYPE_CODE_NONCONFORMING_READABLE!=newCS.GetType()))
+					{
+						state.EFLAGS=TempEFLAGS; // Restore EFLAGS before raising exception.
+						state.CS().DPL=3; // Restore DPL before raising exception.
+						RaiseException(EXCEPTION_GP,desc.SEG);
+						HandleException(false,mem,numInstBytesForCallStack);
+						return;
+					}
+
 					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0,mem),mem);
 					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0,mem);
 
@@ -234,7 +247,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 					NullifySegmentRegister(state.GS());
 
 					SetIPorEIP(gateOperandSize,desc.OFFSET);
-					LoadSegmentRegister(state.CS(),desc.SEG,mem);
+					state.CS()=newCS;
 				}
 			}
 		}

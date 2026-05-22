@@ -36,6 +36,7 @@ public:
 	{
 	};
 	inline static SavedCSEIP SaveCSEIP(const class i486DXCommon &){SavedCSEIP cseip;return cseip;} // Should emit zero code.
+	inline static void RestoreCSEIP(class i486DXCommon &,const SavedCSEIP &){}
 	inline static void RestoreCSEIPIfException(class i486DXCommon &,const SavedCSEIP &){}
 
 	inline static void Sync_CS_RPL_to_DPL(class i486DXCommon &){}
