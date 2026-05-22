@@ -1191,7 +1191,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 			break;
 		case SEGTYPE_CODE_NONCONFORMING_EXECONLY: //0b11000, // Code Non-Conforming Execute-Only
 		case SEGTYPE_CODE_NONCONFORMING_READABLE: //0b11010, // Code Non-Conforming Readable
-			if(true==FIDELITY::CheckJumptoHigherPrivilege(state.CS(),savedCSEIP))
+			if(true==FIDELITY::CheckJumpToHigherPrivilege(state.CS(),savedCSEIP))
 			{
 				newCS&=0xFFFC;
 				newCS|=state.CS().DPL;
@@ -1260,7 +1260,8 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 		FIDELITY fidelity;
 
 		auto prevCPL=state.CS().DPL;
-		auto prevCS=state.CS();
+		auto prevCS=state.CS().value;
+		auto prevCSEIP=FIDELITY::SaveCSEIP(*this);
 
 		LoadSegmentRegister(state.CS(),newCS,mem);
 		if(fidelity.HandleExceptionIfAny(*this,mem,instNumBytes))
@@ -1282,7 +1283,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 			Abort("JMPF to Task not supported.");
 			break;
 		case DESCTYPE_AVAILABLE_386_TSS: //               9,
-			SwitchTaskToTSS(mem,instNumBytes,prevCS.value,state.CS(),false);
+			SwitchTaskToTSS(mem,instNumBytes,prevCS,state.CS(),false);
 			break;
 
 		case SEGTYPE_CODE_CONFORMING_EXECONLY: //   0b11100, // Code Conforming     Execute-Only
@@ -1298,11 +1299,11 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 			break;
 		case SEGTYPE_CODE_NONCONFORMING_EXECONLY: //0b11000, // Code Non-Conforming Execute-Only
 		case SEGTYPE_CODE_NONCONFORMING_READABLE: //0b11010, // Code Non-Conforming Readable
-			if(true==FIDELITY::CheckJMPFtoHigherPrivilege(state.CS(),prevCS))
+			if(true==FIDELITY::CheckJumpToHigherPrivilege(state.CS(),prevCSEIP))
 			{
 				newCS&=0xFFFC;
 				newCS|=state.CS().DPL;
-				state.CS()=prevCS; // Roll back.
+				FIDELITY::RestoreCSEIP(*this,prevCSEIP);
 				RaiseException(EXCEPTION_GP,newCS);
 				HandleException(true,mem,instNumBytes);
 			}
