@@ -7694,7 +7694,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				clocksPassed=18;
 			}
 			auto prevDPL=state.CS().DPL;
-			auto prevCS=state.CS();
+			auto prevCSEIP=FIDELITY::SaveCSEIP(*this);
 
 			uint32_t eip,cs;
 			SAVE_ESP_BEFORE_PUSH_POP;
@@ -7704,9 +7704,9 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			LoadSegmentRegister(state.CS(),cs,mem);
 			HANDLE_EXCEPTION_PUSH_POP;
 
-			if(true==FIDELITY::CheckJMPFtoHigherPrivilege(state.CS(),prevCS))
+			if(true==FIDELITY::CheckJumpToHigherPrivilege(state.CS(),prevCSEIP))
 			{
-				state.CS()=prevCS; // Roll back.
+				FIDELITY::RestoreCSEIP(*this,prevCSEIP);
 				RaiseException(EXCEPTION_GP,cs);
 				HANDLE_EXCEPTION_PUSH_POP;
 			}
@@ -7752,7 +7752,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				clocksPassed=17;
 			}
 			auto prevDPL=state.CS().DPL;
-			auto prevCS=state.CS();
+			auto prevCSEIP=FIDELITY::SaveCSEIP(*this);
 
 			SAVE_ESP_BEFORE_PUSH_POP;
 			auto EIP=Pop(mem,inst.operandSize);
@@ -7764,9 +7764,9 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			LoadSegmentRegister(state.CS(),cs,mem);
 			HANDLE_EXCEPTION_PUSH_POP;
 
-			if(true==FIDELITY::CheckJMPFtoHigherPrivilege(state.CS(),prevCS))
+			if(true==FIDELITY::CheckJumpToHigherPrivilege(state.CS(),prevCSEIP))
 			{
-				state.CS()=prevCS; // Roll back.
+				FIDELITY::RestoreCSEIP(*this,prevCSEIP);
 				RaiseException(EXCEPTION_GP,cs);
 				HANDLE_EXCEPTION_PUSH_POP;
 			}

@@ -113,7 +113,6 @@ public:
 
 	inline static void AdjustNewCSDPLonINT(i486DXCommon::SegmentRegister &newCS,uint16_t newCSDescType,uint16_t CPL){};
 
-	inline static bool CheckJMPFtoHigherPrivilege(i486DXCommon::SegmentRegister &newCS,i486DXCommon::SegmentRegister &prevCS){return false;}
 	inline static bool CheckJumpToHigherPrivilege(i486DXCommon::SegmentRegister &newCS,SavedCSEIP &prevCSEIP){return false;}
 };
 
@@ -953,10 +952,6 @@ public:
 		}
 	}
 
-	inline static bool CheckJMPFtoHigherPrivilege(i486DXCommon::SegmentRegister &newCS,i486DXCommon::SegmentRegister &prevCS)
-	{
-		return newCS.DPL<prevCS.DPL;
-	}
 	inline static bool CheckJumpToHigherPrivilege(i486DXCommon::SegmentRegister &newCS,SavedCSEIP &prevCSEIP)
 	{
 		return newCS.DPL<prevCSEIP.CS.DPL;
