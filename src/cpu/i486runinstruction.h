@@ -5038,6 +5038,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		else
 		{
 			RaiseException(EXCEPTION_GP,0);
+			HandleException(false,mem,inst.numBytes);
+			EIPIncrement=0;
 		}
 		clocksPassed=4;
 		break;

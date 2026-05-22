@@ -186,22 +186,22 @@ int main(int ac,char *av[])
 		auto EIP=cpu.GetEIP();
 
 		// Right now stopping in POSTCODE 20 Basic jump from user mode to kernel mode.     346 00005215 EA00000000D300 JMPF 00D3:0000 >>
-		if(0x21<=vm.POSTCODE)
-		{
-			i486DXCommon::InstructionAndOperand instOp;
-			MemoryAccess::ConstMemoryWindow emptyMemWin;
-
-			cpu.DebugFetchInstruction(emptyMemWin,instOp,cpu.state.CS(),cpu.GetEIP(),*memPtr);
-			auto &inst=instOp.inst;
-			auto &op1=instOp.op1;
-			auto &op2=instOp.op2;
-			auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.GetEIP(),*memPtr,debuggerPtr->GetSymTable(),debuggerPtr->GetIOTable());
-			std::cout << disasm << std::endl;
-		}
-		if(EIP==0x634C)
-		{
-			triggered=true;
-		}
+		// if(0x21<=vm.POSTCODE)
+		// {
+		// 	i486DXCommon::InstructionAndOperand instOp;
+		// 	MemoryAccess::ConstMemoryWindow emptyMemWin;
+ 
+		// 	cpu.DebugFetchInstruction(emptyMemWin,instOp,cpu.state.CS(),cpu.GetEIP(),*memPtr);
+		// 	auto &inst=instOp.inst;
+		// 	auto &op1=instOp.op1;
+		// 	auto &op2=instOp.op2;
+		// 	auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.GetEIP(),*memPtr,debuggerPtr->GetSymTable(),debuggerPtr->GetIOTable());
+		// 	std::cout << disasm << std::endl;
+		// }
+		// if(EIP==0x634C)
+		// {
+		// 	triggered=true;
+		// }
 		// if(EIP==0xFE7F)
 		// {
 		// 	cpu.Abort("Abort");
