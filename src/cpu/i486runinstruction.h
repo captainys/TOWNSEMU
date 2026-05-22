@@ -5466,11 +5466,13 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		break;
 	case I486_RENUMBER_INT://        0xCD,
 		clocksPassed=(IsInRealMode() ? 30 : 44);
-		// if(true==fidelity.IOPLExceptionInVM86Mode(*this,EXCEPTION_GP,mem,inst.numBytes))
-		// {
-		// 	EIPIncrement=0;
-		// 	break;
-		// }
+		if(true==fidelity.IOPLExceptionInVM86Mode(*this,EXCEPTION_GP,mem,inst.numBytes))
+		{
+			// 80386 manual tells: #GP(0) fault if IOPL is less than 3, for INT only, to permit emulation; Interrupt 3 (0CCH) generates Interrupt 3; INTO generates Interrupt 4 if the overflow flag equals 1 
+			// So I presume this check is unnecessary for INT3 and INTO.
+			EIPIncrement=0;
+			break;
+		}
 		Interrupt(inst.EvalUimm8(),mem,2,2,true);
 		EIPIncrement=0;
 		break;

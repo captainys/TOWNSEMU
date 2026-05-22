@@ -198,10 +198,10 @@ int main(int ac,char *av[])
 			auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.GetEIP(),*memPtr,debuggerPtr->GetSymTable(),debuggerPtr->GetIOTable());
 			std::cout << disasm << std::endl;
 		}
-		// if(EIP==0x5210)
-		// {
-		// 	triggered=true;
-		// }
+		if(EIP==0x60EE)
+		{
+			triggered=true;
+		}
 		// if(EIP==0xFE7F)
 		// {
 		// 	cpu.Abort("Abort");
