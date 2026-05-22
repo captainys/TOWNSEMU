@@ -7753,6 +7753,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				clocksPassed=17;
 			}
 			auto prevDPL=state.CS().DPL;
+			auto prevCS=state.CS();
 
 			SAVE_ESP_BEFORE_PUSH_POP;
 			auto EIP=Pop(mem,inst.operandSize);
@@ -7764,6 +7765,13 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			LoadSegmentRegister(state.CS(),cs,mem);
 			HANDLE_EXCEPTION_PUSH_POP;
 
+			if(true==FIDELITY::CheckJMPFtoHigherPrivilege(state.CS(),prevCS))
+			{
+				state.CS()=prevCS; // Roll back.
+				RaiseException(EXCEPTION_GP,cs);
+				HANDLE_EXCEPTION_PUSH_POP;
+			}
+
 			SetIPorEIP(inst.operandSize,EIP);
 			EIPIncrement=0;
 			if(enableCallStack)
@@ -7772,7 +7780,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			if(true!=fidelity.CheckRETFtoOuterLevel(*this,mem,inst.operandSize,prevDPL,inst.EvalUimm16()))
 			{
-				// true means IMM16 is already consumed in CheckRETFtoOuterLevel.
+				// true means IMM16 is already consumed in CheckRETFtoOuterLevel.  That's what I thought, but maybe not.
 				state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
 			}
 			else
