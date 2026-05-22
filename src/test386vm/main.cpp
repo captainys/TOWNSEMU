@@ -180,6 +180,10 @@ int main(int ac,char *av[])
 			break;
 		}
 
+		prevEIP=cpu.GetEIP();
+		prevCS=cpu.state.CS().value;
+
+		auto EIP=cpu.GetEIP();
 
 		// Right now stopping in POSTCODE 20 Basic jump from user mode to kernel mode.     346 00005215 EA00000000D300 JMPF 00D3:0000 >>
 		if(20<=vm.POSTCODE)
@@ -196,12 +200,7 @@ int main(int ac,char *av[])
 			cpu.Abort("Abort");
 		}
 		// Right now stopping in POSTCODE 20 <<
-
-
-		prevEIP=cpu.GetEIP();
-		prevCS=cpu.state.CS().value;
-
-		auto EIP=cpu.GetEIP();
+		
 		auto clocksPassed=cpu.RunOneInstruction(*memPtr,*io);
 		if(EIP==cpu.GetEIP())
 		{

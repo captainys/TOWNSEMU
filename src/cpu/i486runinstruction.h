@@ -1126,6 +1126,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 		uint32_t copyParams[64]; // Maximum should be 31 parameters.
 
 		auto prevCPL=state.CS().DPL;
+		auto prevCS=state.CS();
 
 		LoadSegmentRegister(state.CS(),newCS,mem);
 		if(fidelity.HandleExceptionIfAny(*this,mem,instNumBytes))
@@ -1179,10 +1180,29 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 		case DESCTYPE_BUSY_386_TSS: //                 0x0B,
 			Abort("Call to Task not supported.");
 			break;
-		case SEGTYPE_CODE_NONCONFORMING_EXECONLY: //0b11000, // Code Non-Conforming Execute-Only
-		case SEGTYPE_CODE_NONCONFORMING_READABLE: //0b11010, // Code Non-Conforming Readable
 		case SEGTYPE_CODE_CONFORMING_EXECONLY: //   0b11100, // Code Conforming     Execute-Only
 		case SEGTYPE_CODE_CONFORMING_READABLE: //   0b11110, // Code Conforming     Readable
+			{
+				// Prob I also have to copy prev DPL to new CS and adjust RPL.
+				state.EIP=newEIP;
+				if(16==opSize)
+				{
+					state.EIP&=0xFFFF;
+				}
+			}
+			break;
+		case SEGTYPE_CODE_NONCONFORMING_EXECONLY: //0b11000, // Code Non-Conforming Execute-Only
+		case SEGTYPE_CODE_NONCONFORMING_READABLE: //0b11010, // Code Non-Conforming Readable
+			if(true==FIDELITY::CheckJMPFtoHigherPrivilege(state.CS(),prevCS))
+			{
+				newCS&=0xFFFC;
+				newCS|=state.CS().DPL;
+				state.CS()=prevCS; // Roll back.
+				RaiseException(EXCEPTION_GP,newCS);
+				HandleException(true,mem,instNumBytes);
+				return defClocks;
+			}
+			else
 			{
 				state.EIP=newEIP;
 				if(16==opSize)
@@ -1242,7 +1262,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 		FIDELITY fidelity;
 
 		auto prevCPL=state.CS().DPL;
-		auto prevCS=state.CS().value;
+		auto prevCS=state.CS();
 
 		LoadSegmentRegister(state.CS(),newCS,mem);
 		if(fidelity.HandleExceptionIfAny(*this,mem,instNumBytes))
@@ -1264,13 +1284,31 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 			Abort("JMPF to Task not supported.");
 			break;
 		case DESCTYPE_AVAILABLE_386_TSS: //               9,
-			SwitchTaskToTSS(mem,instNumBytes,prevCS,state.CS(),false);
+			SwitchTaskToTSS(mem,instNumBytes,prevCS.value,state.CS(),false);
 			break;
 
-		case SEGTYPE_CODE_NONCONFORMING_EXECONLY: //0b11000, // Code Non-Conforming Execute-Only
-		case SEGTYPE_CODE_NONCONFORMING_READABLE: //0b11010, // Code Non-Conforming Readable
 		case SEGTYPE_CODE_CONFORMING_EXECONLY: //   0b11100, // Code Conforming     Execute-Only
 		case SEGTYPE_CODE_CONFORMING_READABLE: //   0b11110, // Code Conforming     Readable
+				// Prob I also have to copy prev DPL to new CS and adjust RPL.
+			{
+				state.EIP=newEIP;
+				if(16==opSize)
+				{
+					state.EIP&=0xFFFF;
+				}
+			}
+			break;
+		case SEGTYPE_CODE_NONCONFORMING_EXECONLY: //0b11000, // Code Non-Conforming Execute-Only
+		case SEGTYPE_CODE_NONCONFORMING_READABLE: //0b11010, // Code Non-Conforming Readable
+			if(true==FIDELITY::CheckJMPFtoHigherPrivilege(state.CS(),prevCS))
+			{
+				newCS&=0xFFFC;
+				newCS|=state.CS().DPL;
+				state.CS()=prevCS; // Roll back.
+				RaiseException(EXCEPTION_GP,newCS);
+				HandleException(true,mem,instNumBytes);
+			}
+			else
 			{
 				state.EIP=newEIP;
 				if(16==opSize)

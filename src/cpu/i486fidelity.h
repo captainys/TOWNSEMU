@@ -112,6 +112,8 @@ public:
 	inline static void OnLock(i486DXCommon &){}
 
 	inline static void AdjustNewCSDPLonINT(i486DXCommon::SegmentRegister &newCS,uint16_t newCSDescType,uint16_t CPL){};
+
+	inline static bool CheckJMPFtoHigherPrivilege(i486DXCommon::SegmentRegister &newCS,i486DXCommon::SegmentRegister &prevCS){return false;}
 };
 
 class i486DXDefaultFidelityOperation : public i486DXLowFidelityOperation
@@ -941,6 +943,11 @@ public:
 		{
 			newCS.DPL=3;
 		}
+	}
+
+	inline static bool CheckJMPFtoHigherPrivilege(i486DXCommon::SegmentRegister &newCS,i486DXCommon::SegmentRegister &prevCS)
+	{
+		return newCS.DPL<prevCS.DPL;
 	}
 };
 
