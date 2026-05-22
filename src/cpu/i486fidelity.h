@@ -35,7 +35,7 @@ public:
 	class SavedCSEIP
 	{
 	};
-	inline static void SaveCSEIP(SavedCSEIP &,const class i486DXCommon &){}
+	inline static SavedCSEIP SaveCSEIP(const class i486DXCommon &){SavedCSEIP cseip;return cseip;} // Should emit zero code.
 	inline static void RestoreCSEIPIfException(class i486DXCommon &,const SavedCSEIP &){}
 
 	inline static void Sync_CS_RPL_to_DPL(class i486DXCommon &){}
@@ -114,6 +114,7 @@ public:
 	inline static void AdjustNewCSDPLonINT(i486DXCommon::SegmentRegister &newCS,uint16_t newCSDescType,uint16_t CPL){};
 
 	inline static bool CheckJMPFtoHigherPrivilege(i486DXCommon::SegmentRegister &newCS,i486DXCommon::SegmentRegister &prevCS){return false;}
+	inline static bool CheckJumptoHigherPrivilege(i486DXCommon::SegmentRegister &newCS,SavedCSEIP &prevCSEIP){return false;}
 };
 
 class i486DXDefaultFidelityOperation : public i486DXLowFidelityOperation
@@ -246,10 +247,17 @@ public:
 		i486DXCommon::SegmentRegister CS;
 		uint32_t EIP;
 	};
-	inline static void SaveCSEIP(SavedCSEIP &saved,const class i486DXCommon &cpu)
+	inline static SavedCSEIP SaveCSEIP(const class i486DXCommon &cpu)
 	{
+		SavedCSEIP saved;
 		saved.CS=cpu.state.CS();
 		saved.EIP=cpu.state.EIP;
+		return saved;
+	}
+	inline static void RestoreCSEIP(class i486DXCommon &cpu,const SavedCSEIP &saved)
+	{
+		cpu.state.CS()=saved.CS;
+		cpu.state.EIP=saved.EIP;
 	}
 	inline static void RestoreCSEIPIfException(class i486DXCommon &cpu,const SavedCSEIP &saved)
 	{
@@ -948,6 +956,10 @@ public:
 	inline static bool CheckJMPFtoHigherPrivilege(i486DXCommon::SegmentRegister &newCS,i486DXCommon::SegmentRegister &prevCS)
 	{
 		return newCS.DPL<prevCS.DPL;
+	}
+	inline static bool CheckJumptoHigherPrivilege(i486DXCommon::SegmentRegister &newCS,SavedCSEIP &prevCSEIP)
+	{
+		return newCS.DPL<prevCSEIP.CS.DPL;
 	}
 };
 

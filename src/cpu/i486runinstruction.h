@@ -1096,8 +1096,7 @@ inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointer16or32(
 template <class FIDELITY>
 inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks)
 {
-	typename FIDELITY::SavedCSEIP savedCSEIP;
-	FIDELITY::SaveCSEIP(savedCSEIP,*this);
+	auto savedCSEIP=FIDELITY::SaveCSEIP(*this);
 
 	auto prevCS=state.CS().value;
 	auto returnEIP=state.EIP+instNumBytes;
@@ -1126,7 +1125,6 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 		uint32_t copyParams[64]; // Maximum should be 31 parameters.
 
 		auto prevCPL=state.CS().DPL;
-		auto prevCS=state.CS();
 
 		LoadSegmentRegister(state.CS(),newCS,mem);
 		if(fidelity.HandleExceptionIfAny(*this,mem,instNumBytes))
@@ -1193,11 +1191,11 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 			break;
 		case SEGTYPE_CODE_NONCONFORMING_EXECONLY: //0b11000, // Code Non-Conforming Execute-Only
 		case SEGTYPE_CODE_NONCONFORMING_READABLE: //0b11010, // Code Non-Conforming Readable
-			if(true==FIDELITY::CheckJMPFtoHigherPrivilege(state.CS(),prevCS))
+			if(true==FIDELITY::CheckJumptoHigherPrivilege(state.CS(),savedCSEIP))
 			{
 				newCS&=0xFFFC;
 				newCS|=state.CS().DPL;
-				state.CS()=prevCS; // Roll back.
+				FIDELITY::RestoreCSEIP(*this,savedCSEIP);
 				RaiseException(EXCEPTION_GP,newCS);
 				HandleException(true,mem,instNumBytes);
 				return defClocks;
