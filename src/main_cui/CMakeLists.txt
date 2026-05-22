@@ -1578,3 +1578,37 @@ add_test(
 		"FTPSRV"
 		-UNITTEST
 	)
+
+
+
+add_test(
+	NAME WINDOWS95_IE4_FINAL_SETUP_TAKES_10_MINUTES
+	COMMAND
+		${TARGET_NAME}
+		"${TOWNSEMU_TEST}/ROM_MX"
+		-HIGHFIDELITY
+		-USEFPU
+		-COPYFILE
+		"${TOWNSEMU_TEST}/Win95.IE4/Win95.IE4.h0"
+		"${CMAKE_BINARY_DIR}/Win95.h0"
+		-COPYFILE
+		"${TOWNSEMU_TEST}/Win95.IE4/CMOS.IE4.bin"
+		"${CMAKE_BINARY_DIR}/COMS.IE4.bin"
+		-HD0
+		"${CMAKE_BINARY_DIR}/Win95.h0"
+		-CMOS
+		"${CMAKE_BINARY_DIR}/COMS.IE4.bin"
+		-DONTAUTOSAVECMOS
+		-DEBUG
+		-UNITTEST
+		-FASTSCSI
+		-FREQ 80
+		-MEMSIZE
+		64
+		-BOOTKEY
+		H0
+		# If everything goes well, it will reach TGMOUSE, which will start writing mouse coordinate to I/O 2387H
+		# 2386H is also used by TGMOUSE.
+		-POWEROFFONIOW
+		2387H
+)
