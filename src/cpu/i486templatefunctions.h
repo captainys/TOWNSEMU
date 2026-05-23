@@ -226,9 +226,9 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0,mem),mem);
 					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0,mem);
 
-					Push(mem,32,state.GS().value,state.FS().value,state.DS().value);
-					Push(mem,32,state.ES().value,TempSS,TempESP);
-					Push(mem,32,TempEFLAGS,state.CS().value,state.EIP+numInstBytesForReturn);
+					Push(mem,gateOperandSize,state.GS().value,state.FS().value,state.DS().value);
+					Push(mem,gateOperandSize,state.ES().value,TempSS,TempESP);
+					Push(mem,gateOperandSize,TempEFLAGS,state.CS().value,state.EIP+numInstBytesForReturn);
 					// Equivalent>>
 					// Push32(mem,state.GS().value);
 					// Push32(mem,state.FS().value);

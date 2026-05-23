@@ -55,10 +55,18 @@ public:
 class ROMAccess : public MemoryAccess
 {
 public:
-	uint8_t ROM[65536];
+	bool size128K=false;
+	uint8_t ROM[1024*128];
 	virtual unsigned int FetchByte(unsigned int physAddr) const
 	{
-		return ROM[(physAddr&0xFFFF)];
+		if(true==size128K)
+		{
+			return ROM[(physAddr&0x1FFFF)];
+		}
+		else
+		{
+			return ROM[(physAddr&0xFFFF)];
+		}
 	}
 	virtual void StoreByte(unsigned int,unsigned char)
 	{
@@ -96,9 +104,6 @@ int main(int ac,char *av[])
 	io->AddDevice(&vm,IO_LPT2);
 
 
-	memPtr->AddAccess(RAM.get(),0x00000000,0x000EFFFF);
-	memPtr->AddAccess(ROM.get(),0x000F0000,0x000FFFFF);
-	memPtr->AddAccess(ROM.get(),0xFFFF0000,0xFFFFFFFF);
 
 	printf("This VM is for runnint TEST386.\n");
 	printf("test386.bin was built from the source https://github.com/barotto/test386.asm.git\n");
@@ -110,12 +115,25 @@ int main(int ac,char *av[])
 	}
 
 	auto rom=cpputil::ReadBinaryFile(av[1]);
-	if(65536!=rom.size())
+	if(65536==rom.size())
+	{
+		memPtr->AddAccess(RAM.get(),0x00000000,0x000EFFFF);
+		memPtr->AddAccess(ROM.get(),0x000F0000,0x000FFFFF);
+		memPtr->AddAccess(ROM.get(),0xFFFF0000,0xFFFFFFFF);
+	}
+	else if(128*1024==rom.size())
+	{
+		ROM->size128K=true;
+		memPtr->AddAccess(RAM.get(),0x00000000,0x000DFFFF);
+		memPtr->AddAccess(ROM.get(),0x000E0000,0x000FFFFF);
+		memPtr->AddAccess(ROM.get(),0xFFFE0000,0xFFFFFFFF);
+	}
+	else
 	{
 		printf("ROM size error.\n");
 		return 0;
 	}
-	for(int i=0; i<65536; ++i)
+	for(int i=0; i<rom.size(); ++i)
 	{
 		ROM->ROM[i]=rom[i];
 	}
@@ -186,19 +204,19 @@ int main(int ac,char *av[])
 		auto EIP=cpu.GetEIP();
 
 		// Right now stopping in POSTCODE 20 Basic jump from user mode to kernel mode.     346 00005215 EA00000000D300 JMPF 00D3:0000 >>
-		// if(0x21<=vm.POSTCODE)
-		// {
-		// 	i486DXCommon::InstructionAndOperand instOp;
-		// 	MemoryAccess::ConstMemoryWindow emptyMemWin;
+		if(0x22==vm.POSTCODE)
+		{
+			i486DXCommon::InstructionAndOperand instOp;
+			MemoryAccess::ConstMemoryWindow emptyMemWin;
  
-		// 	cpu.DebugFetchInstruction(emptyMemWin,instOp,cpu.state.CS(),cpu.GetEIP(),*memPtr);
-		// 	auto &inst=instOp.inst;
-		// 	auto &op1=instOp.op1;
-		// 	auto &op2=instOp.op2;
-		// 	auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.GetEIP(),*memPtr,debuggerPtr->GetSymTable(),debuggerPtr->GetIOTable());
-		// 	std::cout << disasm << std::endl;
-		// }
-		// if(EIP==0x634C)
+			cpu.DebugFetchInstruction(emptyMemWin,instOp,cpu.state.CS(),cpu.GetEIP(),*memPtr);
+			auto &inst=instOp.inst;
+			auto &op1=instOp.op1;
+			auto &op2=instOp.op2;
+			auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.GetEIP(),*memPtr,debuggerPtr->GetSymTable(),debuggerPtr->GetIOTable());
+			std::cout << disasm << std::endl;
+		}
+		// if(EIP==0x6682)
 		// {
 		// 	triggered=true;
 		// }
