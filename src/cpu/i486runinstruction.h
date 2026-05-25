@@ -8180,7 +8180,36 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			{
 				// I need to correct implementation of task behavior to support EMM386.EXE
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-				LoadTaskRegister(value.GetAsDword(),mem);
+				auto selector=value.GetAsDword();
+
+				if(selector&4) // TI
+				{
+					Abort("TR cannot be in the LDT. Currently not handling it.");
+				}
+
+				uint32_t addr=state.GDTR.linearBaseAddr+(selector&0xFFF8)+5; // FFF8 for clearing TI, RPL bits.  Offset 5 is type byte.
+				addr=LinearAddressToPhysicalAddressWrite(addr,mem);
+				if(true==state.exception)
+				{
+					break;
+				}
+
+				// Need to check GDT limit, etc.  Will do.
+				auto typeByte=mem.FetchByte(addr);
+
+				auto type=typeByte&0x1F;
+				if(DESCTYPE_AVAILABLE_386_TSS!=type && DESCTYPE_AVAILABLE_286_TSS!=type)
+				{
+					RaiseException(EXCEPTION_GP,selector);
+					break;
+				}
+
+				typeByte|=2; // Busy bit.
+				mem.StoreByte(addr,typeByte);
+
+				LoadTaskRegister(selector,mem);
+				i486DXCommon::LoadSegmentRegisterTemplate<i486DXCommon,FIDELITY> loader;
+				loader.InvalidateDescriptorCache(*this,selector);
 				clocksPassed=20;
 			}
 			break;

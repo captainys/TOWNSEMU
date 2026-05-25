@@ -32,6 +32,11 @@ public:
 		}
 		return nullptr;
 	}
+	static inline void InvalidateDescriptorCache(i486DXCommon &cpu,uint16_t selector)
+	{
+		auto index=(selector>>DESCRIPTOR_TO_INDEX_SHIFT);
+		cpu.state.descriptorCacheValid[index]=0;
+	}
 	static inline void StoreToDescriptorCache(i486DXCommon &cpu,uint16_t selectorValue,const unsigned char *descPtr)
 	{
 		auto index=(selectorValue>>DESCRIPTOR_TO_INDEX_SHIFT);

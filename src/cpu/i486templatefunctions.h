@@ -384,9 +384,9 @@ unsigned int i486DXFidelityLayer <FIDELITY>::LoadSegmentRegister(SegmentRegister
 }
 
 template <class FIDELITY>
-void i486DXFidelityLayer <FIDELITY>::LoadTaskRegister(unsigned int value,const Memory &mem)
+void i486DXFidelityLayer <FIDELITY>::LoadTaskRegister(unsigned int selector,const Memory &mem)
 {
-	LoadSegmentRegister(state.TR,value,mem);
+	LoadSegmentRegister(state.TR,selector,mem);
 }
 
 template <class FIDELITY>

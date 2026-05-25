@@ -220,10 +220,10 @@ int main(int ac,char *av[])
 		// {
 		// 	triggered=true;
 		// }
-		// if(EIP==0xFE7F)
-		// {
-		// 	cpu.Abort("Abort");
-		// }
+		if(EIP==0xFF56)
+		{
+			cpu.Abort("Abort");
+		}
 		// Right now stopping in POSTCODE 20 <<
 		
 		auto clocksPassed=cpu.RunOneInstruction(*memPtr,*io);
