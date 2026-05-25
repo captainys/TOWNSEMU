@@ -28,6 +28,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "townscommandutil.h"
 #include "sjis2utf8.h"
 
+#ifdef _WIN32
+	#include <direct.h>
+	#define getcwd _getcwd
+#else
+	#include <unistd.h>
+#endif
+
 
 
 void FMTownsCommon::State::PowerOn(void)
@@ -52,15 +59,6 @@ void FMTownsCommon::State::PowerOn(void)
 	if(true==argv.verbose)
 	{
 		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";
-	}
-
-	if(""==argv.ROMPath)
-	{
-		std::cout << "Usage:" << std::endl;
-		std::cout << "  Tsugaru_CUI rom_directory_name" << std::endl;
-		std::cout << "or," << std::endl;
-		std::cout << "  Tsugaru_CUI -HELP" << std::endl;
-		return false;
 	}
 
 	if(true==argv.verbose)
@@ -96,10 +94,29 @@ void FMTownsCommon::State::PowerOn(void)
 		std::cout << __FUNCTION__ << " LINE:" << __LINE__ << "\n";
 	}
 
-	if(true!=towns.LoadROMImages(argv.ROMPath.c_str(),argv.verbose))
+	if(""!=argv.ROMPath)
 	{
-		std::cout << towns.vmAbortReason << std::endl;
-		return false;
+		if(true!=towns.LoadROMImages(argv.ROMPath.c_str(),argv.verbose))
+		{
+			std::cout << towns.vmAbortReason << std::endl;
+			return false;
+		}
+	}
+	else
+	{
+		char cwd[4096];
+		getcwd(cwd,sizeof(cwd));
+		if(true!=towns.LoadROMImages(cwd,argv.verbose))
+		{
+			if(true!=towns.LoadROMImages(outside_world->GetProgramResourceDirectory(),argv.verbose))
+			{
+				std::cout << "Usage:" << std::endl;
+				std::cout << "  Tsugaru_CUI rom_directory_name" << std::endl;
+				std::cout << "or," << std::endl;
+				std::cout << "  Tsugaru_CUI -HELP" << std::endl;
+				return false;
+			}
+		}
 	}
 
 	if(true==argv.verbose)

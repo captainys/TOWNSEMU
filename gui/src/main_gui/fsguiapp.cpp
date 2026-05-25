@@ -832,9 +832,9 @@ void FsGuiMainCanvas::Run(void)
 }
 
 template <class VMClass>
-void FsGuiMainCanvas::ReallyRunWithinSameProcess(VMClass &VM)
+void FsGuiMainCanvas::ReallyRunWithinSameProcess(VMClass &VM,const TownsProfile &profileIn)
 {
-	VM.profile=profileDlg->GetProfile();
+	VM.profile=profileIn;
 	if(""==VM.profile.CMOSFName)
 	{
 		VM.profile.CMOSFName=GetCMOSFileName();
@@ -863,6 +863,8 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 		return false;
 	}
 
+	auto profile=profileDlg->GetProfile();
+
 	auto missing=CheckMissingROMFiles();
 	if(0<missing.size())
 	{
@@ -880,7 +882,6 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	}
 
 
-	auto profile=profileDlg->GetProfile();
 	separateProcess=profile.separateProcess; // This is the only chance to change this flag.
 
 	{
@@ -939,11 +940,11 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	{
 		if(i486DXCommon::HIGH_FIDELITY==profile.CPUFidelityLevel)
 		{
-			ReallyRunWithinSameProcess(VMHighFidelity);
+			ReallyRunWithinSameProcess(VMHighFidelity,profile);
 		}
 		else
 		{
-			ReallyRunWithinSameProcess(VMDefaultFidelity);
+			ReallyRunWithinSameProcess(VMDefaultFidelity,profile);
 		}
 	}
 

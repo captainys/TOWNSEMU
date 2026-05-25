@@ -196,7 +196,7 @@ private:
 
 	bool ReallyRun(bool usePipe=true);
 	template <class VMClass>
-	void ReallyRunWithinSameProcess(VMClass &VM);
+	void ReallyRunWithinSameProcess(VMClass &VM,const TownsProfile &profile);
 	std::string FindTsugaruCUI(void) const;
 	std::vector <std::string> CheckMissingROMFiles(void) const;
 	std::string GetCMOSFileName(void) const;
