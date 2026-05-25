@@ -865,7 +865,31 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 
 	auto profile=profileDlg->GetProfile();
 
-	auto missing=CheckMissingROMFiles();
+	std::vector <std::string> missing;
+	if(""!=profile.ROMPath)
+	{
+		missing=CheckMissingROMFiles(profile);
+	}
+	else
+	{
+		profile.ROMPath="${progdir}";
+		missing=CheckMissingROMFiles(profile);
+		if(0<missing.size())
+		{
+			profile.ROMPath="${profiledir}";
+			missing=CheckMissingROMFiles(profile);
+			if(0<missing.size())
+			{
+				char *cwd=getcwd(NULL,0);
+				if(NULL!=cwd)
+				{
+					profile.ROMPath=cwd;
+					missing=CheckMissingROMFiles(profile);
+					free(cwd);
+				}
+			}
+		}
+	}
 	if(0<missing.size())
 	{
 		std::string msg;
@@ -1158,7 +1182,7 @@ YsVec2i FsGuiMainCanvas::GetGUIDimension(void) const
 	return dim;
 }
 
-std::vector <std::string> FsGuiMainCanvas::CheckMissingROMFiles(void) const
+std::vector <std::string> FsGuiMainCanvas::CheckMissingROMFiles(const TownsProfile &profile) const
 {
 	auto specialPath=MakeSpecialPathTable();
 
@@ -1171,7 +1195,7 @@ std::vector <std::string> FsGuiMainCanvas::CheckMissingROMFiles(void) const
 		"FMT_FNT.ROM",
 		"FMT_SYS.ROM",
 	};
-	std::string path=profileDlg->ROMDirTxt->GetString().c_str();
+	std::string path=profile.ROMPath;
 	for(auto file : ROMFName)
 	{
 		std::string ful=cpputil::MakeFullPathName(path,file);

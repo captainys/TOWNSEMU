@@ -198,7 +198,7 @@ private:
 	template <class VMClass>
 	void ReallyRunWithinSameProcess(VMClass &VM,const TownsProfile &profile);
 	std::string FindTsugaruCUI(void) const;
-	std::vector <std::string> CheckMissingROMFiles(void) const;
+	std::vector <std::string> CheckMissingROMFiles(const TownsProfile &profile) const;
 	std::string GetCMOSFileName(void) const;
 
 	YsWString GetDefaultNewDiskImageFileName(void) const;
