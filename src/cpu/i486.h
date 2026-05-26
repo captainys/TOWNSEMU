@@ -397,6 +397,7 @@ public:
 	};
 	enum
 	{
+		TSS_OFFSET_BACKLINK_TO_PREV_TSS=0x00,
 		TSS_OFFSET_ESP0=0x04,
 		TSS_OFFSET_SS0= 0x08,
 		TSS_OFFSET_ESP1=0x0C,
@@ -3485,8 +3486,11 @@ private:
 	/*! JMP FAR */
 	inline unsigned int JMPF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks);
 
-	/*! Switch Task */
-	void SwitchTaskToTSS(Memory &mem,uint32_t instNumBytes,uint16_t prevCS,const SegmentRegister &newTSS,bool nested);
+	/*! Switch Task 1st Half */
+	void SaveStateToTSS(Memory &mem,uint32_t instNumBytes,uint16_t prevCS);
+
+	/*! Switch Task Last Half */
+	void SwitchTaskToTSS(Memory &mem,const SegmentRegister &newTSS,bool savePrevTR,uint16_t prevTR);
 
 public:
 	/*! Mark TR Busy/Available */

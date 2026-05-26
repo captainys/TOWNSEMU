@@ -117,6 +117,8 @@ public:
 	inline static bool CheckJumpToHigherPrivilege(i486DXCommon::SegmentRegister &newCS,SavedCSEIP &prevCSEIP){return false;}
 
 	inline static void MarkTaskRegisterBusy(i486DXCommon &,Memory &,uint16_t,bool){}
+
+	inline static bool CheckNextedTask(i486DXCommon &){return false;}
 };
 
 class i486DXDefaultFidelityOperation : public i486DXLowFidelityOperation
@@ -968,6 +970,11 @@ public:
 	inline static void MarkTaskRegisterBusy(i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem,uint16_t selector,bool busy)
 	{
 		cpu.MarkTaskRegisterBusy(mem,selector,busy);
+	}
+
+	inline static bool CheckNestedTask(i486DXCommon &cpu)
+	{
+		return cpu.state.EFLAGS&i486DXCommon::EFLAGS_NESTED;
 	}
 };
 

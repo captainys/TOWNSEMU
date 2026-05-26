@@ -88,8 +88,30 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 				isINTGate=false;
 				break;
 			case DESCTYPE_TASK_GATE: // 0b0101: //"386 32-bit Task";
-				Abort("INT to 386 32-bit Task gate not supported");
-				return; // If abort, must return.  The trailing lines may cause seg fault. (Happened while booting OSASK for TOWNS)
+				{
+					std::cout << "INT to Task Gate  From=" << cpputil::Ustox(state.TR.value) << " To=" << cpputil::Ustox(desc.SEG) << "\n";
+
+					auto prevTR=state.TR.value;
+					SegmentRegister newTSS;
+					auto prevCPL=state.CS().DPL;
+					state.CS().DPL=0;
+					LoadSegmentRegister(newTSS,desc.SEG,mem);
+					state.CS().DPL=prevCPL;
+
+					SaveStateToTSS(mem,numInstBytesForReturn,state.CS().value);
+
+					// The current task stays busy.  Only new task needs to be marked busy.  Done in SwitchTaskToTSS.
+
+					SwitchTaskToTSS(mem,newTSS,true,prevTR);
+
+					state.EFLAGS|=EFLAGS_NESTED;
+
+					auto CR0=state.GetCR(0);
+					CR0|=CR0_TASK_SWITCHED;
+					SetCR(0,CR0);
+
+					return;
+				}
 				break;
 			case DESCTYPE_386_INT_GATE: // 0b1110: //"386 32-bit INT";
 				break;
