@@ -1421,6 +1421,43 @@ void i486DXFidelityLayer<FIDELITY>::SwitchTaskToTSS(Memory &mem,uint32_t instNum
 }
 
 template <class FIDELITY>
+void i486DXFidelityLayer<FIDELITY>::MarkTaskRegisterBusy(Memory &mem,uint16_t selector,bool busy)
+{
+	if(selector&4) // TI
+	{
+		Abort("TR cannot be in the LDT. Currently not handling it.");
+	}
+
+	uint32_t addr=state.GDTR.linearBaseAddr+(selector&0xFFF8)+5; // FFF8 for clearing TI, RPL bits.  Offset 5 is type byte.
+	addr=LinearAddressToPhysicalAddressWrite(addr,mem);
+	if(true==state.exception)
+	{
+		return;
+	}
+
+	// Need to check GDT limit, etc.  Will do.
+	auto typeByte=mem.FetchByte(addr);
+
+	auto type=typeByte&0x1F;
+	if(DESCTYPE_AVAILABLE_386_TSS!=type && DESCTYPE_AVAILABLE_286_TSS!=type)
+	{
+		RaiseException(EXCEPTION_GP,selector);
+		return;
+	}
+
+	const unsigned int busyBit=2;
+	if(true==busy)
+	{
+		typeByte|=busyBit;
+	}
+	else
+	{
+		typeByte=~busyBit;
+	}
+	mem.StoreByte(addr,typeByte);
+}
+
+template <class FIDELITY>
 unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut &io)
 {
 	FIDELITY fidelity;
@@ -8182,34 +8219,18 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				auto selector=value.GetAsDword();
 
-				if(selector&4) // TI
+				FIDELITY::MarkTaskRegisterBusy(*this,mem,selector,true);
+				if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
 				{
-					Abort("TR cannot be in the LDT. Currently not handling it.");
-				}
-
-				uint32_t addr=state.GDTR.linearBaseAddr+(selector&0xFFF8)+5; // FFF8 for clearing TI, RPL bits.  Offset 5 is type byte.
-				addr=LinearAddressToPhysicalAddressWrite(addr,mem);
-				if(true==state.exception)
-				{
+					EIPIncrement=0;
 					break;
 				}
 
-				// Need to check GDT limit, etc.  Will do.
-				auto typeByte=mem.FetchByte(addr);
-
-				auto type=typeByte&0x1F;
-				if(DESCTYPE_AVAILABLE_386_TSS!=type && DESCTYPE_AVAILABLE_286_TSS!=type)
-				{
-					RaiseException(EXCEPTION_GP,selector);
-					break;
-				}
-
-				typeByte|=2; // Busy bit.
-				mem.StoreByte(addr,typeByte);
-
-				LoadTaskRegister(selector,mem);
 				i486DXCommon::LoadSegmentRegisterTemplate<i486DXCommon,FIDELITY> loader;
 				loader.InvalidateDescriptorCache(*this,selector);
+
+				LoadTaskRegister(selector,mem);
+
 				clocksPassed=20;
 			}
 			break;

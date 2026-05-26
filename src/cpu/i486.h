@@ -3488,6 +3488,10 @@ private:
 	/*! Switch Task */
 	void SwitchTaskToTSS(Memory &mem,uint32_t instNumBytes,uint16_t prevCS,const SegmentRegister &newTSS,bool nested);
 
+public:
+	/*! Mark TR Busy/Available */
+	void MarkTaskRegisterBusy(Memory &mem,uint16_t selector,bool busy);
+
 	/*! */
 	inline void SwitchTaskToTSS();
 
