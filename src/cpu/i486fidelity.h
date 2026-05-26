@@ -118,7 +118,7 @@ public:
 
 	inline static void MarkTaskRegisterBusy(i486DXCommon &,Memory &,uint16_t,bool){}
 
-	inline static bool CheckNextedTask(i486DXCommon &){return false;}
+	inline static bool CheckNestedTask(i486DXCommon &){return false;}
 };
 
 class i486DXDefaultFidelityOperation : public i486DXLowFidelityOperation
