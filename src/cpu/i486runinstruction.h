@@ -7477,7 +7477,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 			SetFLAGSorEFLAGS(inst.operandSize,EFLAGS);
 
-			FIDELITY::RestoreIOPLBits(*this,ioplBits);
+			FIDELITY::RestoreIOPL_NTBits(*this,ioplBits);
 			FIDELITY::RestoreIF(*this,ioplBits);
 		}
 		break;
