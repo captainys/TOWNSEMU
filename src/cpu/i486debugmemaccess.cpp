@@ -195,7 +195,7 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 /* virtual */ unsigned int i486DebugMemoryAccess::FetchByteDMA(unsigned int physAddr) const
 {
 	auto data=memAccessChain->FetchByte(physAddr);
-	if(true==onRead[physAddr-physAddrTop])
+	if(i486Debugger::BRKPNT_FLAG_NONE!=onRead[physAddr-physAddrTop])
 	{
 		std::string msg;
 		msg="Memory Read BYTE PTR PHYS:[";
