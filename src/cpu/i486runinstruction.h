@@ -727,7 +727,7 @@ void i486DXCommon::FetchOperandLoop(CPUCLASS &cpu,InstructionAndOperand &instOp,
 		{
 			auto MODR_M = FUNCCLASS::PeekInstructionByte(cpu, ptr, inst.addressSize, seg, offset, mem);
 			auto REG = inst.GetREG(MODR_M);
-			if (4 == REG || 6 == REG)
+			if (6 == REG) // REG 4:SMSW although 80386 Programmer's Reference Manual says r/m16, it can accept full 32-bit.
 			{
 				inst.operandSize = 16;
 			}
@@ -6177,7 +6177,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 2);
 			{
 				OperandValue value;
-				value.MakeWord(state.GetCR(0));
+				value.MakeDword(state.GetCR(0));
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 			}
 			break;

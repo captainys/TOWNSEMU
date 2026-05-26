@@ -2649,7 +2649,7 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 			disasm=DisassembleTypicalOneOperand("LIDT",op1,16+operandSize,cs.value,eip,symTable);
 			break;
 		case 4:
-			disasm=DisassembleTypicalOneOperand("SMSW",op1,16+operandSize,cs.value,eip,symTable);
+			disasm=DisassembleTypicalOneOperand("SMSW",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 6:
 			disasm=DisassembleTypicalOneOperand("LMSW",op1,16+operandSize,cs.value,eip,symTable);
