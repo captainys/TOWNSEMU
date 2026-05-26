@@ -101,6 +101,7 @@ public:
 	};
 	inline static SavedEFLAGS SaveEFLAGS(const i486DXCommon &cpu){SavedEFLAGS saved;return saved;};
 	inline static void RestoreIOPLBits(i486DXCommon &cpu,const SavedEFLAGS &){};
+	inline static void RestoreIOPL_NTBits(i486DXCommon &cpu,const SavedEFLAGS &){};
 	inline static void RestoreIF(i486DXCommon &cpu,const SavedEFLAGS &){};
 
 	inline static void BeforeRunOneInstruction(const i486DXCommon &,const i486DXCommon::Instruction &inst,i486Debugger *debuggerPtr){};
@@ -887,12 +888,20 @@ public:
 		eflags.eflags=cpu.state.EFLAGS;
 		return eflags;
 	};
-	inline static void RestoreIOPLBits(i486DXCommon &cpu,const SavedEFLAGS &eflags)
+	inline static void RestoreIOPL_NTBits(i486DXCommon &cpu,const SavedEFLAGS &eflags)
 	{
 		if(true!=cpu.IsInRealMode() && 0!=cpu.state.CS().DPL)
 		{
 			cpu.state.EFLAGS&=~(i486DXCommon::EFLAGS_IOPL|i486DXCommon::EFLAGS_NESTED);
 			cpu.state.EFLAGS|=(eflags.eflags&(i486DXCommon::EFLAGS_IOPL|i486DXCommon::EFLAGS_NESTED));
+		}
+	};
+	inline static void RestoreIOPLBits(i486DXCommon &cpu,const SavedEFLAGS &eflags)
+	{
+		if(true!=cpu.IsInRealMode() && 0!=cpu.state.CS().DPL)
+		{
+			cpu.state.EFLAGS&=~i486DXCommon::EFLAGS_IOPL;
+			cpu.state.EFLAGS|=(eflags.eflags&i486DXCommon::EFLAGS_IOPL);
 		}
 	};
 	inline static void RestoreIF(i486DXCommon &cpu,const SavedEFLAGS &eflags)
