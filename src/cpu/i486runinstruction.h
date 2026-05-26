@@ -1286,8 +1286,10 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 			{
 				SaveStateToTSS(mem,instNumBytes,prevCS);
 				auto prevTR=state.TR.value;
+				auto nextTR=state.CS().value; // CS is loaded above, but it is task register actually.
 				FIDELITY::MarkTaskRegisterBusy(*this,mem,state.TR.value,false);
 				SwitchTaskToTSS(mem,state.CS(),false,prevTR);
+				FIDELITY::MarkTaskRegisterBusy(*this,mem,nextTR,true);
 			}
 			break;
 
@@ -1345,9 +1347,23 @@ void i486DXFidelityLayer<FIDELITY>::SaveStateToTSS(Memory &mem,uint32_t instNumB
 	if(DESCTYPE_AVAILABLE_286_TSS==state.TR.GetType() ||
 	   DESCTYPE_BUSY_286_TSS==state.TR.GetType())
 	{
-		std::cout << "80286 TSS not supported\n";
-		Abort("80286 TSS not supported");
-		return;
+		// 3. Save the state of the current task.
+		//      LDT, EFLAGS, EIP, EAX, ECX, EDX, EBX, ESP, EBP, ESI,EDI, ES, CS, SS, DS, FS, GS
+		DebugStoreWord(mem,32,state.TR,TSS286_LDTR,state.LDTR.selector);
+		DebugStoreWord(mem,32,state.TR,TSS286_FLAGS,state.EFLAGS);
+		DebugStoreWord(mem,32,state.TR,TSS286_IP,state.EIP+instNumBytes);
+		DebugStoreWord(mem,32,state.TR,TSS286_AX,state.EAX());
+		DebugStoreWord(mem,32,state.TR,TSS286_CX,state.ECX());
+		DebugStoreWord(mem,32,state.TR,TSS286_DX,state.EDX());
+		DebugStoreWord(mem,32,state.TR,TSS286_BX,state.EBX());
+		DebugStoreWord(mem,32,state.TR,TSS286_SP,state.ESP());
+		DebugStoreWord(mem,32,state.TR,TSS286_BP,state.EBP());
+		DebugStoreWord(mem,32,state.TR,TSS286_SI,state.ESI());
+		DebugStoreWord(mem,32,state.TR,TSS286_DI,state.EDI());
+		DebugStoreWord(mem,32,state.TR,TSS286_ES,state.ES().value);
+		DebugStoreWord(mem,32,state.TR,TSS286_CS,prevCS);
+		DebugStoreWord(mem,32,state.TR,TSS286_SS,state.SS().value);
+		DebugStoreWord(mem,32,state.TR,TSS286_DS,state.DS().value);
 	}
 	else if(DESCTYPE_AVAILABLE_386_TSS==state.TR.GetType() ||
 	        DESCTYPE_BUSY_386_TSS==state.TR.GetType())
@@ -1386,7 +1402,6 @@ void i486DXFidelityLayer<FIDELITY>::SwitchTaskToTSS(Memory &mem,const SegmentReg
 	{
 		// 4. Load Task Register
 		LoadTaskRegister(newTSS.value,mem);
-		FIDELITY::MarkTaskRegisterBusy(*this,mem,newTSS.value,true);
 
 		// 5. Load incoming task's state.
 		//      LDT, EFLAGS, EIP, EAX, ECX, EDX, EBX, ESP, EBP, ESI,EDI, ES, CS, SS, DS, FS, GS, PDBR(=CR3)
@@ -1453,7 +1468,6 @@ void i486DXFidelityLayer<FIDELITY>::SwitchTaskToTSS(Memory &mem,const SegmentReg
 	{
 		// 4. Load Task Register
 		LoadTaskRegister(newTSS.value,mem);
-		FIDELITY::MarkTaskRegisterBusy(*this,mem,newTSS.value,true);
 
 		// 5. Load incoming task's state.
 		//      LDT, EFLAGS, EIP, EAX, ECX, EDX, EBX, ESP, EBP, ESI,EDI, ES, CS, SS, DS, FS, GS, PDBR(=CR3)
@@ -7699,8 +7713,32 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				// But, none of TownsOS, Windows 3.1, Windows 95, and Linux for TOWNS seems to be using it anyway.
 				if(true==FIDELITY::CheckNestedTask(*this))
 				{
-					std::cout << "Task Return not supported yet.\n";
-					Abort("Task Return");
+					auto prevTR=state.TR.value;
+					auto prevCPL=state.CS().DPL;
+					auto nextTR=DebugFetchWord(32,state.TR,TSS_OFFSET_BACKLINK_TO_PREV_TSS,mem);
+
+					std::cout << "Task Return From=" << cpputil::Ustox(prevTR) << " To=" << cpputil::Ustox(nextTR) << "\n";
+
+					SegmentRegister newTSS;
+					state.CS().DPL=0;
+					LoadSegmentRegister(newTSS,nextTR,mem);
+					state.CS().DPL=prevCPL;
+
+					SaveStateToTSS(mem,inst.numBytes,state.CS().value);
+
+					// The current task stays busy.  IRET is no longer 'return' it just switches tasks.
+
+					SwitchTaskToTSS(mem,newTSS,false,0);
+
+					// New TSS needs to be BUSY.  Therefore, do not re-mark it as BUSY.
+					// NESTED flag depends on what's in the TSS.
+
+					auto CR0=state.GetCR(0);
+					CR0|=CR0_TASK_SWITCHED;
+					SetCR(0,CR0);
+
+					EIPIncrement=0;
+
 					break;
 				}
 

@@ -92,10 +92,11 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 					std::cout << "INT to Task Gate  From=" << cpputil::Ustox(state.TR.value) << " To=" << cpputil::Ustox(desc.SEG) << "\n";
 
 					auto prevTR=state.TR.value;
+					auto nextTR=desc.SEG;
 					SegmentRegister newTSS;
 					auto prevCPL=state.CS().DPL;
 					state.CS().DPL=0;
-					LoadSegmentRegister(newTSS,desc.SEG,mem);
+					LoadSegmentRegister(newTSS,nextTR,mem);
 					state.CS().DPL=prevCPL;
 
 					SaveStateToTSS(mem,numInstBytesForReturn,state.CS().value);
@@ -103,6 +104,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 					// The current task stays busy.  Only new task needs to be marked busy.  Done in SwitchTaskToTSS.
 
 					SwitchTaskToTSS(mem,newTSS,true,prevTR);
+					FIDELITY::MarkTaskRegisterBusy(*this,mem,nextTR,true);
 
 					state.EFLAGS|=EFLAGS_NESTED;
 
