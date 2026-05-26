@@ -891,8 +891,8 @@ public:
 	{
 		if(true!=cpu.IsInRealMode() && 0!=cpu.state.CS().DPL)
 		{
-			cpu.state.EFLAGS&=~i486DXCommon::EFLAGS_IOPL;
-			cpu.state.EFLAGS|=(eflags.eflags&i486DXCommon::EFLAGS_IOPL);
+			cpu.state.EFLAGS&=~(i486DXCommon::EFLAGS_IOPL|i486DXCommon::EFLAGS_NESTED);
+			cpu.state.EFLAGS|=(eflags.eflags&(i486DXCommon::EFLAGS_IOPL|i486DXCommon::EFLAGS_NESTED));
 		}
 	};
 	inline static void RestoreIF(i486DXCommon &cpu,const SavedEFLAGS &eflags)
