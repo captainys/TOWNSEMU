@@ -7694,13 +7694,16 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					break;
 				}
 
+
 				// I still do not understand the logic of task return.
 				// But, none of TownsOS, Windows 3.1, Windows 95, and Linux for TOWNS seems to be using it anyway.
-				// if(true==fidelity.IsTaskReturn(*this))
-				// {
-				// 	Abort("Task Return Not Supported");
-				// 	break;
-				// }
+				if(true==FIDELITY::CheckNestedTask(*this))
+				{
+					std::cout << "Task Return not supported yet.\n";
+					Abort("Task Return");
+					break;
+				}
+
 
 				auto prevVMFlag=state.EFLAGS&EFLAGS_VIRTUAL86;
 				bool IRET_TO_VM86=false;
@@ -7732,13 +7735,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				FIDELITY::RestoreIOPLBits(*this,ioplBits);
 				FIDELITY::RestoreIF(*this,ioplBits);
 
-				if(true==FIDELITY::CheckNestedTask(*this))
-				{
-					std::cout << "Task Return not supported yet.\n";
-					Abort("Task Return");
-					break;
-				}
-				// else
 				if(0==prevVMFlag && 0!=(state.EFLAGS&EFLAGS_VIRTUAL86)) // Stack-Return-To-V86
 				{
 					uint32_t TempESP,TempSS,ES,DS,FS,GS;

@@ -974,7 +974,7 @@ public:
 
 	inline static bool CheckNestedTask(i486DXCommon &cpu)
 	{
-		return cpu.state.EFLAGS&i486DXCommon::EFLAGS_NESTED;
+		return 0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_NESTED) && 0==(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86);
 	}
 };
 
