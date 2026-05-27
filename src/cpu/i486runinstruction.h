@@ -1557,7 +1557,8 @@ void i486DXFidelityLayer<FIDELITY>::MarkTaskRegisterBusy(Memory &mem,uint16_t se
 	auto typeByte=mem.FetchByte(addr);
 
 	auto type=typeByte&0x1F;
-	if(DESCTYPE_AVAILABLE_386_TSS!=type && DESCTYPE_AVAILABLE_286_TSS!=type)
+	if(DESCTYPE_AVAILABLE_386_TSS!=type && DESCTYPE_AVAILABLE_286_TSS!=type &&
+	   DESCTYPE_BUSY_386_TSS!=type && DESCTYPE_BUSY_286_TSS!=type)
 	{
 		RaiseException(EXCEPTION_GP,selector);
 		return;
