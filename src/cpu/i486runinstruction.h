@@ -1280,6 +1280,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 		case DESCTYPE_BUSY_286_TSS: //                    3,
 		case DESCTYPE_TASK_GATE: //                       5,
 		case DESCTYPE_BUSY_386_TSS: //                 0x0B,
+			std::cout << cpputil::Ubtox(descType) << "\n";
 			Abort("JMPF to Task not supported.");
 			break;
 		case DESCTYPE_AVAILABLE_386_TSS: //               9,
@@ -1555,7 +1556,6 @@ void i486DXFidelityLayer<FIDELITY>::MarkTaskRegisterBusy(Memory &mem,uint16_t se
 
 	// Need to check GDT limit, etc.  Will do.
 	auto typeByte=mem.FetchByte(addr);
-
 	auto type=typeByte&0x1F;
 	if(DESCTYPE_AVAILABLE_386_TSS!=type && DESCTYPE_AVAILABLE_286_TSS!=type &&
 	   DESCTYPE_BUSY_386_TSS!=type && DESCTYPE_BUSY_286_TSS!=type)
@@ -1571,7 +1571,7 @@ void i486DXFidelityLayer<FIDELITY>::MarkTaskRegisterBusy(Memory &mem,uint16_t se
 	}
 	else
 	{
-		typeByte=~busyBit;
+		typeByte&=~busyBit;
 	}
 	mem.StoreByte(addr,typeByte);
 }
