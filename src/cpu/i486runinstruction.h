@@ -1276,11 +1276,13 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 		case DESC_TYPE_32BIT_CALL_GATE:
 			Abort("JMPF to gate not supported.");
 			break;
-		case DESCTYPE_AVAILABLE_286_TSS: //               1,
 		case DESCTYPE_BUSY_286_TSS: //                    3,
 		case DESCTYPE_BUSY_386_TSS: //                 0x0B,
 			std::cout << cpputil::Ubtox(descType) << "\n";
-			Abort("JMPF to Task not supported.");
+			Abort("JMPF to Busy Task not handled.");
+			break;
+		case DESCTYPE_AVAILABLE_286_TSS: //               1,
+			Abort("JMPF to 286 Task not supported.");
 			break;
 		case DESCTYPE_TASK_GATE: //                       5,
 			{
