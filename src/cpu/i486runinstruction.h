@@ -1176,7 +1176,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 		case DESCTYPE_AVAILABLE_386_TSS: //               9,
 		case DESCTYPE_BUSY_386_TSS: //                 0x0B,
 			std::cout << descType << "\n";
-			Abort("Call to Task not supported.");
+			Abort("Call to TSS not supported.");
 			break;
 		case DESCTYPE_TASK_GATE: //                       5,
 			{
@@ -7678,7 +7678,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 			SetFLAGSorEFLAGS(inst.operandSize,EFLAGS);
 
-			FIDELITY::RestoreIOPL_NTBits(*this,ioplBits);
+			FIDELITY::RestoreIOPLBits(*this,ioplBits);
 			FIDELITY::RestoreIF(*this,ioplBits);
 		}
 		break;
