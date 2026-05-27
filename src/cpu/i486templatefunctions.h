@@ -92,8 +92,8 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 					std::cout << "INT to Task Gate  From=" << cpputil::Ustox(state.TR.value) << " To=" << cpputil::Ustox(desc.SEG) << "\n";
 
 					auto prevEFLAGS=state.EFLAGS;
-					state.CS().DPL=0;
-					state.EFLAGS&=~(EFLAGS_VIRTUAL86|EFLAGS_TRAP|EFLAGS_NESTED);
+					state.CS().DPL=0; // Make it CPL0, and
+					state.EFLAGS&=~(EFLAGS_VIRTUAL86|EFLAGS_TRAP|EFLAGS_NESTED); // clear VM86 flag so that state can be saved and loaded.
 					state.mode=state.RecalculateMode();
 
 					auto prevTR=state.TR.value;
