@@ -1184,7 +1184,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 				SegmentRegister newTSS;
 				DebugLoadSegmentRegister(newTSS,nextTR,mem,MODE_NATIVE);
 				std::cout << "CALLF to Task Gate " << cpputil::Ustox(state.CS().value) << " " << cpputil::Ustox(nextTR) << "\n";
-				SaveStateToTSS(mem,instNumBytes,prevCS);
+				SaveStateToTSS(mem,instNumBytes,state.EFLAGS,prevCS);
 				auto prevTR=state.TR.value;
 
 				// CALLF to task does not clear the busy flag of the leaving task.
@@ -1312,7 +1312,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 				SegmentRegister newTSS;
 				DebugLoadSegmentRegister(newTSS,nextTR,mem,MODE_NATIVE);
 				std::cout << "JMPF to Task Gate " << cpputil::Ustox(state.CS().value) << " " << cpputil::Ustox(nextTR) << "\n";
-				SaveStateToTSS(mem,instNumBytes,prevCS);
+				SaveStateToTSS(mem,instNumBytes,state.EFLAGS,prevCS);
 				auto prevTR=state.TR.value;
 				FIDELITY::MarkTaskRegisterBusy(*this,mem,state.TR.value,false);
 				SwitchTaskToTSS(mem,newTSS,false,prevTR);
@@ -1325,7 +1325,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 			break;
 		case DESCTYPE_AVAILABLE_386_TSS: //               9,
 			{
-				SaveStateToTSS(mem,instNumBytes,prevCS);
+				SaveStateToTSS(mem,instNumBytes,state.EFLAGS,prevCS);
 				auto prevTR=state.TR.value;
 				auto nextTR=state.CS().value; // CS is loaded above, but it is task register actually.
 				FIDELITY::MarkTaskRegisterBusy(*this,mem,state.TR.value,false);
@@ -1378,7 +1378,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 }
 
 template <class FIDELITY>
-void i486DXFidelityLayer<FIDELITY>::SaveStateToTSS(Memory &mem,uint32_t instNumBytes,uint16_t prevCS)
+void i486DXFidelityLayer<FIDELITY>::SaveStateToTSS(Memory &mem,uint32_t instNumBytes,uint32_t EFLAGS,uint16_t prevCS)
 {
 	// INTEL 80386 PROGRAMMER'S REFERENCE MANUAL 1986
 	// Section 7.5 Page 138
@@ -1395,7 +1395,7 @@ void i486DXFidelityLayer<FIDELITY>::SaveStateToTSS(Memory &mem,uint32_t instNumB
 		// 3. Save the state of the current task.
 		//      LDT, EFLAGS, EIP, EAX, ECX, EDX, EBX, ESP, EBP, ESI,EDI, ES, CS, SS, DS, FS, GS
 		DebugStoreWord(mem,32,state.TR,TSS286_LDTR,state.LDTR.selector);
-		DebugStoreWord(mem,32,state.TR,TSS286_FLAGS,state.EFLAGS);
+		DebugStoreWord(mem,32,state.TR,TSS286_FLAGS,EFLAGS);
 		DebugStoreWord(mem,32,state.TR,TSS286_IP,state.EIP+instNumBytes);
 		DebugStoreWord(mem,32,state.TR,TSS286_AX,state.EAX());
 		DebugStoreWord(mem,32,state.TR,TSS286_CX,state.ECX());
@@ -1416,7 +1416,7 @@ void i486DXFidelityLayer<FIDELITY>::SaveStateToTSS(Memory &mem,uint32_t instNumB
 		// 3. Save the state of the current task.
 		//      LDT, EFLAGS, EIP, EAX, ECX, EDX, EBX, ESP, EBP, ESI,EDI, ES, CS, SS, DS, FS, GS
 		DebugStoreDword(mem,32,state.TR,TSS_OFFSET_LDT,state.LDTR.selector);
-		DebugStoreDword(mem,32,state.TR,TSS_OFFSET_EFLAGS,state.EFLAGS);
+		DebugStoreDword(mem,32,state.TR,TSS_OFFSET_EFLAGS,EFLAGS);
 		DebugStoreDword(mem,32,state.TR,TSS_OFFSET_EIP,state.EIP+instNumBytes);
 		DebugStoreDword(mem,32,state.TR,TSS_OFFSET_EAX,state.EAX());
 		DebugStoreDword(mem,32,state.TR,TSS_OFFSET_ECX,state.ECX());
@@ -7777,7 +7777,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					state.CS().DPL=prevCPL;
 
 					state.EFLAGS&=~EFLAGS_NESTED; // Clear NESTED flag before saving the state.
-					SaveStateToTSS(mem,inst.numBytes,state.CS().value);
+					SaveStateToTSS(mem,inst.numBytes,state.EFLAGS,state.CS().value);
 
 					// I thought the current task should remain busy, but apparently needs to be made available.
 					MarkTaskRegisterBusy(mem,prevTR,false);

@@ -3486,8 +3486,10 @@ private:
 	/*! JMP FAR */
 	inline unsigned int JMPF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks);
 
-	/*! Switch Task 1st Half */
-	void SaveStateToTSS(Memory &mem,uint32_t instNumBytes,uint16_t prevCS);
+	/*! Switch Task 1st Half 
+	    EFLAGS and CS may change before this function, so previous states of these registers must be preserved and given as parameters.
+	*/
+	void SaveStateToTSS(Memory &mem,uint32_t instNumBytes,uint32_t EFLAGS,uint16_t prevCS);
 
 	/*! Switch Task Last Half */
 	void SwitchTaskToTSS(Memory &mem,const SegmentRegister &newTSS,bool savePrevTR,uint16_t prevTR);
