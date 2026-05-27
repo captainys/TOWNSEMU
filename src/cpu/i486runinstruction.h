@@ -1173,10 +1173,32 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 			break;
 		case DESCTYPE_AVAILABLE_286_TSS: //               1,
 		case DESCTYPE_BUSY_286_TSS: //                    3,
-		case DESCTYPE_TASK_GATE: //                       5,
 		case DESCTYPE_AVAILABLE_386_TSS: //               9,
 		case DESCTYPE_BUSY_386_TSS: //                 0x0B,
+			std::cout << descType << "\n";
 			Abort("Call to Task not supported.");
+			break;
+		case DESCTYPE_TASK_GATE: //                       5,
+			{
+				auto nextTR=state.CS().baseLinearAddr&0xFFFF; // Linear base address happens to be bytes 2-3 of the descriptor, which points to TSS.
+				SegmentRegister newTSS;
+				DebugLoadSegmentRegister(newTSS,nextTR,mem,MODE_NATIVE);
+				std::cout << "CALLF to Task Gate " << cpputil::Ustox(state.CS().value) << " " << cpputil::Ustox(nextTR) << "\n";
+				SaveStateToTSS(mem,instNumBytes,prevCS);
+				auto prevTR=state.TR.value;
+
+				// CALLF to task does not clear the busy flag of the leaving task.
+
+				SwitchTaskToTSS(mem,newTSS,true,prevTR);  // Save backlink is true.
+
+				FIDELITY::MarkTaskRegisterBusy(*this,mem,nextTR,true);
+
+				state.EFLAGS|=EFLAGS_NESTED;
+
+				auto CR0=state.GetCR(0);
+				CR0|=CR0_TASK_SWITCHED;
+				SetCR(0,CR0);
+			}
 			break;
 		case SEGTYPE_CODE_CONFORMING_EXECONLY: //   0b11100, // Code Conforming     Execute-Only
 		case SEGTYPE_CODE_CONFORMING_READABLE: //   0b11110, // Code Conforming     Readable
@@ -7751,7 +7773,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					state.EFLAGS&=~EFLAGS_NESTED; // Clear NESTED flag before saving the state.
 					SaveStateToTSS(mem,inst.numBytes,state.CS().value);
 
-					// The current task stays busy.  IRET is no longer 'return' it just switches tasks.
+					// I thought the current task should remain busy, but apparently needs to be made available.
+					MarkTaskRegisterBusy(mem,prevTR,false);
 
 					SwitchTaskToTSS(mem,newTSS,false,0);
 
