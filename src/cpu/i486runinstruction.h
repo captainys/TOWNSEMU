@@ -7746,6 +7746,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					LoadSegmentRegister(newTSS,nextTR,mem);
 					state.CS().DPL=prevCPL;
 
+					state.EFLAGS&=~EFLAGS_NESTED; // Clear NESTED flag before saving the state.
 					SaveStateToTSS(mem,inst.numBytes,state.CS().value);
 
 					// The current task stays busy.  IRET is no longer 'return' it just switches tasks.
