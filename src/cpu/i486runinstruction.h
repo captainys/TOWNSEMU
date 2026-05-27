@@ -1278,10 +1278,26 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 			break;
 		case DESCTYPE_AVAILABLE_286_TSS: //               1,
 		case DESCTYPE_BUSY_286_TSS: //                    3,
-		case DESCTYPE_TASK_GATE: //                       5,
 		case DESCTYPE_BUSY_386_TSS: //                 0x0B,
 			std::cout << cpputil::Ubtox(descType) << "\n";
 			Abort("JMPF to Task not supported.");
+			break;
+		case DESCTYPE_TASK_GATE: //                       5,
+			{
+				auto nextTR=state.CS().baseLinearAddr&0xFFFF; // Linear base address happens to be bytes 2-3 of the descriptor, which points to TSS.
+				SegmentRegister newTSS;
+				DebugLoadSegmentRegister(newTSS,nextTR,mem,MODE_NATIVE);
+				std::cout << "JMPF to Task Gate " << cpputil::Ustox(state.CS().value) << " " << cpputil::Ustox(nextTR) << "\n";
+				SaveStateToTSS(mem,instNumBytes,prevCS);
+				auto prevTR=state.TR.value;
+				FIDELITY::MarkTaskRegisterBusy(*this,mem,state.TR.value,false);
+				SwitchTaskToTSS(mem,newTSS,false,prevTR);
+				FIDELITY::MarkTaskRegisterBusy(*this,mem,nextTR,true);
+
+				auto CR0=state.GetCR(0);
+				CR0|=CR0_TASK_SWITCHED;
+				SetCR(0,CR0);
+			}
 			break;
 		case DESCTYPE_AVAILABLE_386_TSS: //               9,
 			{
@@ -1291,6 +1307,10 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 				FIDELITY::MarkTaskRegisterBusy(*this,mem,state.TR.value,false);
 				SwitchTaskToTSS(mem,state.CS(),false,prevTR);
 				FIDELITY::MarkTaskRegisterBusy(*this,mem,nextTR,true);
+
+				auto CR0=state.GetCR(0);
+				CR0|=CR0_TASK_SWITCHED;
+				SetCR(0,CR0);
 			}
 			break;
 
@@ -1535,6 +1555,7 @@ void i486DXFidelityLayer<FIDELITY>::SwitchTaskToTSS(Memory &mem,const SegmentReg
 	}
 	else
 	{
+		std::cout << cpputil::Ustox(newTSS.GetType()) << "\n";
 		Abort("Task Switching to non-TSS exception not handled yet.");
 	}
 }

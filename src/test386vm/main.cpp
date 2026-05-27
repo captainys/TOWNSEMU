@@ -214,7 +214,7 @@ int main(int ac,char *av[])
 			auto &op1=instOp.op1;
 			auto &op2=instOp.op2;
 			auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.GetEIP(),*memPtr,debuggerPtr->GetSymTable(),debuggerPtr->GetIOTable());
-			std::cout << disasm << std::endl;
+			std::cout << cpputil::Uitox(cpu.state.EFLAGS) << " " << disasm << " " << std::endl;
 		}
 		// if(EIP==0xE0A18)
 		// {
