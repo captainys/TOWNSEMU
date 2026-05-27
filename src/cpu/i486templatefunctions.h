@@ -222,7 +222,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 					auto TempEFLAGS=state.EFLAGS;
 					auto TempSS=state.SS().value;
 					auto TempESP=state.ESP();
-					state.EFLAGS&=~(EFLAGS_VIRTUAL86|EFLAGS_TRAP);
+					state.EFLAGS&=~(EFLAGS_VIRTUAL86|EFLAGS_TRAP|EFLAGS_NESTED);
 
 					state.mode=state.RecalculateMode();
 
