@@ -1550,6 +1550,12 @@ void i486DXFidelityLayer<FIDELITY>::SwitchTaskToTSS(Memory &mem,const SegmentReg
 			DebugStoreDword(mem,32,state.TR,TSS_OFFSET_BACKLINK_TO_PREV_TSS,prevTR);
 		}
 		state.EFLAGS=DebugFetchDword(32,state.TR,TSS_OFFSET_EFLAGS,mem);
+		if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
+		{
+			std::cout << "JMPF to VM86 mode\n";
+		}
+		state.mode=state.RecalculateMode(); // May change to VM86 mode.
+
 		state.EIP=DebugFetchDword(32,state.TR,TSS_OFFSET_EIP,mem);
 		state.EAX()=DebugFetchDword(32,state.TR,TSS_OFFSET_EAX,mem);
 		state.ECX()=DebugFetchDword(32,state.TR,TSS_OFFSET_ECX,mem);
@@ -1568,13 +1574,13 @@ void i486DXFidelityLayer<FIDELITY>::SwitchTaskToTSS(Memory &mem,const SegmentReg
 		uint16_t CS=DebugFetchWord(32,state.TR,TSS_OFFSET_CS,mem);
 
 		// Set CS first so that the rest segment selectors can be loaded with the new CPL.
-		LoadSegmentRegister(state.CS(),CS,mem,MODE_NATIVE);
+		LoadSegmentRegister(state.CS(),CS,mem,state.mode);
 
-		LoadSegmentRegister(state.ES(),ES,mem,MODE_NATIVE);
-		LoadSegmentRegister(state.SS(),SS,mem,MODE_NATIVE);
-		LoadSegmentRegister(state.DS(),DS,mem,MODE_NATIVE);
-		LoadSegmentRegister(state.FS(),FS,mem,MODE_NATIVE);
-		LoadSegmentRegister(state.GS(),GS,mem,MODE_NATIVE);
+		LoadSegmentRegister(state.ES(),ES,mem,state.mode);
+		LoadSegmentRegister(state.SS(),SS,mem,state.mode);
+		LoadSegmentRegister(state.DS(),DS,mem,state.mode);
+		LoadSegmentRegister(state.FS(),FS,mem,state.mode);
+		LoadSegmentRegister(state.GS(),GS,mem,state.mode);
 		SetCR(3,DebugFetchDword(32,state.TR,TSS_OFFSET_CR3,mem),mem);
 	}
 	else
@@ -7225,7 +7231,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		{
 			SAVE_ESP_BEFORE_PUSH_POP;
-			Push(mem,inst.operandSize,state.EFLAGS);
+			Push(mem,inst.operandSize,state.EFLAGS&~(EFLAGS_RESUME|EFLAGS_VIRTUAL86));
 			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
