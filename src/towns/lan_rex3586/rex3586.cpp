@@ -297,16 +297,16 @@ unsigned int RatocREX3586::IOReadByte(unsigned int ioport)
 			data=(data>>bit)&1;
 		}
 		// Next 152 bits:  All 1
-		else if(state.ROMReadPtr<232)
+		else if(state.ROMReadPtr<228)
 		{
 			data=1;
 		}
 		// Next 24 bits: 0x4C414E ("LAN")
 		else if(state.ROMReadPtr<252)
 		{
-			auto bit=state.ROMReadPtr-232;
-			unsigned int data=0x4C414E;
-			data=(data>>bit)&1;
+			auto bit=state.ROMReadPtr-228;
+			unsigned int LAN=0x4C414E;
+			data=(LAN>>bit)&1;
 		}
 		// Last 4 bits: All 0
 		else
