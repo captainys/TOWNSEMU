@@ -884,6 +884,21 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		{
 			townsPtr->UnscheduleDeviceCallBack(*this);
 			SetStatusDriveNotReadyOrDiscChangedOrNoError();
+
+			// 2026/06/03
+			// Linux Debian Kernel Version 2.0.33 for TOWNS (Probably earlier version, too)
+			// TOWNS CD-ROM Driver, towns_cd.c, 
+			//   assumes that the Media Changed (21 08 00 00) is not an error, (explicitly not making it an error) and
+			//   expects a clear error (such as 21 x x x) or command-accepted (0 x x x), is given after
+			//   (or can be before) the Media Changed.
+			// If the status queue only has Media Changed (21 08 00 00), it reads the status, and then wait for
+			// an error or command-accepted forever.
+			// Not certain if it is only for command 0x80.  Not certain if it is only for Media Changed.
+			if(true==StatusQueueHasMediaChangedOnly())
+			{
+				state.PushStatusQueue(0,0,0,0);
+			}
+
 			if(CDDA_ENDED==state.CDDAState)
 			{
 				// 2020/07/30
@@ -1583,6 +1598,25 @@ unsigned char TownsCDROM::StatusSecondByte(void) const
 	// Actually, 5 for immediately after CDDA Stopped.
 
 	return 0;
+}
+
+bool TownsCDROM::StatusQueueHasMediaChangedOnly(void) const
+{
+	bool hasMediaChange=false;
+	for(size_t i=0; i+1<state.statusQueue.size(); i+=4)
+	{
+		if(0x21==state.statusQueue[i] && 0x08==state.statusQueue[i+1])
+		{
+			// Found at least one Media Change.
+			hasMediaChange=true;
+		}
+		else
+		{
+			// Found at least one not Media Change.
+			return false;
+		}
+	}
+	return hasMediaChange;
 }
 
 void TownsCDROM::StopCDDA(void)
