@@ -431,6 +431,8 @@ private:
 
 	unsigned char StatusSecondByte(void) const;
 
+	bool StatusQueueHasMediaChangedOnly(void) const;
+
 public:
 	/*! As it says.  This function can now also be called from the command module.
 	*/
