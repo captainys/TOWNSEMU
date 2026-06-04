@@ -102,6 +102,7 @@ public:
 		IOTHREAD_WAIT_INTERVAL=100000,
 
 		FAST_SCSI_INTERVAL=5000,  // 5us.  Changed 1us to 5us on request from BCC.  1us is too fast for Linux, but 5us looks ok.
+		FAST_SCSI_MESSAGE_DELAY=100000, // 100us.  For Linux Debian 2.0.33
 	};
 
 	bool fastMode=false;
@@ -119,7 +120,7 @@ public:
 	}
 	unsigned int MessageDelay(void)
 	{
-		return (true==fastMode ? FAST_SCSI_INTERVAL : MESSAGE_DELAY);
+		return (true==fastMode ? FAST_SCSI_MESSAGE_DELAY : MESSAGE_DELAY);
 	}
 	unsigned int StatusDelay(void)
 	{
