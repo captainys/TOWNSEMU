@@ -841,6 +841,37 @@ unsigned int i486DXCommon::FPUState::FIDIV_m32int(i486DXCommon &cpu,const unsign
 	}
 	return 0;
 }
+unsigned int i486DXCommon::FPUState::FICOMP_m32int(i486DXCommon &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		double src = (double)IntFrom32Bit(byteData);
+		double from=ST(cpu).value;
+
+		statusWord&=~(STATUS_C0|STATUS_C2|STATUS_C3);
+
+		if(isnan(from))
+		{
+			statusWord|=(STATUS_C0|STATUS_C2|STATUS_C3);
+		}
+		else if(from>src)
+		{
+		}
+		else if(from<src)
+		{
+			statusWord|=(STATUS_C0);
+		}
+		else // if(from==src)
+		{
+			statusWord|=(STATUS_C3);
+		}
+
+		Pop(cpu);
+
+		return 10;
+	}
+	return 0;
+}
 unsigned int i486DXCommon::FPUState::FIDIVR_m16int(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)

@@ -4080,6 +4080,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			case 2:  // FICOM m32int
 				break;
 			case 3:  // FICOMP m32int
+				FPU_TRAP;
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+					clocksPassed=state.fpuState.FICOMP_m32int(*this,value.byteData);
+				}
 				break;
 			case 4:  // FISUB m32int
 				FPU_TRAP;
