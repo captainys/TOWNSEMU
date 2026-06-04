@@ -697,6 +697,7 @@ public:
 		unsigned int FUCOMP_STi(i486DXCommon& cpu, int i);
 		unsigned int FUCOMPP(i486DXCommon& cpu);
 		unsigned int FCOS(i486DXCommon &cpu);
+		unsigned int FICOMP_m32int(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FIDIV_m16int(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FILD_m16int(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FILD_m32int(i486DXCommon &cpu,const unsigned char byteData[]);
