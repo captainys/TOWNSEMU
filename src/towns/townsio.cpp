@@ -346,7 +346,7 @@ void FMTownsCommon::UpdateEleVol(int eleVol)
 
 /* virtual */ void FMTownsCommon::RunScheduledTask(unsigned long long int townsTime)
 {
-	CPU().Reset();
+	Reset();
 }
 void FMTownsCommon::AdjustMachineSpeedForMemoryWait(void)
 {
