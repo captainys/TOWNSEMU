@@ -5006,22 +5006,28 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 
 	case I486_RENUMBER_LEAVE://            0xC9,
-		clocksPassed=5;
-		if(16==GetStackAddressingSize())
 		{
-			SetSP(state.BP());
-		}
-		else
-		{
-			SetESP(state.EBP());
-		}
-		if(16==inst.operandSize)
-		{
-			SetBP(Pop16(mem));
-		}
-		else
-		{
-			SetEBP(Pop32(mem));
+			SAVE_ESP_BEFORE_PUSH_POP;
+
+			clocksPassed=5;
+			if(16==GetStackAddressingSize())
+			{
+				SetSP(state.BP());
+			}
+			else
+			{
+				SetESP(state.EBP());
+			}
+			if(16==inst.operandSize)
+			{
+				SetBP(Pop16(mem));
+			}
+			else
+			{
+				SetEBP(Pop32(mem));
+			}
+
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 
