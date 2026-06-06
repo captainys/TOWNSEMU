@@ -5020,14 +5020,16 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			if(16==inst.operandSize)
 			{
-				SetBP(Pop16(mem));
+				auto bp=Pop16(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				SetBP(bp);
 			}
 			else
 			{
-				SetEBP(Pop32(mem));
+				auto ebp=Pop32(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				SetEBP(ebp);
 			}
-
-			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 
