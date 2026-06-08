@@ -1285,6 +1285,11 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.push_back(p.second);
 	}
 
+	if(true==enableLAN)
+	{
+		argv.push_back("-REX3586");
+	}
+
 	return argv;
 }
 
