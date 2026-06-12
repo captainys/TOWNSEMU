@@ -38,6 +38,9 @@ bool FMTownsCommon::LoadState(std::string fName)
 		midi.Stop();
 		midi.EnableCards(0); // If no data, leave all disabled.
 
+		rex3586.DisconnectAll();
+		rex3586.state.enabled=false; // If not read, disable it.
+
 		while(true!=ifp.eof())
 		{
 			uint32_t len=0;
@@ -91,6 +94,9 @@ bool FMTownsCommon::LoadStateMem(const std::vector <uint8_t> &state)
 	highResPCM.state.enabled=false; // If not read must be made by an old version, keep it disabled.
 	midi.Stop();
 	midi.EnableCards(0); // If no data, leave all disabled.
+
+	rex3586.DisconnectAll();
+	rex3586.state.enabled=false; // If not read, disable it.
 
 	for(size_t ptr=0; ptr+4<=state.size(); )
 	{
@@ -157,7 +163,7 @@ std::vector <const Device *> FMTownsCommon::DevicesToSaveState(void) const
 		allDevices.push_back(&highResPCM);
 	}
 	allDevices.push_back(&midi);
-	// allDevices.push_back(&rex3586);
+	allDevices.push_back(&rex3586);
 	// allDevices.push_back(&vndrv);
 	return allDevices;
 }
@@ -183,7 +189,7 @@ std::vector <Device *> FMTownsCommon::DevicesToLoadState(void)
 	allDevices.push_back(&serialport);
 	allDevices.push_back(&highResPCM);
 	allDevices.push_back(&midi);
-	// allDevices.push_back(&rex3586);
+	allDevices.push_back(&rex3586);
 	// allDevices.push_back(&vndrv);
 	return allDevices;
 }

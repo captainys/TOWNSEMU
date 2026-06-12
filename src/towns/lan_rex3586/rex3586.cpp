@@ -52,7 +52,11 @@ void RatocREX3586::Reset(void)
 			col=0xFF;
 		}
 	}
+	DisconnectAll();
+}
 
+void RatocREX3586::DisconnectAll(void)
+{
 	net.DisconnectAll();
 	realNet->DisconnectAll();
 }
@@ -445,16 +449,118 @@ std::vector <std::string> RatocREX3586::GetStatusText(void) const
 
 uint32_t RatocREX3586::SerializeVersion(void) const
 {
-	return 0; // **** Not state-save target yet.  Uncomment townsstate.cpp in DeviceToLoad/SaveState when ready.
+	return 0;
 }
 
 void RatocREX3586::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
-	 // **** Not state-save target yet.  Uncomment townsstate.cpp in DeviceToLoad/SaveState when ready.
+	PushBool(data,state.enabled);
+	if(true==state.enabled)
+	{
+		PushUint32(data,state.ROMReadPtr);
+		for(int i=0; i<NUM_REG_BANKS; ++i)
+		{
+			PushUcharArray(data,NUM_REGS,state.regs[i]);
+		}
+		PushUint64(data,state.MAC);
+		PushUcharArray(data,2,state.config);
+		PushBool(data,state.TXIntEN);
+		PushBool(data,state.RXIntEN);
+		PushUint16(data,state.INTNum);
+
+		PushUint16(data,state.txState);
+		PushUint16(data,state.rxState);
+
+		PushUcharArray(data,state.TXPacket);
+		PushUcharArray(data,state.RXPacket);
+
+		PushUint32(data,net.TCPConn.size());
+		for(auto &conn : net.TCPConn)
+		{
+			// Remember headers so that the virtual router can send Abort on state-load
+			PushUint64(data,conn.ethernetHdr.dstMAC);
+			PushUint64(data,conn.ethernetHdr.srcMAC);
+			PushUint16(data,conn.ethernetHdr.type);
+
+			PushUint16(data,conn.ipHdr.version_headerLen);
+			PushUint16(data,conn.ipHdr.QoS);
+			PushUint16(data,conn.ipHdr.len);
+			PushUint16(data,conn.ipHdr.fragID);
+			PushUint16(data,conn.ipHdr.flagOrFragOffset);
+			PushUint16(data,conn.ipHdr.TTL);
+			PushUint16(data,conn.ipHdr.protocol);
+			PushUint16(data,conn.ipHdr.checkSum);
+			PushUint32(data,conn.ipHdr.srcIP);
+			PushUint32(data,conn.ipHdr.dstIP);
+
+			PushUint16(data,conn.tcpHdr.srcPort);
+			PushUint16(data,conn.tcpHdr.dstPort);
+			PushUint32(data,conn.tcpHdr.sequenceNum);
+			PushUint32(data,conn.tcpHdr.ackNum);
+			PushUint16(data,conn.tcpHdr.dataOffset_reservedBits);
+			PushUint16(data,conn.tcpHdr.flags);
+			PushUint16(data,conn.tcpHdr.windowSize);
+			PushUint16(data,conn.tcpHdr.checkSum);
+			PushUint16(data,conn.tcpHdr.urgentPointer);
+			PushUcharArray(data,40,conn.tcpHdr.options);
+		}
+	}
 }
 
 bool RatocREX3586::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
-	 // **** Not state-save target yet.  Uncomment townsstate.cpp in DeviceToLoad/SaveState when ready.
+	state.enabled=ReadBool(data);
+	if(true==state.enabled)
+	{
+		state.ROMReadPtr=ReadUint32(data);
+		for(int i=0; i<NUM_REG_BANKS; ++i)
+		{
+			ReadUcharArray(data,NUM_REGS,state.regs[i]);
+		}
+		state.MAC=ReadUint64(data);
+		ReadUcharArray(data,2,state.config);
+		state.TXIntEN=ReadBool(data);
+		state.RXIntEN=ReadBool(data);
+		state.INTNum=ReadUint16(data);
+
+		state.txState=ReadUint16(data);
+		state.rxState=ReadUint16(data);
+
+		state.TXPacket=ReadUcharArray(data);
+		state.RXPacket=ReadUcharArray(data);
+
+		size_t connLen=ReadUint32(data);
+		net.TCPConn.resize(connLen);
+		for(auto &conn : net.TCPConn)
+		{
+			conn.state=VirtualNetwork::STATE_ABORT;
+
+			conn.ethernetHdr.dstMAC=ReadUint64(data);
+			conn.ethernetHdr.srcMAC=ReadUint64(data);
+			conn.ethernetHdr.type=ReadUint16(data);
+
+			conn.ipHdr.version_headerLen=ReadUint16(data);
+			conn.ipHdr.QoS=ReadUint16(data);
+			conn.ipHdr.len=ReadUint16(data);
+			conn.ipHdr.fragID=ReadUint16(data);
+			conn.ipHdr.flagOrFragOffset=ReadUint16(data);
+			conn.ipHdr.TTL=ReadUint16(data);
+			conn.ipHdr.protocol=ReadUint16(data);
+			conn.ipHdr.checkSum=ReadUint16(data);
+			conn.ipHdr.srcIP=ReadUint32(data);
+			conn.ipHdr.dstIP=ReadUint32(data);
+
+			conn.tcpHdr.srcPort=ReadUint16(data);
+			conn.tcpHdr.dstPort=ReadUint16(data);
+			conn.tcpHdr.sequenceNum=ReadUint32(data);
+			conn.tcpHdr.ackNum=ReadUint32(data);
+			conn.tcpHdr.dataOffset_reservedBits=ReadUint16(data);
+			conn.tcpHdr.flags=ReadUint16(data);
+			conn.tcpHdr.windowSize=ReadUint16(data);
+			conn.tcpHdr.checkSum=ReadUint16(data);
+			conn.tcpHdr.urgentPointer=ReadUint16(data);
+			ReadUcharArray(data,40,conn.tcpHdr.options);
+		}
+	}
 	return true;
 }

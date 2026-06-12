@@ -273,6 +273,8 @@ public:
 
 		STATE_ACCEPTED, // Incoming connection from outside.
 		STATE_ACCEPTED_SYN_SENT,
+
+		STATE_ABORT,
 	};
 	class TCPConnection
 	{
@@ -368,6 +370,8 @@ protected:
 	void ReceivedTCPData(TCPConnection &conn,size_t len,const uint8_t data[],PacketReceiver *recv);
 
 	void TCPSendFINACK(TCPConnection &conn,PacketReceiver *recv,uint32_t nextState);
+
+	void TCPSendRST(TCPConnection &conn,PacketReceiver *recv);
 
 public:
 	void Polling(PacketReceiver *recv,class RealNetwork *realNet);

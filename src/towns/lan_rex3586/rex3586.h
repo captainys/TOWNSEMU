@@ -68,6 +68,7 @@ public:
 	class State
 	{
 	public:
+		bool enabled=false;
 		unsigned int ROMReadPtr=0;
 		unsigned char regs[NUM_REG_BANKS][NUM_REGS];
 		uint64_t MAC=0x00C0D0350582LL; // Is Windows 95 driver assuming MAC starts with 00C0D0 or 00803D?
@@ -90,7 +91,6 @@ public:
 	class Variable
 	{
 	public:
-		bool enabled=false;
 		bool monitorTxPacket=true;
 		bool monitorRxPacket=true;
 	};
@@ -108,7 +108,7 @@ public:
 
 	inline void Polling(void)
 	{
-		if(true==var.enabled)
+		if(true==state.enabled)
 		{
 			RealPolling();
 		}
@@ -124,6 +124,7 @@ public:
 
 	void PowerOn(void) override;
 	void Reset(void) override;
+	void DisconnectAll(void);
 
 	std::vector <std::string> GetStatusText(void) const;
 

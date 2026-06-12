@@ -1366,6 +1366,31 @@ void VirtualNetwork::TCPSendFINACK(TCPConnection &conn,PacketReceiver *recv,uint
 	conn.state=nextState;
 }
 
+void VirtualNetwork::TCPSendRST(TCPConnection &conn,PacketReceiver *recv)
+{
+	conn.tcpHdr.flags=TCP_FLAG_RST;
+	conn.tcpHdr.StripOptions(); // Just in case
+	conn.ipHdr.len=conn.ipHdr.GetHeaderLength()+conn.tcpHdr.GetTotalLength();
+
+	std::vector <uint8_t> data;
+
+	AddEthernetHeader(data,conn.ethernetHdr);
+
+	size_t IPHeaderPos=data.size();
+	AddIPHeader(data,conn.ipHdr);
+	RecalculateIPHeaderCheckSum(20,data.data()+IPHeaderPos);
+
+	size_t TCPHeaderPos=data.size();
+	AddTCPHeader(data,conn.tcpHdr);
+	RecalculateTCPHeaderCheckSum(data.size()-TCPHeaderPos,data.data()+TCPHeaderPos,conn.ipHdr.srcIP,conn.ipHdr.dstIP);
+
+	recv->ReceivePacket(data.size(),data.data());
+
+	++conn.ipHdr.fragID; // Is it necessary?
+
+	++conn.tcpHdr.sequenceNum;
+}
+
 void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 {
 	{
@@ -1579,8 +1604,11 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 	
 	if(true==recv->RxReady())
 	{
-		for(auto &virConn : TCPConn)
+		for(auto iter=TCPConn.begin(); TCPConn.end()!=iter; )
 		{
+			bool del=false;
+			auto &virConn=*iter;
+
 			if(STATE_CLOSING_FROM_REMOTE==virConn.state)
 			{
 				TCPSendFINACK(virConn,recv,STATE_CLOSING_FROM_REMOTE_SENT_FINACK);
@@ -1604,6 +1632,20 @@ void VirtualNetwork::Polling(PacketReceiver *recv,class RealNetwork *realNet)
 
 				recv->ReceivePacket(data.size(),data.data());
 				virConn.state=STATE_ACCEPTED_SYN_SENT;
+			}
+			else if(STATE_ABORT==virConn.state)
+			{
+				TCPSendRST(virConn,recv);
+				del=true;
+			}
+
+			if(true==del)
+			{
+				iter=TCPConn.erase(iter);
+			}
+			else
+			{
+				++iter;
 			}
 		}
 		for(auto iter=DNSReq.begin(); iter!=DNSReq.end();)
