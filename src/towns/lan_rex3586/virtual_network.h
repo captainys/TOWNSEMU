@@ -344,6 +344,10 @@ public:
 	void AddStatusText(std::vector <std::string> &text) const;
 
 
+	// Prepare for reset/state-load
+	void DisconnectAll(void);
+
+
 	// Adapter -> Virtual Network
 	void TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet);
 protected:

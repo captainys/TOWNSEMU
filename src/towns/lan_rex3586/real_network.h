@@ -175,6 +175,9 @@ public:
 	void Start(void);
 	void End(void);
 
+	// Prepare to load state.
+	void DisconnectAll(void);
+
 	// Called from the VM thread.
 	void RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t port);
 

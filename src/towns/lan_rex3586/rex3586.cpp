@@ -52,6 +52,9 @@ void RatocREX3586::Reset(void)
 			col=0xFF;
 		}
 	}
+
+	net.DisconnectAll();
+	realNet->DisconnectAll();
 }
 
 void RatocREX3586::RealPolling(void)

@@ -589,6 +589,36 @@ void RealNetwork::End(void)
 	}
 }
 
+void RealNetwork::DisconnectAll(void)
+{
+	clientsLock.lock();
+	for(auto &cli : clients)
+	{
+		closesocket(cli.sock);
+	}
+	clients.clear();
+	clientsLock.unlock();
+
+	TCPConnReqLock.lock();
+	for(auto &req : TCPConnReq)
+	{
+		if(true==req.connected)
+		{
+			closesocket(req.sock);
+		}
+	}
+	TCPConnReq.clear();
+	TCPConnReqLock.unlock();
+
+	TCPDisconnectReqLock.lock();
+	TCPDisconnectReq.clear();
+	TCPDisconnectReqLock.unlock();
+
+	DNSRequestLock.lock();
+	DNSReq.clear();
+	DNSRequestLock.unlock();
+}
+
 // Called from the VM thread.
 void RealNetwork::RequestTCPConnection(uint16_t VMPort,const uint8_t IPv4Addr[4],uint16_t dstPort)
 {

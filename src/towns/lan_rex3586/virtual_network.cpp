@@ -407,6 +407,12 @@ void VirtualNetwork::AddStatusText(std::vector <std::string> &text) const
 	}
 }
 
+void VirtualNetwork::DisconnectAll(void)
+{
+	TxReady=true;
+	TCPConn.clear();
+	DNSReq.clear();
+}
 
 void VirtualNetwork::TransmitPacket(size_t len,const uint8_t data[],PacketReceiver *recv,RealNetwork *realNet)
 {
