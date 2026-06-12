@@ -611,9 +611,34 @@ bool TownsTgDrv::Int2F_110F_GetFileAttrib(void)
 	{
 		auto subPath=DropDriveLetter(fName);
 
+		if(true==monitor)
+		{
+			std::cout << "SubPath=" << subPath << "\n";
+		}
+
+		// Windows 95 somehow asks attributes of the root directory.
+		if(""==subPath)
+		{
+			if(true==monitor)
+			{
+				std::cout << "Root directory\n";
+			}
+			ReturnAX(TOWNS_DOS_DIRENT_ATTR_DIRECTORY);
+			ReturnBX(0); // High word of the file length
+			townsPtr->CPU().SetDI(0); // Low word of the file length
+			ReturnCX(0);
+			ReturnDX(0);
+			townsPtr->CPU().SetCF(false);
+			return true; // Yes, it's my drive.
+		}
+
 		auto invalidErr=CheckFileName(fName);
 		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
 		{
+			if(true==monitor)
+			{
+				std::cout << "DOS ERR " << invalidErr << "\n";
+			}
 			ReturnAX(invalidErr);
 			townsPtr->CPU().SetCF(true);
 			return true; // Yes it's my drive.
@@ -631,6 +656,10 @@ bool TownsTgDrv::Int2F_110F_GetFileAttrib(void)
 		}
 		else
 		{
+			if(true==monitor)
+			{
+				std::cout << "File Not Found.\n";
+			}
 			ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
 			townsPtr->CPU().SetCF(true);
 		}
