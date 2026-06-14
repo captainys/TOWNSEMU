@@ -165,6 +165,17 @@ void i486Debugger::CleanUp(void)
 		h=0;
 	}
 }
+void i486Debugger::SetLinearBreakPointRange(uint32_t minLinAddr,uint32_t maxLinAddr)
+{
+	linearBreakPointRange[0]=std::min(minLinAddr,maxLinAddr);
+	linearBreakPointRange[1]=std::max(minLinAddr,maxLinAddr);
+}
+
+void i486Debugger::ClearLinearBreakPointRange(void)
+{
+	linearBreakPointRange[0]=0;
+	linearBreakPointRange[1]=0;
+}
 void i486Debugger::AddBreakPoint(CS_EIP bp,BreakPointInfo info)
 {
 	if((bp.SEG&i486DXCommon::FarPointer::SPECIAL_SEG_MASK)==i486DXCommon::FarPointer::SEG_WILDCARD)
@@ -535,6 +546,14 @@ void i486Debugger::CheckForBreakPoints(i486DXCommon &cpu)
 	CS_EIP cseip;
 	cseip.SEG=cpu.state.CS().value;
 	cseip.OFFSET=cpu.state.EIP;
+
+	{
+		auto linear=cpu.state.CS().baseLinearAddr+cpu.state.EIP;
+		if(linearBreakPointRange[0]<=linear && linear<=linearBreakPointRange[1])
+		{
+			vmPtr->SetDebugBreakFlag(true);
+		}
+	}
 
 	{
 		auto found=breakPoints.find(cseip);

@@ -140,6 +140,7 @@ public:
 	std::map <CS_EIP,BreakPointInfo> breakOnExceptionAt;
 	BreakPointInfo lastBreakPointInfo;
 	bool breakOnCS[65536];
+	uint32_t linearBreakPointRange[2]={0,0};
 	std::vector <bool> breakOnIORead,breakOnIOWrite;
 	CS_EIP oneTimeBreakPoint;
 	std::string externalBreakReason,additionalDisasm;
@@ -242,6 +243,9 @@ public:
 	i486Debugger(VMBase *vm);
 	~i486Debugger();
 	void CleanUp(void);
+
+	void SetLinearBreakPointRange(uint32_t minLinAddr,uint32_t maxLinAddr);
+	void ClearLinearBreakPointRange(void);
 
 	void AddBreakPoint(CS_EIP bp,BreakPointInfo info);
 	void RemoveBreakPoint(CS_EIP bp);

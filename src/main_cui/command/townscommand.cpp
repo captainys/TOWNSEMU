@@ -612,6 +612,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "BP EIP|BRK EIP" << std::endl;
 	std::cout << "BP CS:EIP|BRK CS:EIP" << std::endl;
 	std::cout << "  Add a break point." << std::endl;
+	std::cout << "  BP LINE:10000 1FFFF for setting break point for a range of linear address.\n";
 	std::cout << "BPPC EIP|BRK EIP passCount" << std::endl;
 	std::cout << "BPPC CS:EIP passCount" << std::endl;
 	std::cout << "  Add a break point with pass count" << std::endl;
@@ -2619,7 +2620,32 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTownsCommon &towns,Command
 	else
 	{
 		auto farPtr=towns.CPU().TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU()));
-		towns.debugger.AddBreakPoint(farPtr,info);
+		if(i486DXCommon::FarPointer::LINEAR_ADDR==farPtr.SEG)
+		{
+			// BP LINE:10000 1FFFF
+			//   To break when CS:EIP Linear addr is between 10000H and 1FFFFh
+			if(3<=cmd.argv.size())
+			{
+				uint32_t addr2=0;
+				TownsLineParserHexadecimal parser(&towns.CPU());
+				if(true==parser.Analyze(cmd.argv[2]))
+				{
+					addr2=parser.Evaluate();
+				}
+				towns.debugger.SetLinearBreakPointRange(farPtr.OFFSET,addr2);
+				std::cout << "Break at Linear Address between " << cpputil::Uitox(farPtr.OFFSET) << "H and " << cpputil::Uitox(addr2) << "H\n";
+			}
+			else
+			{
+				towns.debugger.SetLinearBreakPointRange(farPtr.OFFSET,farPtr.OFFSET);
+				std::cout << "Break at Linear Address " << cpputil::Uitox(farPtr.OFFSET) << "H\n";
+			}
+			std::cout << "BP LINE:0 0 to clear.\n";
+		}
+		else
+		{
+			towns.debugger.AddBreakPoint(farPtr,info);
+		}
 	}
 }
 
