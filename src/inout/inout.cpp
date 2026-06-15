@@ -38,10 +38,13 @@ void InOut::EnableLog(void)
 void InOut::DisableLog(void)
 {
 	takeLog=false;
+	std::map <uint16_t,IOLog> clr;
+	std::swap(log,clr);
 }
 void InOut::ClearLog(void)
 {
-	log.clear();
+	std::map <uint16_t,IOLog> clr;
+	std::swap(log,clr);
 }
 
 void InOut::AddDevice(Device *devPtr,unsigned int minIOPort,unsigned int maxIOPort)
@@ -67,11 +70,7 @@ unsigned int InOut::In8(unsigned int port)
 	// Read from appropriate device..
 	if(true==takeLog)
 	{
-		IOLog l;
-		l.output=false;
-		l.port=port;
-		l.value=value;
-		log.push_back(l);
+		log[port].in8++;
 	}
 	return value;
 }
@@ -82,11 +81,7 @@ unsigned int InOut::In16(unsigned int port)
 
 	if(true==takeLog)
 	{
-		IOLog l;
-		l.output=false;
-		l.port=port;
-		l.value=value;
-		log.push_back(l);
+		log[port].in16++;
 	}
 	return value;
 }
@@ -97,11 +92,7 @@ unsigned int InOut::In32(unsigned int port)
 
 	if(true==takeLog)
 	{
-		IOLog l;
-		l.output=false;
-		l.port=port;
-		l.value=value;
-		log.push_back(l);
+		log[port].in32++;
 	}
 	return value;
 }
@@ -112,11 +103,7 @@ void InOut::Out8(unsigned int port,unsigned int value)
 
 	if(true==takeLog)
 	{
-		IOLog l;
-		l.output=true;
-		l.port=port;
-		l.value=value;
-		log.push_back(l);
+		log[port].out8++;
 	}
 }
 void InOut::Out16(unsigned int port,unsigned int value)
@@ -125,11 +112,7 @@ void InOut::Out16(unsigned int port,unsigned int value)
 
 	if(true==takeLog)
 	{
-		IOLog l;
-		l.output=true;
-		l.port=port;
-		l.value=value;
-		log.push_back(l);
+		log[port].out16++;
 	}
 }
 void InOut::Out32(unsigned int port,unsigned int value)
@@ -138,10 +121,6 @@ void InOut::Out32(unsigned int port,unsigned int value)
 
 	if(true==takeLog)
 	{
-		IOLog l;
-		l.output=true;
-		l.port=port;
-		l.value=value;
-		log.push_back(l);
+		log[port].out32++;
 	}
 }

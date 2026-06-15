@@ -567,6 +567,10 @@ enum
 	// Probably <<
 
 
+	// Most likely >>
+	TOWNSIO_FMT_3631_PRESENCE_CHECK=       0x1100,  // Apparently FMT-3631 returns 40H (maybe 80H) on this I/O.  Need confirm.
+	// Most likely <<
+
 
 	TOWNSIO_CMOS_BASE=           0x3000,
 	TOWNSIO_CMOS_END=            0x4000,

@@ -296,6 +296,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["DIRECTTYPE"]=ENABLE_DIRECT_TYPE_MODE;
 	featureMap["CONSOUT"]=ENABLE_CONSOLE_STEAL;
 	featureMap["CONSSTEAL"]=ENABLE_CONSOLE_STEAL;
+	featureMap["IOLOG"]=ENABLE_IOLOG;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -357,6 +358,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["IOLIST"]=DUMP_IOLIST;
 	dumpableMap["NET"]=DUMP_LAN;
 	dumpableMap["LAN"]=DUMP_LAN;
+	dumpableMap["IOLOG"]=DUMP_IOLOG;
 
 
 	breakEventMap["ICW1"]=   BREAK_ON_PIC_IWC1;
@@ -831,6 +833,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Direct-type mode.\n";
 	std::cout << "CONSOUT / CONSSTEAL\n";
 	std::cout << "  Override CON and INT 29H to redirect output to the host terminal.\n";
+	std::cout << "IOLOG\n";
+	std::cout << "  I/O access log.\n";
 
 
 	std::cout << "<< Information that can be printed >>" << std::endl;
@@ -927,6 +931,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  List of known IO ports.\n";
 	std::cout << "IO portnumber-in-hexadecimal\n";
 	std::cout << "  Show short explanation of the IO port.\n";
+	std::cout << "LAN\n";
+	std::cout << "  Ethernet adapter state.\n";
+	std::cout << "IOLOG\n";
+	std::cout << "  I/O access log.\n";
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Event that can break >>" << std::endl;
@@ -2187,6 +2195,10 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd,O
 		case ENABLE_CONSOLE_STEAL:
 			Enable_Disable_ConsoleSteal(towns,true);
 			break;
+		case ENABLE_IOLOG:
+			towns.io.EnableLog();
+			std::cout << "Enabled I/O log.\n";
+			break;
 		}
 	}
 }
@@ -2330,6 +2342,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd,
 			break;
 		case ENABLE_CONSOLE_STEAL:
 			Enable_Disable_ConsoleSteal(towns,false);
+			break;
+		case ENABLE_IOLOG:
+			towns.io.DisableLog();
+			std::cout << "Disabled I/O log.\n";
 			break;
 		}
 	}
@@ -3225,6 +3241,33 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			for(auto str : towns.rex3586.GetStatusText())
 			{
 				std::cout << str << "\n";
+			}
+			break;
+		case DUMP_IOLOG:
+			{
+				auto ioLabel=FMTownsIOMap();
+				std::cout << "PORT  Count i8/i16/i32/o8/o16/o32\n";
+				for(auto l : towns.io.log)
+				{
+					auto port=l.first;
+					auto log=l.second;
+
+					std::cout << cpputil::Ustox(port) << "(";
+
+					auto found=ioLabel.find(port);
+					if(ioLabel.end()!=found)
+					{
+						std::cout << found->second;
+					}
+					else
+					{
+						std::cout << "???";
+					}
+					std::cout << ")  ";
+
+					std::cout << log.in8 << '/' << log.in16 << '/' << log.in32 << '/';
+					std::cout << log.out8 << '/' << log.out16 << '/' << log.out32 << '\n';
+				}
 			}
 			break;
 		}

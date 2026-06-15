@@ -48,13 +48,11 @@ public:
 	class IOLog
 	{
 	public:
-		bool output;
-		unsigned int port;
-		unsigned int value;
+		unsigned int in8=0,in16=0,in32=0,out8=0,out16=0,out32=0;
 	};
 
 	bool takeLog;
-	std::vector <IOLog> log;
+	std::map <uint16_t,IOLog> log;
 
 	InOut();
 	~InOut();
