@@ -744,6 +744,8 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 		mem.AddAccess(&fontROMAccess,TOWNSADDR_FONT_BASE,TOWNSADDR_FONT_END-1);
 		mem.AddAccess(&font20ROMAccess,TOWNSADDR_FONT20_BASE,TOWNSADDR_FONT20_END-1);
 		mem.AddAccess(&waveRAMAccess,TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1);
+
+		mem.AddAccess(&townsPtr->fmt3631,TOWNSADDR_FMT3631_BASE,TOWNSADDR_FMT3631_END-1);
 	}
 	else
 	{
