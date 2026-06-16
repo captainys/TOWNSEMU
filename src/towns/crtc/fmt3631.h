@@ -49,7 +49,7 @@ public:
 		// System Control Registers
 		SYSCONFIG       =0x00004,
 		INTERRUPT       =0x00008,
-		INTERRUPT_END   =0x0000C,
+		INTERRUPT_EN    =0x0000C,
 
 		// Parameter Engine Registers 4.4
 		// Device Coordinate
@@ -81,6 +81,7 @@ public:
 		SRTCTL          =0x00138,
 		//SRTCTL2         = P9100?
 		//QSFCOUNTER      = P9100?
+		VIDCTRL_LAST    =0x00138,
 
 		// VRAM Control Registers 4.7
 		MEM_CONFIG      =0x00184,
@@ -88,12 +89,18 @@ public:
 		RFCOUNT         =0x0018C,
 		RLMAX           =0x00190,
 		RLCUR           =0x00194,
+		VRAMCTRL_LAST   =0x00194,
 	};
 
 	class State
 	{
 	public:
 		bool enabled=false;
+
+		uint32_t sysconfig=0,interrupt=0,interrupt_en=0;
+		uint32_t status=0x40000000;
+		uint32_t videoCtrl[(VIDCTRL_LAST-HRZC)/4];
+		uint32_t vramCtrl[(VRAMCTRL_LAST-MEM_CONFIG)/4];
 	};
 	State state;
 
@@ -103,6 +110,10 @@ public:
 	const uint32_t vramBaseAddr=46200000;
 
 	FMT3631(class FMTownsCommon *ptr);
+
+	void PowerOn(void) override;
+	void Reset(void) override;
+
 	unsigned int IOReadByte(unsigned int ioport) override;
 	void IOWriteByte(unsigned int ioport,unsigned int data) override;
 
