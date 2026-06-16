@@ -342,6 +342,11 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  And HostPort is the port open to outside.\n";
 	std::cout << "  You may also have to open port in the Firewall of the host OS.\n";
 
+	std::cout << "-FMT3631\n";
+	std::cout << "  Enable FMT-3631 Windows Accelerator Card.\n";
+	std::cout << "-NOFMT3631\n";
+	std::cout << "  Disable FMT-3631 Windows Accelerator Card.\n";
+
 	std::cout << "-VERBOSE\n";
 	std::cout << "  Additional console output.\n";
 }
@@ -1215,6 +1220,14 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-NOREX3586"==ARG)
 		{
 			enableLAN=false;
+		}
+		else if("-FMT3631"==ARG)
+		{
+			fmt3631=true;
+		}
+		else if("-NOFMT3631"==ARG)
+		{
+			fmt3631=false;
 		}
 		else if("-PORTFWD"==ARG && i+2<argc)
 		{

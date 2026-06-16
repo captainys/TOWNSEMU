@@ -82,6 +82,8 @@ public:
 	bool enableLAN=false;
 	std::vector <std::pair <uint16_t,uint16_t> > portForwarding;
 
+	bool fmt3631=false;
+
 	// If not "", VM starts from this saved state.
 	std::string startUpStateFName;
 

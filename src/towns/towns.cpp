@@ -514,6 +514,11 @@ void FMTownsCommon::State::PowerOn(void)
 		}
 	}
 
+	if(true==argv.fmt3631)
+	{
+		towns.fmt3631.state.enabled=true;
+	}
+
 	return result;
 }
 
@@ -631,6 +636,7 @@ FMTownsCommon::FMTownsCommon() :
 	physMem(this,&mem,&sound.state.rf5c68),
 	keyboard(this,&pic),
 	crtc(this,&sprite),
+	fmt3631(this),
 	sprite(this,&physMem),
 	pic(this),
 	dmac(this),
@@ -1010,6 +1016,8 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_ALT_SELF_RX); //		0x710E,
 	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_ALT_TRCV_STATUS); //	0x710F,
 	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_ALT_ROM); // 			0x7110
+
+	io.AddDevice(&fmt3631,TOWNSIO_FMT_3631_PRESENCE_CHECK); //      0x1100
 
 	baseClassReady=true;
 }

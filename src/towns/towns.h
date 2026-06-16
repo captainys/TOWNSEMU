@@ -52,6 +52,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "highrespcm.h"
 
 #include "rex3586.h"
+#include "fmt3631.h"
 
 #include "eventlog.h"
 
@@ -464,6 +465,7 @@ public:
 	TownsCDROM cdrom;
 	TownsPhysicalMemory physMem;
 	TownsCRTC crtc;
+	FMT3631 fmt3631;
 	TownsSprite sprite;
 	TownsFDC fdc;
 	TownsSCSI scsi;
