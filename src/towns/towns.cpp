@@ -1363,7 +1363,7 @@ bool FMTownsCommon::FASTModeLamp(void) const
 
 void FMTownsCommon::SetMainRAMSize(long long int size)
 {
-	uint64_t RAMEnd=0x7FFFFFFF;
+	uint64_t RAMEnd=TOWNSADDR_POSSIBLE_MAINRAM_END;
 	if(TOWNSTYPE_MARTY==townsType)
 	{
 		size=std::min<uint64_t>(size,TOWNSADDR_MARTY_OSROM_BASE);

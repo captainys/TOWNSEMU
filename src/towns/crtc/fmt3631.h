@@ -53,9 +53,20 @@ public:
 
 		// Parameter Engine Registers 4.4
 		// Device Coordinate
-		DEVICE_COORD    =0x81000, // See 4.4.1 for low 8 bits.
+		DEVICE_COORD    =0x181000, // See 4.4.1 for low 8 bits.
 		// Status
-		STATUS          =0x80000,
+		STATUS          =0x180000,
+			STATUS_FLAG_ISSUE_QBN=     0x80000000,
+			STATUS_FLAG_BUSY=          0x40000000,
+			STATUS_FLAG_PICKED=        0x00000080,
+			STATUS_FLAG_PIXEL_SW=      0x00000040,
+			STATUS_FLAG_BLIT_SW=       0x00000020,
+			STATUS_FLAG_QUAD_SW=       0x00000010,
+			STATUS_FLAG_QUAD_CONCAVE=  0x00000008,
+			STATUS_FLAG_QUAD_HIDDEN=   0x00000004,
+			STATUS_FLAG_QUAD_VISIBLE=  0x00000002,
+			STATUS_FLAG_QUAD_INTERSECT=0x00000001,
+
 		// Control and condition
 
 		// Drawing Engine Registers
@@ -63,33 +74,33 @@ public:
 
 		// Video Control Registers 4.6
 		// Horizontal
-		HRZC            =0x00104,
-		HRZT            =0x00108,
-		HRZSR           =0x0010C,
-		HRZBR           =0x00110,
-		HRZBT           =0x00114,
-		PREHRZC         =0x00118,
+		HRZC            =0x100104,
+		HRZT            =0x100108,
+		HRZSR           =0x10010C,
+		HRZBR           =0x100110,
+		HRZBT           =0x100114,
+		PREHRZC         =0x100118,
 		// Vertical
-		VRTC            =0x0011C,
-		VRTT            =0x00120,
-		VRSTR           =0x00124,
-		VRTBR           =0x00128,
-		VRTBF           =0x0012C,
-		PREVRTC         =0x00130,
+		VRTC            =0x10011C,
+		VRTT            =0x100120,
+		VRSTR           =0x100124,
+		VRTBR           =0x100128,
+		VRTBF           =0x10012C,
+		PREVRTC         =0x100130,
 		// Repaint
-		SRADDR          =0x00134,
-		SRTCTL          =0x00138,
+		SRADDR          =0x100134,
+		SRTCTL          =0x100138,
 		//SRTCTL2         = P9100?
 		//QSFCOUNTER      = P9100?
-		VIDCTRL_LAST    =0x00138,
+		VIDCTRL_LAST    =0x100138,
 
 		// VRAM Control Registers 4.7
-		MEM_CONFIG      =0x00184,
-		RFPERIOD        =0x00188,
-		RFCOUNT         =0x0018C,
-		RLMAX           =0x00190,
-		RLCUR           =0x00194,
-		VRAMCTRL_LAST   =0x00194,
+		MEM_CONFIG      =0x100184,
+		RFPERIOD        =0x100188,
+		RFCOUNT         =0x10018C,
+		RLMAX           =0x100190,
+		RLCUR           =0x100194,
+		VRAMCTRL_LAST   =0x100194,
 	};
 
 	class State
@@ -98,16 +109,17 @@ public:
 		bool enabled=false;
 
 		uint32_t sysconfig=0,interrupt=0,interrupt_en=0;
-		uint32_t status=0x40000000;
+		uint32_t status=0;
 		uint32_t videoCtrl[(VIDCTRL_LAST-HRZC)/4];
 		uint32_t vramCtrl[(VRAMCTRL_LAST-MEM_CONFIG)/4];
 	};
 	State state;
+	bool monitor=true;
 
 	const char *DeviceName(void) const override {return "FMT3631";}
 
 	const uint32_t baseAddr=0x46000000;
-	const uint32_t vramBaseAddr=46200000;
+	const uint32_t vramBaseAddr=0x46200000;
 
 	FMT3631(class FMTownsCommon *ptr);
 
