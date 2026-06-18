@@ -44,6 +44,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Maximize the window on start up" << std::endl;
 	std::cout << "-FULLSCREEN" << std::endl;
 	std::cout << "  Fullscreen on start up" << std::endl;
+	std::cout << "-WINSIZE wid hei" << std::endl;
+	std::cout << "  Specify window size." << std::endl;
 	std::cout << "-HIGHRES" << std::endl;
 	std::cout << "  Enable High-Resolution CRTC (default)" << std::endl;
 	std::cout << "-NOHIGHRES" << std::endl;
@@ -504,6 +506,13 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-FULLSCREEN"==ARG)
 		{
 			windowModeOnStartUp=WINDOW_FULLSCREEN;
+		}
+		else if("-WINSIZE"==ARG && i+2<argc)
+		{
+			windowModeOnStartUp=WINDOW_SPECIFY_SIZE;
+			windowSize[0]=std::max(16,cpputil::Atoi(argv[i+1]));
+			windowSize[1]=std::max(16,cpputil::Atoi(argv[i+2]));
+			i+=2;
 		}
 		else if("-PAUSE"==ARG)
 		{

@@ -20,7 +20,8 @@ public:
 	{
 		WINDOW_NORMAL,
 		WINDOW_MAXIMIZE,
-		WINDOW_FULLSCREEN
+		WINDOW_FULLSCREEN,
+		WINDOW_SPECIFY_SIZE,
 	};
 
 	enum
@@ -207,6 +208,7 @@ public:
 	unsigned int scaling=100;
 	bool autoScaling=false,maintainAspect=true;
 	unsigned int windowModeOnStartUp=WINDOW_NORMAL;
+	unsigned int windowSize[2]={640,480}; // Valid only with WINDOW_SPECIFY_SIZE.
 
 	std::string quickScrnShotDir;
 	std::string quickStateSaveFName;

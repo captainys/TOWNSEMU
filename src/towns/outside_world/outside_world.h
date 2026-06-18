@@ -300,6 +300,7 @@ public:
 		bool maintainAspect=true;
 
 		unsigned int windowModeOnStartUp=TownsStartParameters::WINDOW_NORMAL;
+		unsigned int windowSizeOnStartUp[2]={640,480}; // Valid only with WINDOW_SPECIFY_SIZE
 
 		bool closeWindow=false;  // Windows is closed from outside.
 
