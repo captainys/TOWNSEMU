@@ -1658,7 +1658,7 @@ void FsSimpleWindowConnection::WindowConnection::Start(void)
 		break;
 	case TownsStartParameters::WINDOW_SPECIFY_SIZE:
 		FsPollDevice();
-		FsResizeWindow(windowSizeOnStartUp[0],windowSizeOnStartUp[1]);
+		FsResizeWindow(windowSizeOnStartUp[0],windowSizeOnStartUp[1]+STATUS_HEI);
 		for(int i=0; i<10; ++i)
 		{
 			FsPollDevice();
