@@ -435,6 +435,8 @@ void FMTownsCommon::State::PowerOn(void)
 	windowInterface->maintainAspect=argv.maintainAspect;
 	windowInterface->windowShift=argv.windowShift;
 	windowInterface->windowModeOnStartUp=argv.windowModeOnStartUp;
+	windowInterface->windowSizeOnStartUp[0]=argv.windowSize[0];
+	windowInterface->windowSizeOnStartUp[1]=argv.windowSize[1];
 
 	outside_world->mouseByFlightstickAvailable=argv.mouseByFlightstickAvailable;
 	outside_world->cyberStickAssignment=argv.cyberStickAssignment;

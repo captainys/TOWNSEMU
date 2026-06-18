@@ -173,7 +173,7 @@ void i486Debugger::SetLinearBreakPointRange(uint32_t minLinAddr,uint32_t maxLinA
 
 void i486Debugger::ClearLinearBreakPointRange(void)
 {
-	linearBreakPointRange[0]=0;
+	linearBreakPointRange[0]=0x7fffffff;
 	linearBreakPointRange[1]=0;
 }
 void i486Debugger::AddBreakPoint(CS_EIP bp,BreakPointInfo info)

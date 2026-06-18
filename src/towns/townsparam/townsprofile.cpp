@@ -152,6 +152,13 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	case WINDOW_FULLSCREEN:
 		text.push_back("WNDWMODE FULLSCREEN");
 		break;
+	case WINDOW_SPECIFY_SIZE:
+		{
+			sstream.str("");
+			sstream << "WNDWMODE SPECIFY " << windowSize[0] << " " << windowSize[1];
+			text.push_back(sstream.str());
+		}
+		break;
 	}
 
 	sstream.str("");
@@ -535,6 +542,12 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				else if(argv[1]=="FULLSCREEN")
 				{
 					windowModeOnStartUp=WINDOW_FULLSCREEN;
+				}
+				else if(argv[1]=="SPECIFY" && 4<=argv.size())
+				{
+					windowModeOnStartUp=WINDOW_SPECIFY_SIZE;
+					windowSize[0]=std::max(64,cpputil::Atoi(argv[2]));
+					windowSize[1]=std::max(64,cpputil::Atoi(argv[3]));
 				}
 			}
 		}

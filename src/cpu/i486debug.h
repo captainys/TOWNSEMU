@@ -140,7 +140,7 @@ public:
 	std::map <CS_EIP,BreakPointInfo> breakOnExceptionAt;
 	BreakPointInfo lastBreakPointInfo;
 	bool breakOnCS[65536];
-	uint32_t linearBreakPointRange[2]={0,0};
+	uint32_t linearBreakPointRange[2]={0x7fffffff,0};
 	std::vector <bool> breakOnIORead,breakOnIOWrite;
 	CS_EIP oneTimeBreakPoint;
 	std::string externalBreakReason,additionalDisasm;

@@ -1656,6 +1656,14 @@ void FsSimpleWindowConnection::WindowConnection::Start(void)
 		}
 		autoScaling=true;
 		break;
+	case TownsStartParameters::WINDOW_SPECIFY_SIZE:
+		FsPollDevice();
+		FsResizeWindow(windowSizeOnStartUp[0],windowSizeOnStartUp[1]);
+		for(int i=0; i<10; ++i)
+		{
+			FsPollDevice();
+		}
+		break;
 	}
 
 	winThr.winWid=640;
