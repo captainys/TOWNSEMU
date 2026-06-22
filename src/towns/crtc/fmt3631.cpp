@@ -51,6 +51,8 @@ unsigned int FMT3631::IOReadByte(unsigned int ioport)
 			// The cable should not convert pin assignments from TOWNS's D-Sub 15 pins to VGA.
 			// The cable is a straight cable, pin-i to pin-i, except pin-7.
 			// Connecting pin-7 risks directly connecting TOWNS's CSYNC to GND, which could fry something.
+			// .... Wait, once it returnex 0x60 on I/O 0x1100, my FMT-3631 starts returning the same without the straight cable.
+			// It could have changed the status of the relay by connecting the straight cable.  The reason is unknown.
 		}
 	}
 	return 0xFF;

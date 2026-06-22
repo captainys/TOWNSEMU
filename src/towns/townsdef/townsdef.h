@@ -573,9 +573,10 @@ enum
 	// Probably <<
 
 
-	// Most likely >>
-	TOWNSIO_FMT_3631_PRESENCE_CHECK=       0x1100,  // Apparently FMT-3631 returns 40H (maybe 80H) on this I/O.  Need confirm.
-	// Most likely <<
+	TOWNSIO_FMT_3631_PRESENCE_CHECK=       0x1100,
+	// FMT-3631 returns 60H on this I/O only if the straight-cable from on-board Video Out to FMT-3631 RGB-in is connected.
+	// The cable from on-board to FMT-3631 is a straight-cable.  Pin-7 CSYNC is grounded on the FMT-3631 side, therefore
+	// connecting Pin-7 risks CSYNC directly connected to GND.  Experiment confirmed that pin-7 connection is not needed. (2026/06/22)
 
 
 	TOWNSIO_CMOS_BASE=           0x3000,
