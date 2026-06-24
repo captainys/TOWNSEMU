@@ -22,6 +22,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 FMT3631::FMT3631(class FMTownsCommon *ptr) : Device(ptr)
 {
+	state.vram.resize(VRAM_SIZE);
 }
 
 void FMT3631::PowerOn(void)
@@ -37,6 +38,7 @@ void FMT3631::Reset(void)
 	state.status=0;
 	memset(state.videoCtrl,0,sizeof(state.videoCtrl));
 	memset(state.vramCtrl,0,sizeof(state.vramCtrl));
+	memset(state.vram.data(),0,VRAM_SIZE);
 }
 
 unsigned int FMT3631::IOReadByte(unsigned int ioport)
@@ -131,6 +133,7 @@ unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 	{
 		if(vramBaseAddr<physAddr)
 		{
+			data=state.vram[physAddr-TOWNSADDR_FMT3631_VRAM];
 		}
 		else
 		{
@@ -158,6 +161,7 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 	{
 		if(vramBaseAddr<physAddr)
 		{
+			data=cpputil::GetDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
 		}
 		else
 		{
@@ -216,9 +220,9 @@ void FMT3631::StoreByte(unsigned int physAddr,unsigned char data)
 
 	if(true==state.enabled)
 	{
-		auto relAddr=physAddr&TOWNSADDR_FMT3631_AND;
 		if(vramBaseAddr<physAddr)
 		{
+			state.vram[physAddr-TOWNSADDR_FMT3631_VRAM]=data;
 		}
 		else
 		{
@@ -236,9 +240,9 @@ void FMT3631::StoreDword(unsigned int physAddr,unsigned int data)
 
 	if(true==state.enabled)
 	{
-		auto relAddr=physAddr&TOWNSADDR_FMT3631_AND;
 		if(vramBaseAddr<physAddr)
 		{
+			cpputil::PutDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM,data);
 		}
 		else
 		{

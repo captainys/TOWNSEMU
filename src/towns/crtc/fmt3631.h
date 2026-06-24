@@ -47,6 +47,9 @@ public:
 	// Based on Linux p9000regs.h and Weitek Power 9100 Graphics Controller Preliminary Nov93
 	enum
 	{
+		//
+		VRAM_SIZE       =0x200000,
+
 		// System Control Registers
 		SYSCONFIG       =0x00004,
 		INTERRUPT       =0x00008,
@@ -108,6 +111,7 @@ public:
 	{
 	public:
 		bool enabled=false;
+		std::vector <uint8_t> vram;
 
 		uint32_t sysconfig=0,interrupt=0,interrupt_en=0;
 		uint32_t status=0;
