@@ -839,7 +839,11 @@ YSRESULT YsSocketClient::CheckReceive(void)
 	pfd.fd=internal->sock;
 	pfd.events=POLLIN;
 	pfd.revents=0;
-	if(poll(&pfd,1,1)>=1)
+	// Timeout must be 0 (non-blocking) to match the Windows select() path above
+	// (wait={0,0}).  A 1ms timeout here blocks the VM thread on every RxRDY poll
+	// when no data is pending, stalling emulation when the guest spins waiting
+	// for serial input (e.g. modem CONNECT / login response).
+	if(poll(&pfd,1,0)>=1)
 	{
 		ready=YSTRUE;
 	}
