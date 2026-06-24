@@ -19,6 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "device.h"
 #include "ramrom.h"
+#include "townsdef.h"
 
 
 // Device Coord Registers are supposed to be:
@@ -118,8 +119,8 @@ public:
 
 	const char *DeviceName(void) const override {return "FMT3631";}
 
-	const uint32_t baseAddr=0x46000000;
-	const uint32_t vramBaseAddr=0x46200000;
+	const uint32_t baseAddr=TOWNSADDR_FMT3631_BASE;
+	const uint32_t vramBaseAddr=TOWNSADDR_FMT3631_VRAM;
 
 	FMT3631(class FMTownsCommon *ptr);
 
@@ -129,6 +130,16 @@ public:
 	unsigned int IOReadByte(unsigned int ioport) override;
 	void IOWriteByte(unsigned int ioport,unsigned int data) override;
 
+
+	template <class returnType,class stateType>
+	inline static returnType GetControlWordPtrTemplate(uint32_t physAddr,stateType &state);
+
+	const uint32_t *GetControlWordPtr(unsigned int physAddr) const;
+	uint32_t *GetControlWordPtr(unsigned int physAddr);
+
+	void SetControlByte(uint32_t physAddr,uint8_t data);
+	void SetControlWord(uint32_t physAddr,uint16_t data);
+	void SetControlDword(uint32_t physAddr,uint32_t data);
 
 	unsigned int FetchByte(unsigned int physAddr) const override;
 	unsigned int FetchDword(unsigned int physAddr) const override;

@@ -151,8 +151,10 @@ enum
 #define TOWNSADDR_POSSIBLE_MAINRAM_END 0x45FFFFFF
 
 #define TOWNSADDR_FMT3631_BASE         0x46000000
-#define TOWNSADDR_FMT3631_END          0x47000000 // Power 9100 datasheet suggests, direct VRAM access may start 46800000h
-#define TOWNSADDR_FMT3631_AND          0x00FFFFFF
+#define TOWNSADDR_FMT3631_CONTROL      0x46100000
+#define TOWNSADDR_FMT3631_VRAM         0x46200000 // Power 9100 datasheet suggests direct VRAM access may start 46800000h, but Linux source tells 46200000h
+#define TOWNSADDR_FMT3631_END          0x46400000
+#define TOWNSADDR_FMT3631_AND          0x003FFFFF
 
 #define TOWNSADDR_VRAM0_BASE           0x80000000
 #define TOWNSADDR_VRAM0_END            0x80080000

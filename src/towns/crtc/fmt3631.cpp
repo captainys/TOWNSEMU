@@ -63,18 +63,82 @@ void FMT3631::IOWriteByte(unsigned int ioport,unsigned int data)
 }
 
 
+template <class returnType,class stateType>
+inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType &state)
+{
+	auto relAddr=physAddr-TOWNSADDR_FMT3631_BASE;
+	switch(relAddr)
+	{
+	case SYSCONFIG: //0x00004,
+		return &state.sysconfig;
+	case INTERRUPT: //0x00008,
+		return &state.interrupt;
+	case INTERRUPT_EN: //0x0000C,
+		return &state.interrupt_en;
+
+	// Status
+	case STATUS          : //0x80000,
+		return &state.status;
+
+	// Control and condition
+
+	// Drawing Engine Registers
+	// Pixel Processing 4.5
+
+	// Video Control Registers 4.6
+	case HRZC            : //0x00104,
+	case HRZT            : //0x00108,
+	case HRZSR           : //0x0010C,
+	case HRZBR           : //0x00110,
+	case HRZBT           : //0x00114,
+	case PREHRZC         : //0x00118,
+	case VRTC            : //0x0011C,
+	case VRTT            : //0x00120,
+	case VRSTR           : //0x00124,
+	case VRTBR           : //0x00128,
+	case VRTBF           : //0x0012C,
+	case PREVRTC         : //0x00130,
+	case SRADDR          : //0x00134,
+	case SRTCTL          : //0x00138,
+		return &state.videoCtrl[(relAddr-HRZC)/4];
+
+	// VRAM Control Registers 4.7
+	case MEM_CONFIG      : //0x00184,
+	case RFPERIOD        : //0x00188,
+	case RFCOUNT         : //0x0018C,
+	case RLMAX           : //0x00190,
+	case RLCUR           : //0x00194,
+		return &state.vramCtrl[(relAddr-MEM_CONFIG)/4];
+	}
+	return nullptr;
+}
+
+const uint32_t *FMT3631::GetControlWordPtr(unsigned int physAddr) const
+{
+	return GetControlWordPtrTemplate<const uint32_t *,const State>(physAddr,state);
+}
+
+uint32_t *FMT3631::GetControlWordPtr(unsigned int physAddr)
+{
+	return GetControlWordPtrTemplate<uint32_t *,State>(physAddr,state);
+}
+
 unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 {
 	unsigned int data=0xFF;
 
 	if(true==state.enabled)
 	{
-		auto relAddr=physAddr&TOWNSADDR_FMT3631_AND;
 		if(vramBaseAddr<physAddr)
 		{
 		}
 		else
 		{
+			auto *ptr=GetControlWordPtr(physAddr);
+			if(nullptr!=ptr)
+			{
+				data=*ptr;
+			}
 		}
 	}
 
@@ -92,60 +156,15 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 
 	if(true==state.enabled)
 	{
-		auto relAddr=physAddr&=TOWNSADDR_FMT3631_AND;
 		if(vramBaseAddr<physAddr)
 		{
 		}
 		else
 		{
-			switch(relAddr)
+			auto *ptr=GetControlWordPtr(physAddr);
+			if(nullptr!=ptr)
 			{
-			case SYSCONFIG: //0x00004,
-				data=state.sysconfig;
-				break;
-			case INTERRUPT: //0x00008,
-				data=state.interrupt;
-				break;
-			case INTERRUPT_EN: //0x0000C,
-				data=state.interrupt_en;
-				break;
-
-			// Status
-			case STATUS          : //0x80000,
-				data=state.status;
-				break;
-
-			// Control and condition
-
-			// Drawing Engine Registers
-			// Pixel Processing 4.5
-
-			// Video Control Registers 4.6
-			case HRZC            : //0x00104,
-			case HRZT            : //0x00108,
-			case HRZSR           : //0x0010C,
-			case HRZBR           : //0x00110,
-			case HRZBT           : //0x00114,
-			case PREHRZC         : //0x00118,
-			case VRTC            : //0x0011C,
-			case VRTT            : //0x00120,
-			case VRSTR           : //0x00124,
-			case VRTBR           : //0x00128,
-			case VRTBF           : //0x0012C,
-			case PREVRTC         : //0x00130,
-			case SRADDR          : //0x00134,
-			case SRTCTL          : //0x00138,
-				data=state.videoCtrl[(relAddr-HRZC)/4];
-				break;
-
-			// VRAM Control Registers 4.7
-			case MEM_CONFIG      : //0x00184,
-			case RFPERIOD        : //0x00188,
-			case RFCOUNT         : //0x0018C,
-			case RLMAX           : //0x00190,
-			case RLCUR           : //0x00194,
-				data=state.vramCtrl[(relAddr-MEM_CONFIG)/4];
-				break;
+				data=*ptr;
 			}
 		}
 	}
@@ -157,6 +176,36 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 
 	return data;
 }
+
+void FMT3631::SetControlByte(uint32_t physAddr,uint8_t data)
+{
+	auto ptr=GetControlWordPtr(physAddr);
+	if(nullptr!=ptr)
+	{
+		*ptr&=0xFFFFFF00;
+		*ptr|=data;
+	}
+}
+
+void FMT3631::SetControlWord(uint32_t physAddr,uint16_t data)
+{
+	auto ptr=GetControlWordPtr(physAddr);
+	if(nullptr!=ptr)
+	{
+		*ptr&=0xFFFF0000;
+		*ptr|=data;
+	}
+}
+
+void FMT3631::SetControlDword(uint32_t physAddr,uint32_t data)
+{
+	auto ptr=GetControlWordPtr(physAddr);
+	if(nullptr!=ptr)
+	{
+		*ptr=data;
+	}
+}
+
 
 void FMT3631::StoreByte(unsigned int physAddr,unsigned char data)
 {
@@ -173,6 +222,7 @@ void FMT3631::StoreByte(unsigned int physAddr,unsigned char data)
 		}
 		else
 		{
+			SetControlByte(physAddr,data);
 		}
 	}
 }
@@ -192,55 +242,7 @@ void FMT3631::StoreDword(unsigned int physAddr,unsigned int data)
 		}
 		else
 		{
-			switch(relAddr)
-			{
-			case SYSCONFIG: //0x00004,
-				state.sysconfig=data;
-				return;
-			case INTERRUPT: //0x00008,
-				state.interrupt=data;
-				return;
-			case INTERRUPT_EN: //0x0000C,
-				state.interrupt_en=data;
-				return;
-
-			// Status
-			case STATUS          : //0x80000,
-				state.status=data;
-				return;
-
-			// Control and condition
-
-			// Drawing Engine Registers
-			// Pixel Processing 4.5
-
-			// Video Control Registers 4.6
-			case HRZC            : //0x00104,
-			case HRZT            : //0x00108,
-			case HRZSR           : //0x0010C,
-			case HRZBR           : //0x00110,
-			case HRZBT           : //0x00114,
-			case PREHRZC         : //0x00118,
-			case VRTC            : //0x0011C,
-			case VRTT            : //0x00120,
-			case VRSTR           : //0x00124,
-			case VRTBR           : //0x00128,
-			case VRTBF           : //0x0012C,
-			case PREVRTC         : //0x00130,
-			case SRADDR          : //0x00134,
-			case SRTCTL          : //0x00138,
-				state.videoCtrl[(relAddr-HRZC)/4]=data;
-				return;
-
-			// VRAM Control Registers 4.7
-			case MEM_CONFIG      : //0x00184,
-			case RFPERIOD        : //0x00188,
-			case RFCOUNT         : //0x0018C,
-			case RLMAX           : //0x00190,
-			case RLCUR           : //0x00194,
-				state.vramCtrl[(relAddr-MEM_CONFIG)/4]=data;
-				return;
-			}
+			SetControlDword(physAddr,data);
 		}
 	}
 }
