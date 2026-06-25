@@ -21,6 +21,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "device.h"
 #include "cheapmath.h"
+#include "haslayer.h"
 
 
 
@@ -53,7 +54,7 @@ CLKSEL
 
 
 
-class TownsCRTC : public Device
+class TownsCRTC : public Device, public TownsDeviceHasLayer
 {
 public:
 	enum
@@ -148,24 +149,6 @@ public:
 	static const unsigned int CLKSELtoHz[4];
 	unsigned int CLKSELtoFreq[4];
 
-	class Layer
-	{
-	public:
-		unsigned int bitsPerPixel;
-		unsigned int highResRGBSwap; // Hopefully meaningful only in the 24-bit color mode.  Figured 2025/07/02
-		unsigned int VRAMAddr;
-		unsigned int VRAMOffset;
-		unsigned int FlipVRAMOffset;
-		unsigned int FMRGVRAMMask;
-		Vec2i originOnMonitor;
-		unsigned int VRAMHSkipBytes;
-		Vec2i sizeOnMonitor;
-		Vec2i VRAMCoverage1X;
-		Vec2i zoom2x;
-		unsigned int bytesPerLine;
-
-		unsigned int HScrollMask,VScrollMask;
-	};
 	class ScreenModeCache
 	{
 	public:

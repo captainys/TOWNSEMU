@@ -20,6 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "device.h"
 #include "ramrom.h"
 #include "townsdef.h"
+#include "haslayer.h"
 
 
 // Device Coord Registers are supposed to be:
@@ -41,7 +42,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Should ignore bit 13?
 
 // FMT-3631 Weitek Power 9000 Windows Accelerator Card.
-class FMT3631 : public Device, public MemoryAccess
+class FMT3631 : public Device, public MemoryAccess, public TownsDeviceHasLayer
 {
 public:
 	// Based on Linux p9000regs.h and Weitek Power 9100 Graphics Controller Preliminary Nov93
