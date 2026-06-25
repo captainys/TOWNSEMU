@@ -21,6 +21,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "sprite.h"
 #include "towns.h"
 #include "townsdef.h"
+#include "fmt3631.h"
 
 
 
@@ -283,10 +284,11 @@ void TownsCRTC::ScreenModeCache::MakeFMRCompatible(void)
 ////////////////////////////////////////////////////////////
 
 
-TownsCRTC::TownsCRTC(class FMTownsCommon *ptr,TownsSprite *spritePtr) : Device(ptr)
+TownsCRTC::TownsCRTC(class FMTownsCommon *ptr,TownsSprite *spritePtr,class FMT3631 *fmt3631) : Device(ptr)
 {
 	this->townsPtr=ptr;
 	this->spritePtr=spritePtr;
+	this->fmt3631=fmt3631; // May not be usable yet.  Do not use it inside the constructor.
 	state.Reset();
 
 	// Tentatively

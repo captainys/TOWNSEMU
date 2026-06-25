@@ -637,7 +637,7 @@ FMTownsCommon::FMTownsCommon() :
 	debugger(this),
 	physMem(this,&mem,&sound.state.rf5c68),
 	keyboard(this,&pic),
-	crtc(this,&sprite),
+	crtc(this,&sprite,&fmt3631),
 	fmt3631(this),
 	sprite(this,&physMem),
 	pic(this),

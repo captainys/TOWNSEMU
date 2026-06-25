@@ -329,6 +329,7 @@ public:
 
 	class FMTownsCommon *townsPtr;
 	class TownsSprite *spritePtr;
+	class FMT3631 *fmt3631;
 	State state;
 
 	bool monitorCRTC2=false;
@@ -337,7 +338,7 @@ public:
 
 	virtual const char *DeviceName(void) const{return "CRTC";}
 
-	TownsCRTC(class FMTownsCommon *ptr,class TownsSprite *spritePtr);
+	TownsCRTC(class FMTownsCommon *ptr,class TownsSprite *spritePtr,class FMT3631 *fmt3631);
 
 	void UpdateSpriteHardware(void);
 
