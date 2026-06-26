@@ -1401,7 +1401,6 @@ const uint8_t *FMTownsCommon::GetUsingVRAM(void) const
 {
 	if(true==fmt3631.IsEnabled())
 	{
-std::cout << fmt3631.state.vram.size() << "\n";
 		return fmt3631.state.vram.data();
 	}
 	else
