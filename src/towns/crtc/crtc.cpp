@@ -1948,6 +1948,11 @@ std::vector <std::string> TownsCRTC::GetHighResStatusText(void) const
 		text.insert(text.end(),page1Info.begin(),page1Info.end());
 	}
 
+	if(true==fmt3631->IsEnabled())
+	{
+		std::cout << "FMT-3631 (Power 9000) is enabled.\n";
+	}
+
 	return text;
 }
 std::vector <std::string> TownsCRTC::GetHighResPaletteText(void) const
