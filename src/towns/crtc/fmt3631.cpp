@@ -76,6 +76,26 @@ unsigned int FMT3631::BytesPerLine(void) const
 	return (bf-br)*4;
 }
 
+void FMT3631::MakePageLayerInfo(Layer &layer) const
+{
+	layer.bitsPerPixel=BitsPerPixel();
+	layer.highResRGBSwap=0; // RGB or BRG or BGR.  Yet to figure what register controls it.
+	layer.VRAMAddr=0;
+
+	layer.VRAMOffset=0;
+	layer.FlipVRAMOffset =0;        // FM-R/Sprite page is not applicable to Power 9000.
+	layer.FMRGVRAMMask=0x0F;        // Hopefully there's no mask in Power 9000.
+	layer.originOnMonitor=Vec2i::Make(0,0);
+	layer.VRAMHSkipBytes=0;
+	layer.sizeOnMonitor=Vec2i::Make(Width(),Height());
+	layer.VRAMCoverage1X=layer.sizeOnMonitor;
+	layer.zoom2x=Vec2i::Make(1,1);
+	layer.bytesPerLine=BytesPerLine();
+
+	layer.HScrollMask=0xFFFFFFFF;
+	layer.VScrollMask=VRAM_SIZE-1;
+}
+
 unsigned int FMT3631::IOReadByte(unsigned int ioport)
 {
 	if(true==state.enabled)

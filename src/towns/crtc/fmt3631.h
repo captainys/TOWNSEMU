@@ -139,6 +139,8 @@ public:
 	unsigned int BytesPerLine(void) const;
 	unsigned int BitsPerPixel(void) const;
 
+	void MakePageLayerInfo(Layer &layer) const;
+
 	unsigned int IOReadByte(unsigned int ioport) override;
 	void IOWriteByte(unsigned int ioport,unsigned int data) override;
 
