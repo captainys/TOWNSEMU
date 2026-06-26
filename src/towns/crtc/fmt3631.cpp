@@ -41,6 +41,41 @@ void FMT3631::Reset(void)
 	memset(state.vram.data(),0,VRAM_SIZE);
 }
 
+bool FMT3631::IsEnabled(void) const
+{
+	// According to p9000init.c of Linux XFree86 source, writing
+	// 1e5, 1e4, or 1c4 enables Power 9000 video output.
+	// 1e5 for 2MB VRAM (FMT-3631 is this case)    0001 1110 0101
+	// 1e4 for 1MB VRAM.                           0001 1110 0100
+	// 1c4 is unknown, but I don't care.           0001 1100 0100
+	auto srtctl=*GetControlWordPtr(SRTCTL);
+	return (true==state.enabled) && (0x1c4==(srtctl&0x1c4));
+}
+
+unsigned int FMT3631::Height(void) const
+{
+	auto br=*GetControlWordPtr(VRTBR);
+	auto bf=*GetControlWordPtr(VRTBF);
+	return bf-br;
+}
+
+unsigned int FMT3631::Width(void) const
+{
+	return BytesPerLine()*8/BitsPerPixel();
+}
+
+unsigned int FMT3631::BitsPerPixel(void) const
+{
+	return state.bitsPerPixel;
+}
+
+unsigned int FMT3631::BytesPerLine(void) const
+{
+	auto br=*GetControlWordPtr(HRZBR);
+	auto bf=*GetControlWordPtr(HRZBF);
+	return (bf-br)*4;
+}
+
 unsigned int FMT3631::IOReadByte(unsigned int ioport)
 {
 	if(true==state.enabled)
@@ -68,7 +103,7 @@ void FMT3631::IOWriteByte(unsigned int ioport,unsigned int data)
 template <class returnType,class stateType>
 inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType &state)
 {
-	auto relAddr=physAddr-TOWNSADDR_FMT3631_BASE;
+	auto relAddr=(physAddr&TOWNSADDR_FMT3631_AND);
 	switch(relAddr)
 	{
 	case SYSCONFIG: //0x00004,
@@ -92,11 +127,11 @@ inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType
 	case HRZT            : //0x00108,
 	case HRZSR           : //0x0010C,
 	case HRZBR           : //0x00110,
-	case HRZBT           : //0x00114,
+	case HRZBF           : //0x00114,
 	case PREHRZC         : //0x00118,
 	case VRTC            : //0x0011C,
 	case VRTT            : //0x00120,
-	case VRSTR           : //0x00124,
+	case VRTSR           : //0x00124,
 	case VRTBR           : //0x00128,
 	case VRTBF           : //0x0012C,
 	case PREVRTC         : //0x00130,

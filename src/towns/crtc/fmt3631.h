@@ -83,12 +83,12 @@ public:
 		HRZT            =0x100108,
 		HRZSR           =0x10010C,
 		HRZBR           =0x100110,
-		HRZBT           =0x100114,
+		HRZBF           =0x100114,
 		PREHRZC         =0x100118,
 		// Vertical
 		VRTC            =0x10011C,
 		VRTT            =0x100120,
-		VRSTR           =0x100124,
+		VRTSR           =0x100124,
 		VRTBR           =0x100128,
 		VRTBF           =0x10012C,
 		PREVRTC         =0x100130,
@@ -114,6 +114,7 @@ public:
 		bool enabled=false;
 		std::vector <uint8_t> vram;
 
+		uint32_t bitsPerPixel=8;
 		uint32_t sysconfig=0,interrupt=0,interrupt_en=0;
 		uint32_t status=0;
 		uint32_t videoCtrl[(VIDCTRL_LAST-HRZC)/4];
@@ -131,6 +132,12 @@ public:
 
 	void PowerOn(void) override;
 	void Reset(void) override;
+
+	bool IsEnabled(void) const;
+	unsigned int Height(void) const;
+	unsigned int Width(void) const;
+	unsigned int BytesPerLine(void) const;
+	unsigned int BitsPerPixel(void) const;
 
 	unsigned int IOReadByte(unsigned int ioport) override;
 	void IOWriteByte(unsigned int ioport,unsigned int data) override;
