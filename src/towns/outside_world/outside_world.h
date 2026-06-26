@@ -265,7 +265,7 @@ public:
 			bool needRender=false;
 			bool imageNeedsFlip=false;
 			TownsRender renderer;
-			unsigned char VRAMCopy[TOWNS_VRAM_SIZE];
+			unsigned char VRAMCopy[TOWNS_MAX_VRAM_SIZE];
 			TownsCRTC::AnalogPalette paletteCopy;
 			TownsCRTC::ChaseHQPalette chaseHQPaletteCopy;
 		};

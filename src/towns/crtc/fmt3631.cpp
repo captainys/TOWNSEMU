@@ -95,6 +95,11 @@ void FMT3631::MakePageLayerInfo(Layer &layer) const
 	layer.HScrollMask=0xFFFFFFFF;
 	layer.VScrollMask=VRAM_SIZE-1;
 }
+const FMT3631::AnalogPalette &FMT3631::GetPalette(void) const
+{
+	FMT3631::AnalogPalette plt;
+	return plt;
+}
 
 unsigned int FMT3631::IOReadByte(unsigned int ioport)
 {

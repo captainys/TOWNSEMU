@@ -140,6 +140,7 @@ public:
 	unsigned int BitsPerPixel(void) const;
 
 	void MakePageLayerInfo(Layer &layer) const;
+	const AnalogPalette &GetPalette(void) const;
 
 	unsigned int IOReadByte(unsigned int ioport) override;
 	void IOWriteByte(unsigned int ioport,unsigned int data) override;

@@ -8,7 +8,7 @@
 
 class DeviceUtil
 {
-protected:
+public:
 	static void PushInt64(std::vector <unsigned char> &buf,int64_t data);
 	static void PushUint64(std::vector <unsigned char> &buf,uint64_t data);
 	static void PushInt32(std::vector <unsigned char> &buf,int32_t data);

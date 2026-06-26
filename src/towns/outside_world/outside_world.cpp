@@ -1666,7 +1666,7 @@ bool Outside_World::WindowInterface::SendNewImage(class FMTownsCommon &towns,boo
 		shared.renderer.Prepare(towns.crtc);
 		shared.renderer.damperWireLine=towns.var.damperWireLine;
 		shared.renderer.scanLineEffectIn15KHz=towns.var.scanLineEffectIn15KHz;
-		memcpy(shared.VRAMCopy,towns.physMem.state.VRAM,towns.crtc.GetEffectiveVRAMSize());
+		memcpy(shared.VRAMCopy,towns.GetUsingVRAM(),towns.crtc.GetEffectiveVRAMSize());
 		shared.paletteCopy=towns.crtc.GetPalette();
 		shared.chaseHQPaletteCopy=towns.crtc.chaseHQPalette;
 		shared.imageNeedsFlip=imageNeedsFlip;

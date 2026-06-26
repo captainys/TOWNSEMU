@@ -1,5 +1,5 @@
 add_library(haslayer haslayer.h haslayer.cpp)
-target_link_libraries(haslayer townsdef cheapmath)
+target_link_libraries(haslayer townsdef cheapmath device)
 target_include_directories(haslayer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(townscrtc crtc.h crtc.cpp)

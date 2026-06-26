@@ -1386,7 +1386,7 @@ void FMTownsCommon::ForceRender(class TownsRender &render,class Outside_World &w
 {
 	render.Prepare(crtc);
 	render.damperWireLine=var.damperWireLine;
-	render.BuildImage(physMem.state.VRAM,crtc.GetPalette(),crtc.chaseHQPalette);
+	render.BuildImage(GetUsingVRAM(),crtc.GetPalette(),crtc.chaseHQPalette);
 	if(true==world.ImageNeedsFlip())
 	{
 		render.FlipUpsideDown();
@@ -1397,6 +1397,19 @@ void FMTownsCommon::ForceRender(class TownsRender &render,class Outside_World &w
 	windowInterface.UpdateImage(img);
 }
 
+const uint8_t *FMTownsCommon::GetUsingVRAM(void) const
+{
+	if(true==fmt3631.IsEnabled())
+	{
+std::cout << fmt3631.state.vram.size() << "\n";
+		return fmt3631.state.vram.data();
+	}
+	else
+	{
+		return physMem.state.VRAM;
+	}
+}
+
 void FMTownsCommon::RenderQuiet(class TownsRender &render,bool layer0,bool layer1)
 {
 	render.Prepare(crtc);
@@ -1405,13 +1418,13 @@ void FMTownsCommon::RenderQuiet(class TownsRender &render,bool layer0,bool layer
 	auto palette=crtc.GetPalette();
 	ApplicationSpecificScreenshotOverride(render,palette);
 
-	render.BuildImage(physMem.state.VRAM,palette,crtc.chaseHQPalette);
+	render.BuildImage(GetUsingVRAM(),palette,crtc.chaseHQPalette);
 }
 
 void FMTownsCommon::RenderEntireVRAMLayerQuiet(class TownsRender &render,unsigned int layer)
 {
 	render.PrepareEntireVRAMLayer(crtc,layer);
-	render.BuildImage(physMem.state.VRAM,crtc.GetPalette(),crtc.chaseHQPalette);
+	render.BuildImage(GetUsingVRAM(),crtc.GetPalette(),crtc.chaseHQPalette);
 }
 
 bool FMTownsCommon::GetEleVolCDLeftEN(void) const

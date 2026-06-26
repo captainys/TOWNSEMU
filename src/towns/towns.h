@@ -738,6 +738,11 @@ public:
 	void ForceRender(class TownsRender &render,Outside_World &world,Outside_World::WindowInterface &windowInterface);
 
 
+	/*! It can be the VRAM on FMT-3631 when it is enabled.
+	*/
+	const uint8_t *GetUsingVRAM(void) const;
+
+
 	/*! Render, but not transfer to the window.
 	*/
 	void RenderQuiet(class TownsRender &render,bool layer0,bool layer1);
