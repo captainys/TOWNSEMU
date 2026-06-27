@@ -97,7 +97,15 @@ void FMT3631::MakePageLayerInfo(Layer &layer) const
 }
 const FMT3631::AnalogPalette &FMT3631::GetPalette(void) const
 {
-	FMT3631::AnalogPalette plt;
+	static AnalogPalette plt;
+	plt.Reset();
+	for(int i=0; i<256; ++i)
+	{
+		int b=(i&3)*255/3;
+		int r=((i>>2)&3)*255/3;
+		int g=((i>>4)&7)*255/7;
+		plt.plt256[i].Set(r,g,b,255);
+	}
 	return plt;
 }
 

@@ -15,7 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <cstring>
 #include "cpputil.h"
 #include "render.h"
-
+#include "fmt3631.h"
 
 
 TownsRender::TownsRender()
@@ -70,6 +70,8 @@ void TownsRender::MakeOpaque(void)
 
 void TownsRender::Prepare(const TownsCRTC &crtc)
 {
+	fmt3631=crtc.fmt3631->IsEnabled();
+
 	frequency=crtc.GetHorizontalFrequency();
 	highResCRTC=crtc.state.highResCRTCEnabled;
 	if(true==highResCRTC)
@@ -95,6 +97,8 @@ void TownsRender::Prepare(const TownsCRTC &crtc)
 
 void TownsRender::PrepareEntireVRAMLayer(const TownsCRTC &crtc,int layer)
 {
+	fmt3631=crtc.fmt3631->IsEnabled();
+
 	highResCRTC=crtc.state.highResCRTCEnabled;
 	if(true==highResCRTC)
 	{
@@ -153,7 +157,11 @@ void TownsRender::BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogP
 
 	std::memset(rgba.data(),0,rgba.size());
 
-	if(true==crtcIsSinglePageMode)
+	if(true==fmt3631)
+	{
+		Render<VRAM0Trans>(0,crtcLayer[0],palette,chaseHQPalette,VRAM,false);
+	}
+	else if(true==crtcIsSinglePageMode)
 	{
 		if(true==crtcShowPage[0])
 		{

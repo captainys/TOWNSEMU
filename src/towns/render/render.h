@@ -29,7 +29,7 @@ private:
 	unsigned int wid,hei;
 	std::vector <unsigned char> rgba;
 
-
+	bool fmt3631;
 	bool highResCRTC;
 	bool crtcIsSinglePageMode;
 	bool crtcShowPage[2];

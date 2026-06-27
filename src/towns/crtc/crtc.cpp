@@ -1537,9 +1537,13 @@ void TownsCRTC::WriteCR0(unsigned int data)
 Vec2i TownsCRTC::GetRenderSize(void) const
 {
 	const int minHei=402;  // Reading mackerel for 2 pixels.
+	if(true==fmt3631->IsEnabled())
+	{
+		return Vec2i::Make(fmt3631->Width(),fmt3631->Height());
+	}
 	// What do I mean by 'read mackerel'?  Translate to Japanese and back to English.
 	// Well, google translate didn't work.  Use something better.
-	if(true!=state.highResCRTCEnabled)
+	else if(true!=state.highResCRTCEnabled)
 	{
 		const int maxHei=512;
 		// Height still has errors.  Some 320x240 mode returns 320x880 size.  (Damn it!  I forgot which one.)
