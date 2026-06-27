@@ -89,7 +89,7 @@ void FMT3631::MakePageLayerInfo(Layer &layer) const
 	layer.VRAMHSkipBytes=0;
 	layer.sizeOnMonitor=Vec2i::Make(Width(),Height());
 	layer.VRAMCoverage1X=layer.sizeOnMonitor;
-	layer.zoom2x=Vec2i::Make(1,1);
+	layer.zoom2x=Vec2i::Make(2,2);
 	layer.bytesPerLine=BytesPerLine();
 
 	layer.HScrollMask=0xFFFFFFFF;
