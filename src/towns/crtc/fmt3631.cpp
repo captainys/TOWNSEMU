@@ -45,6 +45,29 @@ void FMT3631::Reset(void)
 	state.nLoadedCoord=0;
 	state.lastLoadedCoord=0;
 	memset(state.coord,0,sizeof(state.coord));
+
+	memset(state.ctlCond,0,sizeof(state.ctlCond));
+}
+
+int FMT3631::U16toS16(uint32_t in)
+{
+	int x=in;
+	if(0!=(in&0x8000))
+	{
+		x&=0x7FFF;
+		x-=0x8000;
+	}
+	return x;
+}
+int FMT3631::U32toS32(uint32_t in)
+{
+	int x=in;
+	if(0!=(in&0x80000000))
+	{
+		x&=0x7FFFFFFF;
+		x-=0x80000000;
+	}
+	return x;
 }
 
 bool FMT3631::IsEnabled(void) const
@@ -157,6 +180,20 @@ inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType
 		return &state.status;
 
 	// Control and condition
+	case OOR             : //0x180184,
+	//               0x180188, // Not used
+	case CINDEX          : //0x18018C,
+	case WINDOW_OFFSET_XY: //0x180190,
+	case P_W_MIN         : //0x180194, // Read Only
+	case P_W_MAX         : //0x180198,
+	//               0x18019C, // Not used
+	case YCLIP           : //0x1801A0,
+	case XCLIP           : //0x1801A4,
+	case XEDGE_LT        : //0x1801A8,
+	case XEDGE_GT        : //0x1801AC,
+	case YEDGE_LT        : //0x1801B0,
+	case YEDGE_GT        : //0x1801B4,
+		return &state.ctlCond[(relAddr-CTL_COND_BEGIN)/4];
 
 	// Drawing Engine Registers
 	// Pixel Processing 4.5
@@ -266,6 +303,15 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 	return data;
 }
 
+Vec2i FMT3631::GetWindowOffset(void) const
+{
+	uint32_t offset=*GetControlWordPtr(WINDOW_OFFSET_XY);
+	Vec2i v;
+	v.x()=U16toS16(offset>>16);
+	v.y()=U16toS16(offset&0xffff);
+	return v;
+}
+
 void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
 {
 	if(state.nLoadedCoord<COORD_MAX)
@@ -291,6 +337,12 @@ void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
 				state.coord[state.nLoadedCoord].x()+=state.coord[state.lastLoadedCoord].x();
 				state.coord[state.nLoadedCoord].y()+=state.coord[state.lastLoadedCoord].y();
 			}
+			else
+			{
+				auto off=GetWindowOffset();
+				state.coord[state.nLoadedCoord].x()+=off.x();
+                state.coord[state.nLoadedCoord].y()+=off.y();
+			}
 		}
 		else if(LOAD_COORD_X==x_y_or_xy)
 		{
@@ -305,6 +357,11 @@ void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
 			{
 				state.coord[state.nLoadedCoord].x()+=state.coord[state.lastLoadedCoord].x();
 			}
+			else
+			{
+				auto off=GetWindowOffset();
+				state.coord[state.nLoadedCoord].x()+=off.x();
+			}
 		}
 		else if(LOAD_COORD_Y==x_y_or_xy)
 		{
@@ -318,6 +375,11 @@ void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
 			if(true==rel)
 			{
 				state.coord[state.nLoadedCoord].y()+=state.coord[state.lastLoadedCoord].y();
+			}
+			else
+			{
+				auto off=GetWindowOffset();
+                state.coord[state.nLoadedCoord].y()+=off.y();
 			}
 		}
 		state.lastLoadedCoord=state.nLoadedCoord;
@@ -422,11 +484,12 @@ void FMT3631::DrawRect(void)
 	auto fgColor=*GetControlWordPtr(FGCOLOR);
 	for(auto y=y0; y<=y1; ++y)
 	{
+		auto ptr=lineTop;
 		for(auto x=x0; x<=x1; ++x)
 		{
 			if(8==bitsPerPixel)
 			{
-				lineTop[x]=fgColor;
+				*(ptr++)=fgColor;
 			}
 		}
 		lineTop+=bytesPerLine;

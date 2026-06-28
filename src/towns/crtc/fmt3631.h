@@ -74,6 +74,24 @@ public:
 			STATUS_FLAG_QUAD_INTERSECT=0x00000001,
 
 		// Control and condition
+		CTL_COND_BEGIN  =0x180184,
+
+		OOR             =0x180184,
+		//               0x180188, // Not used
+		CINDEX          =0x18018C,
+		WINDOW_OFFSET_XY=0x180190,
+		P_W_MIN         =0x180194, // Read Only
+		P_W_MAX         =0x180198,
+		//               0x18019C, // Not used
+		YCLIP           =0x1801A0,
+		XCLIP           =0x1801A4,
+		XEDGE_LT        =0x1801A8,
+		XEDGE_GT        =0x1801AC,
+		YEDGE_LT        =0x1801B0,
+		YEDGE_GT        =0x1801B4,
+
+		CTL_COND_END    =0x1801B8,
+
 
 		// Drawing Engine Registers
 		// Pixel Processing 4.5
@@ -155,6 +173,7 @@ public:
 		uint32_t drawingAttrib[(DRAWING_ATTRIB_END-FGCOLOR)/4];
 		uint32_t videoCtrl[(VIDCTRL_LAST-HRZC)/4];
 		uint32_t vramCtrl[(VRAMCTRL_LAST-MEM_CONFIG)/4];
+		uint32_t ctlCond[(CTL_COND_END-CTL_COND_BEGIN)/4];
 	};
 	State state;
 	bool monitor=true;
@@ -168,6 +187,9 @@ public:
 
 	void PowerOn(void) override;
 	void Reset(void) override;
+
+	static int U16toS16(uint32_t in);
+	static int U32toS32(uint32_t in);
 
 	bool IsEnabled(void) const;
 	unsigned int Height(void) const;
@@ -187,6 +209,8 @@ public:
 
 	const uint32_t *GetControlWordPtr(unsigned int physAddr) const;
 	uint32_t *GetControlWordPtr(unsigned int physAddr);
+
+	Vec2i GetWindowOffset(void) const;
 
 	// Load Coordinate Command
 	void LoadCoord(uint32_t physAddr,uint32_t data);
