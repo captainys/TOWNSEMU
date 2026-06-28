@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "fmt3631.h"
 #include "towns.h"
 #include "townsdef.h"
+#include "cheapmath.h"
 
 
 
@@ -38,7 +39,12 @@ void FMT3631::Reset(void)
 	state.status=0;
 	memset(state.videoCtrl,0,sizeof(state.videoCtrl));
 	memset(state.vramCtrl,0,sizeof(state.vramCtrl));
+	memset(state.drawingAttrib,0,sizeof(state.drawingAttrib));
 	memset(state.vram.data(),0,VRAM_SIZE);
+
+	state.nLoadedCoord=0;
+	state.lastLoadedCoord=0;
+	memset(state.coord,0,sizeof(state.coord));
 }
 
 bool FMT3631::IsEnabled(void) const
@@ -154,6 +160,17 @@ inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType
 
 	// Drawing Engine Registers
 	// Pixel Processing 4.5
+	case FGCOLOR:
+	case BGCOLOR:
+	case PLANE_MASK      ://0x180208,
+	case DRAWING_MODE    ://0x18020C,
+	case PATTERN_X0      ://0x180210,
+	case PATTERN_Y0      ://0x180214,
+	case RASTER          ://0x180218,
+	case PIXEL8          ://0x18021C,
+	case WINDOW_MIN      ://0x180220,
+	case WINDOW_MAX      ://0x180224,
+		return &state.drawingAttrib[(relAddr-FGCOLOR)/4];
 
 	// Video Control Registers 4.6
 	case HRZC            : //0x00104,
@@ -249,8 +266,181 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 	return data;
 }
 
+void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
+{
+	if(state.nLoadedCoord<COORD_MAX)
+	{
+		auto rel=(0!=(physAddr&LOAD_COORD_ABS_REL_MASK));
+
+		auto x_y_or_xy=physAddr&LOAD_COORD_X_Y_XY_MASK;
+		if(LOAD_COORD_XY==x_y_or_xy)
+		{
+			int x=data>>16;
+			int y=data&0xFFFF;
+			if(0!=(x&0x8000))
+			{
+				x-=0x10000;
+			}
+			if(0!=(y&0x8000))
+			{
+				y-=0x10000;
+			}
+			state.coord[state.nLoadedCoord].Set(x,y);
+			if(true==rel)
+			{
+				state.coord[state.nLoadedCoord].x()+=state.coord[state.lastLoadedCoord].x();
+				state.coord[state.nLoadedCoord].y()+=state.coord[state.lastLoadedCoord].y();
+			}
+		}
+		else if(LOAD_COORD_X==x_y_or_xy)
+		{
+			int coord=data;
+			if(0!=(coord&0x80000000))
+			{
+				coord&=0x7FFFFFFF;
+				coord-=0x80000000;
+			}
+			state.coord[state.nLoadedCoord].x()=coord;
+			if(true==rel)
+			{
+				state.coord[state.nLoadedCoord].x()+=state.coord[state.lastLoadedCoord].x();
+			}
+		}
+		else if(LOAD_COORD_Y==x_y_or_xy)
+		{
+			int coord=data;
+			if(0!=(coord&0x80000000))
+			{
+				coord&=0x7FFFFFFF;
+				coord-=0x80000000;
+			}
+			state.coord[state.nLoadedCoord].y()=coord;
+			if(true==rel)
+			{
+				state.coord[state.nLoadedCoord].y()+=state.coord[state.lastLoadedCoord].y();
+			}
+		}
+		state.lastLoadedCoord=state.nLoadedCoord;
+		++state.nLoadedCoord;
+	}
+
+	auto primType=physAddr&LOAD_COORD_PRIMTYPE_MASK;
+	switch(primType)
+	{
+	case LOAD_COORD_PRIMTYPE_POINT: // 0,
+		{
+			DrawPoint();
+			state.nLoadedCoord=0;
+		}
+		break;
+	case LOAD_COORD_PRIMTYPE_LINE: // 0x40,
+		if(2<=state.nLoadedCoord)
+		{
+			DrawLine();
+			state.nLoadedCoord=0;
+		}
+		break;
+	case LOAD_COORD_PRIMTYPE_TRI: // 0x80,
+		if(3<=state.nLoadedCoord)
+		{
+			DrawTri();
+			state.nLoadedCoord=0;
+		}
+		break;
+	case LOAD_COORD_PRIMTYPE_QUAD: // 0xC0,
+		if(4<=state.nLoadedCoord)
+		{
+			DrawQuad();
+			state.nLoadedCoord=0;
+		}
+		break;
+	case LOAD_COORD_PRIMTYPE_RECT: // 0x100,
+		if(2<=state.nLoadedCoord)
+		{
+			DrawRect();
+			state.nLoadedCoord=0;
+		}
+		break;
+	}
+}
+
+void FMT3631::DrawPoint(void)
+{
+	std::cout << "DrawPoint not supported yet.\n";
+}
+void FMT3631::DrawLine(void)
+{
+	std::cout << "DrawLine not supported yet.\n";
+}
+
+void FMT3631::DrawTri(void)
+{
+	std::cout << "DrawTri not supported yet.\n";
+}
+
+void FMT3631::DrawQuad(void)
+{
+	std::cout << "DrawQuad not supported yet.\n";
+}
+void FMT3631::DrawRect(void)
+{
+	auto bytesPerLine=BytesPerLine();
+	auto bitsPerPixel=BitsPerPixel();
+
+	int x0=state.coord[0].x();
+	int y0=state.coord[0].y();
+	int x1=state.coord[1].x();
+	int y1=state.coord[1].y();
+
+	if(x1<x0)
+	{
+		std::swap(x0,x1);
+	}
+	if(y1<y0)
+	{
+		std::swap(y0,y1);
+	}
+
+	Vec2i clip[2]=
+	{
+		Vec2i::Make(0,0),
+		Vec2i::Make(Width()-1,Height()-1),
+	};
+
+	if(x1<clip[0].x() || clip[1].x()<x0 ||
+	   y1<clip[0].y() || clip[1].y()<y0)
+	{
+		return;
+	}
+
+	if(8!=bitsPerPixel)
+	{
+		std::cout << "DrawRect for this bpp not supported yet.\n";
+	}
+	std::cout << "Rect\n";
+	uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+(bitsPerPixel*x0/8);
+	auto fgColor=*GetControlWordPtr(FGCOLOR);
+	for(auto y=y0; y<=y1; ++y)
+	{
+		for(auto x=x0; x<=x1; ++x)
+		{
+			if(8==bitsPerPixel)
+			{
+				lineTop[x]=fgColor;
+			}
+		}
+		lineTop+=bytesPerLine;
+	}
+}
+
 void FMT3631::SetControlByte(uint32_t physAddr,uint8_t data)
 {
+	if((LOAD_COORD&physAddr)==LOAD_COORD)
+	{
+		LoadCoord(physAddr,data);
+		return;
+	}
+
 	auto ptr=GetControlWordPtr(physAddr);
 	if(nullptr!=ptr)
 	{
@@ -261,6 +451,12 @@ void FMT3631::SetControlByte(uint32_t physAddr,uint8_t data)
 
 void FMT3631::SetControlWord(uint32_t physAddr,uint16_t data)
 {
+	if((LOAD_COORD&physAddr)==LOAD_COORD)
+	{
+		LoadCoord(physAddr,data);
+		return;
+	}
+
 	auto ptr=GetControlWordPtr(physAddr);
 	if(nullptr!=ptr)
 	{
@@ -271,6 +467,12 @@ void FMT3631::SetControlWord(uint32_t physAddr,uint16_t data)
 
 void FMT3631::SetControlDword(uint32_t physAddr,uint32_t data)
 {
+	if((LOAD_COORD&physAddr)==LOAD_COORD)
+	{
+		LoadCoord(physAddr,data);
+		return;
+	}
+
 	auto ptr=GetControlWordPtr(physAddr);
 	if(nullptr!=ptr)
 	{

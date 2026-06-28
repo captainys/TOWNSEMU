@@ -50,6 +50,7 @@ public:
 	{
 		//
 		VRAM_SIZE       =0x200000,
+		COORD_MAX       =4, // Quadrilateral max
 
 		// System Control Registers
 		SYSCONFIG       =0x00004,
@@ -76,6 +77,19 @@ public:
 
 		// Drawing Engine Registers
 		// Pixel Processing 4.5
+		FGCOLOR         =0x180200,
+		BGCOLOR         =0x180204,
+		PLANE_MASK      =0x180208,
+		DRAWING_MODE    =0x18020C,
+		PATTERN_X0      =0x180210,
+		PATTERN_Y0      =0x180214,
+		RASTER          =0x180218,
+		PIXEL8          =0x18021C,
+		WINDOW_MIN      =0x180220,
+		WINDOW_MAX      =0x180224,
+
+		DRAWING_ATTRIB_END=0x180228,
+
 
 		// Video Control Registers 4.6
 		// Horizontal
@@ -106,6 +120,23 @@ public:
 		RLMAX           =0x100190,
 		RLCUR           =0x100194,
 		VRAMCTRL_LAST   =0x100194,
+
+		// Drawing Coordinate?
+		LOAD_COORD              =0x181200,
+		LOAD_COORD_ABS_REL_MASK =0x000020,
+		LOAD_COORD_PRIMTYPE_MASK=0x0001C0,
+			LOAD_COORD_PRIMTYPE_POINT=0,
+			LOAD_COORD_PRIMTYPE_LINE=0x40,
+			LOAD_COORD_PRIMTYPE_TRI=0x80,
+			LOAD_COORD_PRIMTYPE_QUAD=0xC0,
+			LOAD_COORD_PRIMTYPE_RECT=0x100,
+			// Linux p9000regs.h implies that RECT command is 0x800,
+			// which contradicts with P9100 data sheet.
+			// Also contradicts with what comes in from Windows P9000 driver.
+		LOAD_COORD_X_Y_XY_MASK  =0x000018,
+			LOAD_COORD_X=0x08,
+			LOAD_COORD_Y=0x10,
+			LOAD_COORD_XY=0x18,
 	};
 
 	class State
@@ -114,9 +145,14 @@ public:
 		bool enabled=false;
 		std::vector <uint8_t> vram;
 
+		int nLoadedCoord=0;
+		int lastLoadedCoord=0;
+		Vec2i coord[COORD_MAX];
+
 		uint32_t bitsPerPixel=8;
 		uint32_t sysconfig=0,interrupt=0,interrupt_en=0;
 		uint32_t status=0;
+		uint32_t drawingAttrib[(DRAWING_ATTRIB_END-FGCOLOR)/4];
 		uint32_t videoCtrl[(VIDCTRL_LAST-HRZC)/4];
 		uint32_t vramCtrl[(VRAMCTRL_LAST-MEM_CONFIG)/4];
 	};
@@ -151,6 +187,14 @@ public:
 
 	const uint32_t *GetControlWordPtr(unsigned int physAddr) const;
 	uint32_t *GetControlWordPtr(unsigned int physAddr);
+
+	// Load Coordinate Command
+	void LoadCoord(uint32_t physAddr,uint32_t data);
+	void DrawPoint(void);
+	void DrawLine(void);
+	void DrawTri(void);
+	void DrawQuad(void);
+	void DrawRect(void);
 
 	void SetControlByte(uint32_t physAddr,uint8_t data);
 	void SetControlWord(uint32_t physAddr,uint16_t data);
