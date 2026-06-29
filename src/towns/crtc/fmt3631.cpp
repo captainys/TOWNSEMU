@@ -324,6 +324,55 @@ Vec2i FMT3631::GetWindowOffset(void) const
 	return v;
 }
 
+void FMT3631::DeviceCoordOrLoadCoord(Vec2i &coordToLoad,Vec2i absRef,Vec2i relRef,uint32_t physAddr,uint32_t data)
+{
+	auto rel=(0!=(physAddr&LOAD_COORD_ABS_REL_MASK));
+
+	auto x_y_or_xy=physAddr&LOAD_COORD_X_Y_XY_MASK;
+	if(LOAD_COORD_XY==x_y_or_xy)
+	{
+		int x=U16toS16(data>>16);
+		int y=U16toS16(data&0xFFFF);
+		coordToLoad.Set(x,y);
+		if(true==rel)
+		{
+			coordToLoad.x()+=relRef.x();
+			coordToLoad.y()+=relRef.y();
+		}
+		else
+		{
+			coordToLoad.x()+=absRef.x();
+            coordToLoad.y()+=absRef.y();
+		}
+	}
+	else if(LOAD_COORD_X==x_y_or_xy)
+	{
+		int coord=U32toS32(data);
+		coordToLoad.x()=coord;
+		if(true==rel)
+		{
+			coordToLoad.x()+=relRef.x();
+		}
+		else
+		{
+			coordToLoad.x()+=absRef.x();
+		}
+	}
+	else if(LOAD_COORD_Y==x_y_or_xy)
+	{
+		int coord=U32toS32(data);
+		coordToLoad.y()=coord;
+		if(true==rel)
+		{
+			coordToLoad.y()+=relRef.y();
+		}
+		else
+		{
+            coordToLoad.y()+=absRef.y();
+		}
+	}
+}
+
 void FMT3631::DeviceCoord(uint32_t physAddr,uint32_t data)
 {
 	std::cout << "DEVICE_COORD to be implemented.\n";
@@ -337,51 +386,7 @@ void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
 
 	if(state.nLoadedCoord<COORD_MAX)
 	{
-		auto rel=(0!=(physAddr&LOAD_COORD_ABS_REL_MASK));
-
-		auto x_y_or_xy=physAddr&LOAD_COORD_X_Y_XY_MASK;
-		if(LOAD_COORD_XY==x_y_or_xy)
-		{
-			int x=U16toS16(data>>16);
-			int y=U16toS16(data&0xFFFF);
-			coordToLoad.Set(x,y);
-			if(true==rel)
-			{
-				coordToLoad.x()+=relRef.x();
-				coordToLoad.y()+=relRef.y();
-			}
-			else
-			{
-				coordToLoad.x()+=absRef.x();
-                coordToLoad.y()+=absRef.y();
-			}
-		}
-		else if(LOAD_COORD_X==x_y_or_xy)
-		{
-			int coord=U32toS32(data);
-			coordToLoad.x()=coord;
-			if(true==rel)
-			{
-				coordToLoad.x()+=relRef.x();
-			}
-			else
-			{
-				coordToLoad.x()+=absRef.x();
-			}
-		}
-		else if(LOAD_COORD_Y==x_y_or_xy)
-		{
-			int coord=U32toS32(data);
-			coordToLoad.y()=coord;
-			if(true==rel)
-			{
-				coordToLoad.y()+=relRef.y();
-			}
-			else
-			{
-                coordToLoad.y()+=absRef.y();
-			}
-		}
+		DeviceCoordOrLoadCoord(coordToLoad,absRef,relRef,physAddr,data);
 		state.lastLoadedCoord=state.nLoadedCoord;
 		++state.nLoadedCoord;
 	}

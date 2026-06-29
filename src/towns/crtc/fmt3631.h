@@ -227,6 +227,7 @@ public:
 
 	// Load Coordinate Command
 	void LoadCoord(uint32_t physAddr,uint32_t data);
+	void DeviceCoordOrLoadCoord(Vec2i &coord,Vec2i absRef,Vec2i relRef,uint32_t physAddr,uint32_t data);
 	void DrawPoint(void);
 	void DrawLine(void);
 	void DrawTri(void);
