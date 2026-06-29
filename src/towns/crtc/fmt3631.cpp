@@ -375,7 +375,11 @@ void FMT3631::DeviceCoordOrLoadCoord(Vec2i &coordToLoad,Vec2i absRef,Vec2i relRe
 
 void FMT3631::DeviceCoord(uint32_t physAddr,uint32_t data)
 {
-	std::cout << "DEVICE_COORD to be implemented.\n";
+	auto absRef=Vec2i::Make(0,0);
+	auto relRef=GetWindowOffset();
+	auto idx=(data>>6)&3;
+	auto &coordToLoad=state.coord[idx];
+	DeviceCoordOrLoadCoord(coordToLoad,absRef,relRef,physAddr,data);
 }
 
 void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
@@ -503,12 +507,12 @@ void FMT3631::DrawRect(void)
 
 void FMT3631::SetControlByte(uint32_t physAddr,uint8_t data)
 {
-	if((LOAD_COORD&physAddr)==LOAD_COORD)
+	if((0x1FE07&physAddr)==LOAD_COORD)
 	{
 		LoadCoord(physAddr,data);
 		return;
 	}
-	if((DEVICE_COORD&physAddr)==DEVICE_COORD)
+	if((0x1FF07&physAddr)==DEVICE_COORD)
 	{
 		DeviceCoord(physAddr,data);
 		return;
@@ -524,12 +528,12 @@ void FMT3631::SetControlByte(uint32_t physAddr,uint8_t data)
 
 void FMT3631::SetControlWord(uint32_t physAddr,uint16_t data)
 {
-	if((LOAD_COORD&physAddr)==LOAD_COORD)
+	if((0x1FFE07&physAddr)==LOAD_COORD)
 	{
 		LoadCoord(physAddr,data);
 		return;
 	}
-	if((DEVICE_COORD&physAddr)==DEVICE_COORD)
+	if((0x1FFF07&physAddr)==DEVICE_COORD)
 	{
 		DeviceCoord(physAddr,data);
 		return;
@@ -545,12 +549,12 @@ void FMT3631::SetControlWord(uint32_t physAddr,uint16_t data)
 
 void FMT3631::SetControlDword(uint32_t physAddr,uint32_t data)
 {
-	if((LOAD_COORD&physAddr)==LOAD_COORD)
+	if((0x1FFE07&physAddr)==LOAD_COORD)
 	{
 		LoadCoord(physAddr,data);
 		return;
 	}
-	if((DEVICE_COORD&physAddr)==DEVICE_COORD)
+	if((0x1FFF07&physAddr)==DEVICE_COORD)
 	{
 		DeviceCoord(physAddr,data);
 		return;

@@ -51,6 +51,7 @@ public:
 		//
 		VRAM_SIZE       =0x200000,
 		COORD_MAX       =4, // Quadrilateral max
+		COMMAND_MASK    =0x1FFFFF,
 
 		// System Control Registers
 		SYSCONFIG       =0x00004,
@@ -103,7 +104,9 @@ public:
 		PATTERN_X0      =0x180210,
 		PATTERN_Y0      =0x180214,
 		RASTER          =0x180218,
+		PIXEL1          =0x180080,
 		PIXEL8          =0x18021C,
+		NEXT_PIXELS     =0x180014,
 		WINDOW_MIN      =0x180220,
 		WINDOW_MAX      =0x180224,
 
