@@ -60,6 +60,7 @@ public:
 		// Parameter Engine Registers 4.4
 		// Device Coordinate
 		DEVICE_COORD    =0x181000, // See 4.4.1 for low 8 bits.
+
 		// Status
 		STATUS          =0x180000,
 			STATUS_FLAG_ISSUE_QBN=     0x80000000,
@@ -139,7 +140,7 @@ public:
 		RLCUR           =0x100194,
 		VRAMCTRL_LAST   =0x100194,
 
-		// Drawing Coordinate?
+		// Drawing Coordinate?  Linux driver defines it as META_COORD.
 		LOAD_COORD              =0x181200,
 		LOAD_COORD_ABS_REL_MASK =0x000020,
 		LOAD_COORD_PRIMTYPE_MASK=0x0001C0,
@@ -167,6 +168,15 @@ public:
 		int lastLoadedCoord=0;
 		Vec2i coord[COORD_MAX];
 
+		// For PIXEL1 and PIXEL8 commands.
+		// The doc says position and width are taken from x0, (x2,y2), and y-increment from x3.
+		// No mention about NEXT_PIXEL.
+		// Also it says NEXT_PIXEL sets up the next bitmap.
+		// Linux P9000 driver uses NEXT_PIXEL, but does not load x0,x2,y2, and x3.
+		// Windows driver apparently does the same.
+		Vec2i pixelLeftUp,pixelCurrent;
+		uint32_t pixelWid=0,pixelYIncrement=1;
+
 		uint32_t bitsPerPixel=8;
 		uint32_t sysconfig=0,interrupt=0,interrupt_en=0;
 		uint32_t status=0;
@@ -176,7 +186,7 @@ public:
 		uint32_t ctlCond[(CTL_COND_END-CTL_COND_BEGIN)/4];
 	};
 	State state;
-	bool monitor=true;
+	bool monitorCtrl=true,monitorVRAM=false;
 
 	const char *DeviceName(void) const override {return "FMT3631";}
 
@@ -211,6 +221,9 @@ public:
 	uint32_t *GetControlWordPtr(unsigned int physAddr);
 
 	Vec2i GetWindowOffset(void) const;
+
+	// Device Coordinate command
+	void DeviceCoord(uint32_t physAddr,uint32_t data);
 
 	// Load Coordinate Command
 	void LoadCoord(uint32_t physAddr,uint32_t data);

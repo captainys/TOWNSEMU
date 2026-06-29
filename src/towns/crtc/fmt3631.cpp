@@ -47,6 +47,12 @@ void FMT3631::Reset(void)
 	memset(state.coord,0,sizeof(state.coord));
 
 	memset(state.ctlCond,0,sizeof(state.ctlCond));
+
+	state.pixelLeftUp=Vec2i::Make(0,0);
+	state.pixelCurrent=Vec2i::Make(0,0);
+	state.pixelWid=0;
+	state.pixelYIncrement=1;
+
 }
 
 int FMT3631::U16toS16(uint32_t in)
@@ -250,12 +256,14 @@ uint32_t *FMT3631::GetControlWordPtr(unsigned int physAddr)
 unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 {
 	unsigned int data=0xFF;
+	bool monitor=false;
 
 	if(true==state.enabled)
 	{
 		if(vramBaseAddr<physAddr)
 		{
 			data=state.vram[physAddr-TOWNSADDR_FMT3631_VRAM];
+			monitor=monitorVRAM;
 		}
 		else
 		{
@@ -264,6 +272,7 @@ unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 			{
 				data=*ptr;
 			}
+			monitor=monitorCtrl;
 		}
 	}
 
@@ -278,12 +287,14 @@ unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 {
 	unsigned int data=0xFFFFFFFF;
+	bool monitor=false;
 
 	if(true==state.enabled)
 	{
 		if(vramBaseAddr<physAddr)
 		{
 			data=cpputil::GetDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
+			monitor=monitorVRAM;
 		}
 		else
 		{
@@ -292,6 +303,7 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 			{
 				data=*ptr;
 			}
+			monitor=monitorCtrl;
 		}
 	}
 
@@ -312,8 +324,17 @@ Vec2i FMT3631::GetWindowOffset(void) const
 	return v;
 }
 
+void FMT3631::DeviceCoord(uint32_t physAddr,uint32_t data)
+{
+	std::cout << "DEVICE_COORD to be implemented.\n";
+}
+
 void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
 {
+	auto absRef=GetWindowOffset();
+	auto relRef=state.coord[state.lastLoadedCoord];
+	auto &coordToLoad=state.coord[state.nLoadedCoord];
+
 	if(state.nLoadedCoord<COORD_MAX)
 	{
 		auto rel=(0!=(physAddr&LOAD_COORD_ABS_REL_MASK));
@@ -321,65 +342,44 @@ void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
 		auto x_y_or_xy=physAddr&LOAD_COORD_X_Y_XY_MASK;
 		if(LOAD_COORD_XY==x_y_or_xy)
 		{
-			int x=data>>16;
-			int y=data&0xFFFF;
-			if(0!=(x&0x8000))
-			{
-				x-=0x10000;
-			}
-			if(0!=(y&0x8000))
-			{
-				y-=0x10000;
-			}
-			state.coord[state.nLoadedCoord].Set(x,y);
+			int x=U16toS16(data>>16);
+			int y=U16toS16(data&0xFFFF);
+			coordToLoad.Set(x,y);
 			if(true==rel)
 			{
-				state.coord[state.nLoadedCoord].x()+=state.coord[state.lastLoadedCoord].x();
-				state.coord[state.nLoadedCoord].y()+=state.coord[state.lastLoadedCoord].y();
+				coordToLoad.x()+=relRef.x();
+				coordToLoad.y()+=relRef.y();
 			}
 			else
 			{
-				auto off=GetWindowOffset();
-				state.coord[state.nLoadedCoord].x()+=off.x();
-                state.coord[state.nLoadedCoord].y()+=off.y();
+				coordToLoad.x()+=absRef.x();
+                coordToLoad.y()+=absRef.y();
 			}
 		}
 		else if(LOAD_COORD_X==x_y_or_xy)
 		{
-			int coord=data;
-			if(0!=(coord&0x80000000))
-			{
-				coord&=0x7FFFFFFF;
-				coord-=0x80000000;
-			}
-			state.coord[state.nLoadedCoord].x()=coord;
+			int coord=U32toS32(data);
+			coordToLoad.x()=coord;
 			if(true==rel)
 			{
-				state.coord[state.nLoadedCoord].x()+=state.coord[state.lastLoadedCoord].x();
+				coordToLoad.x()+=relRef.x();
 			}
 			else
 			{
-				auto off=GetWindowOffset();
-				state.coord[state.nLoadedCoord].x()+=off.x();
+				coordToLoad.x()+=absRef.x();
 			}
 		}
 		else if(LOAD_COORD_Y==x_y_or_xy)
 		{
-			int coord=data;
-			if(0!=(coord&0x80000000))
-			{
-				coord&=0x7FFFFFFF;
-				coord-=0x80000000;
-			}
-			state.coord[state.nLoadedCoord].y()=coord;
+			int coord=U32toS32(data);
+			coordToLoad.y()=coord;
 			if(true==rel)
 			{
-				state.coord[state.nLoadedCoord].y()+=state.coord[state.lastLoadedCoord].y();
+				coordToLoad.y()+=relRef.y();
 			}
 			else
 			{
-				auto off=GetWindowOffset();
-                state.coord[state.nLoadedCoord].y()+=off.y();
+                coordToLoad.y()+=absRef.y();
 			}
 		}
 		state.lastLoadedCoord=state.nLoadedCoord;
@@ -503,6 +503,11 @@ void FMT3631::SetControlByte(uint32_t physAddr,uint8_t data)
 		LoadCoord(physAddr,data);
 		return;
 	}
+	if((DEVICE_COORD&physAddr)==DEVICE_COORD)
+	{
+		DeviceCoord(physAddr,data);
+		return;
+	}
 
 	auto ptr=GetControlWordPtr(physAddr);
 	if(nullptr!=ptr)
@@ -517,6 +522,11 @@ void FMT3631::SetControlWord(uint32_t physAddr,uint16_t data)
 	if((LOAD_COORD&physAddr)==LOAD_COORD)
 	{
 		LoadCoord(physAddr,data);
+		return;
+	}
+	if((DEVICE_COORD&physAddr)==DEVICE_COORD)
+	{
+		DeviceCoord(physAddr,data);
 		return;
 	}
 
@@ -535,6 +545,11 @@ void FMT3631::SetControlDword(uint32_t physAddr,uint32_t data)
 		LoadCoord(physAddr,data);
 		return;
 	}
+	if((DEVICE_COORD&physAddr)==DEVICE_COORD)
+	{
+		DeviceCoord(physAddr,data);
+		return;
+	}
 
 	auto ptr=GetControlWordPtr(physAddr);
 	if(nullptr!=ptr)
@@ -546,40 +561,44 @@ void FMT3631::SetControlDword(uint32_t physAddr,uint32_t data)
 
 void FMT3631::StoreByte(unsigned int physAddr,unsigned char data)
 {
-	if(true==monitor)
-	{
-		std::cout << "Power9000 BYTE Write   " << cpputil::Uitox(physAddr) << " " <<  cpputil::Ubtox(data) << "\n";
-	}
-
+	bool monitor=false;
 	if(true==state.enabled)
 	{
 		if(vramBaseAddr<physAddr)
 		{
 			state.vram[physAddr-TOWNSADDR_FMT3631_VRAM]=data;
+			monitor=monitorVRAM;
 		}
 		else
 		{
 			SetControlByte(physAddr,data);
+			monitor=monitorCtrl;
 		}
+	}
+	if(true==monitor)
+	{
+		std::cout << "Power9000 BYTE Write   " << cpputil::Uitox(physAddr) << " " <<  cpputil::Ubtox(data) << "\n";
 	}
 }
 
 void FMT3631::StoreDword(unsigned int physAddr,unsigned int data)
 {
-	if(true==monitor)
-	{
-		std::cout << "Power9000 DWORD Write  " << cpputil::Uitox(physAddr) << " " << cpputil::Uitox(data) <<  "\n";
-	}
-
+	bool monitor=false;
 	if(true==state.enabled)
 	{
 		if(vramBaseAddr<physAddr)
 		{
 			cpputil::PutDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM,data);
+			monitor=monitorVRAM;
 		}
 		else
 		{
 			SetControlDword(physAddr,data);
+			monitor=monitorCtrl;
 		}
+	}
+	if(true==monitor)
+	{
+		std::cout << "Power9000 DWORD Write  " << cpputil::Uitox(physAddr) << " " << cpputil::Uitox(data) <<  "\n";
 	}
 }
