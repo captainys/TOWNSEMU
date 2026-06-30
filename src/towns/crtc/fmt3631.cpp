@@ -76,6 +76,16 @@ int FMT3631::U32toS32(uint32_t in)
 	return x;
 }
 
+uint32_t FMT3631::ByteSwap32(uint32_t in)
+{
+	uint32_t out=0;
+	out=in>>24;
+	out|=((in>>8)&0xFF00);
+	out|=((in<<8)&0xFF0000);
+	out|=((in<<24)&0xFF000000);
+	return out;
+}
+
 bool FMT3631::IsEnabled(void) const
 {
 	// According to p9000init.c of Linux XFree86 source, writing
@@ -377,9 +387,14 @@ void FMT3631::DeviceCoord(uint32_t physAddr,uint32_t data)
 {
 	auto absRef=Vec2i::Make(0,0);
 	auto relRef=GetWindowOffset();
-	auto idx=(data>>6)&3;
+	auto idx=(physAddr>>6)&3;
 	auto &coordToLoad=state.coord[idx];
 	DeviceCoordOrLoadCoord(coordToLoad,absRef,relRef,physAddr,data);
+
+	if(true==monitorCtrl)
+	{
+		std::cout << "DEVICE_COORD " << idx << "\n";
+	}
 }
 
 void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
@@ -505,19 +520,99 @@ void FMT3631::DrawRect(void)
 	}
 }
 
-void FMT3631::SetControlByte(uint32_t physAddr,uint8_t data)
+void FMT3631::CmdNextPixels(uint32_t physAddr,uint32_t data)
 {
-	if((0x1FE07&physAddr)==LOAD_COORD)
+	state.pixelLeftUp=state.coord[2];
+	state.pixelCurrent=state.coord[2];
+	state.pixelWid=data;
+
+	if(true==monitorCtrl)
 	{
-		LoadCoord(physAddr,data);
-		return;
+		std::cout << "Next Pixels " << state.pixelLeftUp.x() << " " << state.pixelLeftUp.y() << " " << state.pixelWid << "\n";
 	}
-	if((0x1FF07&physAddr)==DEVICE_COORD)
+}
+
+void FMT3631::CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap)
+{
+	uint32_t count=1+((physAddr>>2)&31);
+
+	if(true==monitorCtrl)
 	{
-		DeviceCoord(physAddr,data);
-		return;
+		std::cout << "Pixels 1\n";
 	}
 
+	if(true==doSwap)
+	{
+		data=ByteSwap32(data);
+	}
+
+	state.pixelYIncrement=state.coord[3].y();
+
+	auto fgColor=*GetControlWordPtr(FGCOLOR);
+	auto bytesPerLine=BytesPerLine();
+
+	uint8_t *lineTop=state.vram.data()+bytesPerLine*state.pixelCurrent.y();
+	while(0<count)
+	{
+		bool fg=data&0x80000000;
+		data<<=1;
+
+		if(8==BitsPerPixel())
+		{
+			if(true==fg)
+			{
+				lineTop[state.pixelCurrent.x()]=fgColor;
+			}
+		}
+
+		++state.pixelCurrent.x();
+		if(state.pixelLeftUp.x()+state.pixelWid<=state.pixelCurrent.x())
+		{
+			state.pixelCurrent.x()=state.pixelLeftUp.x();
+			state.pixelCurrent.y()+=state.pixelYIncrement;
+			lineTop+=bytesPerLine;
+		}
+
+		--count;
+	}
+}
+
+bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
+{
+	if((0x1FFE07&physAddr)==LOAD_COORD)
+	{
+		LoadCoord(physAddr,data);
+		return true;
+	}
+	if((0x1FFF07&physAddr)==DEVICE_COORD)
+	{
+		DeviceCoord(physAddr,data);
+		return true;
+	}
+	if((0x1FFFFF&physAddr)==NEXT_PIXELS_CMD)
+	{
+		CmdNextPixels(physAddr,data);
+		return true;
+	}
+	if((0x1FFF80&physAddr)==PIXEL1_CMD)
+	{
+		CmdPixels1(physAddr,data,false);
+		return true;
+	}
+	if((0x1FFF80&physAddr)==PIXEL1_SWAP_CMD)
+	{
+		CmdPixels1(physAddr,data,true);
+		return true;
+	}
+	return false;
+}
+
+void FMT3631::SetControlByte(uint32_t physAddr,uint8_t data)
+{
+	if(true==IsCommand(physAddr,data))
+	{
+		return;
+	}
 	auto ptr=GetControlWordPtr(physAddr);
 	if(nullptr!=ptr)
 	{
@@ -528,17 +623,10 @@ void FMT3631::SetControlByte(uint32_t physAddr,uint8_t data)
 
 void FMT3631::SetControlWord(uint32_t physAddr,uint16_t data)
 {
-	if((0x1FFE07&physAddr)==LOAD_COORD)
+	if(true==IsCommand(physAddr,data))
 	{
-		LoadCoord(physAddr,data);
 		return;
 	}
-	if((0x1FFF07&physAddr)==DEVICE_COORD)
-	{
-		DeviceCoord(physAddr,data);
-		return;
-	}
-
 	auto ptr=GetControlWordPtr(physAddr);
 	if(nullptr!=ptr)
 	{
@@ -549,17 +637,10 @@ void FMT3631::SetControlWord(uint32_t physAddr,uint16_t data)
 
 void FMT3631::SetControlDword(uint32_t physAddr,uint32_t data)
 {
-	if((0x1FFE07&physAddr)==LOAD_COORD)
+	if(true==IsCommand(physAddr,data))
 	{
-		LoadCoord(physAddr,data);
 		return;
 	}
-	if((0x1FFF07&physAddr)==DEVICE_COORD)
-	{
-		DeviceCoord(physAddr,data);
-		return;
-	}
-
 	auto ptr=GetControlWordPtr(physAddr);
 	if(nullptr!=ptr)
 	{

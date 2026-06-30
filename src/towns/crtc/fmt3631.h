@@ -104,9 +104,7 @@ public:
 		PATTERN_X0      =0x180210,
 		PATTERN_Y0      =0x180214,
 		RASTER          =0x180218,
-		PIXEL1          =0x180080,
 		PIXEL8          =0x18021C,
-		NEXT_PIXELS     =0x180014,
 		WINDOW_MIN      =0x180220,
 		WINDOW_MAX      =0x180224,
 
@@ -159,6 +157,12 @@ public:
 			LOAD_COORD_X=0x08,
 			LOAD_COORD_Y=0x10,
 			LOAD_COORD_XY=0x18,
+
+
+		// Commands
+		NEXT_PIXELS_CMD =0x180014,
+		PIXEL1_CMD      =0x180080,
+		PIXEL1_SWAP_CMD =0x1E0080,
 	};
 
 	class State
@@ -203,6 +207,7 @@ public:
 
 	static int U16toS16(uint32_t in);
 	static int U32toS32(uint32_t in);
+	static uint32_t ByteSwap32(uint32_t in);
 
 	bool IsEnabled(void) const;
 	unsigned int Height(void) const;
@@ -236,6 +241,12 @@ public:
 	void DrawTri(void);
 	void DrawQuad(void);
 	void DrawRect(void);
+
+	// Pixels Command
+	void CmdNextPixels(uint32_t physAddr,uint32_t data);
+	void CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap);
+
+	bool IsCommand(uint32_t physAddr,uint32_t data);
 
 	void SetControlByte(uint32_t physAddr,uint8_t data);
 	void SetControlWord(uint32_t physAddr,uint16_t data);
