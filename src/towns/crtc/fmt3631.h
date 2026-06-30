@@ -149,7 +149,7 @@ public:
 			LOAD_COORD_PRIMTYPE_LINE=0x40,
 			LOAD_COORD_PRIMTYPE_TRI=0x80,
 			LOAD_COORD_PRIMTYPE_QUAD=0xC0,
-			LOAD_COORD_PRIMTYPE_RECT=0x100,
+			LOAD_COORD_PRIMTYPE_RECT=0x100,  // RECT, ABS, XY ->  46181318
 			// Linux p9000regs.h implies that RECT command is 0x800,
 			// which contradicts with P9100 data sheet.
 			// Also contradicts with what comes in from Windows P9000 driver.
@@ -163,6 +163,43 @@ public:
 		NEXT_PIXELS_CMD =0x180014,
 		PIXEL1_CMD      =0x180080,
 		PIXEL1_SWAP_CMD =0x1E0080,
+
+
+
+		// Logic Op
+		// Raster Low 16 bits: |abcd|
+		// a: Logic op for ptn=1 FGCOLOR
+		// b: Logic op for ptn=1 FGCOLOR
+		// c: Logic op for ptn=0 BGCOLOR
+		// d: Logic op for ptn=0 BGCOLOR
+		LOGIC_ZERO=               0x0, 
+		LOGIC_NOT_SRC_AND_NOT_DST=0x1,
+		LOGIC_NOT_SRC_AND_DST=    0x2,
+		LOGIC_NOT_SRC=            0x3,
+		LOGIC_SRC_AND_NOT_DST=    0x4,
+		LOGIC_NOT_DST=            0x5,
+		LOGIC_SRC_XOR_DST=        0x6,
+		LOGIC_NOT_SRC_OR_NOT_DST= 0x7,
+		LOGIC_SRC_AND_DST=        0x8,
+		LOGIC_NOT_SRC_XOR_DST=    0x9,
+		LOGIC_DST=                0xa,
+		LOGIC_NOT_SRC_OR_DST=     0xb,
+		LOGIC_SRC=                0xc,
+		LOGIC_SRC_OR_NOT_DST=     0xd,
+		LOGIC_SRC_OR_DST=         0xe,
+		LOGIC_ONE=                0xf,
+		// P9100 Manual Figure 68
+		// b7= PTN & SRC & DST
+		// b6= PTN & SRC &~DST
+		// b5= PTN &~SRC & DST
+		// b4= PTN &~SRC &~DST
+		// b3=~PTN & SRC & DST
+		// b2=~PTN & SRC &~DST
+		// b1=~PTN &~SRC & DST
+		// b0=~PTN &~SRC &~DST
+
+		// b0 to b3 are for when PTN==0
+		// b4 to b7 are for when PTN==1
 	};
 
 	class State
