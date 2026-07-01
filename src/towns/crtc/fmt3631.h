@@ -42,7 +42,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Should ignore bit 13?
 
 // FMT-3631 Weitek Power 9000 Windows Accelerator Card.
-class FMT3631 : public Device, public MemoryAccess, public TownsDeviceHasLayer
+class FMT3631 : public Device, public MemoryAccess, public TownsCrtcBase
 {
 public:
 	static const uint32_t FMT3631::defPalette[];
@@ -216,6 +216,7 @@ public:
 		Vec2i coord[COORD_MAX];
 
 		AnalogPalette plt;
+		HardwareMouseCursor hwCursor;
 
 		// For PIXEL1 and PIXEL8 commands.
 		// The doc says position and width are taken from x0, (x2,y2), and y-increment from x3.

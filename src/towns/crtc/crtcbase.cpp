@@ -1,17 +1,17 @@
 #include <device.h>
 #include "crtcbase.h"
 
-void TownsDeviceHasLayer::AnalogPalette::Set16(unsigned int page,unsigned int component,unsigned char v)
+void TownsCrtcBase::AnalogPalette::Set16(unsigned int page,unsigned int component,unsigned char v)
 {
 	v=v&0xF0;
 	v|=(v>>4);
 	plt16[page][codeLatch&0x0F].v[component]=v;
 }
-void TownsDeviceHasLayer::AnalogPalette::Set256(unsigned int component,unsigned char v)
+void TownsCrtcBase::AnalogPalette::Set256(unsigned int component,unsigned char v)
 {
 	plt256[codeLatch].v[component]=v;
 }
-void TownsDeviceHasLayer::AnalogPalette::SetRed(unsigned char v,unsigned int PLT)
+void TownsCrtcBase::AnalogPalette::SetRed(unsigned char v,unsigned int PLT)
 {
 	switch(PLT)
 	{
@@ -27,7 +27,7 @@ void TownsDeviceHasLayer::AnalogPalette::SetRed(unsigned char v,unsigned int PLT
 		break;
 	}
 }
-void TownsDeviceHasLayer::AnalogPalette::SetGreen(unsigned char v,unsigned int PLT)
+void TownsCrtcBase::AnalogPalette::SetGreen(unsigned char v,unsigned int PLT)
 {
 	switch(PLT)
 	{
@@ -43,7 +43,7 @@ void TownsDeviceHasLayer::AnalogPalette::SetGreen(unsigned char v,unsigned int P
 		break;
 	}
 }
-void TownsDeviceHasLayer::AnalogPalette::SetBlue(unsigned char v,unsigned int PLT)
+void TownsCrtcBase::AnalogPalette::SetBlue(unsigned char v,unsigned int PLT)
 {
 	switch(PLT)
 	{
@@ -60,15 +60,15 @@ void TownsDeviceHasLayer::AnalogPalette::SetBlue(unsigned char v,unsigned int PL
 	}
 }
 
-unsigned char TownsDeviceHasLayer::AnalogPalette::Get16(unsigned int page,unsigned int component) const
+unsigned char TownsCrtcBase::AnalogPalette::Get16(unsigned int page,unsigned int component) const
 {
 	return plt16[page][codeLatch&0x0F][component]&0xF0;
 }
-unsigned char TownsDeviceHasLayer::AnalogPalette::Get256(unsigned int component) const
+unsigned char TownsCrtcBase::AnalogPalette::Get256(unsigned int component) const
 {
 	return plt256[codeLatch][component];
 }
-unsigned char TownsDeviceHasLayer::AnalogPalette::GetRed(unsigned int PLT) const
+unsigned char TownsCrtcBase::AnalogPalette::GetRed(unsigned int PLT) const
 {
 	switch(PLT)
 	{
@@ -82,7 +82,7 @@ unsigned char TownsDeviceHasLayer::AnalogPalette::GetRed(unsigned int PLT) const
 	}
 	return 0;
 }
-unsigned char TownsDeviceHasLayer::AnalogPalette::GetGreen(unsigned int PLT) const
+unsigned char TownsCrtcBase::AnalogPalette::GetGreen(unsigned int PLT) const
 {
 	switch(PLT)
 	{
@@ -96,7 +96,7 @@ unsigned char TownsDeviceHasLayer::AnalogPalette::GetGreen(unsigned int PLT) con
 	}
 	return 0;
 }
-unsigned char TownsDeviceHasLayer::AnalogPalette::GetBlue(unsigned int PLT) const
+unsigned char TownsCrtcBase::AnalogPalette::GetBlue(unsigned int PLT) const
 {
 	switch(PLT)
 	{
@@ -111,7 +111,7 @@ unsigned char TownsDeviceHasLayer::AnalogPalette::GetBlue(unsigned int PLT) cons
 	return 0;
 }
 
-void TownsDeviceHasLayer::AnalogPalette::Serialize(std::vector <unsigned char> &data) const
+void TownsCrtcBase::AnalogPalette::Serialize(std::vector <unsigned char> &data) const
 {
 	DeviceUtil::PushUint32(data,codeLatch);
 	for(int i=0; i<2; ++i)
@@ -130,7 +130,7 @@ void TownsDeviceHasLayer::AnalogPalette::Serialize(std::vector <unsigned char> &
 		DeviceUtil::PushUint32(data,col);
 	}
 }
-void TownsDeviceHasLayer::AnalogPalette::Deserialize(const unsigned char *&data)
+void TownsCrtcBase::AnalogPalette::Deserialize(const unsigned char *&data)
 {
 	codeLatch=DeviceUtil::ReadUint32(data);
 	for(int i=0; i<2; ++i)
@@ -151,7 +151,7 @@ void TownsDeviceHasLayer::AnalogPalette::Deserialize(const unsigned char *&data)
 		p[0]=col&255;
 	}
 }
-void TownsDeviceHasLayer::AnalogPalette::Reset(void)
+void TownsCrtcBase::AnalogPalette::Reset(void)
 {
 	codeLatch=0;
 	for(int i=0; i<2; ++i)
@@ -180,3 +180,23 @@ void TownsDeviceHasLayer::AnalogPalette::Reset(void)
 	}
 }
 
+void TownsCrtcBase::HardwareMouseCursor::Reset(void)
+{
+	defining=false;
+	defined=false;
+	ptnCount=0;
+	unknownValueReg8=0; // Maybe color.
+	X=0;
+	Y=0;
+	originX=0;
+	originY=0;
+	for(auto &c : ANDPtn)
+	{
+		c=0;
+	}
+	for(auto &c : ORPtn)
+	{
+		c=0;
+	}
+
+}

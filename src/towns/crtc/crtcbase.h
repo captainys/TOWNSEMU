@@ -4,7 +4,7 @@
 #include "cheapmath.h"
 #include <vector>
 
-class TownsDeviceHasLayer
+class TownsCrtcBase
 {
 public:
 	class Layer
@@ -47,6 +47,18 @@ public:
 
 		void Serialize(std::vector <unsigned char> &data) const;
 		void Deserialize(const unsigned char *&data);
+	};
+	class HardwareMouseCursor
+	{
+	public:
+		bool defining=false,defined=false;
+		uint32_t ptnCount=0;
+		uint32_t unknownValueReg8=0;
+		uint32_t X=0,Y=0;
+		uint32_t originX=0,originY=0;
+		uint8_t ANDPtn[512]={0},ORPtn[512]={0};
+
+		void Reset(void);
 	};
 };
 

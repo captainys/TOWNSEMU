@@ -54,7 +54,7 @@ CLKSEL
 
 
 
-class TownsCRTC : public Device, public TownsDeviceHasLayer
+class TownsCRTC : public Device, public TownsCrtcBase
 {
 public:
 	enum
@@ -156,19 +156,6 @@ public:
 		Layer layer[2];
 		ScreenModeCache();
 		void MakeFMRCompatible(void);
-	};
-
-	class HardwareMouseCursor
-	{
-	public:
-		bool defining=false,defined=false;
-		uint32_t ptnCount=0;
-		uint32_t unknownValueReg8=0;
-		uint32_t X=0,Y=0;
-		uint32_t originX=0,originY=0;
-		uint8_t ANDPtn[512]={0},ORPtn[512]={0};
-
-		void Reset(void);
 	};
 
 	enum

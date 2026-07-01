@@ -33,26 +33,6 @@ const unsigned int TownsCRTC::CLKSELtoHz[4]=
 	21052500,   // 21052KHz
 };
 
-void TownsCRTC::HardwareMouseCursor::Reset(void)
-{
-	defining=false;
-	defined=false;
-	ptnCount=0;
-	unknownValueReg8=0; // Maybe color.
-	X=0;
-	Y=0;
-	originX=0;
-	originY=0;
-	for(auto &c : ANDPtn)
-	{
-		c=0;
-	}
-	for(auto &c : ORPtn)
-	{
-		c=0;
-	}
-
-}
 
 ////////////////////////////////////////////////////////////
 
