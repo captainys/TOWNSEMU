@@ -1,5 +1,5 @@
 #include <device.h>
-#include "haslayer.h"
+#include "crtcbase.h"
 
 void TownsDeviceHasLayer::AnalogPalette::Set16(unsigned int page,unsigned int component,unsigned char v)
 {

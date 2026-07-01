@@ -20,7 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "device.h"
 #include "ramrom.h"
 #include "townsdef.h"
-#include "haslayer.h"
+#include "crtcbase.h"
 
 
 // Device Coord Registers are supposed to be:

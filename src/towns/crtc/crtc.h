@@ -21,7 +21,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "device.h"
 #include "cheapmath.h"
-#include "haslayer.h"
+#include "crtcbase.h"
 
 
 

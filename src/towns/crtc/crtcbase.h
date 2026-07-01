@@ -1,5 +1,5 @@
-#ifndef HASLAYER_H_IS_INCLUDED
-#define HASLAYER_H_IS_INCLUDED
+#ifndef CRTCBASE_H_IS_INCLUDED
+#define CRTCBASE_H_IS_INCLUDED
 
 #include "cheapmath.h"
 #include <vector>
