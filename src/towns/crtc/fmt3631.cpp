@@ -19,11 +19,30 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "townsdef.h"
 #include "cheapmath.h"
 
-
+const uint32_t FMT3631::defPalette[256]=
+{
+0x000000,0x800000,0x008000,0x808000,0x000080,0x800080,0x008080,0xC0C0C0,0xC0DCC0,0xA6CAF0,0x5F3F3F,0x7F3F3F,0x9F3F3F,0xBF3F3F,0xDF3F3F,0xFF3F3F,
+0x3F5F3F,0x5F5F3F,0x7F5F3F,0x9F5F3F,0xBF5F3F,0xDF5F3F,0xFF5F3F,0x3F7F3F,0x5F7F3F,0x7F7F3F,0x9F7F3F,0xBF7F3F,0xDF7F3F,0xFF7F3F,0x3F9F3F,0x5F9F3F,
+0x7F9F3F,0x9F9F3F,0xBF9F3F,0xDF9F3F,0xFF9F3F,0x3FBF3F,0x5FBF3F,0x7FBF3F,0x9FBF3F,0xBFBF3F,0xDFBF3F,0xFFBF3F,0x3FDF3F,0x5FDF3F,0x7FDF3F,0x9FDF3F,
+0xBFDF3F,0xDFDF3F,0xFFDF3F,0x3FFF3F,0x5FFF3F,0x7FFF3F,0x9FFF3F,0xBFFF3F,0xDFFF3F,0xFFFF3F,0x3F3F5F,0x5F3F5F,0x7F3F5F,0x9F3F5F,0xBF3F5F,0xDF3F5F,
+0xFF3F5F,0x3F5F5F,0x5F5F5F,0x7F5F5F,0x9F5F5F,0xBF5F5F,0xDF5F5F,0xFF5F5F,0x3F7F5F,0x5F7F5F,0x7F7F5F,0x9F7F5F,0xBF7F5F,0xDF7F5F,0xFF7F5F,0x3F9F5F,
+0x5F9F5F,0x7F9F5F,0x9F9F5F,0xBF9F5F,0xDF9F5F,0xFF9F5F,0x3FBF5F,0x5FBF5F,0x7FBF5F,0x9FBF5F,0xBFBF5F,0xDFBF5F,0xFFBF5F,0x3FDF5F,0x5FDF5F,0x7FDF5F,
+0x9FDF5F,0xBFDF5F,0xDFDF5F,0xFFDF5F,0x3FFF5F,0x5FFF5F,0x7FFF5F,0x9FFF5F,0xBFFF5F,0xDFFF5F,0xFFFF5F,0x3F3F7F,0x5F3F7F,0x7F3F7F,0x9F3F7F,0xBF3F7F,
+0xDF3F7F,0xFF3F7F,0x3F5F7F,0x5F5F7F,0x7F5F7F,0x9F5F7F,0xBF5F7F,0xDF5F7F,0xFF5F7F,0x3F7F7F,0x5F7F7F,0x7F7F7F,0x9F7F7F,0xBF7F7F,0xDF7F7F,0xFF7F7F,
+0x3F9F7F,0x5F9F7F,0x7F9F7F,0x9F9F7F,0xBF9F7F,0xDF9F7F,0xFF9F7F,0x3FBF7F,0x5FBF7F,0x7FBF7F,0x9FBF7F,0xBFBF7F,0xDFBF7F,0xFFBF7F,0x3FDF7F,0x5FDF7F,
+0x7FDF7F,0x9FDF7F,0xBFDF7F,0xDFDF7F,0xFFDF7F,0x3FFF7F,0x5FFF7F,0x7FFF7F,0x9FFF7F,0xBFFF7F,0xDFFF7F,0xFFFF7F,0x3F3F9F,0x5F3F9F,0x7F3F9F,0x9F3F9F,
+0xBF3F9F,0xDF3F9F,0xFF3F9F,0x3F5F9F,0x5F5F9F,0x7F5F9F,0x9F5F9F,0xBF5F9F,0xDF5F9F,0xFF5F9F,0x3F7F9F,0x5F7F9F,0x7F7F9F,0x9F7F9F,0xBF7F9F,0xDF7F9F,
+0xFF7F9F,0x3F9F9F,0x5F9F9F,0x7F9F9F,0x9F9F9F,0xBF9F9F,0xDF9F9F,0xFF9F9F,0x3FBF9F,0x5FBF9F,0x7FBF9F,0x9FBF9F,0xBFBF9F,0xDFBF9F,0xFFBF9F,0x3FDF9F,
+0x5FDF9F,0x7FDF9F,0x9FDF9F,0xBFDF9F,0xDFDF9F,0xFFDF9F,0x3FFF9F,0x5FFF9F,0x7FFF9F,0x9FFF9F,0xBFFF9F,0xDFFF9F,0xFFFF9F,0x3F3FBF,0x5F3FBF,0x7F3FBF,
+0x9F3FBF,0xBF3FBF,0xDF3FBF,0xFF3FBF,0x3F5FBF,0x5F5FBF,0x7F5FBF,0x9F5FBF,0xBF5FBF,0xDF5FBF,0xFF5FBF,0x3F7FBF,0x5F7FBF,0x7F7FBF,0x9F7FBF,0xBF7FBF,
+0xDF7FBF,0xFF7FBF,0x3F9FBF,0x5F9FBF,0x7F9FBF,0x9F9FBF,0xBF9FBF,0xDF9FBF,0xFF9FBF,0x3FBFBF,0x5FBFBF,0x7FBFBF,0x9FBFBF,0xBFBFBF,0xDFBFBF,0xFFBFBF,
+0x3FDFBF,0x5FDFBF,0x7FDFBF,0x9FDFBF,0xBFDFBF,0xDFDFBF,0xFFFBF0,0xA0A0A4,0x808080,0xFF0000,0x00FF00,0xFFFF00,0x0000FF,0xFF00FF,0x00FFFF,0xFFFFFF,
+};
 
 FMT3631::FMT3631(class FMTownsCommon *ptr) : Device(ptr)
 {
 	state.vram.resize(VRAM_SIZE);
+	mutableThis=this;
 }
 
 void FMT3631::PowerOn(void)
@@ -53,6 +72,14 @@ void FMT3631::Reset(void)
 	state.pixelWid=0;
 	state.pixelYIncrement=1;
 
+	state.plt.Reset();
+	for(int i=0; i<256; ++i)
+	{
+		auto r=(defPalette[i]>>16)&255;
+		auto g=(defPalette[i]>>8)&255;
+		auto b=(defPalette[i])&255;
+		state.plt.plt256[i].Set(r,g,b,255);
+	}
 }
 
 int FMT3631::U16toS16(uint32_t in)
@@ -121,6 +148,33 @@ unsigned int FMT3631::BytesPerLine(void) const
 	return (bf-br)*4;
 }
 
+unsigned int FMT3631::FGColorPlainLogicOp(void) const
+{
+	auto raster=*GetControlWordPtr(RASTER);
+	raster>>=8;
+	return raster&0x0F;
+}
+
+unsigned int FMT3631::FGColorPatternLogicOp(void) const
+{
+	auto raster=*GetControlWordPtr(RASTER);
+	raster>>=12;
+	return raster&0x0F;
+}
+
+unsigned int FMT3631::BGColorPlainLogicOp(void) const
+{
+	auto raster=*GetControlWordPtr(RASTER);
+	return raster&0x0F;
+}
+
+unsigned int FMT3631::BGColorPatternLogicOp(void) const
+{
+	auto raster=*GetControlWordPtr(RASTER);
+	raster>>=4;
+	return raster&0x0F;
+}
+
 void FMT3631::MakePageLayerInfo(Layer &layer) const
 {
 	layer.bitsPerPixel=BitsPerPixel();
@@ -142,16 +196,7 @@ void FMT3631::MakePageLayerInfo(Layer &layer) const
 }
 const FMT3631::AnalogPalette &FMT3631::GetPalette(void) const
 {
-	static AnalogPalette plt;
-	plt.Reset();
-	for(int i=0; i<256; ++i)
-	{
-		int b=(i&3)*255/3;
-		int r=((i>>2)&3)*255/3;
-		int g=((i>>4)&7)*255/7;
-		plt.plt256[i].Set(r,g,b,255);
-	}
-	return plt;
+	return state.plt;
 }
 
 unsigned int FMT3631::IOReadByte(unsigned int ioport)
@@ -277,6 +322,11 @@ unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 		}
 		else
 		{
+			if((COMMAND_MASK&physAddr)==QUAD_CMD)
+			{
+				return mutableThis->CmdQuad(physAddr);
+			}
+
 			auto *ptr=GetControlWordPtr(physAddr);
 			if(nullptr!=ptr)
 			{
@@ -308,6 +358,11 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 		}
 		else
 		{
+			if((COMMAND_MASK&physAddr)==QUAD_CMD)
+			{
+				return mutableThis->CmdQuad(physAddr);
+			}
+
 			auto *ptr=GetControlWordPtr(physAddr);
 			if(nullptr!=ptr)
 			{
@@ -414,37 +469,27 @@ void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
 	switch(primType)
 	{
 	case LOAD_COORD_PRIMTYPE_POINT: // 0,
-		{
-			DrawPoint();
-			state.nLoadedCoord=0;
-		}
 		break;
 	case LOAD_COORD_PRIMTYPE_LINE: // 0x40,
-		if(2<=state.nLoadedCoord)
-		{
-			DrawLine();
-			state.nLoadedCoord=0;
-		}
 		break;
 	case LOAD_COORD_PRIMTYPE_TRI: // 0x80,
-		if(3<=state.nLoadedCoord)
+		if(3==state.nLoadedCoord)
 		{
-			DrawTri();
-			state.nLoadedCoord=0;
+			state.coord[3]=state.coord[2];
+			state.nLoadedCoord=4;
 		}
 		break;
 	case LOAD_COORD_PRIMTYPE_QUAD: // 0xC0,
-		if(4<=state.nLoadedCoord)
-		{
-			DrawQuad();
-			state.nLoadedCoord=0;
-		}
 		break;
 	case LOAD_COORD_PRIMTYPE_RECT: // 0x100,
-		if(2<=state.nLoadedCoord)
+		if(2==state.nLoadedCoord)
 		{
-			DrawRect();
-			state.nLoadedCoord=0;
+			state.coord[2]=state.coord[1];
+			state.coord[1].x()=state.coord[0].x();
+			state.coord[1].y()=state.coord[2].y();
+			state.coord[3].x()=state.coord[2].x();
+			state.coord[3].y()=state.coord[0].y();
+			state.nLoadedCoord=4;
 		}
 		break;
 	}
@@ -468,15 +513,15 @@ void FMT3631::DrawQuad(void)
 {
 	std::cout << "DrawQuad not supported yet.\n";
 }
-void FMT3631::DrawRect(void)
+void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 {
 	auto bytesPerLine=BytesPerLine();
 	auto bitsPerPixel=BitsPerPixel();
 
-	int x0=state.coord[0].x();
-	int y0=state.coord[0].y();
-	int x1=state.coord[1].x();
-	int y1=state.coord[1].y();
+	int x0=p0.x();
+	int y0=p0.y();
+	int x1=p1.x();
+	int y1=p1.y();
 
 	if(x1<x0)
 	{
@@ -506,6 +551,10 @@ void FMT3631::DrawRect(void)
 	std::cout << "Rect\n";
 	uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+(bitsPerPixel*x0/8);
 	auto fgColor=*GetControlWordPtr(FGCOLOR);
+	auto fgPlainLogic=FGColorPlainLogicOp();
+	auto fgPatternLogic=FGColorPatternLogicOp();
+	auto bgPlainLogic=BGColorPlainLogicOp();
+	auto bgPatternLogic=BGColorPatternLogicOp();
 	for(auto y=y0; y<=y1; ++y)
 	{
 		auto ptr=lineTop;
@@ -513,7 +562,56 @@ void FMT3631::DrawRect(void)
 		{
 			if(8==bitsPerPixel)
 			{
-				*(ptr++)=fgColor;
+			 	switch(fgPlainLogic)
+				{
+				case LOGIC_ZERO: //               0x0,
+					(*ptr++)=0;
+					break;
+				case LOGIC_NOT_SRC_AND_NOT_DST: //0x1,
+					(*ptr++)=(~fgColor & ~*ptr);
+					break;
+				case LOGIC_NOT_SRC_AND_DST: //    0x2,
+					(*ptr++)=(~fgColor & *ptr);
+					break;
+				case LOGIC_NOT_SRC: //            0x3,
+					*(ptr++)=fgColor;
+					break;
+				case LOGIC_SRC_AND_NOT_DST: //    0x4,
+					(*ptr++)=(fgColor & ~*ptr);
+					break;
+				case LOGIC_NOT_DST: //            0x5,
+					(*ptr++)=~*ptr;
+					break;
+				case LOGIC_SRC_XOR_DST: //        0x6,
+					(*ptr++)=(fgColor ^ *ptr);
+					break;
+				case LOGIC_NOT_SRC_OR_NOT_DST: // 0x7,
+					(*ptr++)=(fgColor | ~*ptr);
+					break;
+				case LOGIC_SRC_AND_DST: //        0x8,
+					(*ptr++)=(fgColor & *ptr);
+					break;
+				case LOGIC_NOT_SRC_XOR_DST: //    0x9,
+					(*ptr++)=(~fgColor ^ *ptr);
+					break;
+				case LOGIC_DST: //                0xa,
+					break;
+				case LOGIC_NOT_SRC_OR_DST: //     0xb,
+					(*ptr++)=(~fgColor | *ptr);
+					break;
+				case LOGIC_SRC: //                0xc,
+					(*ptr++)=fgColor;
+					break;
+				case LOGIC_SRC_OR_NOT_DST: //     0xd,
+					(*ptr++)=(fgColor | ~*ptr);
+					break;
+				case LOGIC_SRC_OR_DST: //         0xe,
+					(*ptr++)=(fgColor | *ptr);
+					break;
+				case LOGIC_ONE: //                0xf,
+					*(ptr++)=fgColor; // If it is one, then it should be 255, but it apparently writes the source color.
+					break;
+				}
 			}
 		}
 		lineTop+=bytesPerLine;
@@ -577,6 +675,21 @@ void FMT3631::CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap)
 	}
 }
 
+uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fetch.
+{
+	if(state.coord[1].x()==state.coord[0].x() &&
+	   state.coord[1].y()==state.coord[2].y() &&
+	   state.coord[3].x()==state.coord[2].x() &&
+	   state.coord[3].y()==state.coord[0].y())
+	{
+		DrawRect(state.coord[0],state.coord[2]);
+		state.nLoadedCoord=0;
+		return 0;
+	}
+	std::cout << "General quad not implemented yet.\n";
+	return 0;
+}
+
 bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 {
 	if((0x1FFE07&physAddr)==LOAD_COORD)
@@ -602,6 +715,11 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 	if((0x1FFF80&physAddr)==PIXEL1_SWAP_CMD)
 	{
 		CmdPixels1(physAddr,data,true);
+		return true;
+	}
+	if((COMMAND_MASK&physAddr)==QUAD_CMD)
+	{
+		CmdQuad(physAddr);
 		return true;
 	}
 	return false;

@@ -691,6 +691,7 @@ FMTownsCommon::FMTownsCommon() :
 	allDevices.push_back(&tgdrv);
 	allDevices.push_back(&highResPCM);
 	allDevices.push_back(&rex3586);
+	allDevices.push_back(&fmt3631);
 	VMBase::CacheDeviceIndex();
 
 	physMem.SetMainRAMSize(4*1024*1024);

@@ -45,6 +45,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class FMT3631 : public Device, public MemoryAccess, public TownsDeviceHasLayer
 {
 public:
+	static const uint32_t FMT3631::defPalette[];
+
 	// Based on Linux p9000regs.h and Weitek Power 9100 Graphics Controller Preliminary Nov93
 	enum
 	{
@@ -161,6 +163,7 @@ public:
 
 		// Commands
 		NEXT_PIXELS_CMD =0x180014,
+		QUAD_CMD        =0x180008,
 		PIXEL1_CMD      =0x180080,
 		PIXEL1_SWAP_CMD =0x1E0080,
 
@@ -208,9 +211,11 @@ public:
 		bool enabled=false;
 		std::vector <uint8_t> vram;
 
-		int nLoadedCoord=0;
+		mutable int nLoadedCoord=0;
 		int lastLoadedCoord=0;
 		Vec2i coord[COORD_MAX];
+
+		AnalogPalette plt;
 
 		// For PIXEL1 and PIXEL8 commands.
 		// The doc says position and width are taken from x0, (x2,y2), and y-increment from x3.
@@ -230,6 +235,7 @@ public:
 		uint32_t ctlCond[(CTL_COND_END-CTL_COND_BEGIN)/4];
 	};
 	State state;
+	FMT3631 *mutableThis;
 	bool monitorCtrl=true,monitorVRAM=false;
 
 	const char *DeviceName(void) const override {return "FMT3631";}
@@ -251,6 +257,11 @@ public:
 	unsigned int Width(void) const;
 	unsigned int BytesPerLine(void) const;
 	unsigned int BitsPerPixel(void) const;
+
+	unsigned int FGColorPlainLogicOp(void) const;
+	unsigned int BGColorPlainLogicOp(void) const;
+	unsigned int FGColorPatternLogicOp(void) const;
+	unsigned int BGColorPatternLogicOp(void) const;
 
 	void MakePageLayerInfo(Layer &layer) const;
 	const AnalogPalette &GetPalette(void) const;
@@ -277,11 +288,12 @@ public:
 	void DrawLine(void);
 	void DrawTri(void);
 	void DrawQuad(void);
-	void DrawRect(void);
+	void DrawRect(Vec2i p0,Vec2i p1);
 
 	// Pixels Command
 	void CmdNextPixels(uint32_t physAddr,uint32_t data);
 	void CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap);
+	uint32_t CmdQuad(uint32_t physAddr);
 
 	bool IsCommand(uint32_t physAddr,uint32_t data);
 
