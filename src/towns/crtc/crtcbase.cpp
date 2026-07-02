@@ -192,7 +192,7 @@ void TownsCrtcBase::HardwareMouseCursor::Reset(void)
 	originY=0;
 	for(auto &c : ANDPtn)
 	{
-		c=0;
+		c=0xff;
 	}
 	for(auto &c : ORPtn)
 	{

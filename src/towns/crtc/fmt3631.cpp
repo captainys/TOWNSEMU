@@ -692,6 +692,33 @@ uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fe
 
 bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 {
+	if((COMMAND_MASK&physAddr)==BT_WRITE_ADDR)
+	{
+		if(BT_CURS_OR_PTN==data)
+		{
+			state.hwCursor.ptnCount=0;
+		}
+		if(BT_CURS_AND_PTN==data)
+		{
+			state.hwCursor.ptnCount=512;
+		}
+		return true;
+	}
+	if((COMMAND_MASK&physAddr)==BT_CURS_RAM_DATA)
+	{
+		if(state.hwCursor.ptnCount<512)
+		{
+			state.hwCursor.ANDPtn[state.hwCursor.ptnCount]=data;
+			++state.hwCursor.ptnCount;
+		}
+		else if(state.hwCursor.ptnCount<1024)
+		{
+			state.hwCursor.ORPtn[state.hwCursor.ptnCount-512]=data;
+			++state.hwCursor.ptnCount;
+		}
+		return true;
+	}
+
 	if((0x1FFE07&physAddr)==LOAD_COORD)
 	{
 		LoadCoord(physAddr,data);

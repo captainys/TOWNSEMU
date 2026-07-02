@@ -55,6 +55,12 @@ public:
 		COORD_MAX       =4, // Quadrilateral max
 		COMMAND_MASK    =0x1FFFFF,
 
+		// RAMDAC Control
+		BT_WRITE_ADDR=   0x000080,  // Probably
+			BT_CURS_OR_PTN=  0,
+			BT_CURS_AND_PTN= 0x80,
+		BT_CURS_RAM_DATA=0x0000AC,  // Probably
+
 		// System Control Registers
 		SYSCONFIG       =0x00004,
 		INTERRUPT       =0x00008,
