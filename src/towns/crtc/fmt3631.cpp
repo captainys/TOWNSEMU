@@ -80,6 +80,11 @@ void FMT3631::Reset(void)
 		auto b=(defPalette[i])&255;
 		state.plt.plt256[i].Set(r,g,b,255);
 	}
+
+	state.hwCursor.defined=true; // I don't know what triggers to make it visible.
+	state.hwCursor.originX=32;
+	state.hwCursor.originY=32;
+
 }
 
 int FMT3631::U16toS16(uint32_t in)
@@ -692,7 +697,9 @@ uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fe
 
 bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 {
-	if((COMMAND_MASK&physAddr)==BT_WRITE_ADDR)
+	const auto masked=(COMMAND_MASK&physAddr);
+
+	if(masked==BT_WRITE_ADDR)
 	{
 		if(BT_CURS_OR_PTN==data)
 		{
@@ -704,7 +711,7 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 		}
 		return true;
 	}
-	if((COMMAND_MASK&physAddr)==BT_CURS_RAM_DATA)
+	if(masked==BT_CURS_RAM_DATA)
 	{
 		if(state.hwCursor.ptnCount<512)
 		{
@@ -718,6 +725,27 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 		}
 		return true;
 	}
+	if(masked==BT_CURS_X_LOW)
+	{
+		state.hwCursorXY_LowByte[0]=data;
+		return true;
+	}
+	if(masked==BT_CURS_Y_LOW)
+	{
+		state.hwCursorXY_LowByte[1]=data;
+		return true;
+	}
+	if(masked==BT_CURS_X_HIGH)
+	{
+		state.hwCursor.X=(state.hwCursorXY_LowByte[0]&255)|(data<<8);
+		return true;
+	}
+	if(masked==BT_CURS_Y_HIGH)
+	{
+		state.hwCursor.Y=(state.hwCursorXY_LowByte[1]&255)|(data<<8);
+		return true;
+	}
+
 
 	if((0x1FFE07&physAddr)==LOAD_COORD)
 	{
@@ -744,7 +772,7 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 		CmdPixels1(physAddr,data,true);
 		return true;
 	}
-	if((COMMAND_MASK&physAddr)==QUAD_CMD)
+	if(masked==QUAD_CMD)
 	{
 		CmdQuad(physAddr);
 		return true;

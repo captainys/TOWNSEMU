@@ -74,7 +74,11 @@ void TownsRender::Prepare(const TownsCRTC &crtc)
 
 	frequency=crtc.GetHorizontalFrequency();
 	highResCRTC=crtc.state.highResCRTCEnabled;
-	if(true==highResCRTC)
+	if(true==fmt3631)
+	{
+		hardwareMouse=crtc.fmt3631->state.hwCursor;
+	}
+	else if(true==highResCRTC)
 	{
 		hardwareMouse=crtc.state.highResCrtcMouse;
 	}
@@ -100,7 +104,11 @@ void TownsRender::PrepareEntireVRAMLayer(const TownsCRTC &crtc,int layer)
 	fmt3631=crtc.fmt3631->IsEnabled();
 
 	highResCRTC=crtc.state.highResCRTCEnabled;
-	if(true==highResCRTC)
+	if(true==fmt3631)
+	{
+		hardwareMouse=crtc.fmt3631->state.hwCursor;
+	}
+	else if(true==highResCRTC)
 	{
 		hardwareMouse=crtc.state.highResCrtcMouse;
 	}
@@ -215,7 +223,7 @@ void TownsRender::BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogP
 		}
 	}
 
-	if(true==highResCRTC && true==hardwareMouse.defined)
+	if((true==highResCRTC || true==fmt3631) && true==hardwareMouse.defined)
 	{
 		for(int y=0; y<64; ++y)
 		{
