@@ -715,12 +715,12 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 	{
 		if(state.hwCursor.ptnCount<512)
 		{
-			state.hwCursor.ANDPtn[state.hwCursor.ptnCount]=data;
+			state.hwCursor.ORPtn[state.hwCursor.ptnCount]=data;
 			++state.hwCursor.ptnCount;
 		}
 		else if(state.hwCursor.ptnCount<1024)
 		{
-			state.hwCursor.ORPtn[state.hwCursor.ptnCount-512]=data;
+			state.hwCursor.ANDPtn[state.hwCursor.ptnCount-512]=data;
 			++state.hwCursor.ptnCount;
 		}
 		return true;
