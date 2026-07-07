@@ -59,6 +59,7 @@ public:
 		BT_WRITE_ADDR=   0x000080,  // Probably
 			BT_CURS_OR_PTN=  0,
 			BT_CURS_AND_PTN= 0x80,
+		BT_RAMDAC_DATA=  0x000084,
 		BT_CURS_RAM_DATA=0x0000AC,  // Probably
 		BT_CURS_X_LOW=   0x0000B0,
 		BT_CURS_X_HIGH=  0x0000B4,  // Both Linux and Windows writes Low then High.
@@ -229,6 +230,9 @@ public:
 		AnalogPalette plt;
 		HardwareMouseCursor hwCursor;
 		unsigned int hwCursorXY_LowByte[2]={0,0};
+		unsigned int writingPalette=0;
+		unsigned int writingPaletteRGBCount=0;
+		unsigned int writingPaletteRGB[3]={0,0,0};
 
 		// For PIXEL1 and PIXEL8 commands.
 		// The doc says position and width are taken from x0, (x2,y2), and y-increment from x3.

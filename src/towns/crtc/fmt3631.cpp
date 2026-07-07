@@ -808,6 +808,8 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 		{
 			state.hwCursor.ptnCount=512;
 		}
+		state.writingPalette=data&255;
+		state.writingPaletteRGBCount=0;
 		return true;
 	}
 	if(masked==BT_CURS_RAM_DATA)
@@ -823,6 +825,22 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 			++state.hwCursor.ptnCount;
 		}
 		return true;
+	}
+	if(masked==BT_RAMDAC_DATA)
+	{
+		if(state.writingPaletteRGBCount<3)
+		{
+			state.writingPaletteRGB[state.writingPaletteRGBCount]=data;
+			++state.writingPaletteRGBCount;
+			if(3==state.writingPaletteRGBCount)
+			{
+				state.plt.plt256[state.writingPalette].Set(
+				    state.writingPaletteRGB[0],
+				    state.writingPaletteRGB[1],
+				    state.writingPaletteRGB[2],
+				    255);
+			}
+		}
 	}
 	if(masked==BT_CURS_X_LOW)
 	{
