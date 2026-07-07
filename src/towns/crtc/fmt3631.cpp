@@ -737,26 +737,57 @@ uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 
 	if(dstP0.y()<srcP0.y())
 	{
+		auto bytesPerPixel=BitsPerPixel()/8;
+		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x()*bytesPerPixel;
+		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x()*bytesPerPixel;
+		auto wid=(1+srcP1.x()-srcP0.x())*bytesPerPixel;
 		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
 		{
+			memcpy(dstPtr,srcPtr,wid);
+			srcPtr+=BytesPerLine();
+			dstPtr+=BytesPerLine();
 		}
 	}
 	else if(dstP0.y()>srcP0.y())
 	{
+		auto bytesPerPixel=BitsPerPixel()/8;
+		auto srcPtr=state.vram.data()+srcP1.y()*BytesPerLine()+srcP0.x()*bytesPerPixel;
+		auto dstPtr=state.vram.data()+dstP1.y()*BytesPerLine()+dstP0.x()*bytesPerPixel;
+		auto wid=(1+srcP1.x()-srcP0.x())*bytesPerPixel;
 		for(int y=srcP1.y(); y>=srcP0.y(); --y)
 		{
+			memcpy(dstPtr,srcPtr,wid);
+			srcPtr-=BytesPerLine();
+			dstPtr-=BytesPerLine();
 		}
 	}
 	else if(dstP0.x()<srcP0.x())
 	{
+		auto bytesPerPixel=BitsPerPixel()/8;
+		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x()*bytesPerPixel;
+		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x()*bytesPerPixel;
+		auto wid=(1+srcP1.x()-srcP0.x())*bytesPerPixel;
 		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
 		{
+			memcpy(dstPtr,srcPtr,wid);
+			srcPtr+=BytesPerLine();
+			dstPtr+=BytesPerLine();
 		}
 	}
 	else
 	{
+		auto bytesPerPixel=BitsPerPixel()/8;
+		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x()*bytesPerPixel;
+		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x()*bytesPerPixel;
+		auto wid=(1+srcP1.x()-srcP0.x())*bytesPerPixel;
 		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
 		{
+			for(int x=wid-1; 0<=x; --x)
+			{
+				dstPtr[x]=srcPtr[x];
+			}
+			srcPtr+=BytesPerLine();
+			dstPtr+=BytesPerLine();
 		}
 	}
 
