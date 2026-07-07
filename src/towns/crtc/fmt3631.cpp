@@ -705,6 +705,61 @@ uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fe
 
 uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 {
+	auto srcP0=state.coord[0];
+	auto srcP1=state.coord[1];
+
+	auto dstP0=state.coord[2];
+	auto dstP1=state.coord[3];
+
+	if(srcP0.x()>srcP1.x())
+	{
+		std::swap(srcP0.x(),srcP1.x());
+	}
+	if(srcP0.y()>srcP1.y())
+	{
+		std::swap(srcP0.y(),srcP1.y());
+	}
+	if(dstP0.x()>dstP1.x())
+	{
+		std::swap(dstP0.x(),dstP1.x());
+	}
+	if(dstP0.y()>dstP1.y())
+	{
+		std::swap(dstP0.y(),dstP1.y());
+	}
+
+	if(srcP1.x()-srcP0.x()!=dstP1.x()-dstP0.x() ||
+	   srcP1.y()-srcP0.y()!=dstP1.y()-dstP0.y())
+	{
+		return 0;  // Apparently need to indicate blit_software.
+	}
+
+
+	if(dstP0.y()<srcP0.y())
+	{
+		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
+		{
+		}
+	}
+	else if(dstP0.y()>srcP0.y())
+	{
+		for(int y=srcP1.y(); y>=srcP0.y(); --y)
+		{
+		}
+	}
+	else if(dstP0.x()<srcP0.x())
+	{
+		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
+		{
+		}
+	}
+	else
+	{
+		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
+		{
+		}
+	}
+
 	return 0;
 }
 
