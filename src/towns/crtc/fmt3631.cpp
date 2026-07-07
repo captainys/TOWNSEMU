@@ -331,6 +331,10 @@ unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 			{
 				return mutableThis->CmdQuad(physAddr);
 			}
+			if((COMMAND_MASK&physAddr)==BLIT_CMD)
+			{
+				return mutableThis->CmdBlit(physAddr);
+			}
 
 			auto *ptr=GetControlWordPtr(physAddr);
 			if(nullptr!=ptr)
@@ -366,6 +370,10 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 			if((COMMAND_MASK&physAddr)==QUAD_CMD)
 			{
 				return mutableThis->CmdQuad(physAddr);
+			}
+			if((COMMAND_MASK&physAddr)==BLIT_CMD)
+			{
+				return mutableThis->CmdBlit(physAddr);
 			}
 
 			auto *ptr=GetControlWordPtr(physAddr);
@@ -695,6 +703,11 @@ uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fe
 	return 0;
 }
 
+uint32_t FMT3631::CmdBlit(uint32_t physAddr)
+{
+	return 0;
+}
+
 bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 {
 	const auto masked=(COMMAND_MASK&physAddr);
@@ -775,6 +788,11 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 	if(masked==QUAD_CMD)
 	{
 		CmdQuad(physAddr);
+		return true;
+	}
+	if(masked==BLIT_CMD)
+	{
+		CmdBlit(physAddr);
 		return true;
 	}
 	return false;

@@ -174,6 +174,7 @@ public:
 		// Commands
 		NEXT_PIXELS_CMD =0x180014,
 		QUAD_CMD        =0x180008,
+		BLIT_CMD        =0x180004,
 		PIXEL1_CMD      =0x180080,
 		PIXEL1_SWAP_CMD =0x1E0080,
 
@@ -306,6 +307,7 @@ public:
 	void CmdNextPixels(uint32_t physAddr,uint32_t data);
 	void CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap);
 	uint32_t CmdQuad(uint32_t physAddr);
+	uint32_t CmdBlit(uint32_t physAddr);
 
 	bool IsCommand(uint32_t physAddr,uint32_t data);
 
