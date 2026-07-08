@@ -649,7 +649,7 @@ void FMT3631::CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap)
 
 	if(true==monitorCtrl)
 	{
-		std::cout << "Pixels 1\n";
+		std::cout << "Pixels 1 " << state.pixelCurrent.x() << " " << state.pixelCurrent.y() << " " << state.pixelYIncrement << "\n";
 	}
 
 	if(true==doSwap)

@@ -241,7 +241,7 @@ public:
 		// Linux P9000 driver uses NEXT_PIXEL, but does not load x0,x2,y2, and x3.
 		// Windows driver apparently does the same.
 		Vec2i pixelLeftUp,pixelCurrent;
-		uint32_t pixelWid=0,pixelYIncrement=1;
+		int pixelWid=0,pixelYIncrement=1; // Keep these signed.  Coordinates may go negative.  Don't mix signed and unsigned.
 
 		uint32_t bitsPerPixel=8;
 		uint32_t sysconfig=0,interrupt=0,interrupt_en=0;
