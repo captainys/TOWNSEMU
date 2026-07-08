@@ -643,14 +643,37 @@ void FMT3631::CmdNextPixels(uint32_t physAddr,uint32_t data)
 	}
 }
 
-void FMT3631::CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap)
+class Pixels1CopyTransparent
+{
+public:
+	static inline void DoLogicOp(uint8_t &dst,bool fg,uint32_t fgColor,uint32_t bgColor)
+	{
+		if(true==fg)
+		{
+			dst=fgColor;
+		}
+	}
+};
+class Pixels1CopyOpaque
+{
+public:
+	static inline void DoLogicOp(uint8_t &dst,bool fg,uint32_t fgColor,uint32_t bgColor)
+	{
+		if(true==fg)
+		{
+			dst=fgColor;
+		}
+		else
+		{
+			dst=bgColor;
+		}
+	}
+};
+
+template <class LogicOp>
+void FMT3631::CmdPixels1Loop(uint32_t physAddr,uint32_t data,bool doSwap)
 {
 	uint32_t count=1+((physAddr>>2)&31);
-
-	if(true==monitorCtrl)
-	{
-		std::cout << "Pixels 1 " << state.pixelCurrent.x() << " " << state.pixelCurrent.y() << " " << state.pixelYIncrement << "\n";
-	}
 
 	if(true==doSwap)
 	{
@@ -660,6 +683,7 @@ void FMT3631::CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap)
 	state.pixelYIncrement=state.coord[3].y();
 
 	auto fgColor=*GetControlWordPtr(FGCOLOR);
+	auto bgColor=*GetControlWordPtr(BGCOLOR);
 	auto bytesPerLine=BytesPerLine();
 
 	uint8_t *lineTop=state.vram.data()+bytesPerLine*state.pixelCurrent.y();
@@ -670,10 +694,7 @@ void FMT3631::CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap)
 
 		if(8==BitsPerPixel())
 		{
-			if(true==fg)
-			{
-				lineTop[state.pixelCurrent.x()]=fgColor;
-			}
+			LogicOp::DoLogicOp(lineTop[state.pixelCurrent.x()],fg,fgColor,bgColor);
 		}
 
 		++state.pixelCurrent.x();
@@ -681,10 +702,38 @@ void FMT3631::CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap)
 		{
 			state.pixelCurrent.x()=state.pixelLeftUp.x();
 			state.pixelCurrent.y()+=state.pixelYIncrement;
-			lineTop+=bytesPerLine;
+			if(0<state.pixelYIncrement)
+			{
+				lineTop+=bytesPerLine;
+			}
+			else
+			{
+				lineTop-=bytesPerLine;
+			}
 		}
 
 		--count;
+	}
+}
+
+void FMT3631::CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap)
+{
+	if(true==monitorCtrl)
+	{
+		std::cout << "Pixels 1 " << state.pixelCurrent.x() << " " << state.pixelCurrent.y() << " " << state.pixelYIncrement << "\n";
+	}
+
+	uint16_t raster=*GetControlWordPtr(RASTER);
+	switch(raster)
+	{
+	default:
+	case 0xee22:
+		CmdPixels1Loop<Pixels1CopyTransparent>(physAddr,data,doSwap);
+		break;
+
+	case 0xfc30:
+		CmdPixels1Loop<Pixels1CopyOpaque>(physAddr,data,doSwap);
+		break;
 	}
 }
 

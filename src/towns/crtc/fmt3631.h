@@ -178,7 +178,8 @@ public:
 		BLIT_CMD        =0x180004,
 		PIXEL1_CMD      =0x180080,
 		PIXEL1_SWAP_CMD =0x1E0080,
-
+		PIXEL8_CMD      =0x18000C,
+		PIXEL8_SWAP_CMD =0x1E000C,
 
 
 		// Logic Op
@@ -310,6 +311,9 @@ public:
 	// Pixels Command
 	void CmdNextPixels(uint32_t physAddr,uint32_t data);
 	void CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap);
+	template <class Pixels1LogicOp>
+	void CmdPixels1Loop(uint32_t physAddr,uint32_t data,bool doSwap);
+
 	uint32_t CmdQuad(uint32_t physAddr);
 	uint32_t CmdBlit(uint32_t physAddr);
 
