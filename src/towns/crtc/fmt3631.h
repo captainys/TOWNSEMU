@@ -253,6 +253,7 @@ public:
 
 	static int U16toS16(uint32_t in);
 	static int U32toS32(uint32_t in);
+	static uint32_t S32toU32(int in);
 	static uint32_t ByteSwap32(uint32_t in);
 
 	bool IsEnabled(void) const;
@@ -271,6 +272,7 @@ public:
 
 	template <class returnType,class stateType>
 	inline static returnType GetControlWordPtrTemplate(uint32_t physAddr,stateType &state);
+	bool IsReadableParameter(uint32_t &data,uint32_t physAddr) const;
 
 	const uint32_t *GetControlWordPtr(unsigned int physAddr) const;
 	uint32_t *GetControlWordPtr(unsigned int physAddr);

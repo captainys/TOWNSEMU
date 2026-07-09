@@ -108,7 +108,22 @@ int FMT3631::U32toS32(uint32_t in)
 	}
 	return x;
 }
-
+uint32_t FMT3631::S32toU32(int in)
+{
+	if(0<=in)
+	{
+		return in;
+	}
+	else
+	{
+		in+=0x40000000;
+		in+=0x40000000;
+		uint32_t data=in;
+		data+=0x40000000;
+		data+=0x40000000;
+		return data;
+	}
+}
 uint32_t FMT3631::ByteSwap32(uint32_t in)
 {
 	uint32_t out=0;
@@ -214,6 +229,43 @@ void FMT3631::IOWriteByte(unsigned int ioport,unsigned int data)
 {
 }
 
+bool FMT3631::IsReadableParameter(uint32_t &data,uint32_t physAddr) const
+{
+	if((0x1FFF07&physAddr)==DEVICE_COORD)
+	{
+		auto rel=(0!=(physAddr&LOAD_COORD_ABS_REL_MASK));
+		if(true==rel)
+		{
+			return false; // Window-Relative is write only.
+		}
+
+		auto idx=(physAddr>>6)&3;
+		auto coord=state.coord[idx];
+
+		auto x_y_or_xy=physAddr&LOAD_COORD_X_Y_XY_MASK;
+		if(LOAD_COORD_XY==x_y_or_xy)
+		{
+			uint32_t x=S32toU32(coord.x());
+			uint32_t y=S32toU32(coord.y());
+			data=(x<<16)|(y&0xFFFF);
+			return true;
+		}
+		else if(LOAD_COORD_X==x_y_or_xy)
+		{
+			data=S32toU32(coord.x());
+			return true;
+		}
+		else if(LOAD_COORD_Y==x_y_or_xy)
+		{
+			data=S32toU32(coord.y());
+			return true;
+		}
+
+		return true;
+	}
+	return false;
+}
+
 
 template <class returnType,class stateType>
 inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType &state)
@@ -308,132 +360,6 @@ const uint32_t *FMT3631::GetControlWordPtr(unsigned int physAddr) const
 uint32_t *FMT3631::GetControlWordPtr(unsigned int physAddr)
 {
 	return GetControlWordPtrTemplate<uint32_t *,State>(physAddr,state);
-}
-
-unsigned int FMT3631::FetchByte(unsigned int physAddr) const
-{
-	unsigned int data=0xFF;
-	bool monitor=false;
-
-	if(true==state.enabled)
-	{
-		if(vramBaseAddr<physAddr)
-		{
-			monitor=monitorVRAM;
-			data=state.vram[physAddr-TOWNSADDR_FMT3631_VRAM];
-		}
-		else
-		{
-			monitor=monitorCtrl;
-			if((COMMAND_MASK&physAddr)==QUAD_CMD)
-			{
-				data=mutableThis->CmdQuad(physAddr);
-			}
-			else if((COMMAND_MASK&physAddr)==BLIT_CMD)
-			{
-				data=mutableThis->CmdBlit(physAddr);
-			}
-			else
-			{
-				auto *ptr=GetControlWordPtr(physAddr);
-				if(nullptr!=ptr)
-				{
-					data=*ptr;
-				}
-			}
-		}
-	}
-
-	if(true==monitor)
-	{
-		std::cout << "Power9000 BYTE read   " << cpputil::Uitox(physAddr) << " " << cpputil::Ubtox(data) << "\n";
-	}
-
-	return data;
-}
-
-unsigned int FMT3631::FetchWord(unsigned int physAddr) const
-{
-	unsigned int data=0xFFFF;
-	bool monitor=false;
-
-	if(true==state.enabled)
-	{
-		if(vramBaseAddr<physAddr)
-		{
-			monitor=monitorVRAM;
-			data=cpputil::GetWord(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
-		}
-		else
-		{
-			monitor=monitorCtrl;
-			if((COMMAND_MASK&physAddr)==QUAD_CMD)
-			{
-				data=mutableThis->CmdQuad(physAddr);
-			}
-			else if((COMMAND_MASK&physAddr)==BLIT_CMD)
-			{
-				data=mutableThis->CmdBlit(physAddr);
-			}
-			else
-			{
-				auto *ptr=GetControlWordPtr(physAddr);
-				if(nullptr!=ptr)
-				{
-					data=*ptr;
-				}
-			}
-		}
-	}
-
-	if(true==monitor)
-	{
-		std::cout << "Power9000 WORD read   " << cpputil::Uitox(physAddr) << " " << cpputil::Ustox(data) << "\n";
-	}
-
-	return data;
-}
-
-unsigned int FMT3631::FetchDword(unsigned int physAddr) const
-{
-	unsigned int data=0xFFFFFFFF;
-	bool monitor=false;
-
-	if(true==state.enabled)
-	{
-		if(vramBaseAddr<physAddr)
-		{
-			monitor=monitorVRAM;
-			data=cpputil::GetDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
-		}
-		else
-		{
-			monitor=monitorCtrl;
-			if((COMMAND_MASK&physAddr)==QUAD_CMD)
-			{
-				data=mutableThis->CmdQuad(physAddr);
-			}
-			else if((COMMAND_MASK&physAddr)==BLIT_CMD)
-			{
-				data=mutableThis->CmdBlit(physAddr);
-			}
-			else
-			{
-				auto *ptr=GetControlWordPtr(physAddr);
-				if(nullptr!=ptr)
-				{
-					data=*ptr;
-				}
-			}
-		}
-	}
-
-	if(true==monitor)
-	{
-		std::cout << "Power9000 DWORD read  " << cpputil::Uitox(physAddr) << " " << cpputil::Uitox(data) << "\n";
-	}
-
-	return data;
 }
 
 Vec2i FMT3631::GetWindowOffset(void) const
@@ -1103,6 +1029,141 @@ void FMT3631::SetControlDword(uint32_t physAddr,uint32_t data)
 }
 
 
+unsigned int FMT3631::FetchByte(unsigned int physAddr) const
+{
+	unsigned int data=0xFF;
+	bool monitor=false;
+
+	if(true==state.enabled)
+	{
+		if(vramBaseAddr<physAddr)
+		{
+			monitor=monitorVRAM;
+			data=state.vram[physAddr-TOWNSADDR_FMT3631_VRAM];
+		}
+		else
+		{
+			monitor=monitorCtrl;
+			if((COMMAND_MASK&physAddr)==QUAD_CMD)
+			{
+				data=mutableThis->CmdQuad(physAddr);
+			}
+			else if((COMMAND_MASK&physAddr)==BLIT_CMD)
+			{
+				data=mutableThis->CmdBlit(physAddr);
+			}
+			else if(true==IsReadableParameter(data,physAddr))
+			{
+			}
+			else
+			{
+				auto *ptr=GetControlWordPtr(physAddr);
+				if(nullptr!=ptr)
+				{
+					data=*ptr;
+				}
+			}
+		}
+	}
+
+	if(true==monitor)
+	{
+		std::cout << "Power9000 BYTE read   " << cpputil::Uitox(physAddr) << " " << cpputil::Ubtox(data) << "\n";
+	}
+
+	return data;
+}
+
+unsigned int FMT3631::FetchWord(unsigned int physAddr) const
+{
+	unsigned int data=0xFFFF;
+	bool monitor=false;
+
+	if(true==state.enabled)
+	{
+		if(vramBaseAddr<physAddr)
+		{
+			monitor=monitorVRAM;
+			data=cpputil::GetWord(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
+		}
+		else
+		{
+			monitor=monitorCtrl;
+			if((COMMAND_MASK&physAddr)==QUAD_CMD)
+			{
+				data=mutableThis->CmdQuad(physAddr);
+			}
+			else if((COMMAND_MASK&physAddr)==BLIT_CMD)
+			{
+				data=mutableThis->CmdBlit(physAddr);
+			}
+			else if(true==IsReadableParameter(data,physAddr))
+			{
+			}
+			else
+			{
+				auto *ptr=GetControlWordPtr(physAddr);
+				if(nullptr!=ptr)
+				{
+					data=*ptr;
+				}
+			}
+		}
+	}
+
+	if(true==monitor)
+	{
+		std::cout << "Power9000 WORD read   " << cpputil::Uitox(physAddr) << " " << cpputil::Ustox(data) << "\n";
+	}
+
+	return data;
+}
+
+unsigned int FMT3631::FetchDword(unsigned int physAddr) const
+{
+	unsigned int data=0xFFFFFFFF;
+	bool monitor=false;
+
+	if(true==state.enabled)
+	{
+		if(vramBaseAddr<physAddr)
+		{
+			monitor=monitorVRAM;
+			data=cpputil::GetDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
+		}
+		else
+		{
+			monitor=monitorCtrl;
+			if((COMMAND_MASK&physAddr)==QUAD_CMD)
+			{
+				data=mutableThis->CmdQuad(physAddr);
+			}
+			else if((COMMAND_MASK&physAddr)==BLIT_CMD)
+			{
+				data=mutableThis->CmdBlit(physAddr);
+			}
+			else if(true==IsReadableParameter(data,physAddr))
+			{
+			}
+			else
+			{
+				auto *ptr=GetControlWordPtr(physAddr);
+				if(nullptr!=ptr)
+				{
+					data=*ptr;
+				}
+			}
+		}
+	}
+
+	if(true==monitor)
+	{
+		std::cout << "Power9000 DWORD read  " << cpputil::Uitox(physAddr) << " " << cpputil::Uitox(data) << "\n";
+	}
+
+	return data;
+}
+
 void FMT3631::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	bool monitor=false;
@@ -1143,7 +1204,7 @@ void FMT3631::StoreWord(unsigned int physAddr,unsigned int data)
 	}
 	if(true==monitor)
 	{
-		std::cout << "Power9000 BYTE Write   " << cpputil::Uitox(physAddr) << " " <<  cpputil::Ubtox(data) << "\n";
+		std::cout << "Power9000 WORD Write   " << cpputil::Uitox(physAddr) << " " <<  cpputil::Ustox(data) << "\n";
 	}
 }
 
