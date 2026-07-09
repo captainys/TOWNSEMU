@@ -52,6 +52,7 @@ void FMT3631::PowerOn(void)
 
 void FMT3631::Reset(void)
 {
+	state.masterSwitch=0;
 	state.sysconfig=0;
 	state.interrupt=0;
 	state.interrupt_en=0;
@@ -141,8 +142,12 @@ bool FMT3631::IsEnabled(void) const
 	// 1e5 for 2MB VRAM (FMT-3631 is this case)    0001 1110 0101
 	// 1e4 for 1MB VRAM.                           0001 1110 0100
 	// 1c4 is unknown, but I don't care.           0001 1100 0100
+
+	// Windows driver sets bit 4 of 0x46000000 to enable, and clears to disable FMT-3631.
+	// Probably this bit works as a master switch of FMT-3631.  Maybe this controls the relay on the board.
+
 	auto srtctl=*GetControlWordPtr(SRTCTL);
-	return (true==state.enabled) && (0x1c4==(srtctl&0x1c4));
+	return true==state.enabled && 0x1c4==(srtctl&0x1c4) && 0!=(MS_ENABLE&state.masterSwitch);
 }
 
 unsigned int FMT3631::Height(void) const
@@ -273,6 +278,8 @@ inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType
 	auto relAddr=(physAddr&TOWNSADDR_FMT3631_AND);
 	switch(relAddr)
 	{
+	case MASTERSWITCH: // 0x0
+		return &state.masterSwitch;
 	case SYSCONFIG: //0x00004,
 		return &state.sysconfig;
 	case INTERRUPT: //0x00008,

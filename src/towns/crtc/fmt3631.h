@@ -71,6 +71,8 @@ public:
 			BT_CR1_BP8= 0x40,
 
 		// System Control Registers
+		MASTERSWITCH    =0x00000, // Apparently bit4 is enable/disable flag.  Probably FMT3631-specific.
+			MS_ENABLE=0x10,
 		SYSCONFIG       =0x00004,
 		INTERRUPT       =0x00008,
 		INTERRUPT_EN    =0x0000C,
@@ -228,7 +230,7 @@ public:
 		int pixelWid=0,pixelYIncrement=1; // Keep these signed.  Coordinates may go negative.  Don't mix signed and unsigned.
 
 		uint32_t bitsPerPixel=8;
-		uint32_t sysconfig=0,interrupt=0,interrupt_en=0;
+		uint32_t masterSwitch=0,sysconfig=0,interrupt=0,interrupt_en=0;
 		uint32_t status=0;
 		uint32_t drawingAttrib[(DRAWING_ATTRIB_END-FGCOLOR)/4];
 		uint32_t videoCtrl[(VIDCTRL_LAST-HRZC)/4];
