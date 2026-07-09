@@ -564,11 +564,10 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 		return;
 	}
 
-	if(8!=bitsPerPixel && 32!=bitsPerPixel)
+	if(true==monitorCtrl)
 	{
-		std::cout << "DrawRect for this bpp not supported yet.\n";
+		std::cout << "Rect\n";
 	}
-	std::cout << "Rect\n";
 	uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+x0;
 	auto fgColor=*GetControlWordPtr(FGCOLOR);
 	auto bgColor=*GetControlWordPtr(BGCOLOR);
@@ -798,6 +797,11 @@ uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 	if(dstP0.y()>dstP1.y())
 	{
 		std::swap(dstP0.y(),dstP1.y());
+	}
+
+	if(true==monitorCtrl)
+	{
+		std::cout << "Blit\n";
 	}
 
 	if(srcP1.x()-srcP0.x()!=dstP1.x()-dstP0.x() ||
