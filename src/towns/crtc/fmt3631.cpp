@@ -52,6 +52,8 @@ void FMT3631::PowerOn(void)
 
 void FMT3631::Reset(void)
 {
+	memset(state.btCommandReg,0,sizeof(state.btCommandReg));
+
 	state.masterSwitch=0;
 	state.sysconfig=0;
 	state.interrupt=0;
@@ -83,10 +85,11 @@ void FMT3631::Reset(void)
 		state.plt.plt256[i].Set(r,g,b,255);
 	}
 
+	state.hwCursor.Reset();
 	state.hwCursor.defined=true; // I don't know what triggers to make it visible.
 	state.hwCursor.originX=32;
 	state.hwCursor.originY=32;
-
+	state.hwCursor.wid=32;
 }
 
 int FMT3631::U16toS16(uint32_t in)
@@ -278,6 +281,11 @@ inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType
 	auto relAddr=(physAddr&TOWNSADDR_FMT3631_AND);
 	switch(relAddr)
 	{
+	case BT_COMMAND_REG_1:
+		return &state.btCommandReg[1];
+	case BT_COMMAND_REG_3:
+		return &state.btCommandReg[3];
+
 	case MASTERSWITCH: // 0x0
 		return &state.masterSwitch;
 	case SYSCONFIG: //0x00004,
@@ -857,6 +865,7 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 
 	if(masked==BT_COMMAND_REG_1)
 	{
+		state.btCommandReg[1]=data;
 		if(0==(data&(BT_CR1_BP16|BT_CR1_BP8)))
 		{
 			if(true==monitorCtrl)
@@ -880,6 +889,18 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 				std::cout << "16 bits per pixel.\n";
 			}
 			state.bitsPerPixel=16;
+		}
+	}
+	if(masked==BT_COMMAND_REG_3)
+	{
+		state.btCommandReg[3]=data;
+		if(0!=(BT_CR3_64SQ_CURSOR&data))
+		{
+			state.hwCursor.wid=64;
+		}
+		else
+		{
+			state.hwCursor.wid=32;
 		}
 	}
 	if(masked==BT_WRITE_ADDR)

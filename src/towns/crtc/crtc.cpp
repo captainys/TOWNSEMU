@@ -65,6 +65,7 @@ void TownsCRTC::State::Reset(void)
 
 	palette.Reset();
 	highResCrtcMouse.Reset();
+	highResCrtcMouse.wid=64;
 
 	for(auto &d : highResCrtcReg)
 	{

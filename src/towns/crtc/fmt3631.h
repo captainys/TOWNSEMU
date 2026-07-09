@@ -69,6 +69,8 @@ public:
 		BT_COMMAND_REG_1=0x0000A0,
 			BT_CR1_BP16=0x20,
 			BT_CR1_BP8= 0x40,
+		BT_COMMAND_REG_3=0x0000A8,
+			BT_CR3_64SQ_CURSOR=0x04,
 
 		// System Control Registers
 		MASTERSWITCH    =0x00000, // Apparently bit4 is enable/disable flag.  Probably FMT3631-specific.
@@ -212,6 +214,8 @@ public:
 		mutable int nLoadedCoord=0;
 		int lastLoadedCoord=0;
 		Vec2i coord[COORD_MAX];
+
+		uint32_t btCommandReg[4];
 
 		AnalogPalette plt;
 		HardwareMouseCursor hwCursor;
