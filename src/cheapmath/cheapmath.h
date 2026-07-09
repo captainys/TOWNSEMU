@@ -245,6 +245,12 @@ public:
 		v.v[1]=0;
 		return v;
 	}
+
+	inline bool IsInsideWindow(const Vec2i winMin,const Vec2i winMax)
+	{
+		return (winMin.x()<=x() && x()<=winMax.x() &&
+		        winMin.y()<=y() && y()<=winMax.y());
+	}
 };
 
 class Vec3ub : public Vec3Template <unsigned char>

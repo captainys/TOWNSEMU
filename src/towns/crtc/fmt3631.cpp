@@ -402,6 +402,24 @@ Vec2i FMT3631::GetWindowOffset(void) const
 	return v;
 }
 
+Vec2i FMT3631::GetWindowMin(void) const
+{
+	uint32_t dw=*GetControlWordPtr(WINDOW_MIN);
+	Vec2i v;
+	v.x()=U16toS16(dw>>16);
+	v.y()=U16toS16(dw&0xffff);
+	return v;
+}
+
+Vec2i FMT3631::GetWindowMax(void) const
+{
+	uint32_t dw=*GetControlWordPtr(WINDOW_MAX);
+	Vec2i v;
+	v.x()=U16toS16(dw>>16);
+	v.y()=U16toS16(dw&0xffff);
+	return v;
+}
+
 void FMT3631::DeviceCoordOrLoadCoord(Vec2i &coordToLoad,Vec2i absRef,Vec2i relRef,uint32_t physAddr,uint32_t data)
 {
 	auto rel=(0!=(physAddr&LOAD_COORD_ABS_REL_MASK));
@@ -643,7 +661,7 @@ void FMT3631::CmdNextPixels(uint32_t physAddr,uint32_t data)
 	}
 }
 
-class Pixels1CopyTransparent
+class Pixel1CopyTransparent
 {
 public:
 	static inline void DoLogicOp(uint8_t &dst,bool fg,uint32_t fgColor,uint32_t bgColor)
@@ -654,7 +672,7 @@ public:
 		}
 	}
 };
-class Pixels1CopyOpaque
+class Pixel1CopyOpaque
 {
 public:
 	static inline void DoLogicOp(uint8_t &dst,bool fg,uint32_t fgColor,uint32_t bgColor)
@@ -671,7 +689,7 @@ public:
 };
 
 template <class LogicOp>
-void FMT3631::CmdPixels1Loop(uint32_t physAddr,uint32_t data,bool doSwap)
+void FMT3631::CmdPixel1Loop(uint32_t physAddr,uint32_t data,bool doSwap)
 {
 	uint32_t count=1+((physAddr>>2)&31);
 
@@ -686,15 +704,21 @@ void FMT3631::CmdPixels1Loop(uint32_t physAddr,uint32_t data,bool doSwap)
 	auto bgColor=*GetControlWordPtr(BGCOLOR);
 	auto bytesPerLine=BytesPerLine();
 
+	auto winMin=GetWindowMin();
+	auto winMax=GetWindowMax();
+
 	uint8_t *lineTop=state.vram.data()+bytesPerLine*state.pixelCurrent.y();
 	while(0<count)
 	{
 		bool fg=data&0x80000000;
 		data<<=1;
 
-		if(8==BitsPerPixel())
+		if(state.pixelCurrent.IsInsideWindow(winMin,winMax))
 		{
-			LogicOp::DoLogicOp(lineTop[state.pixelCurrent.x()],fg,fgColor,bgColor);
+			if(8==BitsPerPixel())
+			{
+				LogicOp::DoLogicOp(lineTop[state.pixelCurrent.x()],fg,fgColor,bgColor);
+			}
 		}
 
 		++state.pixelCurrent.x();
@@ -716,26 +740,44 @@ void FMT3631::CmdPixels1Loop(uint32_t physAddr,uint32_t data,bool doSwap)
 	}
 }
 
-void FMT3631::CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap)
+void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool doSwap)
 {
 	if(true==monitorCtrl)
 	{
-		std::cout << "Pixels 1 " << state.pixelCurrent.x() << " " << state.pixelCurrent.y() << " " << state.pixelYIncrement << "\n";
+		std::cout << "Pixel1 " << state.pixelCurrent.x() << " " << state.pixelCurrent.y() << " " << state.pixelYIncrement << "\n";
 	}
 
 	uint16_t raster=*GetControlWordPtr(RASTER);
 	switch(raster)
 	{
 	default:
+		if(true==breakOnUnsupported)
+		{
+			auto *towns=(FMTownsCommon *)vmPtr;
+			towns->debugger.ExternalBreak("Unsupported Raster type for Pixel1\n");
+		}
+		CmdPixel1Loop<Pixel1CopyTransparent>(physAddr,data,doSwap);
+		break;
+
 	case 0xee22:
-		CmdPixels1Loop<Pixels1CopyTransparent>(physAddr,data,doSwap);
+		CmdPixel1Loop<Pixel1CopyTransparent>(physAddr,data,doSwap);
 		break;
 
 	case 0xfc30:
-		CmdPixels1Loop<Pixels1CopyOpaque>(physAddr,data,doSwap);
+		CmdPixel1Loop<Pixel1CopyOpaque>(physAddr,data,doSwap);
 		break;
 	}
 }
+
+void FMT3631::CmdPixel8(uint32_t physAddr,uint32_t data,bool doSwap)
+{
+	if(true==breakOnUnsupported)
+	{
+		auto *towns=(FMTownsCommon *)vmPtr;
+		towns->debugger.ExternalBreak("Pixel8 not supported yet.\n");
+	}
+}
+
 
 uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fetch.
 {
@@ -749,6 +791,7 @@ uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fe
 		return 0;
 	}
 	std::cout << "General quad not implemented yet.\n";
+	state.nLoadedCoord=0;
 	return 0;
 }
 
@@ -847,6 +890,33 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 {
 	const auto masked=(COMMAND_MASK&physAddr);
 
+	if(masked==BT_COMMAND_REG_1)
+	{
+		if(0==(data&(BT_CR1_BP16|BT_CR1_BP8)))
+		{
+			if(true==monitorCtrl)
+			{
+				std::cout << "32 bits per pixel.\n";
+			}
+			state.bitsPerPixel=32;
+		}
+		else if(0!=(data&BT_CR1_BP8))
+		{
+			if(true==monitorCtrl)
+			{
+				std::cout << "8 bits per pixel.\n";
+			}
+			state.bitsPerPixel=8;
+		}
+		else if(0!=(data&BT_CR1_BP16))
+		{
+			if(true==monitorCtrl)
+			{
+				std::cout << "16 bits per pixel.\n";
+			}
+			state.bitsPerPixel=16;
+		}
+	}
 	if(masked==BT_WRITE_ADDR)
 	{
 		if(BT_CURS_OR_PTN==data)
@@ -930,13 +1000,21 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 	}
 	if((0x1FFF80&physAddr)==PIXEL1_CMD)
 	{
-		CmdPixels1(physAddr,data,false);
+		CmdPixel1(physAddr,data,false);
 		return true;
 	}
 	if((0x1FFF80&physAddr)==PIXEL1_SWAP_CMD)
 	{
-		CmdPixels1(physAddr,data,true);
+		CmdPixel1(physAddr,data,true);
 		return true;
+	}
+	if(masked==PIXEL8_CMD)
+	{
+		CmdPixel8(physAddr,data,false);
+	}
+	if(masked==PIXEL8_SWAP_CMD)
+	{
+		CmdPixel8(physAddr,data,true);
 	}
 	if(masked==QUAD_CMD)
 	{

@@ -66,6 +66,10 @@ public:
 		BT_CURS_Y_LOW=   0x0000B8,
 		BT_CURS_Y_HIGH=  0x0000BC,
 
+		BT_COMMAND_REG_1=0x0000A0,
+			BT_CR1_BP16=0x20,
+			BT_CR1_BP8= 0x40,
+
 		// System Control Registers
 		SYSCONFIG       =0x00004,
 		INTERRUPT       =0x00008,
@@ -255,6 +259,7 @@ public:
 	State state;
 	FMT3631 *mutableThis;
 	bool monitorCtrl=true,monitorVRAM=false;
+	bool breakOnUnsupported=true;
 
 	const char *DeviceName(void) const override {return "FMT3631";}
 
@@ -295,6 +300,8 @@ public:
 	uint32_t *GetControlWordPtr(unsigned int physAddr);
 
 	Vec2i GetWindowOffset(void) const;
+	Vec2i GetWindowMin(void) const;
+	Vec2i GetWindowMax(void) const;
 
 	// Device Coordinate command
 	void DeviceCoord(uint32_t physAddr,uint32_t data);
@@ -310,9 +317,11 @@ public:
 
 	// Pixels Command
 	void CmdNextPixels(uint32_t physAddr,uint32_t data);
-	void CmdPixels1(uint32_t physAddr,uint32_t data,bool doSwap);
-	template <class Pixels1LogicOp>
-	void CmdPixels1Loop(uint32_t physAddr,uint32_t data,bool doSwap);
+	void CmdPixel1(uint32_t physAddr,uint32_t data,bool doSwap);
+	template <class Pixel1LogicOp>
+	void CmdPixel1Loop(uint32_t physAddr,uint32_t data,bool doSwap);
+
+	void CmdPixel8(uint32_t physAddr,uint32_t data,bool doSwap);
 
 	uint32_t CmdQuad(uint32_t physAddr);
 	uint32_t CmdBlit(uint32_t physAddr);
