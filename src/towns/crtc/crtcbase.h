@@ -11,6 +11,8 @@ public:
 	{
 	public:
 		unsigned int bitsPerPixel;
+		bool highColor565=false; // FMT-3631 can use RRRRRGGGGGGBBBBB
+		bool highColorGRB=true;
 		unsigned int highResRGBSwap; // Hopefully meaningful only in the 24-bit color mode.  Figured 2025/07/02
 		unsigned int VRAMAddr;
 		unsigned int VRAMOffset;

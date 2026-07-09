@@ -71,6 +71,8 @@ void FMT3631::Reset(void)
 
 	memset(state.ctlCond,0,sizeof(state.ctlCond));
 
+	state.bitsPerPixel=8;
+	state.highColor565=false;
 	state.pixelLeftUp=Vec2i::Make(0,0);
 	state.pixelCurrent=Vec2i::Make(0,0);
 	state.pixelWid=0;
@@ -185,6 +187,8 @@ unsigned int FMT3631::BytesPerPixel(void) const
 void FMT3631::MakePageLayerInfo(Layer &layer) const
 {
 	layer.bitsPerPixel=BitsPerPixel();
+	layer.highColor565=state.highColor565;
+	layer.highColorGRB=false;
 
 	layer.highResRGBSwap=0b100100;
 	// Apparently GBR or BRG
@@ -889,6 +893,7 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 				std::cout << "16 bits per pixel.\n";
 			}
 			state.bitsPerPixel=16;
+			state.highColor565=(0!=(data&BT_CR1_565RGB));
 		}
 	}
 	if(masked==BT_COMMAND_REG_3)

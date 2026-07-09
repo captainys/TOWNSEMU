@@ -256,13 +256,13 @@ void TownsRender::BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogP
 							pixelPtr[3]=255;
 						}
 					}
-					bit>>=1;
-					if(0==bit)
-					{
-						++ANDPtn;
-						++ORPtn;
-						bit=0x80;
-					}
+				}
+				bit>>=1;
+				if(0==bit)
+				{
+					++ANDPtn;
+					++ORPtn;
+					bit=0x80;
 				}
 			}
 		}
@@ -789,9 +789,23 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char 
 				OFFSETTRANS::Trans(VRAMAddr);
 
 				unsigned short col16 = cpputil::GetWord(VRAM + VRAMAddr);
-				dst[0] = ((col16 >> 2) & 0xf8) | ((col16 >> 7) & 7);
-				dst[1] = ((col16 >> 7) & 0xf8) | ((col16 >> 12) & 7);
-				dst[2] = ((col16 << 3) & 0xf8) | ((col16 >> 2) & 7);
+				if(true!=layer.highColor565)
+				{
+					dst[0] = ((col16 >> 2) & 0xf8) | ((col16 >> 7) & 7);
+					dst[1] = ((col16 >> 7) & 0xf8) | ((col16 >> 12) & 7);
+					dst[2] = ((col16 << 3) & 0xf8) | ((col16 >> 2) & 7);
+				}
+				else
+				{
+					// GGGGGRRRRRRBBBBB
+					dst[0] = ((col16 >> 3) & 0xfc) | ((col16 >> 9) & 3);
+					dst[1] = ((col16 >> 8) & 0xf8) | ((col16 >> 13) & 7);
+					dst[2] = ((col16 << 3) & 0xf8) | ((col16 >> 2) & 7);
+				}
+				if(true!=layer.highColorGRB)
+				{
+					std::swap(dst[0],dst[1]); // TOWNS CRTC goes with GRB order.  FMT-3631 uses RGB order.
+				}
 				dst[3] = 255;
 				dst += 4;
 				if (0 == (--ZH))

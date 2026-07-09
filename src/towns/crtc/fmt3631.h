@@ -69,6 +69,7 @@ public:
 		BT_COMMAND_REG_1=0x0000A0,
 			BT_CR1_BP16=0x20,
 			BT_CR1_BP8= 0x40,
+			BT_CR1_565RGB=0x08,
 		BT_COMMAND_REG_3=0x0000A8,
 			BT_CR3_64SQ_CURSOR=0x04,
 
@@ -234,6 +235,7 @@ public:
 		int pixelWid=0,pixelYIncrement=1; // Keep these signed.  Coordinates may go negative.  Don't mix signed and unsigned.
 
 		uint32_t bitsPerPixel=8;
+		bool highColor565=false;
 		uint32_t masterSwitch=0,sysconfig=0,interrupt=0,interrupt_en=0;
 		uint32_t status=0;
 		uint32_t drawingAttrib[(DRAWING_ATTRIB_END-FGCOLOR)/4];
