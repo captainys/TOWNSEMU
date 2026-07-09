@@ -60,6 +60,7 @@ void FMT3631::Reset(void)
 	memset(state.vramCtrl,0,sizeof(state.vramCtrl));
 	memset(state.drawingAttrib,0,sizeof(state.drawingAttrib));
 	memset(state.vram.data(),0,VRAM_SIZE);
+	memset(state.pattern,255,sizeof(state.pattern));
 
 	state.nLoadedCoord=0;
 	state.lastLoadedCoord=0;
@@ -153,37 +154,23 @@ unsigned int FMT3631::BytesPerLine(void) const
 	return (bf-br)*4;
 }
 
-unsigned int FMT3631::FGColorPlainLogicOp(void) const
+unsigned int FMT3631::BytesPerPixel(void) const
 {
-	auto raster=*GetControlWordPtr(RASTER);
-	raster>>=8;
-	return raster&0x0F;
-}
-
-unsigned int FMT3631::FGColorPatternLogicOp(void) const
-{
-	auto raster=*GetControlWordPtr(RASTER);
-	raster>>=12;
-	return raster&0x0F;
-}
-
-unsigned int FMT3631::BGColorPlainLogicOp(void) const
-{
-	auto raster=*GetControlWordPtr(RASTER);
-	return raster&0x0F;
-}
-
-unsigned int FMT3631::BGColorPatternLogicOp(void) const
-{
-	auto raster=*GetControlWordPtr(RASTER);
-	raster>>=4;
-	return raster&0x0F;
+	return state.bitsPerPixel/8;
 }
 
 void FMT3631::MakePageLayerInfo(Layer &layer) const
 {
 	layer.bitsPerPixel=BitsPerPixel();
-	layer.highResRGBSwap=0; // RGB or BRG or BGR.  Yet to figure what register controls it.
+
+	layer.highResRGBSwap=0b100100;
+	// Apparently GBR or BRG
+	// GBR:  G=0  B=1  R=2
+	// BGR:  B=0  G=1  R=2
+	// RGBSwap=RRGGBB     RRGGBB
+	//         2 1 0  or  2 0 1
+	//         100100 or  100001
+
 	layer.VRAMAddr=0;
 
 	layer.VRAMOffset=0;
@@ -275,6 +262,16 @@ inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType
 	case WINDOW_MAX      ://0x180224,
 		return &state.drawingAttrib[(relAddr-FGCOLOR)/4];
 
+	case PATTERN0:
+	case PATTERN1:
+	case PATTERN2:
+	case PATTERN3:
+	case PATTERN4:
+	case PATTERN5:
+	case PATTERN6:
+	case PATTERN7:
+		return &state.pattern[(relAddr-PATTERN0)/4];
+
 	// Video Control Registers 4.6
 	case HRZC            : //0x00104,
 	case HRZT            : //0x00108,
@@ -322,32 +319,76 @@ unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 	{
 		if(vramBaseAddr<physAddr)
 		{
-			data=state.vram[physAddr-TOWNSADDR_FMT3631_VRAM];
 			monitor=monitorVRAM;
+			data=state.vram[physAddr-TOWNSADDR_FMT3631_VRAM];
 		}
 		else
 		{
+			monitor=monitorCtrl;
 			if((COMMAND_MASK&physAddr)==QUAD_CMD)
 			{
-				return mutableThis->CmdQuad(physAddr);
+				data=mutableThis->CmdQuad(physAddr);
 			}
-			if((COMMAND_MASK&physAddr)==BLIT_CMD)
+			else if((COMMAND_MASK&physAddr)==BLIT_CMD)
 			{
-				return mutableThis->CmdBlit(physAddr);
+				data=mutableThis->CmdBlit(physAddr);
 			}
-
-			auto *ptr=GetControlWordPtr(physAddr);
-			if(nullptr!=ptr)
+			else
 			{
-				data=*ptr;
+				auto *ptr=GetControlWordPtr(physAddr);
+				if(nullptr!=ptr)
+				{
+					data=*ptr;
+				}
 			}
-			monitor=monitorCtrl;
 		}
 	}
 
 	if(true==monitor)
 	{
 		std::cout << "Power9000 BYTE read   " << cpputil::Uitox(physAddr) << " " << cpputil::Ubtox(data) << "\n";
+	}
+
+	return data;
+}
+
+unsigned int FMT3631::FetchWord(unsigned int physAddr) const
+{
+	unsigned int data=0xFFFF;
+	bool monitor=false;
+
+	if(true==state.enabled)
+	{
+		if(vramBaseAddr<physAddr)
+		{
+			monitor=monitorVRAM;
+			data=cpputil::GetWord(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
+		}
+		else
+		{
+			monitor=monitorCtrl;
+			if((COMMAND_MASK&physAddr)==QUAD_CMD)
+			{
+				data=mutableThis->CmdQuad(physAddr);
+			}
+			else if((COMMAND_MASK&physAddr)==BLIT_CMD)
+			{
+				data=mutableThis->CmdBlit(physAddr);
+			}
+			else
+			{
+				auto *ptr=GetControlWordPtr(physAddr);
+				if(nullptr!=ptr)
+				{
+					data=*ptr;
+				}
+			}
+		}
+	}
+
+	if(true==monitor)
+	{
+		std::cout << "Power9000 WORD read   " << cpputil::Uitox(physAddr) << " " << cpputil::Ustox(data) << "\n";
 	}
 
 	return data;
@@ -362,26 +403,28 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 	{
 		if(vramBaseAddr<physAddr)
 		{
-			data=cpputil::GetDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
 			monitor=monitorVRAM;
+			data=cpputil::GetDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
 		}
 		else
 		{
+			monitor=monitorCtrl;
 			if((COMMAND_MASK&physAddr)==QUAD_CMD)
 			{
-				return mutableThis->CmdQuad(physAddr);
+				data=mutableThis->CmdQuad(physAddr);
 			}
-			if((COMMAND_MASK&physAddr)==BLIT_CMD)
+			else if((COMMAND_MASK&physAddr)==BLIT_CMD)
 			{
-				return mutableThis->CmdBlit(physAddr);
+				data=mutableThis->CmdBlit(physAddr);
 			}
-
-			auto *ptr=GetControlWordPtr(physAddr);
-			if(nullptr!=ptr)
+			else
 			{
-				data=*ptr;
+				auto *ptr=GetControlWordPtr(physAddr);
+				if(nullptr!=ptr)
+				{
+					data=*ptr;
+				}
 			}
-			monitor=monitorCtrl;
 		}
 	}
 
@@ -548,6 +591,7 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 {
 	auto bytesPerLine=BytesPerLine();
 	auto bitsPerPixel=BitsPerPixel();
+	auto bytesPerPixel=BytesPerPixel();
 
 	int x0=p0.x();
 	int y0=p0.y();
@@ -566,7 +610,7 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 	Vec2i clip[2]=
 	{
 		Vec2i::Make(0,0),
-		Vec2i::Make(Width()-1,Height()-1),
+		Vec2i::Make(Width()*bytesPerPixel-1,Height()-1),
 	};
 
 	if(x1<clip[0].x() || clip[1].x()<x0 ||
@@ -575,74 +619,60 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 		return;
 	}
 
-	if(8!=bitsPerPixel)
+	if(8!=bitsPerPixel && 32!=bitsPerPixel)
 	{
 		std::cout << "DrawRect for this bpp not supported yet.\n";
 	}
 	std::cout << "Rect\n";
-	uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+(bitsPerPixel*x0/8);
+	uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+x0;
 	auto fgColor=*GetControlWordPtr(FGCOLOR);
-	auto fgPlainLogic=FGColorPlainLogicOp();
-	auto fgPatternLogic=FGColorPatternLogicOp();
-	auto bgPlainLogic=BGColorPlainLogicOp();
-	auto bgPatternLogic=BGColorPatternLogicOp();
+	auto bgColor=*GetControlWordPtr(BGCOLOR);
+	uint32_t raster=*GetControlWordPtr(RASTER);
+	bool usePattern=(0!=(raster&RASTER_USEPATTERN));
+	uint32_t patternBit=0x80000000;
 	for(auto y=y0; y<=y1; ++y)
 	{
+		uint32_t pattern=state.pattern[y%PATTERN_LEN];
+
+		// Shockingly, Power 9000's Quad command fills the bytes within the region with the same byte.
+		// If it is 24-bit color mode, it can only draw gray scale.
+		// Linux Power 9000 driver draws a quad twice with a pattern and logic ops to fill component by component.
+		// Windows driver apparently did not push it that much.
 		auto ptr=lineTop;
 		for(auto x=x0; x<=x1; ++x)
 		{
-			if(8==bitsPerPixel)
+			// Apparently X coordinate is multiplied by bytes-per-pixel by the software.
+			switch(raster&0xFFFF)
 			{
-			 	switch(fgPlainLogic)
+			default:
+				if(true==breakOnUnsupported)
 				{
-				case LOGIC_ZERO: //               0x0,
-					(*ptr++)=0;
-					break;
-				case LOGIC_NOT_SRC_AND_NOT_DST: //0x1,
-					(*ptr++)=(~fgColor & ~*ptr);
-					break;
-				case LOGIC_NOT_SRC_AND_DST: //    0x2,
-					(*ptr++)=(~fgColor & *ptr);
-					break;
-				case LOGIC_NOT_SRC: //            0x3,
-					*(ptr++)=fgColor;
-					break;
-				case LOGIC_SRC_AND_NOT_DST: //    0x4,
-					(*ptr++)=(fgColor & ~*ptr);
-					break;
-				case LOGIC_NOT_DST: //            0x5,
-					(*ptr++)=~*ptr;
-					break;
-				case LOGIC_SRC_XOR_DST: //        0x6,
-					(*ptr++)=(fgColor ^ *ptr);
-					break;
-				case LOGIC_NOT_SRC_OR_NOT_DST: // 0x7,
-					(*ptr++)=(fgColor | ~*ptr);
-					break;
-				case LOGIC_SRC_AND_DST: //        0x8,
-					(*ptr++)=(fgColor & *ptr);
-					break;
-				case LOGIC_NOT_SRC_XOR_DST: //    0x9,
-					(*ptr++)=(~fgColor ^ *ptr);
-					break;
-				case LOGIC_DST: //                0xa,
-					break;
-				case LOGIC_NOT_SRC_OR_DST: //     0xb,
-					(*ptr++)=(~fgColor | *ptr);
-					break;
-				case LOGIC_SRC: //                0xc,
-					(*ptr++)=fgColor;
-					break;
-				case LOGIC_SRC_OR_NOT_DST: //     0xd,
-					(*ptr++)=(fgColor | ~*ptr);
-					break;
-				case LOGIC_SRC_OR_DST: //         0xe,
-					(*ptr++)=(fgColor | *ptr);
-					break;
-				case LOGIC_ONE: //                0xf,
-					*(ptr++)=fgColor; // If it is one, then it should be 255, but it apparently writes the source color.
-					break;
+					auto *towns=(FMTownsCommon *)vmPtr;
+					towns->debugger.ExternalBreak("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp");
 				}
+				break;
+			case 0xff00: // Copy
+				*ptr=fgColor;
+				break;
+			case 0x55aa: // Xor
+				*ptr^=fgColor;
+				break;
+			case 0xFC30: // Pattern=0->BG,  1->FG.  If use_pattern==false, always FG (probably)
+				if(true!=usePattern || 0!=(patternBit&pattern))
+				{
+					*ptr=fgColor;
+				}
+				else
+				{
+					*ptr=bgColor;
+				}
+				break;
+			}
+			++ptr;
+			patternBit>>=1;
+			if(0==patternBit)
+			{
+				patternBit=0x80000000;
 			}
 		}
 		lineTop+=bytesPerLine;
@@ -791,6 +821,11 @@ uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fe
 		return 0;
 	}
 	std::cout << "General quad not implemented yet.\n";
+	if(true==breakOnUnsupported)
+	{
+		auto *towns=(FMTownsCommon *)vmPtr;
+		towns->debugger.ExternalBreak("General quad not implemented yet.\n");
+	}
 	state.nLoadedCoord=0;
 	return 0;
 }
@@ -829,10 +864,9 @@ uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 
 	if(dstP0.y()<srcP0.y())
 	{
-		auto bytesPerPixel=BitsPerPixel()/8;
-		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x()*bytesPerPixel;
-		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x()*bytesPerPixel;
-		auto wid=(1+srcP1.x()-srcP0.x())*bytesPerPixel;
+		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x();
+		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x();
+		auto wid=(1+srcP1.x()-srcP0.x());
 		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
 		{
 			memcpy(dstPtr,srcPtr,wid);
@@ -842,10 +876,9 @@ uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 	}
 	else if(dstP0.y()>srcP0.y())
 	{
-		auto bytesPerPixel=BitsPerPixel()/8;
-		auto srcPtr=state.vram.data()+srcP1.y()*BytesPerLine()+srcP0.x()*bytesPerPixel;
-		auto dstPtr=state.vram.data()+dstP1.y()*BytesPerLine()+dstP0.x()*bytesPerPixel;
-		auto wid=(1+srcP1.x()-srcP0.x())*bytesPerPixel;
+		auto srcPtr=state.vram.data()+srcP1.y()*BytesPerLine()+srcP0.x();
+		auto dstPtr=state.vram.data()+dstP1.y()*BytesPerLine()+dstP0.x();
+		auto wid=(1+srcP1.x()-srcP0.x());
 		for(int y=srcP1.y(); y>=srcP0.y(); --y)
 		{
 			memcpy(dstPtr,srcPtr,wid);
@@ -855,10 +888,9 @@ uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 	}
 	else if(dstP0.x()<srcP0.x())
 	{
-		auto bytesPerPixel=BitsPerPixel()/8;
-		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x()*bytesPerPixel;
-		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x()*bytesPerPixel;
-		auto wid=(1+srcP1.x()-srcP0.x())*bytesPerPixel;
+		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x();
+		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x();
+		auto wid=(1+srcP1.x()-srcP0.x());
 		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
 		{
 			memcpy(dstPtr,srcPtr,wid);
@@ -868,10 +900,9 @@ uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 	}
 	else
 	{
-		auto bytesPerPixel=BitsPerPixel()/8;
-		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x()*bytesPerPixel;
-		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x()*bytesPerPixel;
-		auto wid=(1+srcP1.x()-srcP0.x())*bytesPerPixel;
+		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x();
+		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x();
+		auto wid=(1+srcP1.x()-srcP0.x());
 		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
 		{
 			for(int x=wid-1; 0<=x; --x)
@@ -883,6 +914,7 @@ uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 		}
 	}
 
+	state.nLoadedCoord=0;
 	return 0;
 }
 
@@ -1084,6 +1116,28 @@ void FMT3631::StoreByte(unsigned int physAddr,unsigned char data)
 		else
 		{
 			SetControlByte(physAddr,data);
+			monitor=monitorCtrl;
+		}
+	}
+	if(true==monitor)
+	{
+		std::cout << "Power9000 BYTE Write   " << cpputil::Uitox(physAddr) << " " <<  cpputil::Ubtox(data) << "\n";
+	}
+}
+
+void FMT3631::StoreWord(unsigned int physAddr,unsigned int data)
+{
+	bool monitor=false;
+	if(true==state.enabled)
+	{
+		if(vramBaseAddr<physAddr)
+		{
+			cpputil::PutWord(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM,data);
+			monitor=monitorVRAM;
+		}
+		else
+		{
+			SetControlWord(physAddr,data);
 			monitor=monitorCtrl;
 		}
 	}

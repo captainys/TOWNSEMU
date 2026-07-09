@@ -121,11 +121,26 @@ public:
 		PATTERN_X0      =0x180210,
 		PATTERN_Y0      =0x180214,
 		RASTER          =0x180218,
+			RASTER_OVERSIZED=0x10000,
+			RASTER_USEPATTERN=0x20000,
 		PIXEL8          =0x18021C,
 		WINDOW_MIN      =0x180220,
 		WINDOW_MAX      =0x180224,
 
 		DRAWING_ATTRIB_END=0x180228,
+
+		// Pattern
+		PATTERN0=        0x180280,
+		PATTERN1=        0x180284,
+		PATTERN2=        0x180288,
+		PATTERN3=        0x18028C,
+		PATTERN4=        0x180290,
+		PATTERN5=        0x180294,
+		PATTERN6=        0x180298,
+		PATTERN7=        0x18029C,
+
+		PATTERN_END=     0x1802A0,
+		PATTERN_LEN=     8,
 
 
 		// Video Control Registers 4.6
@@ -184,42 +199,6 @@ public:
 		PIXEL1_SWAP_CMD =0x1E0080,
 		PIXEL8_CMD      =0x18000C,
 		PIXEL8_SWAP_CMD =0x1E000C,
-
-
-		// Logic Op
-		// Raster Low 16 bits: |abcd|
-		// a: Logic op for ptn=1 FGCOLOR
-		// b: Logic op for ptn=1 FGCOLOR
-		// c: Logic op for ptn=0 BGCOLOR
-		// d: Logic op for ptn=0 BGCOLOR
-		LOGIC_ZERO=               0x0, 
-		LOGIC_NOT_SRC_AND_NOT_DST=0x1,
-		LOGIC_NOT_SRC_AND_DST=    0x2,
-		LOGIC_NOT_SRC=            0x3,
-		LOGIC_SRC_AND_NOT_DST=    0x4,
-		LOGIC_NOT_DST=            0x5,
-		LOGIC_SRC_XOR_DST=        0x6,
-		LOGIC_NOT_SRC_OR_NOT_DST= 0x7,
-		LOGIC_SRC_AND_DST=        0x8,
-		LOGIC_NOT_SRC_XOR_DST=    0x9,
-		LOGIC_DST=                0xa,
-		LOGIC_NOT_SRC_OR_DST=     0xb,
-		LOGIC_SRC=                0xc,
-		LOGIC_SRC_OR_NOT_DST=     0xd,
-		LOGIC_SRC_OR_DST=         0xe,
-		LOGIC_ONE=                0xf,
-		// P9100 Manual Figure 68
-		// b7= PTN & SRC & DST
-		// b6= PTN & SRC &~DST
-		// b5= PTN &~SRC & DST
-		// b4= PTN &~SRC &~DST
-		// b3=~PTN & SRC & DST
-		// b2=~PTN & SRC &~DST
-		// b1=~PTN &~SRC & DST
-		// b0=~PTN &~SRC &~DST
-
-		// b0 to b3 are for when PTN==0
-		// b4 to b7 are for when PTN==1
 	};
 
 	class State
@@ -255,6 +234,7 @@ public:
 		uint32_t videoCtrl[(VIDCTRL_LAST-HRZC)/4];
 		uint32_t vramCtrl[(VRAMCTRL_LAST-MEM_CONFIG)/4];
 		uint32_t ctlCond[(CTL_COND_END-CTL_COND_BEGIN)/4];
+		uint32_t pattern[PATTERN_LEN];
 	};
 	State state;
 	FMT3631 *mutableThis;
@@ -280,11 +260,7 @@ public:
 	unsigned int Width(void) const;
 	unsigned int BytesPerLine(void) const;
 	unsigned int BitsPerPixel(void) const;
-
-	unsigned int FGColorPlainLogicOp(void) const;
-	unsigned int BGColorPlainLogicOp(void) const;
-	unsigned int FGColorPatternLogicOp(void) const;
-	unsigned int BGColorPatternLogicOp(void) const;
+	unsigned int BytesPerPixel(void) const;
 
 	void MakePageLayerInfo(Layer &layer) const;
 	const AnalogPalette &GetPalette(void) const;
@@ -333,8 +309,10 @@ public:
 	void SetControlDword(uint32_t physAddr,uint32_t data);
 
 	unsigned int FetchByte(unsigned int physAddr) const override;
+	unsigned int FetchWord(unsigned int physAddr) const override;
 	unsigned int FetchDword(unsigned int physAddr) const override;
 	void StoreByte(unsigned int physAddr,unsigned char data) override;
+	void StoreWord(unsigned int physAddr,unsigned int data) override;
 	void StoreDword(unsigned int physAddr,unsigned int data) override;
 };
 
