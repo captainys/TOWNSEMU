@@ -328,6 +328,16 @@ public:
 	void StoreByte(unsigned int physAddr,unsigned char data) override;
 	void StoreWord(unsigned int physAddr,unsigned int data) override;
 	void StoreDword(unsigned int physAddr,unsigned int data) override;
+
+	/*! Version used for serialization.
+	*/
+	uint32_t SerializeVersion(void) const override;
+	/*! Device-specific Serialization.
+	*/
+	void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const override;
+	/*! Device-specific De-serialization.
+	*/
+	bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version) override;
 };
 
 /* } */

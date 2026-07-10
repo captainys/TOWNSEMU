@@ -925,6 +925,14 @@ void FMTownsCommon::SetCAPCOMCPSFState(int port,bool left,bool right,bool up,boo
 bool FMTownsCommon::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 {
 	// Windows 3.1 >>
+	// Actually FMT-3631 does not know where in the pattern is mouse cursor position, and it changes.
+	// The cursor shakes at the corner of the window.  Better to go with TGMOUSE.
+	// if(true==fmt3631.IsEnabled() && true==fmt3631.state.hwCursor.defined)
+	// {
+	// 	mx=fmt3631.state.hwCursor.X-32;
+	// 	my=fmt3631.state.hwCursor.Y-32;
+	// 	return true;
+	// }
 	if(true==crtc.state.highResCRTCEnabled && true==crtc.state.highResCrtcMouse.defined)
 	{
 		mx=crtc.state.highResCrtcMouse.X;

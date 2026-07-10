@@ -1364,3 +1364,175 @@ std::vector <std::string> FMT3631::GetStatusText(void) const
 	}
 	return text;
 }
+
+
+/*! Version used for serialization.
+*/
+uint32_t FMT3631::SerializeVersion(void) const
+{
+	return 1;
+};
+/*! Device-specific Serialization.
+*/
+void FMT3631::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushBool(data,state.enabled);
+	if(true!=state.enabled)
+	{
+		return;
+	}
+
+	PushInt32(data,state.nLoadedCoord);
+	PushInt32(data,state.lastLoadedCoord);
+	for(auto c : state.coord)
+	{
+		PushInt32(data,c.x());
+		PushInt32(data,c.y());
+	}
+	for(auto i : state.btCommandReg)
+	{
+		PushUint32(data,i);
+	}
+	state.plt.Serialize(data);
+
+	PushBool(data,state.hwCursor.defining);
+	PushBool(data,state.hwCursor.defined);
+	PushUint32(data,state.hwCursor.ptnCount);
+	PushUint32(data,state.hwCursor.unknownValueReg8);
+	PushUint32(data,state.hwCursor.X);
+	PushUint32(data,state.hwCursor.Y);
+	PushUint32(data,state.hwCursor.originX);
+	PushUint32(data,state.hwCursor.originY);
+	PushUint32(data,state.hwCursor.wid);
+	PushUcharArray(data,512,state.hwCursor.ANDPtn);
+	PushUcharArray(data,512,state.hwCursor.ORPtn);
+
+	PushUint32(data,state.hwCursorXY_LowByte[0]);
+	PushUint32(data,state.hwCursorXY_LowByte[1]);
+	PushUint32(data,state.writingPalette);
+	PushUint32(data,state.writingPaletteRGBCount);
+	PushUint32(data,state.writingPaletteRGB[0]);
+	PushUint32(data,state.writingPaletteRGB[1]);
+	PushUint32(data,state.writingPaletteRGB[2]);
+
+	PushInt32(data,state.pixelLeftUp.x());
+	PushInt32(data,state.pixelLeftUp.y());
+	PushInt32(data,state.pixelCurrent.x());
+	PushInt32(data,state.pixelCurrent.y());
+	PushInt32(data,state.pixelWid);
+	PushInt32(data,state.pixelYIncrement);
+
+	PushInt32(data,state.bitsPerPixel);
+	PushBool(data,state.highColor565);
+	PushUint32(data,state.masterSwitch);
+	PushUint32(data,state.sysconfig);
+	PushUint32(data,state.interrupt);
+	PushUint32(data,state.interrupt_en);
+	PushUint32(data,state.status);
+
+	for(auto i : state.drawingAttrib)
+	{
+		PushUint32(data,i);
+	}
+	for(auto i : state.videoCtrl)
+	{
+		PushUint32(data,i);
+	}
+	for(auto i : state.vramCtrl)
+	{
+		PushUint32(data,i);
+	}
+	for(auto i : state.ctlCond)
+	{
+		PushUint32(data,i);
+	}
+	for(auto i : state.pattern)
+	{
+		PushUint32(data,i);
+	}
+
+	PushUcharArray(data,VRAM_SIZE,state.vram.data());
+}
+/*! Device-specific De-serialization.
+*/
+bool FMT3631::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	state.enabled=ReadBool(data);
+	if(true!=state.enabled)
+	{
+		return true;
+	}
+
+	state.nLoadedCoord=ReadInt32(data);
+	state.lastLoadedCoord=ReadInt32(data);
+	for(auto &c : state.coord)
+	{
+		c.x()=ReadInt32(data);
+		c.y()=ReadInt32(data);
+	}
+	for(auto &i : state.btCommandReg)
+	{
+		i=ReadUint32(data);
+	}
+	state.plt.Deserialize(data);
+
+	state.hwCursor.defining=ReadBool(data);
+	state.hwCursor.defined=ReadBool(data);
+	state.hwCursor.ptnCount=ReadUint32(data);
+	state.hwCursor.unknownValueReg8=ReadUint32(data);
+	state.hwCursor.X=ReadUint32(data);
+	state.hwCursor.Y=ReadUint32(data);
+	state.hwCursor.originX=ReadUint32(data);
+	state.hwCursor.originY=ReadUint32(data);
+	state.hwCursor.wid=ReadUint32(data);
+	ReadUcharArray(data,512,state.hwCursor.ANDPtn);
+	ReadUcharArray(data,512,state.hwCursor.ORPtn);
+
+	state.hwCursorXY_LowByte[0]=ReadUint32(data);
+	state.hwCursorXY_LowByte[1]=ReadUint32(data);
+	state.writingPalette=ReadUint32(data);
+	state.writingPaletteRGBCount=ReadUint32(data);
+	state.writingPaletteRGB[0]=ReadUint32(data);
+	state.writingPaletteRGB[1]=ReadUint32(data);
+	state.writingPaletteRGB[2]=ReadUint32(data);
+
+	state.pixelLeftUp.x()=ReadInt32(data);
+	state.pixelLeftUp.y()=ReadInt32(data);
+	state.pixelCurrent.x()=ReadInt32(data);
+	state.pixelCurrent.y()=ReadInt32(data);
+	state.pixelWid=ReadInt32(data);
+	state.pixelYIncrement=ReadInt32(data);
+
+	state.bitsPerPixel=ReadInt32(data);
+	state.highColor565=ReadBool(data);
+	state.masterSwitch=ReadUint32(data);
+	state.sysconfig=ReadUint32(data);
+	state.interrupt=ReadUint32(data);
+	state.interrupt_en=ReadUint32(data);
+	state.status=ReadUint32(data);
+
+	for(auto &i : state.drawingAttrib)
+	{
+		i=ReadUint32(data);
+	}
+	for(auto &i : state.videoCtrl)
+	{
+		i=ReadUint32(data);
+	}
+	for(auto &i : state.vramCtrl)
+	{
+		i=ReadUint32(data);
+	}
+	for(auto &i : state.ctlCond)
+	{
+		i=ReadUint32(data);
+	}
+	for(auto &i : state.pattern)
+	{
+		i=ReadUint32(data);
+	}
+
+	ReadUcharArray(data,VRAM_SIZE,state.vram.data());
+
+	return true;
+};
