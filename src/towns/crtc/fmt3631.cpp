@@ -67,6 +67,7 @@ void FMT3631::Reset(void)
 
 	state.nLoadedCoord=0;
 	state.lastLoadedCoord=0;
+	state.nextLoadIndex=0;
 	memset(state.coord,0,sizeof(state.coord));
 	for(auto &i : state.metaCoordType)
 	{
@@ -534,13 +535,44 @@ void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
 {
 	auto absRef=GetWindowOffset();
 	auto relRef=state.coord[state.lastLoadedCoord];
-	auto &coordToLoad=state.coord[state.nLoadedCoord];
+	auto &coordToLoad=state.coord[state.nextLoadIndex];
 
-	if(state.nLoadedCoord<COORD_MAX)
+	if(state.nextLoadIndex<COORD_MAX)
 	{
-		state.lastLoadedCoord=state.nLoadedCoord;
-		state.metaCoordType[state.nLoadedCoord]=physAddr&LOAD_COORD_PRIMTYPE_MASK;
-		state.nLoadedCoord+=DeviceCoordOrLoadCoord(coordToLoad,absRef,relRef,physAddr,data);
+		state.lastLoadedCoord=state.nextLoadIndex;
+		state.metaCoordType[state.nextLoadIndex]=physAddr&LOAD_COORD_PRIMTYPE_MASK;
+		if(0!=DeviceCoordOrLoadCoord(coordToLoad,absRef,relRef,physAddr,data))
+		{
+			++state.nextLoadIndex;
+			state.nLoadedCoord=state.nextLoadIndex;
+			for(auto i=state.nLoadedCoord; i<COORD_MAX; ++i)
+			{
+				state.metaCoordType[i]=LOAD_COORD_PRIMTYPE_NOT_LOADED;
+			}
+
+			switch(physAddr&LOAD_COORD_PRIMTYPE_MASK)
+			{
+			case LOAD_COORD_PRIMTYPE_LINE:
+			case LOAD_COORD_PRIMTYPE_RECT:
+				if(2<=state.nextLoadIndex)
+				{
+					state.nextLoadIndex=0;
+				}
+				break;
+			case LOAD_COORD_PRIMTYPE_TRI:
+				if(3<=state.nextLoadIndex)
+				{
+					state.nextLoadIndex=0;
+				}
+				break;
+			default:
+				if(4<=state.nextLoadIndex)
+				{
+					state.nextLoadIndex=0;
+				}
+				break;
+			}
+		}
 	}
 }
 
@@ -798,18 +830,18 @@ uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fe
 	    state.coord[3].x()==state.coord[0].x()))
 	{
 		DrawRect(state.coord[0],state.coord[2]);
-		ClearLoadedFlags();
+		state.nextLoadIndex=0;
 		return 0;
 	}
 
 	if(2==state.nLoadedCoord &&
-	   (LOAD_COORD_PRIMTYPE_LINE==state.metaCoordType[0] &&
-	    LOAD_COORD_PRIMTYPE_LINE==state.metaCoordType[1]) ||
-	   (LOAD_COORD_PRIMTYPE_RECT==state.metaCoordType[0] &&
-	    LOAD_COORD_PRIMTYPE_RECT==state.metaCoordType[1]))
+	   ((LOAD_COORD_PRIMTYPE_LINE==state.metaCoordType[0] &&
+	     LOAD_COORD_PRIMTYPE_LINE==state.metaCoordType[1]) ||
+	    (LOAD_COORD_PRIMTYPE_RECT==state.metaCoordType[0] &&
+	     LOAD_COORD_PRIMTYPE_RECT==state.metaCoordType[1])))
 	{
 		DrawRect(state.coord[0],state.coord[1]);
-		ClearLoadedFlags();
+		state.nextLoadIndex=0;
 		return 0;
 	}
 
@@ -823,7 +855,7 @@ uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fe
 		auto *towns=(FMTownsCommon *)vmPtr;
 		towns->debugger.ExternalBreak("General quad not implemented yet.\n");
 	}
-	ClearLoadedFlags();
+	state.nextLoadIndex=0;
 	return 0;
 }
 
@@ -916,7 +948,7 @@ uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 		}
 	}
 
-	ClearLoadedFlags();;
+	state.nextLoadIndex=0;
 	return 0;
 }
 
@@ -1436,6 +1468,7 @@ void FMT3631::SpecificSerialize(std::vector <unsigned char> &data,std::string st
 
 	PushInt32(data,state.nLoadedCoord);
 	PushInt32(data,state.lastLoadedCoord);
+	PushInt32(data,state.nextLoadIndex);
 	for(auto c : state.coord)
 	{
 		PushInt32(data,c.x());
@@ -1521,6 +1554,7 @@ bool FMT3631::SpecificDeserialize(const unsigned char *&data,std::string stateFN
 
 	state.nLoadedCoord=ReadInt32(data);
 	state.lastLoadedCoord=ReadInt32(data);
+	state.nextLoadIndex=ReadInt32(data);
 	for(auto &c : state.coord)
 	{
 		c.x()=ReadInt32(data);

@@ -217,7 +217,7 @@ public:
 		std::vector <uint8_t> vram;
 
 		mutable int nLoadedCoord=0;
-		int lastLoadedCoord=0;
+		int nextLoadIndex=0,lastLoadedCoord=0;
 		Vec2i coord[COORD_MAX];
 		uint32_t metaCoordType[COORD_MAX];
 
