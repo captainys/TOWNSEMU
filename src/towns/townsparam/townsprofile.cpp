@@ -359,6 +359,9 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 		text.push_back(sstream.str());
 	}
 
+	text.push_back("FMT-3631 ");
+	text.back()+=(fmt3631 ? "1" : "0");
+
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
@@ -883,6 +886,10 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			fwd.second=atoi(argv[2].c_str());
 			portForwarding.push_back(fwd);
 		}
+		else if("FMT-3631"==argv[0] && 2<=argv.size())
+		{
+			fmt3631=(0!=atoi(argv[1].c_str()));
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -1301,6 +1308,11 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	if(true==enableLAN)
 	{
 		argv.push_back("-REX3586");
+	}
+
+	if(true==fmt3631)
+	{
+		argv.push_back("-FMT3631");
 	}
 
 	return argv;

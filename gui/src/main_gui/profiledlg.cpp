@@ -195,6 +195,8 @@ void ProfileDialog::Make(const UiText &ui)
 		scrnModeDrp->AddString("FULL SCREEN",YSFALSE);
 		scrnMaintainAspectBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/main/maintainaspect","Maintain Aspect Ratio"),YSFALSE);
 
+		fmt3631Btn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/main/fmt3631","Enable FMT-3631 Windows Accelerator Card"),YSTRUE);
+
 		AddStaticText(0,FSKEY_NULL,ui("/profile/main/model","Model:"),YSTRUE);
 
 		townsTypeDrp=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSFALSE);
@@ -1544,6 +1546,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		maxButtonHoldTimeTxt[gameport][0]->SetInteger(profile.maxButtonHoldTime[gameport][0]/1000000);
 		maxButtonHoldTimeTxt[gameport][1]->SetInteger(profile.maxButtonHoldTime[gameport][1]/1000000);
 	}
+
+	fmt3631Btn->SetCheck(profile.fmt3631 ? YSTRUE : YSFALSE);
 
 	mouseIntegSpdSlider->SetPositionByScaledValue((double)profile.mouseIntegrationSpeed);
 	mouseIntegConsiderVRAMOffsetBtn->SetCheck(profile.considerVRAMOffsetInMouseIntegration ? YSTRUE : YSFALSE);

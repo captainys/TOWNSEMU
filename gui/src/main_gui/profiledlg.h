@@ -41,6 +41,7 @@ public:
 	FsGuiButton *FDWriteProtBtn[TownsProfile::NUM_FDDRIVES]={nullptr};
 	FsGuiButton *scanLineEffectIn15KHzBtn=nullptr;
 	FsGuiButton *damperWireLineBtn=nullptr;
+	FsGuiButton *fmt3631Btn=nullptr;
 	FsGuiTextBox *ROMDirTxt=nullptr;
 	FsGuiTextBox *CMOSFileTxt=nullptr;
 	FsGuiTextBox *CDImgTxt=nullptr;
