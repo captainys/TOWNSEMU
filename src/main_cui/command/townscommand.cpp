@@ -297,6 +297,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["CONSOUT"]=ENABLE_CONSOLE_STEAL;
 	featureMap["CONSSTEAL"]=ENABLE_CONSOLE_STEAL;
 	featureMap["IOLOG"]=ENABLE_IOLOG;
+	featureMap["FMT3631MON"]=ENABLE_FMT3631MON;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -401,6 +402,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["VM86MODE"]=BREAK_ON_VM86_MODE;
 	breakEventMap["VXDCALL"]=BREAK_ON_VXD_CALL;
 	breakEventMap["CST"]=BREAK_ON_CALLSTACK_DEPTH;
+	breakEventMap["FMT3631UNSUP"]=BREAK_ON_UNSUPPORTED_FMT3631CMD;
 }
 
 void TownsCommandInterpreter::PrintHelp(void) const
@@ -835,6 +837,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Override CON and INT 29H to redirect output to the host terminal.\n";
 	std::cout << "IOLOG\n";
 	std::cout << "  I/O access log.\n";
+	std::cout << "FMT3631MON\n";
+	std::cout << "  FMT-3631 monitor.\n";
 
 
 	std::cout << "<< Information that can be printed >>" << std::endl;
@@ -990,6 +994,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Windows 3.1 VxD service call." << std::endl;
 	std::cout << "CST depth" << std::endl;
 	std::cout << "  When the call stack depth exceeds the threshold." << std::endl;
+	std::cout << "FMT3631UNSUP\n";
+	std::cout << "  When unsupported features of FMT-3631 is used.\n";
 }
 
 void TownsCommandInterpreter::PrintError(int errCode) const
@@ -2199,6 +2205,10 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd,O
 			towns.io.EnableLog();
 			std::cout << "Enabled I/O log.\n";
 			break;
+		case ENABLE_FMT3631MON:
+			towns.fmt3631.monitorCtrl=true;
+			std::cout << "Enabled FMT-3631 monitor.\n";
+			break;
 		}
 	}
 }
@@ -2346,6 +2356,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd,
 		case ENABLE_IOLOG:
 			towns.io.DisableLog();
 			std::cout << "Disabled I/O log.\n";
+			break;
+		case ENABLE_FMT3631MON:
+			towns.fmt3631.monitorCtrl=false;
+			std::cout << "Disabled FMT-3631 monitor.\n";
 			break;
 		}
 	}
@@ -4148,6 +4162,9 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd,
 					return;
 				}
 				break;
+			case BREAK_ON_UNSUPPORTED_FMT3631CMD:
+				towns.fmt3631.breakOnUnsupported=true;
+				break;
 			}
 			std::cout << "Break On " << reason << " is ON." << std::endl;
 		}
@@ -4451,6 +4468,9 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTownsCommon &towns,Command 
 			break;
 		case BREAK_ON_CALLSTACK_DEPTH:
 			towns.debugger.ClearBreakOnCallStackDepth();
+			break;
+		case BREAK_ON_UNSUPPORTED_FMT3631CMD:
+			towns.fmt3631.breakOnUnsupported=false;
 			break;
 		}
 		std::cout << "Break On " << iter->first << " is OFF." << std::endl;

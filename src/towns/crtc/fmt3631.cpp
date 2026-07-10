@@ -1073,7 +1073,7 @@ unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 
 	if(true==state.enabled)
 	{
-		if(vramBaseAddr<physAddr)
+		if(vramBaseAddr<=physAddr)
 		{
 			monitor=monitorVRAM;
 			data=state.vram[physAddr-TOWNSADDR_FMT3631_VRAM];
@@ -1118,7 +1118,7 @@ unsigned int FMT3631::FetchWord(unsigned int physAddr) const
 
 	if(true==state.enabled)
 	{
-		if(vramBaseAddr<physAddr)
+		if(vramBaseAddr<=physAddr)
 		{
 			monitor=monitorVRAM;
 			data=cpputil::GetWord(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
@@ -1163,7 +1163,7 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 
 	if(true==state.enabled)
 	{
-		if(vramBaseAddr<physAddr)
+		if(vramBaseAddr<=physAddr)
 		{
 			monitor=monitorVRAM;
 			data=cpputil::GetDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
@@ -1206,7 +1206,7 @@ void FMT3631::StoreByte(unsigned int physAddr,unsigned char data)
 	bool monitor=false;
 	if(true==state.enabled)
 	{
-		if(vramBaseAddr<physAddr)
+		if(vramBaseAddr<=physAddr)
 		{
 			state.vram[physAddr-TOWNSADDR_FMT3631_VRAM]=data;
 			monitor=monitorVRAM;
@@ -1228,7 +1228,7 @@ void FMT3631::StoreWord(unsigned int physAddr,unsigned int data)
 	bool monitor=false;
 	if(true==state.enabled)
 	{
-		if(vramBaseAddr<physAddr)
+		if(vramBaseAddr<=physAddr)
 		{
 			cpputil::PutWord(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM,data);
 			monitor=monitorVRAM;
@@ -1250,7 +1250,7 @@ void FMT3631::StoreDword(unsigned int physAddr,unsigned int data)
 	bool monitor=false;
 	if(true==state.enabled)
 	{
-		if(vramBaseAddr<physAddr)
+		if(vramBaseAddr<=physAddr)
 		{
 			cpputil::PutDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM,data);
 			monitor=monitorVRAM;
