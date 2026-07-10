@@ -799,10 +799,14 @@ void FMT3631::CmdPixel8(uint32_t physAddr,uint32_t data,bool doSwap)
 
 uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fetch.
 {
-	if(state.coord[1].x()==state.coord[0].x() &&
-	   state.coord[1].y()==state.coord[2].y() &&
-	   state.coord[3].x()==state.coord[2].x() &&
-	   state.coord[3].y()==state.coord[0].y())
+	if((state.coord[1].x()==state.coord[0].x() &&
+	    state.coord[1].y()==state.coord[2].y() &&
+	    state.coord[3].x()==state.coord[2].x() &&
+	    state.coord[3].y()==state.coord[0].y()) ||
+	   (state.coord[1].y()==state.coord[0].y() &&
+	    state.coord[1].x()==state.coord[2].x() &&
+	    state.coord[3].y()==state.coord[2].y() &&
+	    state.coord[3].x()==state.coord[0].x()))
 	{
 		DrawRect(state.coord[0],state.coord[2]);
 		state.nLoadedCoord=0;
@@ -955,10 +959,14 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 		if(0!=(BT_CR3_64SQ_CURSOR&data))
 		{
 			state.hwCursor.wid=64;
+			state.hwCursor.originX=64;
+			state.hwCursor.originY=64;
 		}
 		else
 		{
 			state.hwCursor.wid=32;
+			state.hwCursor.originX=32;
+			state.hwCursor.originY=32;
 		}
 	}
 	if(masked==BT_WRITE_ADDR)
