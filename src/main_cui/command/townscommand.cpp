@@ -360,6 +360,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["NET"]=DUMP_LAN;
 	dumpableMap["LAN"]=DUMP_LAN;
 	dumpableMap["IOLOG"]=DUMP_IOLOG;
+	dumpableMap["FMT3631"]=DUMP_FMT3631;
+	dumpableMap["FMT-3631"]=DUMP_FMT3631;
 
 
 	breakEventMap["ICW1"]=   BREAK_ON_PIC_IWC1;
@@ -939,6 +941,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Ethernet adapter state.\n";
 	std::cout << "IOLOG\n";
 	std::cout << "  I/O access log.\n";
+	std::cout << "FMT3631\n";
+	std::cout << "FMT-3631\n";
+	std::cout << "  FMT-3631 status.\n";
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Event that can break >>" << std::endl;
@@ -3281,6 +3286,14 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 
 					std::cout << log.in8 << '/' << log.in16 << '/' << log.in32 << '/';
 					std::cout << log.out8 << '/' << log.out16 << '/' << log.out32 << '\n';
+				}
+			}
+			break;
+		case DUMP_FMT3631:
+			{
+				for(auto str : towns.fmt3631.GetStatusText())
+				{
+					std::cout << str << "\n";
 				}
 			}
 			break;

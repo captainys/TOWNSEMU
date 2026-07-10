@@ -320,6 +320,7 @@ public:
 		DUMP_IOLIST,
 		DUMP_LAN,
 		DUMP_IOLOG,
+		DUMP_FMT3631,
 	};
 
 	enum

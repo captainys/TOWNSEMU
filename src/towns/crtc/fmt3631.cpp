@@ -287,6 +287,8 @@ inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType
 	{
 	case BT_COMMAND_REG_1:
 		return &state.btCommandReg[1];
+	case BT_COMMAND_REG_2:
+		return &state.btCommandReg[2];
 	case BT_COMMAND_REG_3:
 		return &state.btCommandReg[3];
 
@@ -592,11 +594,14 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 				if(true==breakOnUnsupported)
 				{
 					auto *towns=(FMTownsCommon *)vmPtr;
-					towns->debugger.ExternalBreak("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp");
+					towns->debugger.ExternalBreak("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
 				}
 				break;
 			case 0xff00: // Copy
 				*ptr=fgColor;
+				break;
+			case 0x5555: // Not dst
+				*ptr=~*ptr;
 				break;
 			case 0x55aa: // Xor
 				*ptr^=fgColor;
@@ -728,7 +733,7 @@ void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool doSwap)
 		if(true==breakOnUnsupported)
 		{
 			auto *towns=(FMTownsCommon *)vmPtr;
-			towns->debugger.ExternalBreak("Unsupported Raster type for Pixel1\n");
+			towns->debugger.ExternalBreak("Unsupported Raster type for Pixel1 ("+cpputil::Uitox(raster)+")");
 		}
 		CmdPixel1Loop<Pixel1CopyTransparent>(physAddr,data,doSwap);
 		break;
@@ -899,6 +904,11 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 			state.bitsPerPixel=16;
 			state.highColor565=(0!=(data&BT_CR1_565RGB));
 		}
+	}
+	if(masked==BT_COMMAND_REG_2)
+	{
+		state.btCommandReg[2]=data;
+		state.hwCursor.defined=(0!=(data&BT_CR2_CURSOR_ENABLE));
 	}
 	if(masked==BT_COMMAND_REG_3)
 	{
@@ -1265,4 +1275,92 @@ void FMT3631::StoreDword(unsigned int physAddr,unsigned int data)
 	{
 		std::cout << "Power9000 DWORD Write  " << cpputil::Uitox(physAddr) << " " << cpputil::Uitox(data) <<  "\n";
 	}
+}
+
+std::vector <std::string> FMT3631::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+
+	if(true==state.enabled)
+	{
+		text.push_back("FMT-3631 is enabled and ");
+		text.back()+=std::string(true==IsEnabled() ? "active" : "inactive");
+
+		text.push_back(cpputil::Uitoa(state.bitsPerPixel)+" bits per pixel");
+		if(16==state.bitsPerPixel)
+		{
+			text.back()+=("  "+std::string(true==state.highColor565 ? "565" : "555"));
+		}
+		text.push_back("META-Coord Loaded: "+cpputil::Uitoa(state.nLoadedCoord));
+		for(int i=0; i<COORD_MAX; ++i)
+		{
+			auto c=state.coord[i];
+			text.push_back("Coord["+cpputil::Uitoa(i)+"]=("+cpputil::Uitoa(c.x())+","+cpputil::Uitoa(c.y())+")");
+		}
+		for(int i=0; i<4; ++i)
+		{
+			text.push_back("BtCmdReg["+cpputil::Uitoa(i)+"]=0x"+cpputil::Uitox(state.btCommandReg[i]));
+		}
+		text.push_back("PixelOpLUP=("
+		               +cpputil::Uitoa(state.pixelLeftUp.x())
+		               +","
+		               +cpputil::Uitoa(state.pixelLeftUp.y())
+		               +")"
+		               +" PixelOpWidth="
+		               +cpputil::Uitoa(state.pixelWid));
+
+		text.push_back("SYSCONFIG        =0x"+cpputil::Uitox(state.sysconfig));
+		text.push_back("INTERRUPT        =0x"+cpputil::Uitox(state.interrupt));
+		text.push_back("INTERRUPT_EN     =0x"+cpputil::Uitox(state.interrupt_en));
+		text.push_back("STATUS           =0x"+cpputil::Uitox(state.status));
+
+		text.push_back("OOR              =0x"+cpputil::Uitox(*GetControlWordPtr(OOR)));
+		text.push_back("CINDEX           =0x"+cpputil::Uitox(*GetControlWordPtr(CINDEX)));
+		text.push_back("WINDOW_OFFSET_XY =0x"+cpputil::Uitox(*GetControlWordPtr(WINDOW_OFFSET_XY)));
+		text.push_back("P_W_MIN          =0x"+cpputil::Uitox(*GetControlWordPtr(P_W_MIN)));
+		text.push_back("P_W_MAX          =0x"+cpputil::Uitox(*GetControlWordPtr(P_W_MAX)));
+		text.push_back("YCLIP            =0x"+cpputil::Uitox(*GetControlWordPtr(YCLIP)));
+		text.push_back("XCLIP            =0x"+cpputil::Uitox(*GetControlWordPtr(XCLIP)));
+		text.push_back("XEDGE_LT         =0x"+cpputil::Uitox(*GetControlWordPtr(XEDGE_LT)));
+		text.push_back("XEDGE_GT         =0x"+cpputil::Uitox(*GetControlWordPtr(XEDGE_GT)));
+		text.push_back("YEDGE_LT         =0x"+cpputil::Uitox(*GetControlWordPtr(YEDGE_LT)));
+		text.push_back("YEDGE_GT         =0x"+cpputil::Uitox(*GetControlWordPtr(YEDGE_GT)));
+
+		text.push_back("FGCOLOR          =0x"+cpputil::Uitox(*GetControlWordPtr(FGCOLOR)));
+		text.push_back("BGCOLOR          =0x"+cpputil::Uitox(*GetControlWordPtr(BGCOLOR)));
+		text.push_back("PLANE_MASK       =0x"+cpputil::Uitox(*GetControlWordPtr(PLANE_MASK)));
+		text.push_back("DRAWING_MODE     =0x"+cpputil::Uitox(*GetControlWordPtr(DRAWING_MODE)));
+		text.push_back("PATTERN_X0       =0x"+cpputil::Uitox(*GetControlWordPtr(PATTERN_X0)));
+		text.push_back("PATTERN_Y0       =0x"+cpputil::Uitox(*GetControlWordPtr(PATTERN_Y0)));
+		text.push_back("RASTER           =0x"+cpputil::Uitox(*GetControlWordPtr(RASTER)));
+		text.push_back("PIXEL8           =0x"+cpputil::Uitox(*GetControlWordPtr(PIXEL8)));
+		text.push_back("WINDOW_MIN       =0x"+cpputil::Uitox(*GetControlWordPtr(WINDOW_MIN)));
+		text.push_back("WINDOW_MAX       =0x"+cpputil::Uitox(*GetControlWordPtr(WINDOW_MAX)));
+
+		text.push_back("HRZC             =0x"+cpputil::Uitox(*GetControlWordPtr(HRZC)));
+		text.push_back("HRZT             =0x"+cpputil::Uitox(*GetControlWordPtr(HRZT)));
+		text.push_back("HRZSR            =0x"+cpputil::Uitox(*GetControlWordPtr(HRZSR)));
+		text.push_back("HRZBR            =0x"+cpputil::Uitox(*GetControlWordPtr(HRZBR)));
+		text.push_back("HRZBF            =0x"+cpputil::Uitox(*GetControlWordPtr(HRZBF)));
+		text.push_back("PREHRZC          =0x"+cpputil::Uitox(*GetControlWordPtr(PREHRZC)));
+		text.push_back("VRTC             =0x"+cpputil::Uitox(*GetControlWordPtr(VRTC)));
+		text.push_back("VRTT             =0x"+cpputil::Uitox(*GetControlWordPtr(VRTT)));
+		text.push_back("VRTSR            =0x"+cpputil::Uitox(*GetControlWordPtr(VRTSR)));
+		text.push_back("VRTBR            =0x"+cpputil::Uitox(*GetControlWordPtr(VRTBR)));
+		text.push_back("VRTBF            =0x"+cpputil::Uitox(*GetControlWordPtr(VRTBF)));
+		text.push_back("PREVRTC          =0x"+cpputil::Uitox(*GetControlWordPtr(PREVRTC)));
+		text.push_back("SRADDR           =0x"+cpputil::Uitox(*GetControlWordPtr(SRADDR)));
+		text.push_back("SRTCTL           =0x"+cpputil::Uitox(*GetControlWordPtr(SRTCTL)));
+		text.push_back("VIDCTRL_LAST     =0x"+cpputil::Uitox(*GetControlWordPtr(VIDCTRL_LAST)));
+		text.push_back("MEM_CONFIG       =0x"+cpputil::Uitox(*GetControlWordPtr(MEM_CONFIG)));
+		text.push_back("RFPERIOD         =0x"+cpputil::Uitox(*GetControlWordPtr(RFPERIOD)));
+		text.push_back("RFCOUNT          =0x"+cpputil::Uitox(*GetControlWordPtr(RFCOUNT)));
+		text.push_back("RLMAX            =0x"+cpputil::Uitox(*GetControlWordPtr(RLMAX)));
+		text.push_back("RLCUR            =0x"+cpputil::Uitox(*GetControlWordPtr(RLCUR)));
+	}
+	else
+	{
+		text.push_back("FMT-3631 is disabled.");
+	}
+	return text;
 }

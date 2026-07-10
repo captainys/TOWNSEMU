@@ -70,6 +70,8 @@ public:
 			BT_CR1_BP16=0x20,
 			BT_CR1_BP8= 0x40,
 			BT_CR1_565RGB=0x08,
+		BT_COMMAND_REG_2=0x0000A4,
+			BT_CR2_CURSOR_ENABLE=0x03, // Apparently b1 is for enabing, b1 is for two-color cursor, which I don't know what it is.
 		BT_COMMAND_REG_3=0x0000A8,
 			BT_CR3_64SQ_CURSOR=0x04,
 
@@ -317,6 +319,8 @@ public:
 	void SetControlByte(uint32_t physAddr,uint8_t data);
 	void SetControlWord(uint32_t physAddr,uint16_t data);
 	void SetControlDword(uint32_t physAddr,uint32_t data);
+
+	std::vector <std::string> GetStatusText(void) const;
 
 	unsigned int FetchByte(unsigned int physAddr) const override;
 	unsigned int FetchWord(unsigned int physAddr) const override;
