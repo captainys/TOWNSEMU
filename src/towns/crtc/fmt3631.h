@@ -192,6 +192,8 @@ public:
 			// Linux p9000regs.h implies that RECT command is 0x800,
 			// which contradicts with P9100 data sheet.
 			// Also contradicts with what comes in from Windows P9000 driver.
+			LOAD_COORD_PRIMTYPE_NOT_LOADED=0xFF,
+			LOAD_COORD_PRIMTYPE_NOT_TYPED=0xFE,
 		LOAD_COORD_X_Y_XY_MASK  =0x000018,
 			LOAD_COORD_X=0x08,
 			LOAD_COORD_Y=0x10,
@@ -217,6 +219,7 @@ public:
 		mutable int nLoadedCoord=0;
 		int lastLoadedCoord=0;
 		Vec2i coord[COORD_MAX];
+		uint32_t metaCoordType[COORD_MAX];
 
 		uint32_t btCommandReg[4];
 
@@ -296,7 +299,8 @@ public:
 
 	// Load Coordinate Command
 	void LoadCoord(uint32_t physAddr,uint32_t data);
-	void DeviceCoordOrLoadCoord(Vec2i &coord,Vec2i absRef,Vec2i relRef,uint32_t physAddr,uint32_t data);
+	int DeviceCoordOrLoadCoord(Vec2i &coord,Vec2i absRef,Vec2i relRef,uint32_t physAddr,uint32_t data);
+	void ClearLoadedFlags(void);
 	void DrawPoint(void);
 	void DrawLine(void);
 	void DrawTri(void);

@@ -68,6 +68,10 @@ void FMT3631::Reset(void)
 	state.nLoadedCoord=0;
 	state.lastLoadedCoord=0;
 	memset(state.coord,0,sizeof(state.coord));
+	for(auto &i : state.metaCoordType)
+	{
+		i=LOAD_COORD_PRIMTYPE_NOT_LOADED;
+	}
 
 	memset(state.ctlCond,0,sizeof(state.ctlCond));
 
@@ -449,7 +453,7 @@ Vec2i FMT3631::GetWindowMax(void) const
 	return v;
 }
 
-void FMT3631::DeviceCoordOrLoadCoord(Vec2i &coordToLoad,Vec2i absRef,Vec2i relRef,uint32_t physAddr,uint32_t data)
+int FMT3631::DeviceCoordOrLoadCoord(Vec2i &coordToLoad,Vec2i absRef,Vec2i relRef,uint32_t physAddr,uint32_t data)
 {
 	auto rel=(0!=(physAddr&LOAD_COORD_ABS_REL_MASK));
 
@@ -469,6 +473,7 @@ void FMT3631::DeviceCoordOrLoadCoord(Vec2i &coordToLoad,Vec2i absRef,Vec2i relRe
 			coordToLoad.x()+=absRef.x();
             coordToLoad.y()+=absRef.y();
 		}
+		return 1;
 	}
 	else if(LOAD_COORD_X==x_y_or_xy)
 	{
@@ -482,6 +487,7 @@ void FMT3631::DeviceCoordOrLoadCoord(Vec2i &coordToLoad,Vec2i absRef,Vec2i relRe
 		{
 			coordToLoad.x()+=absRef.x();
 		}
+		return 0;
 	}
 	else if(LOAD_COORD_Y==x_y_or_xy)
 	{
@@ -495,6 +501,17 @@ void FMT3631::DeviceCoordOrLoadCoord(Vec2i &coordToLoad,Vec2i absRef,Vec2i relRe
 		{
             coordToLoad.y()+=absRef.y();
 		}
+		return 1;
+	}
+	return 0;
+}
+
+void FMT3631::ClearLoadedFlags(void)
+{
+	state.nLoadedCoord=0;
+	for(auto &i : state.metaCoordType)
+	{
+		i=LOAD_COORD_PRIMTYPE_NOT_LOADED;
 	}
 }
 
@@ -505,6 +522,7 @@ void FMT3631::DeviceCoord(uint32_t physAddr,uint32_t data)
 	auto idx=(physAddr>>6)&3;
 	auto &coordToLoad=state.coord[idx];
 	DeviceCoordOrLoadCoord(coordToLoad,absRef,relRef,physAddr,data);
+	state.metaCoordType[idx]=LOAD_COORD_PRIMTYPE_NOT_TYPED;
 
 	if(true==monitorCtrl)
 	{
@@ -520,38 +538,9 @@ void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
 
 	if(state.nLoadedCoord<COORD_MAX)
 	{
-		DeviceCoordOrLoadCoord(coordToLoad,absRef,relRef,physAddr,data);
 		state.lastLoadedCoord=state.nLoadedCoord;
-		++state.nLoadedCoord;
-	}
-
-	auto primType=physAddr&LOAD_COORD_PRIMTYPE_MASK;
-	switch(primType)
-	{
-	case LOAD_COORD_PRIMTYPE_POINT: // 0,
-		break;
-	case LOAD_COORD_PRIMTYPE_LINE: // 0x40,
-		break;
-	case LOAD_COORD_PRIMTYPE_TRI: // 0x80,
-		if(3==state.nLoadedCoord)
-		{
-			state.coord[3]=state.coord[2];
-			state.nLoadedCoord=4;
-		}
-		break;
-	case LOAD_COORD_PRIMTYPE_QUAD: // 0xC0,
-		break;
-	case LOAD_COORD_PRIMTYPE_RECT: // 0x100,
-		if(2==state.nLoadedCoord)
-		{
-			state.coord[2]=state.coord[1];
-			state.coord[1].x()=state.coord[0].x();
-			state.coord[1].y()=state.coord[2].y();
-			state.coord[3].x()=state.coord[2].x();
-			state.coord[3].y()=state.coord[0].y();
-			state.nLoadedCoord=4;
-		}
-		break;
+		state.metaCoordType[state.nLoadedCoord]=physAddr&LOAD_COORD_PRIMTYPE_MASK;
+		state.nLoadedCoord+=DeviceCoordOrLoadCoord(coordToLoad,absRef,relRef,physAddr,data);
 	}
 }
 
@@ -809,16 +798,32 @@ uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fe
 	    state.coord[3].x()==state.coord[0].x()))
 	{
 		DrawRect(state.coord[0],state.coord[2]);
-		state.nLoadedCoord=0;
+		ClearLoadedFlags();
 		return 0;
 	}
-	std::cout << "General quad not implemented yet.\n";
+
+	if(2==state.nLoadedCoord &&
+	   (LOAD_COORD_PRIMTYPE_LINE==state.metaCoordType[0] &&
+	    LOAD_COORD_PRIMTYPE_LINE==state.metaCoordType[1]) ||
+	   (LOAD_COORD_PRIMTYPE_RECT==state.metaCoordType[0] &&
+	    LOAD_COORD_PRIMTYPE_RECT==state.metaCoordType[1]))
+	{
+		DrawRect(state.coord[0],state.coord[1]);
+		ClearLoadedFlags();
+		return 0;
+	}
+
+	std::cout << "General quad not implemented yet.  " << state.nLoadedCoord << " loaded coords\n";
+	std::cout << "(" << state.coord[0].x() << "," << state.coord[0].y() << ") " << cpputil::Ustox(state.metaCoordType[0]) << "\n";
+	std::cout << "(" << state.coord[1].x() << "," << state.coord[1].y() << ") " << cpputil::Ustox(state.metaCoordType[1]) << "\n";
+	std::cout << "(" << state.coord[2].x() << "," << state.coord[2].y() << ") " << cpputil::Ustox(state.metaCoordType[2]) << "\n";
+	std::cout << "(" << state.coord[3].x() << "," << state.coord[3].y() << ") " << cpputil::Ustox(state.metaCoordType[3]) << "\n";
 	if(true==breakOnUnsupported)
 	{
 		auto *towns=(FMTownsCommon *)vmPtr;
 		towns->debugger.ExternalBreak("General quad not implemented yet.\n");
 	}
-	state.nLoadedCoord=0;
+	ClearLoadedFlags();
 	return 0;
 }
 
@@ -911,7 +916,7 @@ uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 		}
 	}
 
-	state.nLoadedCoord=0;
+	ClearLoadedFlags();;
 	return 0;
 }
 
@@ -1436,6 +1441,10 @@ void FMT3631::SpecificSerialize(std::vector <unsigned char> &data,std::string st
 		PushInt32(data,c.x());
 		PushInt32(data,c.y());
 	}
+	for(auto i : state.metaCoordType)
+	{
+		PushUint32(data,i);
+	}
 	for(auto i : state.btCommandReg)
 	{
 		PushUint32(data,i);
@@ -1516,6 +1525,10 @@ bool FMT3631::SpecificDeserialize(const unsigned char *&data,std::string stateFN
 	{
 		c.x()=ReadInt32(data);
 		c.y()=ReadInt32(data);
+	}
+	for(auto &i : state.metaCoordType)
+	{
+		i=ReadUint32(data);
 	}
 	for(auto &i : state.btCommandReg)
 	{
