@@ -275,6 +275,45 @@ bool FMT3631::IsReadableParameter(uint32_t &data,uint32_t physAddr) const
 
 		return true;
 	}
+	if(VRTC==(COMMAND_MASK&physAddr))
+	{
+		auto h=Height();
+		if(0<h)
+		{
+			// 60fps
+			auto *towns=(FMTownsCommon *)vmPtr;
+			const uint64_t nsPerFrame=1000000000/60;
+			const uint64_t nsIntoFrame=towns->state.townsTime%nsPerFrame;
+
+			// I don't know exactly how long VSYNC takes, but let's say 5% of the frame.
+			const uint64_t nsPerLine=(nsPerFrame*95/100)/h;
+
+			const uint64_t linesIntoFrame=nsIntoFrame/nsPerLine;
+			data=(uint32_t)linesIntoFrame;
+			return true;
+		}
+	}
+	if(HRZC==(COMMAND_MASK&physAddr))
+	{
+		auto h=Height();
+		auto w=Width();
+		if(0<h && 0<w)
+		{
+			// 60fps
+			auto *towns=(FMTownsCommon *)vmPtr;
+			const uint64_t nsPerFrame=1000000000/60;
+			const uint64_t nsIntoFrame=towns->state.townsTime%nsPerFrame;
+
+			// I don't know exactly how long VSYNC takes, but let's say 5% of the frame.
+			const uint64_t nsPerLine=(nsPerFrame*95/100)/h;
+			const uint64_t nsIntoLine=nsIntoFrame%nsPerLine;
+
+			const uint64_t pixelIntoLine=w*nsIntoLine/nsPerLine;
+			data=(uint32_t)pixelIntoLine;
+
+			return true;
+		}
+	}
 	return false;
 }
 
