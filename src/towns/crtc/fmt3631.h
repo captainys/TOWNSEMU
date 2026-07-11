@@ -45,7 +45,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class FMT3631 : public Device, public MemoryAccess, public TownsCrtcBase
 {
 public:
-	static const uint32_t FMT3631::defPalette[];
+	static const uint32_t defPalette[];
 
 	// Based on Linux p9000regs.h and Weitek Power 9100 Graphics Controller Preliminary Nov93
 	enum
