@@ -227,42 +227,84 @@ void TownsRender::BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogP
 	{
 		auto DX=hardwareMouse.wid;
 		auto DY=DX;
-		uint8_t *ANDPtn=hardwareMouse.ANDPtn;
-		uint8_t *ORPtn=hardwareMouse.ORPtn;
-		for(int y=0; y<DY; ++y)
+		if(true!=hardwareMouse.twoColorCursor)
 		{
-			uint8_t bit=0x80;
-			for(int x=0; x<DX; ++x)
+			uint8_t *ANDPtn=hardwareMouse.ANDPtn;
+			uint8_t *ORPtn=hardwareMouse.ORPtn;
+			for(int y=0; y<DY; ++y)
 			{
-				uint32_t xOnScrn=hardwareMouse.X+x-hardwareMouse.originX;
-				uint32_t yOnScrn=hardwareMouse.Y+y-hardwareMouse.originY;
-				if(xOnScrn<wid && yOnScrn<hei)
+				uint8_t bit=0x80;
+				for(int x=0; x<DX; ++x)
 				{
-					if(0==(*ANDPtn&bit))
+					uint32_t xOnScrn=hardwareMouse.X+x-hardwareMouse.originX;
+					uint32_t yOnScrn=hardwareMouse.Y+y-hardwareMouse.originY;
+					if(xOnScrn<wid && yOnScrn<hei)
+					{
+						if(0==(*ANDPtn&bit))
+						{
+							auto pixelPtr=rgba.data()+4*(wid*yOnScrn+xOnScrn);
+							if(0==(*ORPtn&bit))
+							{
+								pixelPtr[0]=0;
+								pixelPtr[1]=0;
+								pixelPtr[2]=0;
+								pixelPtr[3]=255;
+							}
+							else
+							{
+								pixelPtr[0]=255;
+								pixelPtr[1]=255;
+								pixelPtr[2]=255;
+								pixelPtr[3]=255;
+							}
+						}
+					}
+					bit>>=1;
+					if(0==bit)
+					{
+						++ANDPtn;
+						++ORPtn;
+						bit=0x80;
+					}
+				}
+			}
+		}
+		else // Two-color cursor
+		{
+			uint8_t *Ptn1=hardwareMouse.ANDPtn;
+			uint8_t *Ptn2=hardwareMouse.ORPtn;
+			for(int y=0; y<DY; ++y)
+			{
+				uint8_t bit=0x80;
+				for(int x=0; x<DX; ++x)
+				{
+					uint32_t xOnScrn=hardwareMouse.X+x-hardwareMouse.originX;
+					uint32_t yOnScrn=hardwareMouse.Y+y-hardwareMouse.originY;
+					if(xOnScrn<wid && yOnScrn<hei)
 					{
 						auto pixelPtr=rgba.data()+4*(wid*yOnScrn+xOnScrn);
-						if(0==(*ORPtn&bit))
+						if(0!=(*Ptn2&bit))
 						{
-							pixelPtr[0]=0;
-							pixelPtr[1]=0;
-							pixelPtr[2]=0;
+							pixelPtr[0]=hardwareMouse.twoColor[0];
+							pixelPtr[1]=hardwareMouse.twoColor[1];
+							pixelPtr[2]=hardwareMouse.twoColor[2];
 							pixelPtr[3]=255;
 						}
-						else
+						else if(0!=(*Ptn1&bit))
 						{
-							pixelPtr[0]=255;
-							pixelPtr[1]=255;
-							pixelPtr[2]=255;
+							pixelPtr[0]=hardwareMouse.twoColor[3];
+							pixelPtr[1]=hardwareMouse.twoColor[4];
+							pixelPtr[2]=hardwareMouse.twoColor[5];
 							pixelPtr[3]=255;
 						}
 					}
-				}
-				bit>>=1;
-				if(0==bit)
-				{
-					++ANDPtn;
-					++ORPtn;
-					bit=0x80;
+					bit>>=1;
+					if(0==bit)
+					{
+						++Ptn1;
+						++Ptn2;
+						bit=0x80;
+					}
 				}
 			}
 		}
