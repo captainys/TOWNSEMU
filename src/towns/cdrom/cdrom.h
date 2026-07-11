@@ -379,7 +379,7 @@ public:
 
 	std::vector <std::string> GetStatusText(void) const;
 
-	/*! Loads a disc-image file.  It can be .CUE or .ISO format file.
+	/*! Loads a disc-image file.  It can be .CUE, .ISO, .MDS, .CCD, or .CHD format file.
 	    The return value is an error code of DiscImage class.
 	    Use DiscImage::ErrorCodeToText(return_value) to get the text if
 	    the return_value is not DiscImage::ERROR_NOERROR.
