@@ -97,6 +97,14 @@ void FMT3631::Reset(void)
 	state.hwCursor.originX=32;
 	state.hwCursor.originY=32;
 	state.hwCursor.wid=32;
+	state.hwCursor.twoColorCursor=false;
+	state.hwCursor.twoColor[0]=0xff;
+	state.hwCursor.twoColor[1]=0xff;
+	state.hwCursor.twoColor[2]=0xff;
+	state.hwCursor.twoColor[3]=0;
+	state.hwCursor.twoColor[4]=0;
+	state.hwCursor.twoColor[5]=0;
+	state.hwCursorTwoColorReadPos=0;
 }
 
 int FMT3631::U16toS16(uint32_t in)
@@ -1033,12 +1041,13 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 			state.highColor565=(0!=(data&BT_CR1_565RGB));
 		}
 	}
-	if(masked==BT_COMMAND_REG_2)
+	else if(masked==BT_COMMAND_REG_2)
 	{
 		state.btCommandReg[2]=data;
 		state.hwCursor.defined=(0!=(data&BT_CR2_CURSOR_ENABLE));
+		state.hwCursor.twoColorCursor=(0!=(data&BT_CR2_2COLOR_CURSOR));
 	}
-	if(masked==BT_COMMAND_REG_3)
+	else if(masked==BT_COMMAND_REG_3)
 	{
 		state.btCommandReg[3]=data;
 		if(0!=(BT_CR3_64SQ_CURSOR&data))
@@ -1054,7 +1063,7 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 			state.hwCursor.originY=32;
 		}
 	}
-	if(masked==BT_WRITE_ADDR)
+	else if(masked==BT_WRITE_ADDR)
 	{
 		if(BT_CURS_OR_PTN==data)
 		{
@@ -1068,7 +1077,7 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 		state.writingPaletteRGBCount=0;
 		return true;
 	}
-	if(masked==BT_CURS_RAM_DATA)
+	else if(masked==BT_CURS_RAM_DATA)
 	{
 		if(state.hwCursor.ptnCount<512)
 		{
@@ -1080,9 +1089,27 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 			state.hwCursor.ANDPtn[state.hwCursor.ptnCount-512]=data;
 			++state.hwCursor.ptnCount;
 		}
+		state.hwCursor.ptnCount&=0x3FF;
 		return true;
 	}
-	if(masked==BT_RAMDAC_DATA)
+	else if(masked==BT_CURS_WR_ADDR) //  0x000090
+	{
+		if(1==data)
+		{
+			state.hwCursorTwoColorReadPos=0;
+		}
+		return true;
+	}
+	else if(masked==BT_CURS_DATA) //    0x000094
+	{
+		if(state.hwCursorTwoColorReadPos<6)
+		{
+			state.hwCursor.twoColor[state.hwCursorTwoColorReadPos]=data;
+			++state.hwCursorTwoColorReadPos;
+		}
+		return true;
+	}
+	else if(masked==BT_RAMDAC_DATA)
 	{
 		if(state.writingPaletteRGBCount<3)
 		{
@@ -1098,76 +1125,75 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 			}
 		}
 	}
-	if(masked==BT_CURS_X_LOW)
+	else if(masked==BT_CURS_X_LOW)
 	{
 		state.hwCursorXY_LowByte[0]=data;
 		return true;
 	}
-	if(masked==BT_CURS_Y_LOW)
+	else if(masked==BT_CURS_Y_LOW)
 	{
 		state.hwCursorXY_LowByte[1]=data;
 		return true;
 	}
-	if(masked==BT_CURS_X_HIGH)
+	else if(masked==BT_CURS_X_HIGH)
 	{
 		state.hwCursor.X=(state.hwCursorXY_LowByte[0]&255)|(data<<8);
 		return true;
 	}
-	if(masked==BT_CURS_Y_HIGH)
+	else if(masked==BT_CURS_Y_HIGH)
 	{
 		state.hwCursor.Y=(state.hwCursorXY_LowByte[1]&255)|(data<<8);
 		return true;
 	}
 
-
-	if((0x1FFE07&physAddr)==LOAD_COORD)
+	else if((0x1FFE07&physAddr)==LOAD_COORD)
 	{
 		LoadCoord(physAddr,data);
 		return true;
 	}
-	if((0x1FFF07&physAddr)==DEVICE_COORD)
+	else if((0x1FFF07&physAddr)==DEVICE_COORD)
 	{
 		DeviceCoord(physAddr,data);
 		return true;
 	}
-	if((0x1FFFFF&physAddr)==NEXT_PIXELS_CMD)
+	else if((0x1FFFFF&physAddr)==NEXT_PIXELS_CMD)
 	{
 		CmdNextPixels(physAddr,data);
 		return true;
 	}
-	if((0x1FFF80&physAddr)==PIXEL1_CMD)
+	else if((0x1FFF80&physAddr)==PIXEL1_CMD)
 	{
 		CmdPixel1(physAddr,data,false,false);
 		return true;
 	}
-	if((0x1FFF80&physAddr)==PIXEL1_BYTE_SWAP_CMD)
+	else if((0x1FFF80&physAddr)==PIXEL1_BYTE_SWAP_CMD)
 	{
 		CmdPixel1(physAddr,data,true,false);
 		return true;
 	}
-	if((0x1FFF80&physAddr)==PIXEL1_BIT_REVERSE_CMD)
+	else if((0x1FFF80&physAddr)==PIXEL1_BIT_REVERSE_CMD)
 	{
 		CmdPixel1(physAddr,data,true,true);
 		return true;
 	}
-	if(masked==PIXEL8_CMD)
+	else if(masked==PIXEL8_CMD)
 	{
 		CmdPixel8(physAddr,data,false,false);
 	}
-	if(masked==PIXEL8_BYTE_SWAP_CMD)
+	else if(masked==PIXEL8_BYTE_SWAP_CMD)
 	{
 		CmdPixel8(physAddr,data,true,true);
 	}
-	if(masked==PIXEL8_BIT_REVERSE_CMD)
+	else if(masked==PIXEL8_BIT_REVERSE_CMD)
 	{
 		CmdPixel8(physAddr,data,true,false);
 	}
-	if(masked==QUAD_CMD)
+	else if(masked==QUAD_CMD)
 	{
 		CmdQuad(physAddr);
 		return true;
 	}
-	if(masked==BLIT_CMD)
+	else if(masked==BLIT_CMD)
 	{
 		CmdBlit(physAddr);
 		return true;
@@ -1552,6 +1578,9 @@ void FMT3631::SpecificSerialize(std::vector <unsigned char> &data,std::string st
 	PushUint32(data,state.hwCursor.wid);
 	PushUcharArray(data,512,state.hwCursor.ANDPtn);
 	PushUcharArray(data,512,state.hwCursor.ORPtn);
+	PushBool(data,state.hwCursor.twoColorCursor);
+	PushUcharArray(data,6,state.hwCursor.twoColor);
+	PushUint16(data,state.hwCursorTwoColorReadPos);
 
 	PushUint32(data,state.hwCursorXY_LowByte[0]);
 	PushUint32(data,state.hwCursorXY_LowByte[1]);
@@ -1638,6 +1667,9 @@ bool FMT3631::SpecificDeserialize(const unsigned char *&data,std::string stateFN
 	state.hwCursor.wid=ReadUint32(data);
 	ReadUcharArray(data,512,state.hwCursor.ANDPtn);
 	ReadUcharArray(data,512,state.hwCursor.ORPtn);
+	state.hwCursor.twoColorCursor=ReadBool(data);
+	ReadUcharArray(data,6,state.hwCursor.twoColor);
+	state.hwCursorTwoColorReadPos=ReadUint16(data);
 
 	state.hwCursorXY_LowByte[0]=ReadUint32(data);
 	state.hwCursorXY_LowByte[1]=ReadUint32(data);

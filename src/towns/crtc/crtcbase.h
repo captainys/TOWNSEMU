@@ -61,6 +61,9 @@ public:
 		uint32_t wid=64; // Can be 64 or 32.
 		uint8_t ANDPtn[512]={0},ORPtn[512]={0};
 
+		bool twoColorCursor=false; // For FMT-3631
+		uint8_t twoColor[6]={0};   // For FMT-3631
+
 		void Reset(void);
 	};
 };

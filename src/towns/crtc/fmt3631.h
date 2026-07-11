@@ -60,6 +60,20 @@ public:
 			BT_CURS_OR_PTN=  0,
 			BT_CURS_AND_PTN= 0x80,
 		BT_RAMDAC_DATA=  0x000084,
+
+		// Linux JE4 startxP9 writes:
+		//  46000090 01
+		//  46000094 FF
+		//  46000094 FF
+		//  46000094 FF
+		//  46000094 00
+		//  46000094 00
+		//  46000094 00
+		// Perfectly matches with the p9000BtRecolorCursor function in p9000BtCurs.c
+		// If so, 000090 is BT_CURS_WR_ADDR, and 000094 is BT_CURS_DATA.
+		BT_CURS_WR_ADDR= 0x000090,
+		BT_CURS_DATA=    0x000094,
+
 		BT_CURS_RAM_DATA=0x0000AC,  // Probably
 		BT_CURS_X_LOW=   0x0000B0,
 		BT_CURS_X_HIGH=  0x0000B4,  // Both Linux and Windows writes Low then High.
@@ -71,7 +85,8 @@ public:
 			BT_CR1_BP8= 0x40,
 			BT_CR1_565RGB=0x08,
 		BT_COMMAND_REG_2=0x0000A4,
-			BT_CR2_CURSOR_ENABLE=0x03, // Apparently b1 is for enabing, b1 is for two-color cursor, which I don't know what it is.
+			BT_CR2_CURSOR_ENABLE=0x02, // Apparently b1 is for enabing, b1 is for two-color cursor, which I don't know what it is.
+			BT_CR2_2COLOR_CURSOR=0x01,
 		BT_COMMAND_REG_3=0x0000A8,
 			BT_CR3_64SQ_CURSOR=0x04,
 
@@ -227,6 +242,7 @@ public:
 
 		AnalogPalette plt;
 		HardwareMouseCursor hwCursor;
+		unsigned int hwCursorTwoColorReadPos=0;
 		unsigned int hwCursorXY_LowByte[2]={0,0};
 		unsigned int writingPalette=0;
 		unsigned int writingPaletteRGBCount=0;
