@@ -630,8 +630,8 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 
 	Vec2i clip[2]=
 	{
-		Vec2i::Make(0,0),
-		Vec2i::Make(Width()*bytesPerPixel-1,Height()-1),
+		GetWindowMin(),
+		GetWindowMax(),
 	};
 
 	if(x1<clip[0].x() || clip[1].x()<x0 ||
@@ -652,6 +652,11 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 	uint32_t patternBit=0x80000000;
 	for(auto y=y0; y<=y1; ++y)
 	{
+		if(clip[1].y()<y)
+		{
+			break;
+		}
+
 		uint32_t pattern=state.pattern[y%PATTERN_LEN];
 
 		// Shockingly, Power 9000's Quad command fills the bytes within the region with the same byte.
@@ -659,8 +664,23 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 		// Linux Power 9000 driver draws a quad twice with a pattern and logic ops to fill component by component.
 		// Windows driver apparently did not push it that much.
 		auto ptr=lineTop;
+
+		if(y<clip[0].y())
+		{
+			goto NEXTY;
+		}
+
 		for(auto x=x0; x<=x1; ++x)
 		{
+			if(clip[1].x()<x)
+			{
+				break;
+			}
+			if(x<clip[0].x())
+			{
+				goto NEXTX;
+			}
+
 			// Apparently X coordinate is multiplied by bytes-per-pixel by the software.
 			switch(raster&0xFFFF)
 			{
@@ -691,6 +711,7 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 				}
 				break;
 			}
+		NEXTX:
 			++ptr;
 			patternBit>>=1;
 			if(0==patternBit)
@@ -698,6 +719,7 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 				patternBit=0x80000000;
 			}
 		}
+	NEXTY:
 		lineTop+=bytesPerLine;
 	}
 }
