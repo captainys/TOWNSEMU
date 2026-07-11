@@ -205,9 +205,11 @@ public:
 		QUAD_CMD        =0x180008,
 		BLIT_CMD        =0x180004,
 		PIXEL1_CMD      =0x180080,
-		PIXEL1_SWAP_CMD =0x1E0080,
+		PIXEL1_BYTE_SWAP_CMD =0x1E0080,
+		PIXEL1_BIT_REVERSE_CMD=0x1F0080,
 		PIXEL8_CMD      =0x18000C,
-		PIXEL8_SWAP_CMD =0x1E000C,
+		PIXEL8_BYTE_SWAP_CMD =0x1E000C,
+		PIXEL8_BIT_REVERSE_CMD =0x1F000C,
 	};
 
 	class State
@@ -309,11 +311,11 @@ public:
 
 	// Pixels Command
 	void CmdNextPixels(uint32_t physAddr,uint32_t data);
-	void CmdPixel1(uint32_t physAddr,uint32_t data,bool doSwap);
+	void CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap);
 	template <class Pixel1LogicOp>
-	void CmdPixel1Loop(uint32_t physAddr,uint32_t data,bool doSwap);
+	void CmdPixel1Loop(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap);
 
-	void CmdPixel8(uint32_t physAddr,uint32_t data,bool doSwap);
+	void CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap);
 
 	uint32_t CmdQuad(uint32_t physAddr);
 	uint32_t CmdBlit(uint32_t physAddr);

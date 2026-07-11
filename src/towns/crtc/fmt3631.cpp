@@ -525,6 +525,20 @@ void FMT3631::DeviceCoord(uint32_t physAddr,uint32_t data)
 	DeviceCoordOrLoadCoord(coordToLoad,absRef,relRef,physAddr,data);
 	state.metaCoordType[idx]=LOAD_COORD_PRIMTYPE_NOT_TYPED;
 
+	if(0==idx) // It also updates the pixel width.
+	{
+		state.pixelLeftUp.x()=coordToLoad.x();
+		state.pixelWid=state.coord[2].x()-state.coord[0].x();
+	}
+	else if(1==idx) // It also updates the current pixel position.
+	{
+		state.pixelCurrent=coordToLoad;
+	}
+	else if(2==idx) // It also updates the pixel width.
+	{
+		state.pixelWid=state.coord[2].x()-state.coord[0].x();
+	}
+
 	if(true==monitorCtrl)
 	{
 		std::cout << "DEVICE_COORD " << idx << "\n";
@@ -728,11 +742,26 @@ public:
 };
 
 template <class LogicOp>
-void FMT3631::CmdPixel1Loop(uint32_t physAddr,uint32_t data,bool doSwap)
+void FMT3631::CmdPixel1Loop(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap)
 {
 	uint32_t count=1+((physAddr>>2)&31);
 
-	if(true==doSwap)
+	if(true==bitSwap && true==byteSwap)
+	{
+		auto dataRev=data;
+		data=0;
+		uint32_t tstBit=0x80000000,orBit=1;
+		while(0!=tstBit)
+		{
+			if(dataRev&tstBit)
+			{
+				data|=orBit;
+			}
+			tstBit>>=1;
+			orBit<<=1;
+		}
+	}
+	else if(true==byteSwap)
 	{
 		data=ByteSwap32(data);
 	}
@@ -754,10 +783,7 @@ void FMT3631::CmdPixel1Loop(uint32_t physAddr,uint32_t data,bool doSwap)
 
 		if(state.pixelCurrent.IsInsideWindow(winMin,winMax))
 		{
-			if(8==BitsPerPixel())
-			{
-				LogicOp::DoLogicOp(lineTop[state.pixelCurrent.x()],fg,fgColor,bgColor);
-			}
+			LogicOp::DoLogicOp(lineTop[state.pixelCurrent.x()],fg,fgColor,bgColor);
 		}
 
 		++state.pixelCurrent.x();
@@ -779,7 +805,7 @@ void FMT3631::CmdPixel1Loop(uint32_t physAddr,uint32_t data,bool doSwap)
 	}
 }
 
-void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool doSwap)
+void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap)
 {
 	if(true==monitorCtrl)
 	{
@@ -795,20 +821,20 @@ void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool doSwap)
 			auto *towns=(FMTownsCommon *)vmPtr;
 			towns->debugger.ExternalBreak("Unsupported Raster type for Pixel1 ("+cpputil::Uitox(raster)+")");
 		}
-		CmdPixel1Loop<Pixel1CopyTransparent>(physAddr,data,doSwap);
+		CmdPixel1Loop<Pixel1CopyTransparent>(physAddr,data,byteSwap,bitSwap);
 		break;
 
 	case 0xee22:
-		CmdPixel1Loop<Pixel1CopyTransparent>(physAddr,data,doSwap);
+		CmdPixel1Loop<Pixel1CopyTransparent>(physAddr,data,byteSwap,bitSwap);
 		break;
 
 	case 0xfc30:
-		CmdPixel1Loop<Pixel1CopyOpaque>(physAddr,data,doSwap);
+		CmdPixel1Loop<Pixel1CopyOpaque>(physAddr,data,byteSwap,bitSwap);
 		break;
 	}
 }
 
-void FMT3631::CmdPixel8(uint32_t physAddr,uint32_t data,bool doSwap)
+void FMT3631::CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap)
 {
 	if(true==breakOnUnsupported)
 	{
@@ -1089,21 +1115,30 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 	}
 	if((0x1FFF80&physAddr)==PIXEL1_CMD)
 	{
-		CmdPixel1(physAddr,data,false);
+		CmdPixel1(physAddr,data,false,false);
 		return true;
 	}
-	if((0x1FFF80&physAddr)==PIXEL1_SWAP_CMD)
+	if((0x1FFF80&physAddr)==PIXEL1_BYTE_SWAP_CMD)
 	{
-		CmdPixel1(physAddr,data,true);
+		CmdPixel1(physAddr,data,true,false);
+		return true;
+	}
+	if((0x1FFF80&physAddr)==PIXEL1_BIT_REVERSE_CMD)
+	{
+		CmdPixel1(physAddr,data,true,true);
 		return true;
 	}
 	if(masked==PIXEL8_CMD)
 	{
-		CmdPixel8(physAddr,data,false);
+		CmdPixel8(physAddr,data,false,false);
 	}
-	if(masked==PIXEL8_SWAP_CMD)
+	if(masked==PIXEL8_BYTE_SWAP_CMD)
 	{
-		CmdPixel8(physAddr,data,true);
+		CmdPixel8(physAddr,data,true,true);
+	}
+	if(masked==PIXEL8_BIT_REVERSE_CMD)
+	{
+		CmdPixel8(physAddr,data,true,false);
 	}
 	if(masked==QUAD_CMD)
 	{
