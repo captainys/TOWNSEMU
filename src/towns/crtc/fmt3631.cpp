@@ -602,9 +602,180 @@ void FMT3631::DrawPoint(void)
 {
 	std::cout << "DrawPoint not supported yet.\n";
 }
-void FMT3631::DrawLine(void)
+void FMT3631::DrawLine(Vec2i p0,Vec2i p1)
 {
-	std::cout << "DrawLine not supported yet.\n";
+	auto bytesPerLine=BytesPerLine();
+	auto bitsPerPixel=BitsPerPixel();
+	auto bytesPerPixel=BytesPerPixel();
+
+	Vec2i clip[2]=
+	{
+		GetWindowMin(),
+		GetWindowMax(),
+	};
+
+	if(true==monitorCtrl)
+	{
+		std::cout << "Line\n";
+	}
+
+	int dx=p1.x()-p0.x();
+	int dy=p1.y()-p0.y();
+	int vx=1,vy=1;
+	int x0=p0.x(),y0=p0.y(),x1=p1.x(),y1=p1.y();
+
+	if((x0<clip[0].x() && x1<clip[0].x()) || 
+	   (y0<clip[0].y() && y1<clip[0].y()) ||
+	   (clip[1].x()<x0 && clip[1].x()<x1) ||
+	   (clip[1].y()<y0 && clip[1].y()<y1))
+	{
+		return;
+	}
+
+	if(dx<0)
+	{
+		dx=-dx;
+		vx=-1;
+	}
+	if(dy<0)
+	{
+		dy=-dy;
+		vy=-1;
+	}
+
+	uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+x0;
+	auto fgColor=*GetControlWordPtr(FGCOLOR);
+	auto bgColor=*GetControlWordPtr(BGCOLOR);
+	uint32_t raster=*GetControlWordPtr(RASTER);
+	bool usePattern=(0!=(raster&RASTER_USEPATTERN));
+	uint32_t patternBit=0x80000000;
+
+	auto pset=[=](uint8_t *ptr,bool usePattern,uint32_t pattern,uint32_t patternBit)
+	{
+		switch(raster&0xFFFF)
+		{
+		default:
+			if(true==breakOnUnsupported)
+			{
+				auto *towns=(FMTownsCommon *)vmPtr;
+				towns->debugger.ExternalBreak("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
+			}
+			break;
+		case 0xff00: // Copy
+			*ptr=fgColor;
+			break;
+		case 0x5555: // Not dst
+			*ptr=~*ptr;
+			break;
+		case 0x55aa: // Xor
+			*ptr^=fgColor;
+			break;
+		case 0xFC30: // Pattern=0->BG,  1->FG.  If use_pattern==false, always FG (probably)
+			if(true!=usePattern || 0!=(patternBit&pattern))
+			{
+				*ptr=fgColor;
+			}
+			else
+			{
+				*ptr=bgColor;
+			}
+			break;
+		}
+	};
+
+	if(0==dx)
+	{
+		auto *ptr=lineTop;
+		int vPtr=bytesPerLine;
+		vPtr*=vy;
+
+		unsigned int patternBit=(0x80000000>>(x0%31));
+
+		bool last=false;
+		for(auto y=y0; true!=last; y+=vy)
+		{
+			if(y==y1)
+			{
+				last=true;
+			}
+
+			if(y<clip[0].y() || clip[1].y()<y)
+			{
+				continue;
+			}
+
+			pset(ptr,usePattern,state.pattern[y%PATTERN_LEN],patternBit);
+			ptr+=vPtr;
+		}
+	}
+	else if(0==dy)
+	{
+		auto *ptr=lineTop;
+		int vPtr=vx;
+
+		bool last=false;
+		for(auto x=x0; true!=last; x+=vx)
+		{
+			if(x==x1)
+			{
+				last=true;
+			}
+
+			if(x<clip[0].x() || clip[1].x()<x)
+			{
+				continue;
+			}
+
+			uint32_t patternBit=(0x80000000>>(x%31));
+			pset(ptr,usePattern,state.pattern[y0%PATTERN_LEN],patternBit);
+			ptr+=vPtr;
+		}
+	}
+	else
+	{
+		auto *ptr=lineTop;
+
+		int balance=0;
+		int x=x0,y=y0;
+		int vyPtr=bytesPerLine;
+		vyPtr*=vy;
+		int vxPtr=vx;
+
+		bool last=false;
+		while(true!=last)
+		{
+			if(x==x1 && y==y1)
+			{
+				last=true;
+			}
+
+			uint32_t patternBit=(0x80000000>>(x%31));
+			pset(ptr,usePattern,state.pattern[y%PATTERN_LEN],patternBit);
+
+			if(0==balance)
+			{
+				y+=vy;
+				ptr+=vyPtr;
+				balance-=dx;
+
+				x+=vx;
+				ptr+=vxPtr;
+				balance+=dy;
+			}
+			else if(0<balance)
+			{
+				y+=vy;
+				ptr+=vyPtr;
+				balance-=dx;
+			}
+			else
+			{
+				x+=vx;
+				ptr+=vxPtr;
+				balance+=dy;
+			}
+		}
+	}
 }
 
 void FMT3631::DrawTri(void)
@@ -891,10 +1062,18 @@ uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fe
 	}
 
 	if(2==state.nLoadedCoord &&
-	   ((LOAD_COORD_PRIMTYPE_LINE==state.metaCoordType[0] &&
-	     LOAD_COORD_PRIMTYPE_LINE==state.metaCoordType[1]) ||
-	    (LOAD_COORD_PRIMTYPE_RECT==state.metaCoordType[0] &&
-	     LOAD_COORD_PRIMTYPE_RECT==state.metaCoordType[1])))
+	   LOAD_COORD_PRIMTYPE_LINE==state.metaCoordType[0] &&
+	   LOAD_COORD_PRIMTYPE_LINE==state.metaCoordType[1])
+	{
+		// Is this command for line as well?  Linux Power 9000 driver seems to be assuming so.
+		DrawLine(state.coord[0],state.coord[1]);
+		state.nextLoadIndex=0;
+		return 0;
+	}
+
+	if(2==state.nLoadedCoord &&
+	   LOAD_COORD_PRIMTYPE_RECT==state.metaCoordType[0] &&
+	   LOAD_COORD_PRIMTYPE_RECT==state.metaCoordType[1])
 	{
 		DrawRect(state.coord[0],state.coord[1]);
 		state.nextLoadIndex=0;

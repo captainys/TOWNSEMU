@@ -320,7 +320,7 @@ public:
 	int DeviceCoordOrLoadCoord(Vec2i &coord,Vec2i absRef,Vec2i relRef,uint32_t physAddr,uint32_t data);
 	void ClearLoadedFlags(void);
 	void DrawPoint(void);
-	void DrawLine(void);
+	void DrawLine(Vec2i p0,Vec2i p1);
 	void DrawTri(void);
 	void DrawQuad(void);
 	void DrawRect(Vec2i p0,Vec2i p1);
