@@ -158,6 +158,10 @@ enum
 #define TOWNSADDR_FMT3631_END          0x46400000
 #define TOWNSADDR_FMT3631_AND          0x003FFFFF
 
+#define TOWNSADDR_FMT_3632_BASE        0x8A000000
+#define TOWNSADDR_FMT_3632_VRAM        0x8A800000
+#define TOWNSADDR_FMT_3632_END         0x8AC00000
+
 #define TOWNSADDR_VRAM0_BASE           0x80000000
 #define TOWNSADDR_VRAM0_END            0x80080000
 #define TOWNSADDR_VRAM_AND             0x000FFFFF
@@ -581,7 +585,9 @@ enum
 	// FMT-3631 returns 60H on this I/O only if the straight-cable from on-board Video Out to FMT-3631 RGB-in is connected.
 	// The cable from on-board to FMT-3631 is a straight-cable.  Pin-7 CSYNC is grounded on the FMT-3631 side, therefore
 	// connecting Pin-7 risks CSYNC directly connected to GND.  Experiment confirmed that pin-7 connection is not needed. (2026/06/22)
-	TOWNSIO_FMT_3632=                      0x1101,
+	TOWNSIO_FMT_3632_1=                    0x1101, // bit 1 seems to tell the VRAM size, not confirmed.
+	TOWNSIO_FMT_3632_2=                    0x9100,
+	TOWNSIO_FMT_3632_3=                    0x9104,
 	// If Windows FMT-3632 driver is selected, and if I/O 0x1100 returns 0x80 (or at least high 2-bits matches 0x80),
 	// Windows driver checks 0x1101 next.  Most likely it is checking how large a RAM the board has.
 

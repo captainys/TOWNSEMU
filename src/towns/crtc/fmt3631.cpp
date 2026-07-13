@@ -235,7 +235,7 @@ unsigned int FMT3631::IOReadByte(unsigned int ioport)
 {
 	if(true==state.enabled)
 	{
-		if(TOWNSIO_FMT_3631_PRESENCE_CHECK==ioport)
+		if(TOWNSIO_FMT_3631_PRESENCE_CHECK==ioport) // 0x1100
 		{
 			if(true!=state.isFMT3632)
 			{
@@ -254,13 +254,21 @@ unsigned int FMT3631::IOReadByte(unsigned int ioport)
 				return 0x80;
 			}
 		}
-		else if(TOWNSIO_FMT_3632==ioport)
+		else if(TOWNSIO_FMT_3632_1==ioport) // 0x1101
 		{
 			// b0 apparently indicates 2MB or 4MB.  b0==1 probably indicates that 4MB.
-			if(true!=state.isFMT3632)
+			if(true==state.isFMT3632)
 			{
-				return 1;
+				return 3;
 			}
+		}
+		else if(TOWNSIO_FMT_3632_2==ioport) // 0x9100
+		{
+		}
+		else if(TOWNSIO_FMT_3632_3==ioport) // 0x9104
+		{
+			// Meaning is utterly unknown.  I tried 2, and it passes.
+			return 2;
 		}
 	}
 	return 0xFF;

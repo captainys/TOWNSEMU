@@ -1032,7 +1032,9 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_ALT_ROM); // 			0x7110
 
 	io.AddDevice(&fmt3631,TOWNSIO_FMT_3631_PRESENCE_CHECK); //      0x1100
-	io.AddDevice(&fmt3631,TOWNSIO_FMT_3632);                //      0x1101
+	io.AddDevice(&fmt3631,TOWNSIO_FMT_3632_1);              //      0x1101
+	io.AddDevice(&fmt3631,TOWNSIO_FMT_3632_2);              //      0x9100
+	io.AddDevice(&fmt3631,TOWNSIO_FMT_3632_3);              //      0x9104
 
 	baseClassReady=true;
 }
