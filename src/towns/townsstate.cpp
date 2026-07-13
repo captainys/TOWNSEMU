@@ -91,7 +91,7 @@ std::vector <uint8_t> FMTownsCommon::SaveStateMem(void) const
 }
 bool FMTownsCommon::LoadStateMem(const std::vector <uint8_t> &state)
 {
-	fmt3631.state.enabled=false; // If not read must be made by an old version, keep it disabled.
+	fmt3631.Disable(); // If not read must be made by an old version, keep it disabled.
 	highResPCM.state.enabled=false; // If not read must be made by an old version, keep it disabled.
 	midi.Stop();
 	midi.EnableCards(0); // If no data, leave all disabled.

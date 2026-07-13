@@ -205,7 +205,7 @@ uint32_t TownsCRTC::GetEffectiveVRAMSize(void) const
 {
 	if(true==fmt3631->IsEnabled())
 	{
-		return fmt3631->VRAM_SIZE;
+		return fmt3631->state.vram.size();
 	}
 	else if(true==state.highResCRTCEnabled)
 	{

@@ -41,8 +41,29 @@ const uint32_t FMT3631::defPalette[256]=
 
 FMT3631::FMT3631(class FMTownsCommon *ptr) : Device(ptr)
 {
-	state.vram.resize(VRAM_SIZE);
+	state.vram.clear();
 	mutableThis=this;
+}
+
+void FMT3631::Disable(void)
+{
+	state.enabled=false;
+	state.isFMT3632=false;
+	state.vram.clear();
+}
+
+void FMT3631::EnableAsFMT3631(void)
+{
+	state.enabled=true;
+	state.isFMT3632=false;
+	state.vram.resize(VRAM_SIZE_3631);
+}
+
+void FMT3631::EnableAsFMT3632(void)
+{
+	state.enabled=true;
+	state.isFMT3632=true;
+	state.vram.resize(VRAM_SIZE_3632);
 }
 
 void FMT3631::PowerOn(void)
@@ -62,7 +83,7 @@ void FMT3631::Reset(void)
 	memset(state.videoCtrl,0,sizeof(state.videoCtrl));
 	memset(state.vramCtrl,0,sizeof(state.vramCtrl));
 	memset(state.drawingAttrib,0,sizeof(state.drawingAttrib));
-	memset(state.vram.data(),0,VRAM_SIZE);
+	memset(state.vram.data(),0,state.vram.size());
 	memset(state.pattern,255,sizeof(state.pattern));
 
 	state.nLoadedCoord=0;
@@ -224,7 +245,7 @@ void FMT3631::MakePageLayerInfo(Layer &layer) const
 	layer.bytesPerLine=BytesPerLine();
 
 	layer.HScrollMask=0xFFFFFFFF;
-	layer.VScrollMask=VRAM_SIZE-1;
+	layer.VScrollMask=state.vram.size()-1;
 }
 const FMT3631::AnalogPalette &FMT3631::GetPalette(void) const
 {
@@ -1750,7 +1771,10 @@ std::vector <std::string> FMT3631::GetStatusText(void) const
 */
 uint32_t FMT3631::SerializeVersion(void) const
 {
-	return 1;
+	// Version 2:
+	//   VRAM size may be 2MB or 4MB.
+	//   isFMT3632.
+	return 2;
 };
 /*! Device-specific Serialization.
 */
@@ -1761,6 +1785,8 @@ void FMT3631::SpecificSerialize(std::vector <unsigned char> &data,std::string st
 	{
 		return;
 	}
+
+	PushBool(data,state.isFMT3632); // Version 2
 
 	PushInt32(data,state.nLoadedCoord);
 	PushInt32(data,state.lastLoadedCoord);
@@ -1839,7 +1865,7 @@ void FMT3631::SpecificSerialize(std::vector <unsigned char> &data,std::string st
 		PushUint32(data,i);
 	}
 
-	PushUcharArray(data,VRAM_SIZE,state.vram.data());
+	PushUcharArray(data,state.vram);
 }
 /*! Device-specific De-serialization.
 */
@@ -1849,6 +1875,11 @@ bool FMT3631::SpecificDeserialize(const unsigned char *&data,std::string stateFN
 	if(true!=state.enabled)
 	{
 		return true;
+	}
+
+	if(2<=version)
+	{
+		state.isFMT3632=ReadBool(data);
 	}
 
 	state.nLoadedCoord=ReadInt32(data);
@@ -1928,7 +1959,15 @@ bool FMT3631::SpecificDeserialize(const unsigned char *&data,std::string stateFN
 		i=ReadUint32(data);
 	}
 
-	ReadUcharArray(data,VRAM_SIZE,state.vram.data());
+	if(2<=version)
+	{
+		state.vram=ReadUcharArray(data);
+	}
+	else
+	{
+		state.vram.resize(VRAM_SIZE_3631);
+		ReadUcharArray(data,VRAM_SIZE_3631,state.vram.data());
+	}
 
 	return true;
 };

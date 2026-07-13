@@ -523,13 +523,11 @@ void FMTownsCommon::State::PowerOn(void)
 	}
 	if(true==argv.fmt3631)
 	{
-		towns.fmt3631.state.enabled=true;
-		towns.fmt3631.state.isFMT3632=false;
+		towns.fmt3631.EnableAsFMT3631();
 	}
 	if(true==argv.fmt3632)
 	{
-		towns.fmt3631.state.enabled=true;
-		towns.fmt3631.state.isFMT3632=true;
+		towns.fmt3631.EnableAsFMT3632();
 	}
 
 	return result;

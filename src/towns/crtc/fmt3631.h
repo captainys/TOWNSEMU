@@ -51,7 +51,8 @@ public:
 	enum
 	{
 		//
-		VRAM_SIZE       =0x200000,
+		VRAM_SIZE_3631  =0x200000,
+		VRAM_SIZE_3632  =0x400000,
 		COORD_MAX       =4, // Quadrilateral max
 		COMMAND_MASK    =0x1FFFFF,
 
@@ -230,9 +231,12 @@ public:
 
 	class State
 	{
-	public:
+	friend class FMT3631;
+
+	private:
 		bool enabled=false;
 		bool isFMT3632=false;
+	public:
 		std::vector <uint8_t> vram;
 
 		mutable int nLoadedCoord=0;
@@ -280,6 +284,10 @@ public:
 	const uint32_t vramBaseAddr=TOWNSADDR_FMT3631_VRAM;
 
 	FMT3631(class FMTownsCommon *ptr);
+
+	void Disable(void);
+	void EnableAsFMT3631(void);
+	void EnableAsFMT3632(void);
 
 	void PowerOn(void) override;
 	void Reset(void) override;
