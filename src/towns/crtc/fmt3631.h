@@ -56,6 +56,14 @@ public:
 		COORD_MAX       =4, // Quadrilateral max
 		COMMAND_MASK    =0x1FFFFF,
 
+		SYSREG_BEGIN      =0x000004,
+		CONTROL_BEGIN_3631=0x100000,
+		CONTROL_BEGIN_3632=0x000000,
+		VRAM_BEGIN_3631=0x200000,
+		VRAM_END_3631=0x400000,
+		VRAM_BEGIN_3632=0x800000,
+		VRAM_END_3632=0xC00000,
+
 		// RAMDAC Control
 		BT_WRITE_ADDR=   0x000080,  // Probably
 			BT_CURS_OR_PTN=  0,
@@ -94,9 +102,12 @@ public:
 		// System Control Registers
 		MASTERSWITCH    =0x00000, // Apparently bit4 is enable/disable flag.  Probably FMT3631-specific.
 			MS_ENABLE=0x10,
+
 		SYSCONFIG       =0x00004,
 		INTERRUPT       =0x00008,
 		INTERRUPT_EN    =0x0000C,
+		ALT_READ_BANK   =0x00010,
+		ALT_WRITE_BANK  =0x00014,
 
 		// Parameter Engine Registers 4.4
 		// Device Coordinate
@@ -239,6 +250,11 @@ public:
 	public:
 		std::vector <uint8_t> vram;
 
+		uint32_t SysregBaseAddr=0;
+		uint32_t RAMDACBaseAddr=0;
+		uint32_t ControlBaseAddr=0;
+		uint32_t VRAMBaseAddr=0,VRAMEndAddr=0;
+
 		mutable int nLoadedCoord=0;
 		int nextLoadIndex=0,lastLoadedCoord=0;
 		Vec2i coord[COORD_MAX];
@@ -279,9 +295,6 @@ public:
 	bool breakOnUnsupported=false;
 
 	const char *DeviceName(void) const override {return "FMT3631";}
-
-	const uint32_t baseAddr=TOWNSADDR_FMT3631_BASE;
-	const uint32_t vramBaseAddr=TOWNSADDR_FMT3631_VRAM;
 
 	FMT3631(class FMTownsCommon *ptr);
 

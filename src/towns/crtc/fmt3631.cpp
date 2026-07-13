@@ -57,6 +57,11 @@ void FMT3631::EnableAsFMT3631(void)
 	state.enabled=true;
 	state.isFMT3632=false;
 	state.vram.resize(VRAM_SIZE_3631);
+	state.SysregBaseAddr=TOWNSADDR_FMT3631_BASE+SYSREG_BEGIN;
+	state.RAMDACBaseAddr=TOWNSADDR_FMT3631_BASE;
+	state.ControlBaseAddr=TOWNSADDR_FMT3631_BASE+CONTROL_BEGIN_3631;
+	state.VRAMBaseAddr=TOWNSADDR_FMT3631_BASE+VRAM_BEGIN_3631;
+	state.VRAMEndAddr=TOWNSADDR_FMT3631_BASE+VRAM_END_3631;
 }
 
 void FMT3631::EnableAsFMT3632(void)
@@ -64,6 +69,11 @@ void FMT3631::EnableAsFMT3632(void)
 	state.enabled=true;
 	state.isFMT3632=true;
 	state.vram.resize(VRAM_SIZE_3632);
+	state.SysregBaseAddr=TOWNSADDR_FMT3632_BASE+SYSREG_BEGIN;
+	state.RAMDACBaseAddr=TOWNSADDR_FMT3632_BASE;
+	state.ControlBaseAddr=TOWNSADDR_FMT3632_BASE+CONTROL_BEGIN_3632;
+	state.VRAMBaseAddr=TOWNSADDR_FMT3632_BASE+VRAM_BEGIN_3632;
+	state.VRAMEndAddr=TOWNSADDR_FMT3632_BASE+VRAM_END_3632;
 }
 
 void FMT3631::PowerOn(void)
@@ -186,7 +196,7 @@ bool FMT3631::IsEnabled(void) const
 	// Probably this bit works as a master switch of FMT-3631.  Maybe this controls the relay on the board.
 
 	auto srtctl=*GetControlWordPtr(SRTCTL);
-	return true==state.enabled && 0x1c4==(srtctl&0x1c4) && 0!=(MS_ENABLE&state.masterSwitch);
+	return true==state.enabled /*&& 0x1c4==(srtctl&0x1c4)*/ && 0!=(MS_ENABLE&state.masterSwitch);
 }
 
 unsigned int FMT3631::Height(void) const
@@ -272,7 +282,7 @@ unsigned int FMT3631::IOReadByte(unsigned int ioport)
 			else
 			{
 				// Windows 95 FMT-3632 driver expects 0x80.
-				return 0x80;
+				return 0x80|(state.masterSwitch&MS_ENABLE);
 			}
 		}
 		else if(TOWNSIO_FMT_3632_1==ioport) // 0x1101
@@ -297,6 +307,16 @@ unsigned int FMT3631::IOReadByte(unsigned int ioport)
 
 void FMT3631::IOWriteByte(unsigned int ioport,unsigned int data)
 {
+	if(true==state.enabled)
+	{
+		if(TOWNSIO_FMT_3631_PRESENCE_CHECK==ioport) // 0x1100
+		{
+			if(true!=state.isFMT3632)
+			{
+				state.masterSwitch=data; // FMT-3632 apparently uses I/O 1100h for enabling/disabling.
+			}
+		}
+	}
 }
 
 bool FMT3631::IsReadableParameter(uint32_t &data,uint32_t physAddr) const
@@ -1475,7 +1495,7 @@ unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 
 	if(true==state.enabled)
 	{
-		if(vramBaseAddr<=physAddr)
+		if(state.VRAMBaseAddr<=physAddr && physAddr<state.VRAMEndAddr)
 		{
 			monitor=monitorVRAM;
 			data=state.vram[physAddr-TOWNSADDR_FMT3631_VRAM];
@@ -1510,7 +1530,7 @@ unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 
 	if(true==monitor)
 	{
-		std::cout << "Power9000 BYTE read   " << cpputil::Uitox(physAddr) << " " << cpputil::Ubtox(data) << "\n";
+		std::cout << "Power9x00 BYTE read   " << cpputil::Uitox(physAddr) << " " << cpputil::Ubtox(data) << "\n";
 	}
 
 	return data;
@@ -1523,7 +1543,7 @@ unsigned int FMT3631::FetchWord(unsigned int physAddr) const
 
 	if(true==state.enabled)
 	{
-		if(vramBaseAddr<=physAddr)
+		if(state.VRAMBaseAddr<=physAddr && physAddr+1<state.VRAMEndAddr)
 		{
 			monitor=monitorVRAM;
 			data=cpputil::GetWord(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
@@ -1558,7 +1578,7 @@ unsigned int FMT3631::FetchWord(unsigned int physAddr) const
 
 	if(true==monitor)
 	{
-		std::cout << "Power9000 WORD read   " << cpputil::Uitox(physAddr) << " " << cpputil::Ustox(data) << "\n";
+		std::cout << "Power9x00 WORD read   " << cpputil::Uitox(physAddr) << " " << cpputil::Ustox(data) << "\n";
 	}
 
 	return data;
@@ -1571,7 +1591,7 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 
 	if(true==state.enabled)
 	{
-		if(vramBaseAddr<=physAddr)
+		if(state.VRAMBaseAddr<=physAddr && physAddr+3<state.VRAMEndAddr)
 		{
 			monitor=monitorVRAM;
 			data=cpputil::GetDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
@@ -1606,7 +1626,7 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 
 	if(true==monitor)
 	{
-		std::cout << "Power9000 DWORD read  " << cpputil::Uitox(physAddr) << " " << cpputil::Uitox(data) << "\n";
+		std::cout << "Power9x00 DWORD read  " << cpputil::Uitox(physAddr) << " " << cpputil::Uitox(data) << "\n";
 	}
 
 	return data;
@@ -1617,7 +1637,7 @@ void FMT3631::StoreByte(unsigned int physAddr,unsigned char data)
 	bool monitor=false;
 	if(true==state.enabled)
 	{
-		if(vramBaseAddr<=physAddr)
+		if(state.VRAMBaseAddr<=physAddr && physAddr<state.VRAMEndAddr)
 		{
 			state.vram[physAddr-TOWNSADDR_FMT3631_VRAM]=data;
 			monitor=monitorVRAM;
@@ -1630,7 +1650,7 @@ void FMT3631::StoreByte(unsigned int physAddr,unsigned char data)
 	}
 	if(true==monitor)
 	{
-		std::cout << "Power9000 BYTE Write   " << cpputil::Uitox(physAddr) << " " <<  cpputil::Ubtox(data) << "\n";
+		std::cout << "Power9x00 BYTE Write   " << cpputil::Uitox(physAddr) << " " <<  cpputil::Ubtox(data) << "\n";
 	}
 }
 
@@ -1639,7 +1659,7 @@ void FMT3631::StoreWord(unsigned int physAddr,unsigned int data)
 	bool monitor=false;
 	if(true==state.enabled)
 	{
-		if(vramBaseAddr<=physAddr)
+		if(state.VRAMBaseAddr<=physAddr && physAddr+1<state.VRAMEndAddr)
 		{
 			cpputil::PutWord(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM,data);
 			monitor=monitorVRAM;
@@ -1652,7 +1672,7 @@ void FMT3631::StoreWord(unsigned int physAddr,unsigned int data)
 	}
 	if(true==monitor)
 	{
-		std::cout << "Power9000 WORD Write   " << cpputil::Uitox(physAddr) << " " <<  cpputil::Ustox(data) << "\n";
+		std::cout << "Power9x00 WORD Write   " << cpputil::Uitox(physAddr) << " " <<  cpputil::Ustox(data) << "\n";
 	}
 }
 
@@ -1661,7 +1681,7 @@ void FMT3631::StoreDword(unsigned int physAddr,unsigned int data)
 	bool monitor=false;
 	if(true==state.enabled)
 	{
-		if(vramBaseAddr<=physAddr)
+		if(state.VRAMBaseAddr<=physAddr && physAddr+3<state.VRAMEndAddr)
 		{
 			cpputil::PutDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM,data);
 			monitor=monitorVRAM;
@@ -1674,7 +1694,7 @@ void FMT3631::StoreDword(unsigned int physAddr,unsigned int data)
 	}
 	if(true==monitor)
 	{
-		std::cout << "Power9000 DWORD Write  " << cpputil::Uitox(physAddr) << " " << cpputil::Uitox(data) <<  "\n";
+		std::cout << "Power9x00 DWORD Write  " << cpputil::Uitox(physAddr) << " " << cpputil::Uitox(data) <<  "\n";
 	}
 }
 
@@ -1773,7 +1793,7 @@ uint32_t FMT3631::SerializeVersion(void) const
 {
 	// Version 2:
 	//   VRAM size may be 2MB or 4MB.
-	//   isFMT3632.
+	//   isFMT3632, RAMDACBaseAddr,ControlBaseAddr,VRAMBaseADdr.
 	return 2;
 };
 /*! Device-specific Serialization.
@@ -1787,6 +1807,11 @@ void FMT3631::SpecificSerialize(std::vector <unsigned char> &data,std::string st
 	}
 
 	PushBool(data,state.isFMT3632); // Version 2
+	PushUint32(data,state.SysregBaseAddr); // Version 2
+	PushUint32(data,state.RAMDACBaseAddr); // Version 2
+	PushUint32(data,state.ControlBaseAddr); // Version 2
+	PushUint32(data,state.VRAMBaseAddr); // Version 2
+	PushUint32(data,state.VRAMEndAddr); // Version 2
 
 	PushInt32(data,state.nLoadedCoord);
 	PushInt32(data,state.lastLoadedCoord);
@@ -1880,6 +1905,11 @@ bool FMT3631::SpecificDeserialize(const unsigned char *&data,std::string stateFN
 	if(2<=version)
 	{
 		state.isFMT3632=ReadBool(data);
+		state.SysregBaseAddr=ReadUint32(data);
+		state.RAMDACBaseAddr=ReadUint32(data);
+		state.ControlBaseAddr=ReadUint32(data);
+		state.VRAMBaseAddr=ReadUint32(data);
+		state.VRAMEndAddr=ReadUint32(data);
 	}
 
 	state.nLoadedCoord=ReadInt32(data);

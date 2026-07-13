@@ -298,6 +298,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["CONSSTEAL"]=ENABLE_CONSOLE_STEAL;
 	featureMap["IOLOG"]=ENABLE_IOLOG;
 	featureMap["FMT3631MON"]=ENABLE_FMT3631MON;
+	featureMap["FMT3632MON"]=ENABLE_FMT3631MON;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -362,6 +363,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["IOLOG"]=DUMP_IOLOG;
 	dumpableMap["FMT3631"]=DUMP_FMT3631;
 	dumpableMap["FMT-3631"]=DUMP_FMT3631;
+	dumpableMap["FMT3632"]=DUMP_FMT3631;
+	dumpableMap["FMT-3632"]=DUMP_FMT3631;
 
 
 	breakEventMap["ICW1"]=   BREAK_ON_PIC_IWC1;
@@ -405,6 +408,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["VXDCALL"]=BREAK_ON_VXD_CALL;
 	breakEventMap["CST"]=BREAK_ON_CALLSTACK_DEPTH;
 	breakEventMap["FMT3631UNSUP"]=BREAK_ON_UNSUPPORTED_FMT3631CMD;
+	breakEventMap["FMT3632UNSUP"]=BREAK_ON_UNSUPPORTED_FMT3631CMD;
 }
 
 void TownsCommandInterpreter::PrintHelp(void) const
