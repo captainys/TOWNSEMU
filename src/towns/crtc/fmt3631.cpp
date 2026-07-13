@@ -57,7 +57,7 @@ void FMT3631::EnableAsFMT3631(void)
 	state.enabled=true;
 	state.isFMT3632=false;
 	state.vram.resize(VRAM_SIZE_3631);
-	state.SysregBaseAddr=TOWNSADDR_FMT3631_BASE+SYSREG_BEGIN;
+	state.BaseAddr=TOWNSADDR_FMT3631_BASE;
 	state.RAMDACBaseAddr=TOWNSADDR_FMT3631_BASE;
 	state.ControlBaseAddr=TOWNSADDR_FMT3631_BASE+CONTROL_BEGIN_3631;
 	state.VRAMBaseAddr=TOWNSADDR_FMT3631_BASE+VRAM_BEGIN_3631;
@@ -69,7 +69,7 @@ void FMT3631::EnableAsFMT3632(void)
 	state.enabled=true;
 	state.isFMT3632=true;
 	state.vram.resize(VRAM_SIZE_3632);
-	state.SysregBaseAddr=TOWNSADDR_FMT3632_BASE+SYSREG_BEGIN;
+	state.BaseAddr=TOWNSADDR_FMT3632_BASE;
 	state.RAMDACBaseAddr=TOWNSADDR_FMT3632_BASE;
 	state.ControlBaseAddr=TOWNSADDR_FMT3632_BASE+CONTROL_BEGIN_3632;
 	state.VRAMBaseAddr=TOWNSADDR_FMT3632_BASE+VRAM_BEGIN_3632;
@@ -90,6 +90,8 @@ void FMT3631::Reset(void)
 	state.interrupt=0;
 	state.interrupt_en=0;
 	state.status=0;
+	state.alt_read_bank=0;
+	state.alt_write_bank=0;
 	memset(state.videoCtrl,0,sizeof(state.videoCtrl));
 	memset(state.vramCtrl,0,sizeof(state.vramCtrl));
 	memset(state.drawingAttrib,0,sizeof(state.drawingAttrib));
@@ -311,7 +313,7 @@ void FMT3631::IOWriteByte(unsigned int ioport,unsigned int data)
 	{
 		if(TOWNSIO_FMT_3631_PRESENCE_CHECK==ioport) // 0x1100
 		{
-			if(true!=state.isFMT3632)
+			if(true==state.isFMT3632)
 			{
 				state.masterSwitch=data; // FMT-3632 apparently uses I/O 1100h for enabling/disabling.
 			}
@@ -321,7 +323,7 @@ void FMT3631::IOWriteByte(unsigned int ioport,unsigned int data)
 
 bool FMT3631::IsReadableParameter(uint32_t &data,uint32_t physAddr) const
 {
-	if((0x1FFF07&physAddr)==DEVICE_COORD)
+	if((0xFFF07&physAddr)==DEVICE_COORD)
 	{
 		auto rel=(0!=(physAddr&LOAD_COORD_ABS_REL_MASK));
 		if(true==rel)
@@ -353,7 +355,7 @@ bool FMT3631::IsReadableParameter(uint32_t &data,uint32_t physAddr) const
 
 		return true;
 	}
-	if(VRTC==(COMMAND_MASK&physAddr))
+	if(VRTC==physAddr-state.ControlBaseAddr)
 	{
 		auto h=Height();
 		if(0<h)
@@ -371,7 +373,7 @@ bool FMT3631::IsReadableParameter(uint32_t &data,uint32_t physAddr) const
 			return true;
 		}
 	}
-	if(HRZC==(COMMAND_MASK&physAddr))
+	if(HRZC==physAddr-state.ControlBaseAddr)
 	{
 		auto h=Height();
 		auto w=Width();
@@ -399,18 +401,33 @@ bool FMT3631::IsReadableParameter(uint32_t &data,uint32_t physAddr) const
 template <class returnType,class stateType>
 inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType &state)
 {
-	auto relAddr=(physAddr&TOWNSADDR_FMT3631_AND);
+	if(true!=state.isFMT3632)
+	{
+		switch(physAddr-state.BaseAddr)
+		{
+		case BT_COMMAND_REG_1:
+			return &state.btCommandReg[1];
+		case BT_COMMAND_REG_2:
+			return &state.btCommandReg[2];
+		case BT_COMMAND_REG_3:
+			return &state.btCommandReg[3];
+
+		// Somehow SYSCONFIG, INTERRUPT, INTERRUPT_EN are mapped to 4600000x,
+		// while all other registers are mapped to 461xxxxx.
+		case MASTERSWITCH: // 0x0
+			return &state.masterSwitch;
+		case SYSCONFIG: //0x00004,
+			return &state.sysconfig;
+		case INTERRUPT: //0x00008,
+			return &state.interrupt;
+		case INTERRUPT_EN: //0x0000C,
+			return &state.interrupt_en;
+		}
+	}
+
+	auto relAddr=physAddr&COMMAND_MASK;
 	switch(relAddr)
 	{
-	case BT_COMMAND_REG_1:
-		return &state.btCommandReg[1];
-	case BT_COMMAND_REG_2:
-		return &state.btCommandReg[2];
-	case BT_COMMAND_REG_3:
-		return &state.btCommandReg[3];
-
-	case MASTERSWITCH: // 0x0
-		return &state.masterSwitch;
 	case SYSCONFIG: //0x00004,
 		return &state.sysconfig;
 	case INTERRUPT: //0x00008,
@@ -418,25 +435,31 @@ inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType
 	case INTERRUPT_EN: //0x0000C,
 		return &state.interrupt_en;
 
+	case ALT_READ_BANK: // 0x00010,
+		return &state.alt_read_bank;
+	case ALT_WRITE_BANK: // 0x00014,
+		return &state.alt_write_bank;
+
+
 	// Status
 	case STATUS          : //0x80000,
 	case STATUS_FMT3632:   //0x002000,
 		return &state.status;
 
 	// Control and condition
-	case OOR             : //0x180184,
-	//               0x180188, // Not used
-	case CINDEX          : //0x18018C,
-	case WINDOW_OFFSET_XY: //0x180190,
-	case P_W_MIN         : //0x180194, // Read Only
-	case P_W_MAX         : //0x180198,
-	//               0x18019C, // Not used
-	case YCLIP           : //0x1801A0,
-	case XCLIP           : //0x1801A4,
-	case XEDGE_LT        : //0x1801A8,
-	case XEDGE_GT        : //0x1801AC,
-	case YEDGE_LT        : //0x1801B0,
-	case YEDGE_GT        : //0x1801B4,
+	case OOR             : //0x80184,
+	//               0x80188, // Not used
+	case CINDEX          : //0x8018C,
+	case WINDOW_OFFSET_XY: //0x80190,
+	case P_W_MIN         : //0x80194, // Read Only
+	case P_W_MAX         : //0x80198,
+	//               0x8019C, // Not used
+	case YCLIP           : //0x801A0,
+	case XCLIP           : //0x801A4,
+	case XEDGE_LT        : //0x801A8,
+	case XEDGE_GT        : //0x801AC,
+	case YEDGE_LT        : //0x801B0,
+	case YEDGE_GT        : //0x801B4,
 		return &state.ctlCond[(relAddr-CTL_COND_BEGIN)/4];
 
 	// Drawing Engine Registers
@@ -548,6 +571,10 @@ int FMT3631::DeviceCoordOrLoadCoord(Vec2i &coordToLoad,Vec2i absRef,Vec2i relRef
 			coordToLoad.x()+=absRef.x();
             coordToLoad.y()+=absRef.y();
 		}
+		if(true==monitorCtrl)
+		{
+			std::cout << "Coord " << coordToLoad.x() << " " << coordToLoad.y() << "\n";
+		}
 		return 1;
 	}
 	else if(LOAD_COORD_X==x_y_or_xy)
@@ -562,6 +589,10 @@ int FMT3631::DeviceCoordOrLoadCoord(Vec2i &coordToLoad,Vec2i absRef,Vec2i relRef
 		{
 			coordToLoad.x()+=absRef.x();
 		}
+		if(true==monitorCtrl)
+		{
+			std::cout << "Coord X " << coordToLoad.x() << "\n";
+		}
 		return 0;
 	}
 	else if(LOAD_COORD_Y==x_y_or_xy)
@@ -575,6 +606,10 @@ int FMT3631::DeviceCoordOrLoadCoord(Vec2i &coordToLoad,Vec2i absRef,Vec2i relRef
 		else
 		{
             coordToLoad.y()+=absRef.y();
+		}
+		if(true==monitorCtrl)
+		{
+			std::cout << "Coord Y " << coordToLoad.y() << "\n";
 		}
 		return 1;
 	}
@@ -1257,166 +1292,169 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 {
 	const auto masked=(COMMAND_MASK&physAddr);
 
-	if(masked==BT_COMMAND_REG_1)
+	if(true!=state.isFMT3632)
 	{
-		state.btCommandReg[1]=data;
-		if(0==(data&(BT_CR1_BP16|BT_CR1_BP8)))
+		if(masked==BT_COMMAND_REG_1)
 		{
-			if(true==monitorCtrl)
+			state.btCommandReg[1]=data;
+			if(0==(data&(BT_CR1_BP16|BT_CR1_BP8)))
 			{
-				std::cout << "32 bits per pixel.\n";
+				if(true==monitorCtrl)
+				{
+					std::cout << "32 bits per pixel.\n";
+				}
+				state.bitsPerPixel=32;
 			}
-			state.bitsPerPixel=32;
-		}
-		else if(0!=(data&BT_CR1_BP8))
-		{
-			if(true==monitorCtrl)
+			else if(0!=(data&BT_CR1_BP8))
 			{
-				std::cout << "8 bits per pixel.\n";
+				if(true==monitorCtrl)
+				{
+					std::cout << "8 bits per pixel.\n";
+				}
+				state.bitsPerPixel=8;
 			}
-			state.bitsPerPixel=8;
-		}
-		else if(0!=(data&BT_CR1_BP16))
-		{
-			if(true==monitorCtrl)
+			else if(0!=(data&BT_CR1_BP16))
 			{
-				std::cout << "16 bits per pixel.\n";
-			}
-			state.bitsPerPixel=16;
-			state.highColor565=(0!=(data&BT_CR1_565RGB));
-		}
-	}
-	else if(masked==BT_COMMAND_REG_2)
-	{
-		state.btCommandReg[2]=data;
-		state.hwCursor.defined=(0!=(data&BT_CR2_CURSOR_ENABLE));
-		state.hwCursor.twoColorCursor=(0!=(data&BT_CR2_2COLOR_CURSOR));
-	}
-	else if(masked==BT_COMMAND_REG_3)
-	{
-		state.btCommandReg[3]=data;
-		if(0!=(BT_CR3_64SQ_CURSOR&data))
-		{
-			state.hwCursor.wid=64;
-			state.hwCursor.originX=64;
-			state.hwCursor.originY=64;
-		}
-		else
-		{
-			state.hwCursor.wid=32;
-			state.hwCursor.originX=32;
-			state.hwCursor.originY=32;
-		}
-	}
-	else if(masked==BT_WRITE_ADDR)
-	{
-		if(BT_CURS_OR_PTN==data)
-		{
-			state.hwCursor.ptnCount=0;
-		}
-		if(BT_CURS_AND_PTN==data)
-		{
-			state.hwCursor.ptnCount=512;
-		}
-		state.writingPalette=data&255;
-		state.writingPaletteRGBCount=0;
-		return true;
-	}
-	else if(masked==BT_CURS_RAM_DATA)
-	{
-		if(state.hwCursor.ptnCount<512)
-		{
-			state.hwCursor.ORPtn[state.hwCursor.ptnCount]=data;
-			++state.hwCursor.ptnCount;
-		}
-		else if(state.hwCursor.ptnCount<1024)
-		{
-			state.hwCursor.ANDPtn[state.hwCursor.ptnCount-512]=data;
-			++state.hwCursor.ptnCount;
-		}
-		state.hwCursor.ptnCount&=0x3FF;
-		return true;
-	}
-	else if(masked==BT_CURS_WR_ADDR) //  0x000090
-	{
-		if(1==data)
-		{
-			state.hwCursorTwoColorReadPos=0;
-		}
-		return true;
-	}
-	else if(masked==BT_CURS_DATA) //    0x000094
-	{
-		if(state.hwCursorTwoColorReadPos<6)
-		{
-			state.hwCursor.twoColor[state.hwCursorTwoColorReadPos]=data;
-			++state.hwCursorTwoColorReadPos;
-		}
-		return true;
-	}
-	else if(masked==BT_RAMDAC_DATA)
-	{
-		if(state.writingPaletteRGBCount<3)
-		{
-			state.writingPaletteRGB[state.writingPaletteRGBCount]=data;
-			++state.writingPaletteRGBCount;
-			if(3==state.writingPaletteRGBCount)
-			{
-				state.plt.plt256[state.writingPalette].Set(
-				    state.writingPaletteRGB[0],
-				    state.writingPaletteRGB[1],
-				    state.writingPaletteRGB[2],
-				    255);
+				if(true==monitorCtrl)
+				{
+					std::cout << "16 bits per pixel.\n";
+				}
+				state.bitsPerPixel=16;
+				state.highColor565=(0!=(data&BT_CR1_565RGB));
 			}
 		}
-	}
-	else if(masked==BT_CURS_X_LOW)
-	{
-		state.hwCursorXY_LowByte[0]=data;
-		return true;
-	}
-	else if(masked==BT_CURS_Y_LOW)
-	{
-		state.hwCursorXY_LowByte[1]=data;
-		return true;
-	}
-	else if(masked==BT_CURS_X_HIGH)
-	{
-		state.hwCursor.X=(state.hwCursorXY_LowByte[0]&255)|(data<<8);
-		return true;
-	}
-	else if(masked==BT_CURS_Y_HIGH)
-	{
-		state.hwCursor.Y=(state.hwCursorXY_LowByte[1]&255)|(data<<8);
-		return true;
+		else if(masked==BT_COMMAND_REG_2)
+		{
+			state.btCommandReg[2]=data;
+			state.hwCursor.defined=(0!=(data&BT_CR2_CURSOR_ENABLE));
+			state.hwCursor.twoColorCursor=(0!=(data&BT_CR2_2COLOR_CURSOR));
+		}
+		else if(masked==BT_COMMAND_REG_3)
+		{
+			state.btCommandReg[3]=data;
+			if(0!=(BT_CR3_64SQ_CURSOR&data))
+			{
+				state.hwCursor.wid=64;
+				state.hwCursor.originX=64;
+				state.hwCursor.originY=64;
+			}
+			else
+			{
+				state.hwCursor.wid=32;
+				state.hwCursor.originX=32;
+				state.hwCursor.originY=32;
+			}
+		}
+		else if(masked==BT_WRITE_ADDR)
+		{
+			if(BT_CURS_OR_PTN==data)
+			{
+				state.hwCursor.ptnCount=0;
+			}
+			if(BT_CURS_AND_PTN==data)
+			{
+				state.hwCursor.ptnCount=512;
+			}
+			state.writingPalette=data&255;
+			state.writingPaletteRGBCount=0;
+			return true;
+		}
+		else if(masked==BT_CURS_RAM_DATA)
+		{
+			if(state.hwCursor.ptnCount<512)
+			{
+				state.hwCursor.ORPtn[state.hwCursor.ptnCount]=data;
+				++state.hwCursor.ptnCount;
+			}
+			else if(state.hwCursor.ptnCount<1024)
+			{
+				state.hwCursor.ANDPtn[state.hwCursor.ptnCount-512]=data;
+				++state.hwCursor.ptnCount;
+			}
+			state.hwCursor.ptnCount&=0x3FF;
+			return true;
+		}
+		else if(masked==BT_CURS_WR_ADDR) //  0x000090
+		{
+			if(1==data)
+			{
+				state.hwCursorTwoColorReadPos=0;
+			}
+			return true;
+		}
+		else if(masked==BT_CURS_DATA) //    0x000094
+		{
+			if(state.hwCursorTwoColorReadPos<6)
+			{
+				state.hwCursor.twoColor[state.hwCursorTwoColorReadPos]=data;
+				++state.hwCursorTwoColorReadPos;
+			}
+			return true;
+		}
+		else if(masked==BT_RAMDAC_DATA)
+		{
+			if(state.writingPaletteRGBCount<3)
+			{
+				state.writingPaletteRGB[state.writingPaletteRGBCount]=data;
+				++state.writingPaletteRGBCount;
+				if(3==state.writingPaletteRGBCount)
+				{
+					state.plt.plt256[state.writingPalette].Set(
+					    state.writingPaletteRGB[0],
+					    state.writingPaletteRGB[1],
+					    state.writingPaletteRGB[2],
+					    255);
+				}
+			}
+		}
+		else if(masked==BT_CURS_X_LOW)
+		{
+			state.hwCursorXY_LowByte[0]=data;
+			return true;
+		}
+		else if(masked==BT_CURS_Y_LOW)
+		{
+			state.hwCursorXY_LowByte[1]=data;
+			return true;
+		}
+		else if(masked==BT_CURS_X_HIGH)
+		{
+			state.hwCursor.X=(state.hwCursorXY_LowByte[0]&255)|(data<<8);
+			return true;
+		}
+		else if(masked==BT_CURS_Y_HIGH)
+		{
+			state.hwCursor.Y=(state.hwCursorXY_LowByte[1]&255)|(data<<8);
+			return true;
+		}
 	}
 
-	else if((0x1FFE07&physAddr)==LOAD_COORD)
+	if((0xFFE07&physAddr)==LOAD_COORD)
 	{
 		LoadCoord(physAddr,data);
 		return true;
 	}
-	else if((0x1FFF07&physAddr)==DEVICE_COORD)
+	else if((0xFFF07&physAddr)==DEVICE_COORD)
 	{
 		DeviceCoord(physAddr,data);
 		return true;
 	}
-	else if((0x1FFFFF&physAddr)==NEXT_PIXELS_CMD)
+	else if((0xFFFFF&physAddr)==NEXT_PIXELS_CMD)
 	{
 		CmdNextPixels(physAddr,data);
 		return true;
 	}
-	else if((0x1FFF80&physAddr)==PIXEL1_CMD)
+	else if((0xFFF80&physAddr)==PIXEL1_CMD)
 	{
 		CmdPixel1(physAddr,data,false,false);
 		return true;
 	}
-	else if((0x1FFF80&physAddr)==PIXEL1_BYTE_SWAP_CMD)
+	else if((0xFFF80&physAddr)==PIXEL1_BYTE_SWAP_CMD)
 	{
 		CmdPixel1(physAddr,data,true,false);
 		return true;
 	}
-	else if((0x1FFF80&physAddr)==PIXEL1_BIT_REVERSE_CMD)
+	else if((0xFFF80&physAddr)==PIXEL1_BIT_REVERSE_CMD)
 	{
 		CmdPixel1(physAddr,data,true,true);
 		return true;
@@ -1764,7 +1802,7 @@ std::vector <std::string> FMT3631::GetStatusText(void) const
 		text.push_back("PREVRTC          =0x"+cpputil::Uitox(*GetControlWordPtr(PREVRTC)));
 		text.push_back("SRADDR           =0x"+cpputil::Uitox(*GetControlWordPtr(SRADDR)));
 		text.push_back("SRTCTL           =0x"+cpputil::Uitox(*GetControlWordPtr(SRTCTL)));
-		text.push_back("VIDCTRL_LAST     =0x"+cpputil::Uitox(*GetControlWordPtr(VIDCTRL_LAST)));
+
 		text.push_back("MEM_CONFIG       =0x"+cpputil::Uitox(*GetControlWordPtr(MEM_CONFIG)));
 		text.push_back("RFPERIOD         =0x"+cpputil::Uitox(*GetControlWordPtr(RFPERIOD)));
 		text.push_back("RFCOUNT          =0x"+cpputil::Uitox(*GetControlWordPtr(RFCOUNT)));
@@ -1799,11 +1837,14 @@ void FMT3631::SpecificSerialize(std::vector <unsigned char> &data,std::string st
 	}
 
 	PushBool(data,state.isFMT3632); // Version 2
-	PushUint32(data,state.SysregBaseAddr); // Version 2
+	PushUint32(data,state.BaseAddr); // Version 2
 	PushUint32(data,state.RAMDACBaseAddr); // Version 2
 	PushUint32(data,state.ControlBaseAddr); // Version 2
 	PushUint32(data,state.VRAMBaseAddr); // Version 2
 	PushUint32(data,state.VRAMEndAddr); // Version 2
+	PushUint32(data,state.alt_read_bank);
+	PushUint32(data,state.alt_write_bank);
+
 
 	PushInt32(data,state.nLoadedCoord);
 	PushInt32(data,state.lastLoadedCoord);
@@ -1897,11 +1938,13 @@ bool FMT3631::SpecificDeserialize(const unsigned char *&data,std::string stateFN
 	if(2<=version)
 	{
 		state.isFMT3632=ReadBool(data);
-		state.SysregBaseAddr=ReadUint32(data);
+		state.BaseAddr=ReadUint32(data);
 		state.RAMDACBaseAddr=ReadUint32(data);
 		state.ControlBaseAddr=ReadUint32(data);
 		state.VRAMBaseAddr=ReadUint32(data);
 		state.VRAMEndAddr=ReadUint32(data);
+		state.alt_read_bank=ReadUint32(data);
+		state.alt_write_bank=ReadUint32(data);
 	}
 
 	state.nLoadedCoord=ReadInt32(data);
@@ -1960,17 +2003,35 @@ bool FMT3631::SpecificDeserialize(const unsigned char *&data,std::string stateFN
 	state.interrupt_en=ReadUint32(data);
 	state.status=ReadUint32(data);
 
-	for(auto &i : state.drawingAttrib)
+	if(2<=version)
 	{
-		i=ReadUint32(data);
+		for(auto &i : state.drawingAttrib)
+		{
+			i=ReadUint32(data);
+		}
+		for(auto &i : state.videoCtrl)
+		{
+			i=ReadUint32(data);
+		}
+		for(auto &i : state.vramCtrl)
+		{
+			i=ReadUint32(data);
+		}
 	}
-	for(auto &i : state.videoCtrl)
+	else
 	{
-		i=ReadUint32(data);
-	}
-	for(auto &i : state.vramCtrl)
-	{
-		i=ReadUint32(data);
+		for(int i=0; i<10; ++i)
+		{
+			state.drawingAttrib[i]=ReadUint32(data);
+		}
+		for(int i=0; i<14; ++i)
+		{
+			state.videoCtrl[i]=ReadUint32(data);
+		}
+		for(int i=0; i<4; ++i)
+		{
+			state.vramCtrl[i]=ReadUint32(data);
+		}
 	}
 	for(auto &i : state.ctlCond)
 	{

@@ -54,7 +54,7 @@ public:
 		VRAM_SIZE_3631  =0x200000,
 		VRAM_SIZE_3632  =0x400000,
 		COORD_MAX       =4, // Quadrilateral max
-		COMMAND_MASK    =0x1FFFFF,
+		COMMAND_MASK    =0x0FFFFF,
 
 		SYSREG_BEGIN      =0x000004,
 		CONTROL_BEGIN_3631=0x100000,
@@ -111,10 +111,10 @@ public:
 
 		// Parameter Engine Registers 4.4
 		// Device Coordinate
-		DEVICE_COORD    =0x181000, // See 4.4.1 for low 8 bits.
+		DEVICE_COORD    =0x81000, // See 4.4.1 for low 8 bits.
 
 		// Status
-		STATUS          =0x180000,
+		STATUS          =0x80000,
 			STATUS_FLAG_ISSUE_QBN=     0x80000000,
 			STATUS_FLAG_BUSY=          0x40000000,
 			STATUS_FLAG_PICKED=        0x00000080,
@@ -128,88 +128,88 @@ public:
 		STATUS_FMT3632=  0x002000,
 
 		// Control and condition
-		CTL_COND_BEGIN  =0x180184,
+		CTL_COND_BEGIN  =0x80184,
 
-		OOR             =0x180184,
-		//               0x180188, // Not used
-		CINDEX          =0x18018C,
-		WINDOW_OFFSET_XY=0x180190,
-		P_W_MIN         =0x180194, // Read Only
-		P_W_MAX         =0x180198,
-		//               0x18019C, // Not used
-		YCLIP           =0x1801A0,
-		XCLIP           =0x1801A4,
-		XEDGE_LT        =0x1801A8,
-		XEDGE_GT        =0x1801AC,
-		YEDGE_LT        =0x1801B0,
-		YEDGE_GT        =0x1801B4,
+		OOR             =0x80184,
+		//               0x80188, // Not used
+		CINDEX          =0x8018C,
+		WINDOW_OFFSET_XY=0x80190,
+		P_W_MIN         =0x80194, // Read Only
+		P_W_MAX         =0x80198,
+		//               0x8019C, // Not used
+		YCLIP           =0x801A0,
+		XCLIP           =0x801A4,
+		XEDGE_LT        =0x801A8,
+		XEDGE_GT        =0x801AC,
+		YEDGE_LT        =0x801B0,
+		YEDGE_GT        =0x801B4,
 
-		CTL_COND_END    =0x1801B8,
+		CTL_COND_END    =0x801B8,
 
 
 		// Drawing Engine Registers
 		// Pixel Processing 4.5
-		FGCOLOR         =0x180200,
-		BGCOLOR         =0x180204,
-		PLANE_MASK      =0x180208,
-		DRAWING_MODE    =0x18020C,
-		PATTERN_X0      =0x180210,
-		PATTERN_Y0      =0x180214,
-		RASTER          =0x180218,
+		FGCOLOR         =0x80200,
+		BGCOLOR         =0x80204,
+		PLANE_MASK      =0x80208,
+		DRAWING_MODE    =0x8020C,
+		PATTERN_X0      =0x80210,
+		PATTERN_Y0      =0x80214,
+		RASTER          =0x80218,
 			RASTER_OVERSIZED=0x10000,
 			RASTER_USEPATTERN=0x20000,
-		PIXEL8          =0x18021C,
-		WINDOW_MIN      =0x180220,
-		WINDOW_MAX      =0x180224,
+		PIXEL8          =0x8021C,
+		WINDOW_MIN      =0x80220,
+		WINDOW_MAX      =0x80224,
 
-		DRAWING_ATTRIB_END=0x180228,
+		DRAWING_ATTRIB_END=0x80228,
 
 		// Pattern
-		PATTERN0=        0x180280,
-		PATTERN1=        0x180284,
-		PATTERN2=        0x180288,
-		PATTERN3=        0x18028C,
-		PATTERN4=        0x180290,
-		PATTERN5=        0x180294,
-		PATTERN6=        0x180298,
-		PATTERN7=        0x18029C,
+		PATTERN0=        0x80280,
+		PATTERN1=        0x80284,
+		PATTERN2=        0x80288,
+		PATTERN3=        0x8028C,
+		PATTERN4=        0x80290,
+		PATTERN5=        0x80294,
+		PATTERN6=        0x80298,
+		PATTERN7=        0x8029C,
 
-		PATTERN_END=     0x1802A0,
+		PATTERN_END=     0x802A0,
 		PATTERN_LEN=     8,
 
 
 		// Video Control Registers 4.6
 		// Horizontal
-		HRZC            =0x100104,
-		HRZT            =0x100108,
-		HRZSR           =0x10010C,
-		HRZBR           =0x100110,
-		HRZBF           =0x100114,
-		PREHRZC         =0x100118,
+		HRZC            =0x00104,
+		HRZT            =0x00108,
+		HRZSR           =0x0010C,
+		HRZBR           =0x00110,
+		HRZBF           =0x00114,
+		PREHRZC         =0x00118,
 		// Vertical
-		VRTC            =0x10011C,
-		VRTT            =0x100120,
-		VRTSR           =0x100124,
-		VRTBR           =0x100128,
-		VRTBF           =0x10012C,
-		PREVRTC         =0x100130,
+		VRTC            =0x0011C,
+		VRTT            =0x00120,
+		VRTSR           =0x00124,
+		VRTBR           =0x00128,
+		VRTBF           =0x0012C,
+		PREVRTC         =0x00130,
 		// Repaint
-		SRADDR          =0x100134,
-		SRTCTL          =0x100138,
-		//SRTCTL2         = P9100?
-		//QSFCOUNTER      = P9100?
-		VIDCTRL_LAST    =0x100138,
+		SRADDR          =0x00134,
+		SRTCTL          =0x00138,
+		SRTCTL2         =0x0013C,
+		QSFCOUNTER      =0x00140,
+		VIDCTRL_LAST    =0x00144,
 
 		// VRAM Control Registers 4.7
-		MEM_CONFIG      =0x100184,
-		RFPERIOD        =0x100188,
-		RFCOUNT         =0x10018C,
-		RLMAX           =0x100190,
-		RLCUR           =0x100194,
-		VRAMCTRL_LAST   =0x100194,
+		MEM_CONFIG      =0x00184,
+		RFPERIOD        =0x00188,
+		RFCOUNT         =0x0018C,
+		RLMAX           =0x00190,
+		RLCUR           =0x00194,
+		VRAMCTRL_LAST   =0x00198,
 
 		// Drawing Coordinate?  Linux driver defines it as META_COORD.
-		LOAD_COORD              =0x181200,
+		LOAD_COORD              =0x81200,
 		LOAD_COORD_ABS_REL_MASK =0x000020,
 		LOAD_COORD_PRIMTYPE_MASK=0x0001C0,
 			LOAD_COORD_PRIMTYPE_POINT=0,
@@ -229,15 +229,15 @@ public:
 
 
 		// Commands
-		NEXT_PIXELS_CMD =0x180014,
-		QUAD_CMD        =0x180008,
-		BLIT_CMD        =0x180004,
-		PIXEL1_CMD      =0x180080,
-		PIXEL1_BYTE_SWAP_CMD =0x1E0080,
-		PIXEL1_BIT_REVERSE_CMD=0x1F0080,
-		PIXEL8_CMD      =0x18000C,
-		PIXEL8_BYTE_SWAP_CMD =0x1E000C,
-		PIXEL8_BIT_REVERSE_CMD =0x1F000C,
+		NEXT_PIXELS_CMD =0x80014,
+		QUAD_CMD        =0x80008,
+		BLIT_CMD        =0x80004,
+		PIXEL1_CMD      =0x80080,
+		PIXEL1_BYTE_SWAP_CMD =0xE0080,
+		PIXEL1_BIT_REVERSE_CMD=0xF0080,
+		PIXEL8_CMD      =0x8000C,
+		PIXEL8_BYTE_SWAP_CMD =0xE000C,
+		PIXEL8_BIT_REVERSE_CMD =0xF000C,
 	};
 
 	class State
@@ -250,7 +250,7 @@ public:
 	public:
 		std::vector <uint8_t> vram;
 
-		uint32_t SysregBaseAddr=0;
+		uint32_t BaseAddr=0;
 		uint32_t RAMDACBaseAddr=0;
 		uint32_t ControlBaseAddr=0;
 		uint32_t VRAMBaseAddr=0,VRAMEndAddr=0;
@@ -282,6 +282,7 @@ public:
 		uint32_t bitsPerPixel=8;
 		bool highColor565=false;
 		uint32_t masterSwitch=0,sysconfig=0,interrupt=0,interrupt_en=0;
+		uint32_t alt_read_bank=0,alt_write_bank=0;
 		uint32_t status=0;
 		uint32_t drawingAttrib[(DRAWING_ATTRIB_END-FGCOLOR)/4];
 		uint32_t videoCtrl[(VIDCTRL_LAST-HRZC)/4];
