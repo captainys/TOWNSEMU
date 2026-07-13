@@ -1233,10 +1233,20 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-FMT3631"==ARG)
 		{
 			fmt3631=true;
+			fmt3632=false;
 		}
 		else if("-NOFMT3631"==ARG)
 		{
 			fmt3631=false;
+		}
+		else if("-FMT3632"==ARG)
+		{
+			fmt3631=false;
+			fmt3632=true;
+		}
+		else if("-NOFMT3632"==ARG)
+		{
+			fmt3632=false;
 		}
 		else if("-PORTFWD"==ARG && i+2<argc)
 		{

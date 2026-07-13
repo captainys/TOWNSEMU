@@ -113,6 +113,7 @@ public:
 			STATUS_FLAG_QUAD_HIDDEN=   0x00000004,
 			STATUS_FLAG_QUAD_VISIBLE=  0x00000002,
 			STATUS_FLAG_QUAD_INTERSECT=0x00000001,
+		STATUS_FMT3632=  0x002000,
 
 		// Control and condition
 		CTL_COND_BEGIN  =0x180184,
@@ -231,6 +232,7 @@ public:
 	{
 	public:
 		bool enabled=false;
+		bool isFMT3632=false;
 		std::vector <uint8_t> vram;
 
 		mutable int nLoadedCoord=0;

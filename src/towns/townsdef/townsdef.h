@@ -581,6 +581,9 @@ enum
 	// FMT-3631 returns 60H on this I/O only if the straight-cable from on-board Video Out to FMT-3631 RGB-in is connected.
 	// The cable from on-board to FMT-3631 is a straight-cable.  Pin-7 CSYNC is grounded on the FMT-3631 side, therefore
 	// connecting Pin-7 risks CSYNC directly connected to GND.  Experiment confirmed that pin-7 connection is not needed. (2026/06/22)
+	TOWNSIO_FMT_3632=                      0x1101,
+	// If Windows FMT-3632 driver is selected, and if I/O 0x1100 returns 0x80 (or at least high 2-bits matches 0x80),
+	// Windows driver checks 0x1101 next.  Most likely it is checking how large a RAM the board has.
 
 
 	TOWNSIO_CMOS_BASE=           0x3000,

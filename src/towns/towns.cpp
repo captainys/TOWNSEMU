@@ -516,9 +516,20 @@ void FMTownsCommon::State::PowerOn(void)
 		}
 	}
 
+	if(true==argv.fmt3631 && true==argv.fmt3632)
+	{
+		std::cout << "Cannot enable FMT-3631 and FMT-3632 at the same time.\n";
+		return false;
+	}
 	if(true==argv.fmt3631)
 	{
 		towns.fmt3631.state.enabled=true;
+		towns.fmt3631.state.isFMT3632=false;
+	}
+	if(true==argv.fmt3632)
+	{
+		towns.fmt3631.state.enabled=true;
+		towns.fmt3631.state.isFMT3632=true;
 	}
 
 	return result;
@@ -1021,6 +1032,7 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(&rex3586,TOWNSIO_LAN_REX3586_ALT_ROM); // 			0x7110
 
 	io.AddDevice(&fmt3631,TOWNSIO_FMT_3631_PRESENCE_CHECK); //      0x1100
+	io.AddDevice(&fmt3631,TOWNSIO_FMT_3632);                //      0x1101
 
 	baseClassReady=true;
 }

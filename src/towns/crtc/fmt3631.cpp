@@ -237,14 +237,30 @@ unsigned int FMT3631::IOReadByte(unsigned int ioport)
 	{
 		if(TOWNSIO_FMT_3631_PRESENCE_CHECK==ioport)
 		{
-			return 0x60;
-			// Confirmed with a real FMT-3631.  It returns 0x60 only if TOWNS's on-board Video Out is connected to FMT-3631 RGB-in
-			// with a straight cable with pin-7 left unconnected.
-			// The cable should not convert pin assignments from TOWNS's D-Sub 15 pins to VGA.
-			// The cable is a straight cable, pin-i to pin-i, except pin-7.
-			// Connecting pin-7 risks directly connecting TOWNS's CSYNC to GND, which could fry something.
-			// .... Wait, once it returnex 0x60 on I/O 0x1100, my FMT-3631 starts returning the same without the straight cable.
-			// It could have changed the status of the relay by connecting the straight cable.  The reason is unknown.
+			if(true!=state.isFMT3632)
+			{
+				return 0x60;
+				// Confirmed with a real FMT-3631.  It returns 0x60 only if TOWNS's on-board Video Out is connected to FMT-3631 RGB-in
+				// with a straight cable with pin-7 left unconnected.
+				// The cable should not convert pin assignments from TOWNS's D-Sub 15 pins to VGA.
+				// The cable is a straight cable, pin-i to pin-i, except pin-7.
+				// Connecting pin-7 risks directly connecting TOWNS's CSYNC to GND, which could fry something.
+				// .... Wait, once it returnex 0x60 on I/O 0x1100, my FMT-3631 starts returning the same without the straight cable.
+				// It could have changed the status of the relay by connecting the straight cable.  The reason is unknown.
+			}
+			else
+			{
+				// Windows 95 FMT-3632 driver expects 0x80.
+				return 0x80;
+			}
+		}
+		else if(TOWNSIO_FMT_3632==ioport)
+		{
+			// b0 apparently indicates 2MB or 4MB.  b0==1 probably indicates that 4MB.
+			if(true!=state.isFMT3632)
+			{
+				return 1;
+			}
 		}
 	}
 	return 0xFF;
@@ -355,6 +371,7 @@ inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType
 
 	// Status
 	case STATUS          : //0x80000,
+	case STATUS_FMT3632:   //0x002000,
 		return &state.status;
 
 	// Control and condition
@@ -1450,9 +1467,12 @@ unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 			}
 			else
 			{
+				uint32_t hanging=physAddr&3; // FMT-3632 apparently allow access to any bytes of the register.
+				physAddr&=~3;
 				auto *ptr=GetControlWordPtr(physAddr);
 				if(nullptr!=ptr)
 				{
+					data>>=(hanging*8);
 					data=*ptr;
 				}
 			}
@@ -1495,9 +1515,12 @@ unsigned int FMT3631::FetchWord(unsigned int physAddr) const
 			}
 			else
 			{
+				uint32_t hanging=physAddr&3; // FMT-3632 apparently allow access to any bytes of the register.
+				physAddr&=~3;
 				auto *ptr=GetControlWordPtr(physAddr);
 				if(nullptr!=ptr)
 				{
+					data>>=(hanging*8);
 					data=*ptr;
 				}
 			}
@@ -1540,9 +1563,12 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 			}
 			else
 			{
+				uint32_t hanging=physAddr&3; // FMT-3632 apparently allow access to any bytes of the register.
+				physAddr&=~3;
 				auto *ptr=GetControlWordPtr(physAddr);
 				if(nullptr!=ptr)
 				{
+					data>>=(hanging*8);
 					data=*ptr;
 				}
 			}
