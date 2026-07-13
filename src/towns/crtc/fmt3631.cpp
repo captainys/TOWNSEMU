@@ -1492,13 +1492,12 @@ unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 {
 	unsigned int data=0xFF;
 	bool monitor=false;
-
 	if(true==state.enabled)
 	{
 		if(state.VRAMBaseAddr<=physAddr && physAddr<state.VRAMEndAddr)
 		{
 			monitor=monitorVRAM;
-			data=state.vram[physAddr-TOWNSADDR_FMT3631_VRAM];
+			data=state.vram[physAddr-state.VRAMBaseAddr];
 		}
 		else
 		{
@@ -1527,7 +1526,6 @@ unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 			}
 		}
 	}
-
 	if(true==monitor)
 	{
 		std::cout << "Power9x00 BYTE read   " << cpputil::Uitox(physAddr) << " " << cpputil::Ubtox(data) << "\n";
@@ -1540,13 +1538,12 @@ unsigned int FMT3631::FetchWord(unsigned int physAddr) const
 {
 	unsigned int data=0xFFFF;
 	bool monitor=false;
-
 	if(true==state.enabled)
 	{
 		if(state.VRAMBaseAddr<=physAddr && physAddr+1<state.VRAMEndAddr)
 		{
 			monitor=monitorVRAM;
-			data=cpputil::GetWord(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
+			data=cpputil::GetWord(state.vram.data()+physAddr-state.VRAMBaseAddr);
 		}
 		else
 		{
@@ -1575,12 +1572,10 @@ unsigned int FMT3631::FetchWord(unsigned int physAddr) const
 			}
 		}
 	}
-
 	if(true==monitor)
 	{
 		std::cout << "Power9x00 WORD read   " << cpputil::Uitox(physAddr) << " " << cpputil::Ustox(data) << "\n";
 	}
-
 	return data;
 }
 
@@ -1588,13 +1583,12 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 {
 	unsigned int data=0xFFFFFFFF;
 	bool monitor=false;
-
 	if(true==state.enabled)
 	{
 		if(state.VRAMBaseAddr<=physAddr && physAddr+3<state.VRAMEndAddr)
 		{
 			monitor=monitorVRAM;
-			data=cpputil::GetDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM);
+			data=cpputil::GetDword(state.vram.data()+physAddr-state.VRAMBaseAddr);
 		}
 		else
 		{
@@ -1623,12 +1617,10 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 			}
 		}
 	}
-
 	if(true==monitor)
 	{
 		std::cout << "Power9x00 DWORD read  " << cpputil::Uitox(physAddr) << " " << cpputil::Uitox(data) << "\n";
 	}
-
 	return data;
 }
 
@@ -1639,7 +1631,7 @@ void FMT3631::StoreByte(unsigned int physAddr,unsigned char data)
 	{
 		if(state.VRAMBaseAddr<=physAddr && physAddr<state.VRAMEndAddr)
 		{
-			state.vram[physAddr-TOWNSADDR_FMT3631_VRAM]=data;
+			state.vram[physAddr-state.VRAMBaseAddr]=data;
 			monitor=monitorVRAM;
 		}
 		else
@@ -1661,7 +1653,7 @@ void FMT3631::StoreWord(unsigned int physAddr,unsigned int data)
 	{
 		if(state.VRAMBaseAddr<=physAddr && physAddr+1<state.VRAMEndAddr)
 		{
-			cpputil::PutWord(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM,data);
+			cpputil::PutWord(state.vram.data()+physAddr-state.VRAMBaseAddr,data);
 			monitor=monitorVRAM;
 		}
 		else
@@ -1683,7 +1675,7 @@ void FMT3631::StoreDword(unsigned int physAddr,unsigned int data)
 	{
 		if(state.VRAMBaseAddr<=physAddr && physAddr+3<state.VRAMEndAddr)
 		{
-			cpputil::PutDword(state.vram.data()+physAddr-TOWNSADDR_FMT3631_VRAM,data);
+			cpputil::PutDword(state.vram.data()+physAddr-state.VRAMBaseAddr,data);
 			monitor=monitorVRAM;
 		}
 		else
