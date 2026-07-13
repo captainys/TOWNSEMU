@@ -301,6 +301,7 @@ unsigned int FMT3631::IOReadByte(unsigned int ioport)
 		else if(TOWNSIO_FMT_3632_3==ioport) // 0x9104
 		{
 			// Meaning is utterly unknown.  I tried 2, and it passes.
+			// 0x80, 0x82, 0x02 seems to be only three possible values.
 			return 2;
 		}
 	}
