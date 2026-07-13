@@ -337,8 +337,10 @@ std::map <unsigned int,std::string> FMTownsIOMap(void)
 	ioMap[TOWNSIO_LAN_REX3586_ALT_TRCV_STATUS]=    "REX3586(Alternative)_TRCV_STATUS";
 	ioMap[TOWNSIO_LAN_REX3586_ALT_ROM]=            "REX3586(Alternative)_ROM";
 
-	ioMap[TOWNSIO_FMT_3631_PRESENCE_CHECK]=        "FMT-3631_PRESENCE_CHECK";
-
+	ioMap[TOWNSIO_FMT_3631_PRESENCE_CHECK]=        "FMT-3631/3632_PRESENCE_CHECK";
+	ioMap[TOWNSIO_FMT_3632_1]=                     "FMT-3632_1";
+	ioMap[TOWNSIO_FMT_3632_2]=                     "FMT-3632_2";
+	ioMap[TOWNSIO_FMT_3632_3]=                     "FMT-3632_3";
 
 
 	ioMap[TOWNSIO_CMOS_RAM_FLAG0]=         "CMOS:RAM FLAG (512KB/BYTE)";
