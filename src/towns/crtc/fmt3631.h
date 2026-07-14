@@ -127,7 +127,6 @@ public:
 			STATUS_FLAG_QUAD_HIDDEN=   0x00000004,
 			STATUS_FLAG_QUAD_VISIBLE=  0x00000002,
 			STATUS_FLAG_QUAD_INTERSECT=0x00000001,
-		STATUS_FMT3632=  0x002000,
 
 		// Control and condition
 		CTL_COND_BEGIN  =0x80184,
@@ -317,6 +316,19 @@ public:
 	static int U32toS32(uint32_t in);
 	static uint32_t S32toU32(int in);
 	static uint32_t ByteSwap32(uint32_t in);
+
+	inline uint32_t Translate3631to3632(uint32_t addr) const
+	{
+		if(true==state.isFMT3632)
+		{
+			if(addr&0x2000)
+			{
+				addr|=0x80000;
+				addr&=~0x2000;
+			}
+		}
+		return addr;
+	}
 
 	bool IsEnabled(void) const;
 	unsigned int Height(void) const;

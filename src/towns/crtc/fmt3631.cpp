@@ -459,7 +459,6 @@ inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType
 
 	// Status
 	case STATUS          : //0x80000,
-	case STATUS_FMT3632:   //0x002000,
 		return &state.status;
 
 	// Control and condition
@@ -1585,23 +1584,25 @@ unsigned int FMT3631::FetchByte(unsigned int physAddr) const
 		}
 		else
 		{
+			auto addr=Translate3631to3632(physAddr);
+
 			monitor=monitorCtrl;
-			if((COMMAND_MASK&physAddr)==QUAD_CMD)
+			if((COMMAND_MASK&addr)==QUAD_CMD)
 			{
-				data=mutableThis->CmdQuad(physAddr);
+				data=mutableThis->CmdQuad(addr);
 			}
-			else if((COMMAND_MASK&physAddr)==BLIT_CMD)
+			else if((COMMAND_MASK&addr)==BLIT_CMD)
 			{
-				data=mutableThis->CmdBlit(physAddr);
+				data=mutableThis->CmdBlit(addr);
 			}
-			else if(true==IsReadableParameter(data,physAddr))
+			else if(true==IsReadableParameter(data,addr))
 			{
 			}
 			else
 			{
-				uint32_t hanging=physAddr&3; // FMT-3632 apparently allow access to any bytes of the register.
-				physAddr&=~3;
-				auto *ptr=GetControlWordPtr(physAddr);
+				uint32_t hanging=addr&3; // FMT-3632 apparently allow access to any bytes of the register.
+				addr&=~3;
+				auto *ptr=GetControlWordPtr(addr);
 				if(nullptr!=ptr)
 				{
 					data>>=(hanging*8);
@@ -1631,23 +1632,25 @@ unsigned int FMT3631::FetchWord(unsigned int physAddr) const
 		}
 		else
 		{
+			auto addr=Translate3631to3632(physAddr);
+
 			monitor=monitorCtrl;
-			if((COMMAND_MASK&physAddr)==QUAD_CMD)
+			if((COMMAND_MASK&addr)==QUAD_CMD)
 			{
-				data=mutableThis->CmdQuad(physAddr);
+				data=mutableThis->CmdQuad(addr);
 			}
-			else if((COMMAND_MASK&physAddr)==BLIT_CMD)
+			else if((COMMAND_MASK&addr)==BLIT_CMD)
 			{
-				data=mutableThis->CmdBlit(physAddr);
+				data=mutableThis->CmdBlit(addr);
 			}
-			else if(true==IsReadableParameter(data,physAddr))
+			else if(true==IsReadableParameter(data,addr))
 			{
 			}
 			else
 			{
-				uint32_t hanging=physAddr&3; // FMT-3632 apparently allow access to any bytes of the register.
-				physAddr&=~3;
-				auto *ptr=GetControlWordPtr(physAddr);
+				uint32_t hanging=addr&3; // FMT-3632 apparently allow access to any bytes of the register.
+				addr&=~3;
+				auto *ptr=GetControlWordPtr(addr);
 				if(nullptr!=ptr)
 				{
 					data>>=(hanging*8);
@@ -1676,23 +1679,25 @@ unsigned int FMT3631::FetchDword(unsigned int physAddr) const
 		}
 		else
 		{
+			auto addr=Translate3631to3632(physAddr);
+
 			monitor=monitorCtrl;
-			if((COMMAND_MASK&physAddr)==QUAD_CMD)
+			if((COMMAND_MASK&addr)==QUAD_CMD)
 			{
-				data=mutableThis->CmdQuad(physAddr);
+				data=mutableThis->CmdQuad(addr);
 			}
-			else if((COMMAND_MASK&physAddr)==BLIT_CMD)
+			else if((COMMAND_MASK&addr)==BLIT_CMD)
 			{
-				data=mutableThis->CmdBlit(physAddr);
+				data=mutableThis->CmdBlit(addr);
 			}
-			else if(true==IsReadableParameter(data,physAddr))
+			else if(true==IsReadableParameter(data,addr))
 			{
 			}
 			else
 			{
-				uint32_t hanging=physAddr&3; // FMT-3632 apparently allow access to any bytes of the register.
-				physAddr&=~3;
-				auto *ptr=GetControlWordPtr(physAddr);
+				uint32_t hanging=addr&3; // FMT-3632 apparently allow access to any bytes of the register.
+				addr&=~3;
+				auto *ptr=GetControlWordPtr(addr);
 				if(nullptr!=ptr)
 				{
 					data>>=(hanging*8);
@@ -1720,7 +1725,8 @@ void FMT3631::StoreByte(unsigned int physAddr,unsigned char data)
 		}
 		else
 		{
-			SetControlByte(physAddr,data);
+			auto addr=Translate3631to3632(physAddr);
+			SetControlByte(addr,data);
 			monitor=monitorCtrl;
 		}
 	}
@@ -1742,7 +1748,8 @@ void FMT3631::StoreWord(unsigned int physAddr,unsigned int data)
 		}
 		else
 		{
-			SetControlWord(physAddr,data);
+			auto addr=Translate3631to3632(physAddr);
+			SetControlWord(addr,data);
 			monitor=monitorCtrl;
 		}
 	}
@@ -1764,7 +1771,8 @@ void FMT3631::StoreDword(unsigned int physAddr,unsigned int data)
 		}
 		else
 		{
-			SetControlDword(physAddr,data);
+			auto addr=Translate3631to3632(physAddr);
+			SetControlDword(addr,data);
 			monitor=monitorCtrl;
 		}
 	}
