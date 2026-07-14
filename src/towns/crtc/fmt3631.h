@@ -255,6 +255,11 @@ public:
 		COLOR3=          0x8023C, // 010 0010 0011 1100 P9100 only
 		BYTE_WIN_MIN=    0x802A0, // 010 0010 1010 0000 P9100 only
 		BYTE_WIN_MAX=    0x802A4, // 010 0010 1010 0100 P9100 only
+
+		FGCOLOR_BYTESWAP=0xE0200,
+		BGCOLOR_BYTESWAP=0xE0204,
+		COLOR2_BYTESWAP=0xE0238,
+		COLOR3_BYTESWAP=0xE023C,
 	};
 
 	class State
@@ -345,6 +350,38 @@ public:
 			}
 		}
 		return addr;
+	}
+	inline void ProcessDwordReverse(uint32_t &addr,uint32_t &data) const
+	{
+		if(addr&0x40000)
+		{
+			auto up=(data<<16)&0xFFFF0000; // AABBCCDD -> CCDDAABB
+			auto down=(data>>16)&0xFFFF;
+			data=up|down;
+		}
+		if(addr&0x20000)
+		{
+			auto up=(data<<8)&0xFF00FF00;  // CCDDAABB -> DDCCBBAA
+			auto down=(data>>8)&0x00FF00FF;
+			data=up|down;
+		}
+		if(addr&0x10000)
+		{
+			auto D=0;
+			uint32_t mask=0x80808080;
+			for(int shift=7; 1<=shift; shift-=2)
+			{
+				D|=(data&mask)>>shift;
+				mask>>=1;
+			}
+			for(int shift=1; shift<=7; shift+=2)
+			{
+				D|=(data&mask)<<shift;
+				mask>>=1;
+			}
+			data=D;
+		}
+		addr&=~0x70000;
 	}
 
 	bool IsEnabled(void) const;

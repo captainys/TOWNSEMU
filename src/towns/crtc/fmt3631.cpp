@@ -452,6 +452,24 @@ inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType
 	}
 
 	auto relAddr=physAddr&COMMAND_MASK;
+
+	if(FGCOLOR_BYTESWAP==relAddr ||
+	   BGCOLOR_BYTESWAP==relAddr ||
+	   COLOR2_BYTESWAP==relAddr ||
+	   COLOR3_BYTESWAP==relAddr)
+	{
+		// Supposed to be:
+		// P9100 manual p. 25 Figure 42.
+		// b18  H  Half-word swap
+		// b17  B  Byte within half-word swap
+		// b16  b  Bit within byte swap
+		// eg.
+		// 0x70000 Bit-Reverse
+		// 0x60000 Byte-Reverse
+		// But, if I implemented it, it was messed up.
+		relAddr&=~0x70000;
+	}
+
 	switch(relAddr)
 	{
 	case SYSCONFIG: //0x00004,
@@ -957,83 +975,152 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 	{
 		std::cout << "Rect\n";
 	}
-	uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+x0;
 	auto fgColor=*GetControlWordPtr(FGCOLOR);
 	auto bgColor=*GetControlWordPtr(BGCOLOR);
 	uint32_t raster=*GetControlWordPtr(RASTER);
-	bool usePattern=(0!=(raster&RASTER_USEPATTERN));
-	uint32_t patternBit=0x80000000;
-	for(auto y=y0; y<=y1; ++y)
+
+	if(true!=state.isFMT3632)
 	{
-		if(clip[1].y()<y)
+		// FMT-3631
+		uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+x0;
+		bool usePattern=(0!=(raster&RASTER_USEPATTERN));
+		uint32_t patternBit=0x80000000;
+		for(auto y=y0; y<=y1; ++y)
 		{
-			break;
+			if(clip[1].y()<y)
+			{
+				break;
+			}
+
+			uint32_t pattern=state.pattern[y%PATTERN_LEN];
+
+			// Shockingly, Power 9000's Quad command fills the bytes within the region with the same byte.
+			// If it is 24-bit color mode, it can only draw gray scale.
+			// Linux Power 9000 driver draws a quad twice with a pattern and logic ops to fill component by component.
+			// Windows driver apparently did not push it that much.
+			auto ptr=lineTop;
+
+			if(y<clip[0].y())
+			{
+				goto NEXTY;
+			}
+
+			for(auto x=x0; x<=x1; ++x)
+			{
+				if(clip[1].x()<x)
+				{
+					break;
+				}
+				if(clip[0].x()<=x)
+				{
+					// Apparently X coordinate is multiplied by bytes-per-pixel by the software.
+					switch(raster&0xFFFF)
+					{
+					default:
+						if(true==breakOnUnsupported)
+						{
+							auto *towns=(FMTownsCommon *)vmPtr;
+							towns->debugger.ExternalBreak("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
+						}
+						break;
+					case 0xff00: // Copy
+						*ptr=fgColor;
+						break;
+					case 0x5555: // Not dst
+						*ptr=~*ptr;
+						break;
+					case 0x55aa: // Xor
+						*ptr^=fgColor;
+						break;
+					case 0xFC30: // Pattern=0->BG,  1->FG.  If use_pattern==false, always FG (probably)
+						if(true!=usePattern || 0!=(patternBit&pattern))
+						{
+							*ptr=fgColor;
+						}
+						else
+						{
+							*ptr=bgColor;
+						}
+						break;
+					}
+				}
+				++ptr;
+				patternBit>>=1;
+				if(0==patternBit)
+				{
+					patternBit=0x80000000;
+				}
+			}
+		NEXTY:
+			lineTop+=bytesPerLine;
 		}
+	}
+	else
+	{
+		// FMT-3632
+		uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+bytesPerPixel*x0;
+		bool usePattern=(0!=(raster&RASTER_P9100_PATTERN_ENABLE));
+		uint32_t patternBit=0x80000000;
+		uint8_t color[2][4];
+		cpputil::PutDword(color[0],fgColor);
+		cpputil::PutDword(color[1],bgColor);
 
-		uint32_t pattern=state.pattern[y%PATTERN_LEN];
-
-		// Shockingly, Power 9000's Quad command fills the bytes within the region with the same byte.
-		// If it is 24-bit color mode, it can only draw gray scale.
-		// Linux Power 9000 driver draws a quad twice with a pattern and logic ops to fill component by component.
-		// Windows driver apparently did not push it that much.
-		auto ptr=lineTop;
-
-		if(y<clip[0].y())
+		raster&=~RASTER_OVERSIZED; // I don't care oversized or not.
+		raster&=0xFF;
+		for(auto y=y0; y<=y1; ++y)
 		{
-			goto NEXTY;
-		}
-
-		for(auto x=x0; x<=x1; ++x)
-		{
-			if(clip[1].x()<x)
+			if(clip[1].y()<y)
 			{
 				break;
-			}
-			if(x<clip[0].x())
-			{
-				goto NEXTX;
 			}
 
-			// Apparently X coordinate is multiplied by bytes-per-pixel by the software.
-			switch(raster&0xFFFF)
+			uint32_t pattern=state.pattern[y%PATTERN_LEN];
+
+			// Shockingly, Power 9000's Quad command fills the bytes within the region with the same byte.
+			// If it is 24-bit color mode, it can only draw gray scale.
+			// Linux Power 9000 driver draws a quad twice with a pattern and logic ops to fill component by component.
+			// Windows driver apparently did not push it that much.
+			auto ptr=lineTop;
+
+			if(clip[0].y()<=y)
 			{
-			default:
-				if(true==breakOnUnsupported)
+				uint32_t colorIndex=0;
+				for(auto x=x0; x<=x1; ++x)
 				{
-					auto *towns=(FMTownsCommon *)vmPtr;
-					towns->debugger.ExternalBreak("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
+					if(clip[1].x()<x)
+					{
+						break;
+					}
+					if(clip[0].x()<=x)
+					{
+						switch(raster)
+						{
+						default:
+							if(true==breakOnUnsupported)
+							{
+								auto *towns=(FMTownsCommon *)vmPtr;
+								towns->debugger.ExternalBreak("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
+							}
+							break;
+						case 0:
+							memset(ptr,0,bytesPerPixel);
+							break;
+						case 0xf0: // Copy
+							memcpy(ptr,color[0]+colorIndex,bytesPerPixel);
+							break;
+						}
+					}
+					colorIndex=(colorIndex+bytesPerPixel)&3;
+					ptr+=bytesPerPixel;
+					patternBit>>=1;
+					if(0==patternBit)
+					{
+						patternBit=0x80000000;
+					}
 				}
-				break;
-			case 0xff00: // Copy
-				*ptr=fgColor;
-				break;
-			case 0x5555: // Not dst
-				*ptr=~*ptr;
-				break;
-			case 0x55aa: // Xor
-				*ptr^=fgColor;
-				break;
-			case 0xFC30: // Pattern=0->BG,  1->FG.  If use_pattern==false, always FG (probably)
-				if(true!=usePattern || 0!=(patternBit&pattern))
-				{
-					*ptr=fgColor;
-				}
-				else
-				{
-					*ptr=bgColor;
-				}
-				break;
 			}
-		NEXTX:
-			++ptr;
-			patternBit>>=1;
-			if(0==patternBit)
-			{
-				patternBit=0x80000000;
-			}
+			lineTop+=bytesPerLine;
 		}
-	NEXTY:
-		lineTop+=bytesPerLine;
 	}
 }
 
@@ -1577,6 +1664,7 @@ void FMT3631::SetControlDword(uint32_t physAddr,uint32_t data)
 	{
 		return;
 	}
+
 	auto ptr=GetControlWordPtr(physAddr);
 	if(nullptr!=ptr)
 	{
