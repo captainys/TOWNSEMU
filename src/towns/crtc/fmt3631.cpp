@@ -138,6 +138,9 @@ void FMT3631::Reset(void)
 	state.hwCursor.twoColor[4]=0;
 	state.hwCursor.twoColor[5]=0;
 	state.hwCursorTwoColorReadPos=0;
+
+	state.fmt3632RegSel=0;
+	memset(state.fmt3632Regs,0,sizeof(state.fmt3632Regs));
 }
 
 int FMT3631::U16toS16(uint32_t in)
@@ -297,12 +300,11 @@ unsigned int FMT3631::IOReadByte(unsigned int ioport)
 		}
 		else if(TOWNSIO_FMT_3632_2==ioport) // 0x9100
 		{
+			return state.fmt3632RegSel; // Maybe it should return reg sel.
 		}
 		else if(TOWNSIO_FMT_3632_3==ioport) // 0x9104
 		{
-			// Meaning is utterly unknown.  I tried 2, and it passes.
-			// 0x80, 0x82, 0x02 seems to be only three possible values.
-			return 2;
+			return state.fmt3632Regs[state.fmt3632RegSel&255];
 		}
 	}
 	return 0xFF;
@@ -318,6 +320,14 @@ void FMT3631::IOWriteByte(unsigned int ioport,unsigned int data)
 			{
 				state.masterSwitch=data; // FMT-3632 apparently uses I/O 1100h for enabling/disabling.
 			}
+		}
+		else if(TOWNSIO_FMT_3632_2==ioport)
+		{
+			state.fmt3632RegSel=data;
+		}
+		else if(TOWNSIO_FMT_3632_3==ioport) // 0x9104
+		{
+			state.fmt3632Regs[state.fmt3632RegSel&255]=data;
 		}
 	}
 }
@@ -394,6 +404,11 @@ bool FMT3631::IsReadableParameter(uint32_t &data,uint32_t physAddr) const
 
 			return true;
 		}
+	}
+	if(POWER_UP_CONFIG==physAddr-state.ControlBaseAddr)
+	{
+		data=0; // I have no idea what should be returned.  But, returning zero prevents crash.  Returning 0xffffffff crashes Windows FMT-3632 driver.
+		return true;
 	}
 	return false;
 }
@@ -1485,6 +1500,28 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 	return false;
 }
 
+void FMT3631::SysConfigToBpp3632(void)
+{
+	auto bpp=(state.sysconfig>>26)&7;
+	if(2==bpp)
+	{
+		state.bitsPerPixel=8;
+	}
+	else if(3==bpp)
+	{
+		state.bitsPerPixel=16;
+		state.highColor565=true;
+	}
+	else if(7==bpp)
+	{
+		state.bitsPerPixel=24;
+	}
+	else if(5==bpp)
+	{
+		state.bitsPerPixel=32;
+	}
+}
+
 void FMT3631::SetControlByte(uint32_t physAddr,uint8_t data)
 {
 	if(true==IsCommand(physAddr,data))
@@ -1510,6 +1547,10 @@ void FMT3631::SetControlWord(uint32_t physAddr,uint16_t data)
 	{
 		*ptr&=0xFFFF0000;
 		*ptr|=data;
+		if(true==state.isFMT3632)
+		{
+			SysConfigToBpp3632();
+		}
 	}
 }
 
@@ -1523,6 +1564,10 @@ void FMT3631::SetControlDword(uint32_t physAddr,uint32_t data)
 	if(nullptr!=ptr)
 	{
 		*ptr=data;
+		if(true==state.isFMT3632)
+		{
+			SysConfigToBpp3632();
+		}
 	}
 }
 
@@ -1843,8 +1888,10 @@ void FMT3631::SpecificSerialize(std::vector <unsigned char> &data,std::string st
 	PushUint32(data,state.ControlBaseAddr); // Version 2
 	PushUint32(data,state.VRAMBaseAddr); // Version 2
 	PushUint32(data,state.VRAMEndAddr); // Version 2
-	PushUint32(data,state.alt_read_bank);
-	PushUint32(data,state.alt_write_bank);
+	PushUint32(data,state.alt_read_bank); // Version 2
+	PushUint32(data,state.alt_write_bank); // Version 2
+	PushUint16(data,state.fmt3632RegSel); // Version 2
+	PushUcharArray(data,FMT3632REG_LEN,state.fmt3632Regs); // Version 2
 
 
 	PushInt32(data,state.nLoadedCoord);
@@ -1946,6 +1993,8 @@ bool FMT3631::SpecificDeserialize(const unsigned char *&data,std::string stateFN
 		state.VRAMEndAddr=ReadUint32(data);
 		state.alt_read_bank=ReadUint32(data);
 		state.alt_write_bank=ReadUint32(data);
+		state.fmt3632RegSel=ReadUint16(data);
+		ReadUcharArray(data,FMT3632REG_LEN,state.fmt3632Regs);
 	}
 
 	state.nLoadedCoord=ReadInt32(data);

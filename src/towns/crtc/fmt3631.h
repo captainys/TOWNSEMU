@@ -64,6 +64,8 @@ public:
 		VRAM_BEGIN_3632=0x800000,
 		VRAM_END_3632=0xC00000,
 
+		FMT3632REG_LEN=256, // Unknown purposes.
+
 		// RAMDAC Control
 		BT_WRITE_ADDR=   0x000080,  // Probably
 			BT_CURS_OR_PTN=  0,
@@ -208,6 +210,8 @@ public:
 		RLCUR           =0x00194,
 		VRAMCTRL_LAST   =0x00198,
 
+		POWER_UP_CONFIG =0x00198, // Read only.  Accessed only from IsReadableParameter
+
 		// Drawing Coordinate?  Linux driver defines it as META_COORD.
 		LOAD_COORD              =0x81200,
 		LOAD_COORD_ABS_REL_MASK =0x000020,
@@ -279,6 +283,9 @@ public:
 		Vec2i pixelLeftUp,pixelCurrent;
 		int pixelWid=0,pixelYIncrement=1; // Keep these signed.  Coordinates may go negative.  Don't mix signed and unsigned.
 
+		uint16_t fmt3632RegSel=0;  // What is this register for??
+		uint8_t fmt3632Regs[FMT3632REG_LEN];
+
 		uint32_t bitsPerPixel=8;
 		bool highColor565=false;
 		uint32_t masterSwitch=0,sysconfig=0,interrupt=0,interrupt_en=0;
@@ -328,6 +335,7 @@ public:
 	template <class returnType,class stateType>
 	inline static returnType GetControlWordPtrTemplate(uint32_t physAddr,stateType &state);
 	bool IsReadableParameter(uint32_t &data,uint32_t physAddr) const;
+	void SysConfigToBpp3632(void);
 
 	const uint32_t *GetControlWordPtr(unsigned int physAddr) const;
 	uint32_t *GetControlWordPtr(unsigned int physAddr);
