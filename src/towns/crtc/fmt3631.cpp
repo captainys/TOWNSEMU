@@ -366,6 +366,16 @@ bool FMT3631::IsReadableParameter(uint32_t &data,uint32_t physAddr) const
 
 		return true;
 	}
+	if(P_W_MIN==physAddr-state.ControlBaseAddr) //0x80194, // Read Only
+	{
+		data=*GetControlWordPtr(WINDOW_MIN);
+		return true;
+	}
+	if(P_W_MAX==physAddr-state.ControlBaseAddr)
+	{
+		data=*GetControlWordPtr(WINDOW_MAX);
+		return true;
+	}
 	if(VRTC==physAddr-state.ControlBaseAddr)
 	{
 		auto h=Height();
@@ -481,14 +491,14 @@ inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType
 	// Pixel Processing 4.5
 	case FGCOLOR:
 	case BGCOLOR:
-	case PLANE_MASK      ://0x180208,
-	case DRAWING_MODE    ://0x18020C,
-	case PATTERN_X0      ://0x180210,
-	case PATTERN_Y0      ://0x180214,
-	case RASTER          ://0x180218,
-	case PIXEL8          ://0x18021C,
-	case WINDOW_MIN      ://0x180220,
-	case WINDOW_MAX      ://0x180224,
+	case PLANE_MASK      ://0x80208,
+	case DRAWING_MODE    ://0x8020C,
+	case PATTERN_X0      ://0x80210,
+	case PATTERN_Y0      ://0x80214,
+	case RASTER          ://0x80218,
+	case PIXEL8          ://0x8021C,
+	case WINDOW_MIN      ://0x80220,
+	case WINDOW_MAX      ://0x80224,
 		return &state.drawingAttrib[(relAddr-FGCOLOR)/4];
 
 	case PATTERN0:
@@ -525,6 +535,14 @@ inline returnType FMT3631::GetControlWordPtrTemplate(uint32_t physAddr,stateType
 	case RLMAX           : //0x00190,
 	case RLCUR           : //0x00194,
 		return &state.vramCtrl[(relAddr-MEM_CONFIG)/4];
+
+	case COLOR2:          // 0x80238, 010 0010 0011 1000 P9100 only
+	case COLOR3:          // 0x8023C, 010 0010 0011 1100 P9100 only
+		return &state.color2_3[(relAddr-COLOR2)/4];
+
+	case BYTE_WIN_MIN:    // 0x802A0, 010 0010 1010 0000 P9100 only
+	case BYTE_WIN_MAX:    // 0x802A4, 010 0010 1010 0100 P9100 only
+		return &state.byteWinMinMax[(relAddr-BYTE_WIN_MIN)/4];
 	}
 	return nullptr;
 }
@@ -1900,6 +1918,10 @@ void FMT3631::SpecificSerialize(std::vector <unsigned char> &data,std::string st
 	PushUint32(data,state.alt_write_bank); // Version 2
 	PushUint16(data,state.fmt3632RegSel); // Version 2
 	PushUcharArray(data,FMT3632REG_LEN,state.fmt3632Regs); // Version 2
+	PushUint32(data,state.color2_3[0]); // Version 2
+	PushUint32(data,state.color2_3[1]); // Version 2
+	PushUint32(data,state.byteWinMinMax[0]); // Version 2
+	PushUint32(data,state.byteWinMinMax[1]); // Version 2
 
 
 	PushInt32(data,state.nLoadedCoord);
@@ -2003,6 +2025,10 @@ bool FMT3631::SpecificDeserialize(const unsigned char *&data,std::string stateFN
 		state.alt_write_bank=ReadUint32(data);
 		state.fmt3632RegSel=ReadUint16(data);
 		ReadUcharArray(data,FMT3632REG_LEN,state.fmt3632Regs);
+		state.color2_3[0]=ReadUint32(data);
+		state.color2_3[1]=ReadUint32(data);
+		state.byteWinMinMax[0]=ReadUint32(data);
+		state.byteWinMinMax[1]=ReadUint32(data);
 	}
 
 	state.nLoadedCoord=ReadInt32(data);

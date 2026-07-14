@@ -159,9 +159,14 @@ public:
 		RASTER          =0x80218,
 			RASTER_OVERSIZED=0x10000,
 			RASTER_USEPATTERN=0x20000,
+
+			RASTER_P9100_TRANSPARENT=0x20000,
+			RASTER_P9100_PIXEL1_TRANSPARENT=0x8000,
+			RASTER_P9100_PATTERN_DEPTH=0x4000,
+			RASTER_P9100_PATTERN_ENABLE=0x2000, // Solid_color_disable.
 		PIXEL8          =0x8021C,
-		WINDOW_MIN      =0x80220,
-		WINDOW_MAX      =0x80224,
+		WINDOW_MIN      =0x80220,  // Write only use P_W_MIN to read.
+		WINDOW_MAX      =0x80224,  // Write only use P_W_MIN to read.
 
 		DRAWING_ATTRIB_END=0x80228,
 
@@ -241,6 +246,15 @@ public:
 		PIXEL8_CMD      =0x8000C,
 		PIXEL8_BYTE_SWAP_CMD =0xE000C,
 		PIXEL8_BIT_REVERSE_CMD =0xF000C,
+
+		// Power 9100 only
+		// Power 9100 registers are 0x2xxx, but to make it common with Power 9000,
+		// 0x2000 (bit 13) will be moved to 0x80000 (bit 19).
+		// Therefore, keep it 0x80xxx even for Power 9100 registers.
+		COLOR2=          0x80238, // 010 0010 0011 1000 P9100 only
+		COLOR3=          0x8023C, // 010 0010 0011 1100 P9100 only
+		BYTE_WIN_MIN=    0x802A0, // 010 0010 1010 0000 P9100 only
+		BYTE_WIN_MAX=    0x802A4, // 010 0010 1010 0100 P9100 only
 	};
 
 	class State
@@ -263,6 +277,9 @@ public:
 		Vec2i coord[COORD_MAX];
 		uint32_t metaCoordType[COORD_MAX];
 
+		uint32_t color2_3[2];  // P9100 only.
+		uint32_t byteWinMinMax[2]; // P9100 only.
+
 		uint32_t btCommandReg[4];
 
 		AnalogPalette plt;
@@ -282,8 +299,8 @@ public:
 		Vec2i pixelLeftUp,pixelCurrent;
 		int pixelWid=0,pixelYIncrement=1; // Keep these signed.  Coordinates may go negative.  Don't mix signed and unsigned.
 
-		uint16_t fmt3632RegSel=0;  // What is this register for??
-		uint8_t fmt3632Regs[FMT3632REG_LEN];
+		uint16_t fmt3632RegSel=0;  // What is this register for?? -> Looks like Configuration Registers.
+		uint8_t fmt3632Regs[FMT3632REG_LEN];  // See p.17 of Power 9100 Graphics Controller Datasheet.
 
 		uint32_t bitsPerPixel=8;
 		bool highColor565=false;
