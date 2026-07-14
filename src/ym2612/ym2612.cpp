@@ -263,9 +263,14 @@ void YM2612::MakeTLtoDB100(void)
 {
 	for(unsigned int TL=0; TL<128; ++TL)
 	{
-		TLtoDB100[TL]=TL*75;
+		TLtoDB100[TL]=0;
+		for(size_t bit_count=0; bit_count<7; bit_count++)
+		{
+			TLtoDB100[TL]+=(TL&(1<<bit_count))?75*(1<<bit_count):0;
+		}
 	}
 }
+
 void YM2612::MakeSLtoDB100(void)
 {
 	for(unsigned int SL=0; SL<15; ++SL)
