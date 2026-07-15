@@ -417,7 +417,28 @@ bool FMT3631::IsReadableParameter(uint32_t &data,uint32_t physAddr) const
 	}
 	if(POWER_UP_CONFIG==physAddr-state.ControlBaseAddr)
 	{
-		data=0; // I have no idea what should be returned.  But, returning zero prevents crash.  Returning 0xffffffff crashes Windows FMT-3632 driver.
+		if(true==state.isFMT3632)
+		{
+			// This is used for selecting a possible-bpp table, and a jump table.
+			// Only 0,1,2,4, or 8 are possible.
+			//             0     1     2           4
+			// DS:00000328 4C 0B 18 0C AC 0C 00 00 4C 0B 00 00 00 00 00 00|L       L
+			//             8
+			// DS:00000338 2C 0D 00 00 00 00 00 00 00 00 00 00 00 00 00 00|,
+
+			// 0: Thinking it's Power 9000.  Cannot select 24-bit color (Screen corrupts).
+			// 1: Even cannot select 16-bit color (Screen becomes half width)
+			// 2: Even cannot select 16-bit color (Screen becomes half width)
+			// 4: Crash
+			// 8: Even cannot select 16-bit color (Screen becomes half width)
+
+			// But, P9100 is pixel-size aware.  Maybe HRZF-HRZR gives the number of pixels in one line?
+			data=0;
+		}
+		else
+		{
+			data=0;
+		}
 		return true;
 	}
 	return false;
@@ -1065,7 +1086,19 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 		cpputil::PutDword(color[0],fgColor);
 		cpputil::PutDword(color[1],bgColor);
 
-		raster&=~RASTER_OVERSIZED; // I don't care oversized or not.
+		if(0==(raster&RASTER_OVERSIZED)) // Well, I guess I need to care.
+		{
+			if(x0<x1)
+			{
+				--x1;
+			}
+			if(y0<y1)
+			{
+				--y1;
+			}
+		}
+
+		raster&=~RASTER_OVERSIZED;
 		raster&=0xFF;
 		for(auto y=y0; y<=y1; ++y)
 		{
@@ -1108,6 +1141,20 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 						case 0xf0: // Copy
 							memcpy(ptr,color[0]+colorIndex,bytesPerPixel);
 							break;
+						case 0x5a: // Probably NOT  Low 4-bits do not make sense though.
+							// b7  0   Pattern* Source* Destination
+							// b6  1   Pattern* Source*~Destination
+							// b5  0   Pattern*~Source* Destination
+							// b4  1   Pattern*~Source*~Destination
+							// b3  1  ~Pattern* Source* Destination
+							// b2  0  ~Pattern* Source*~Destination
+							// b1  1  ~Pattern*~Source* Destination
+							// b0  0  ~Pattern*~Source*~Destination
+							for(int i=0; i<bytesPerPixel; ++i)
+							{
+								ptr[i]=~ptr[i];
+							}
+							break;
 						}
 					}
 					colorIndex=(colorIndex+bytesPerPixel)&3;
@@ -1136,7 +1183,7 @@ void FMT3631::CmdNextPixels(uint32_t physAddr,uint32_t data)
 	}
 }
 
-class Pixel1CopyTransparent
+class Pixel1CopyTransparentP9000
 {
 public:
 	static inline void DoLogicOp(uint8_t &dst,bool fg,uint32_t fgColor,uint32_t bgColor)
@@ -1147,7 +1194,7 @@ public:
 		}
 	}
 };
-class Pixel1CopyOpaque
+class Pixel1CopyOpaqueP9000
 {
 public:
 	static inline void DoLogicOp(uint8_t &dst,bool fg,uint32_t fgColor,uint32_t bgColor)
@@ -1164,7 +1211,7 @@ public:
 };
 
 template <class LogicOp>
-void FMT3631::CmdPixel1Loop(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap)
+void FMT3631::CmdPixel1LoopP9000(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap)
 {
 	uint32_t count=1+((physAddr>>2)&31);
 
@@ -1227,6 +1274,109 @@ void FMT3631::CmdPixel1Loop(uint32_t physAddr,uint32_t data,bool byteSwap,bool b
 	}
 }
 
+class Pixel1CopyTransparentP9100BG
+{
+public:
+	static inline void DoLogicOp(uint8_t *pixelPtr,int bytesPerPixel,bool fg,uint8_t color[2][4],unsigned int colorPtr);
+};
+void Pixel1CopyTransparentP9100BG::DoLogicOp(uint8_t *pixelPtr,int bytesPerPixel,bool fg,uint8_t color[2][4],unsigned int colorPtr)
+{
+	if(true==fg)
+	{
+		memcpy(pixelPtr,color[1]+colorPtr,bytesPerPixel);
+	}
+}
+
+class Pixel1CopyOpaqueP9100BG
+{
+public:
+	static inline void DoLogicOp(uint8_t *pixelPtr,int bytesPerPixel,bool fg,uint8_t color[2][4],unsigned int colorPtr);
+};
+void Pixel1CopyOpaqueP9100BG::DoLogicOp(uint8_t *pixelPtr,int bytesPerPixel,bool fg,uint8_t color[2][4],unsigned int colorPtr)
+{
+	if(true==fg)
+	{
+		memcpy(pixelPtr,color[1]+colorPtr,bytesPerPixel);
+	}
+	else
+	{
+		memcpy(pixelPtr,color[0]+colorPtr,bytesPerPixel);
+	}
+}
+
+template <class LogicOp>
+void FMT3631::CmdPixel1LoopP9100(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap)
+{
+	uint32_t count=1+((physAddr>>2)&31);
+
+	if(true==bitSwap && true==byteSwap)
+	{
+		auto dataRev=data;
+		data=0;
+		uint32_t tstBit=0x80000000,orBit=1;
+		while(0!=tstBit)
+		{
+			if(dataRev&tstBit)
+			{
+				data|=orBit;
+			}
+			tstBit>>=1;
+			orBit<<=1;
+		}
+	}
+	else if(true==byteSwap)
+	{
+		data=ByteSwap32(data);
+	}
+
+	state.pixelYIncrement=state.coord[3].y();
+
+	auto fgColor=*GetControlWordPtr(FGCOLOR);
+	auto bgColor=*GetControlWordPtr(BGCOLOR);
+	auto bytesPerPixel=BytesPerPixel();
+	auto bytesPerLine=BytesPerLine();
+
+	uint8_t color[2][4];
+	cpputil::PutDword(color[0],fgColor);
+	cpputil::PutDword(color[1],bgColor);
+
+	auto winMin=GetWindowMin();
+	auto winMax=GetWindowMax();
+
+	uint8_t *lineTop=state.vram.data()+bytesPerLine*state.pixelCurrent.y();
+	int colorPtr=0;
+
+	while(0<count)
+	{
+		bool fg=data&0x80000000;
+		data<<=1;
+
+		if(state.pixelCurrent.IsInsideWindow(winMin,winMax))
+		{
+			uint8_t *destPixel=lineTop+state.pixelCurrent.x()*bytesPerPixel;
+			LogicOp::DoLogicOp(destPixel,bytesPerPixel,fg,color,colorPtr);
+		}
+
+		++state.pixelCurrent.x();
+		colorPtr=(colorPtr+bytesPerPixel)&3;
+		if(state.pixelLeftUp.x()+state.pixelWid<=state.pixelCurrent.x())
+		{
+			state.pixelCurrent.x()=state.pixelLeftUp.x();
+			state.pixelCurrent.y()+=state.pixelYIncrement;
+			if(0<state.pixelYIncrement)
+			{
+				lineTop+=bytesPerLine;
+			}
+			else
+			{
+				lineTop-=bytesPerLine;
+			}
+		}
+
+		--count;
+	}
+}
+
 void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap)
 {
 	if(true==monitorCtrl)
@@ -1235,24 +1385,53 @@ void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSw
 	}
 
 	uint16_t raster=*GetControlWordPtr(RASTER);
-	switch(raster)
+	raster&=~RASTER_OVERSIZED; // Doesn't matter for Pixel1
+	if(true!=state.isFMT3632)
 	{
-	default:
-		if(true==breakOnUnsupported)
+		switch(raster)
 		{
-			auto *towns=(FMTownsCommon *)vmPtr;
-			towns->debugger.ExternalBreak("Unsupported Raster type for Pixel1 ("+cpputil::Uitox(raster)+")");
+		default:
+			if(true==breakOnUnsupported)
+			{
+				auto *towns=(FMTownsCommon *)vmPtr;
+				towns->debugger.ExternalBreak("Unsupported Raster type for Pixel1 ("+cpputil::Uitox(raster)+")");
+			}
+			std::cout << "Unsupported Raster type for Pixel1 ("+cpputil::Uitox(raster)+")\n";
+			CmdPixel1LoopP9000<Pixel1CopyTransparentP9000>(physAddr,data,byteSwap,bitSwap);
+			break;
+
+		case 0xee22:
+			CmdPixel1LoopP9000<Pixel1CopyTransparentP9000>(physAddr,data,byteSwap,bitSwap);
+			break;
+
+		case 0xfc30:
+			CmdPixel1LoopP9000<Pixel1CopyOpaqueP9000>(physAddr,data,byteSwap,bitSwap);
+			break;
 		}
-		CmdPixel1Loop<Pixel1CopyTransparent>(physAddr,data,byteSwap,bitSwap);
-		break;
+	}
+	else
+	{
+		switch(raster)
+		{
+		default:
+			if(true==breakOnUnsupported)
+			{
+				auto *towns=(FMTownsCommon *)vmPtr;
+				towns->debugger.ExternalBreak("Unsupported Raster type for Pixel1 ("+cpputil::Uitox(raster)+")");
+			}
+			std::cout << "Unsupported Raster type for Pixel1 ("+cpputil::Uitox(raster)+")";
+			CmdPixel1LoopP9100<Pixel1CopyTransparentP9100BG>(physAddr,data,byteSwap,bitSwap);
+			break;
 
-	case 0xee22:
-		CmdPixel1Loop<Pixel1CopyTransparent>(physAddr,data,byteSwap,bitSwap);
-		break;
-
-	case 0xfc30:
-		CmdPixel1Loop<Pixel1CopyOpaque>(physAddr,data,byteSwap,bitSwap);
-		break;
+		case 0xCC:
+			// Transparent flag is off, but 0xCC is used for drawing letters on the title bar.
+			// Also looks to be using the bgColor instead of fgCOlor.
+			CmdPixel1LoopP9100<Pixel1CopyOpaqueP9100BG>(physAddr,data,byteSwap,bitSwap);
+			break;
+		case 0x80CC: // Transparent flag.
+			CmdPixel1LoopP9100<Pixel1CopyTransparentP9100BG>(physAddr,data,byteSwap,bitSwap);
+			break;
+		}
 	}
 }
 

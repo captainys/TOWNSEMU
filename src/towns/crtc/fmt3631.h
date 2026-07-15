@@ -427,7 +427,9 @@ public:
 	void CmdNextPixels(uint32_t physAddr,uint32_t data);
 	void CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap);
 	template <class Pixel1LogicOp>
-	void CmdPixel1Loop(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap);
+	void CmdPixel1LoopP9000(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap);
+	template <class Pixel1LogicOp>
+	void CmdPixel1LoopP9100(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap);
 
 	void CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap);
 
