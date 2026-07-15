@@ -62,6 +62,8 @@ void FMT3631::EnableAsFMT3631(void)
 	state.ControlBaseAddr=TOWNSADDR_FMT3631_BASE+CONTROL_BEGIN_3631;
 	state.VRAMBaseAddr=TOWNSADDR_FMT3631_BASE+VRAM_BEGIN_3631;
 	state.VRAMEndAddr=TOWNSADDR_FMT3631_BASE+VRAM_END_3631;
+	state.hwCursor.originX=32;
+	state.hwCursor.originY=32;
 }
 
 void FMT3631::EnableAsFMT3632(void)
@@ -74,6 +76,8 @@ void FMT3631::EnableAsFMT3632(void)
 	state.ControlBaseAddr=TOWNSADDR_FMT3632_BASE+CONTROL_BEGIN_3632;
 	state.VRAMBaseAddr=TOWNSADDR_FMT3632_BASE+VRAM_BEGIN_3632;
 	state.VRAMEndAddr=TOWNSADDR_FMT3632_BASE+VRAM_END_3632;
+	state.hwCursor.originX=0;
+	state.hwCursor.originY=0;
 }
 
 void FMT3631::PowerOn(void)
@@ -127,8 +131,16 @@ void FMT3631::Reset(void)
 
 	state.hwCursor.Reset();
 	state.hwCursor.defined=true; // I don't know what triggers to make it visible.
-	state.hwCursor.originX=32;
-	state.hwCursor.originY=32;
+	if(true!=state.isFMT3632)
+	{
+		state.hwCursor.originX=32;
+		state.hwCursor.originY=32;
+	}
+	else
+	{
+		state.hwCursor.originX=0;
+		state.hwCursor.originY=0;
+	}
 	state.hwCursor.wid=32;
 	state.hwCursor.twoColorCursor=false;
 	state.hwCursor.twoColor[0]=0xff;
@@ -1146,6 +1158,20 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 						case 0xf0: // Copy
 							memcpy(ptr,color[0]+colorPtr,bytesPerPixel);
 							break;
+						case 0x55: // Probably XOR
+							// b7  0   Pattern* Source* Destination
+							// b6  1   Pattern* Source*~Destination
+							// b5  0   Pattern*~Source* Destination
+							// b4  1   Pattern*~Source*~Destination
+							// b3  0  ~Pattern* Source* Destination
+							// b2  1  ~Pattern* Source*~Destination
+							// b1  0  ~Pattern*~Source* Destination
+							// b0  1  ~Pattern*~Source*~Destination
+							for(int i=0; i<bytesPerPixel; ++i)
+							{
+								ptr[i]^=color[0][colorPtr+i];
+							}
+							break;
 						case 0x5a: // Probably NOT  Low 4-bits do not make sense though.
 							// b7  0   Pattern* Source* Destination
 							// b6  1   Pattern* Source*~Destination
@@ -1772,13 +1798,14 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 			}
 			else if(P9100_CURSOR_REG_PATTERN==state.p9100CursorRegSel)
 			{
+				auto ptn=((data>>16)&0xFF);
 				if(state.hwCursor.ptnCount<512)
 				{
-					state.hwCursor.ORPtn[state.hwCursor.ptnCount]=data;
+					state.hwCursor.ORPtn[state.hwCursor.ptnCount]=ptn;
 				}
 				else if(state.hwCursor.ptnCount<1024)
 				{
-					state.hwCursor.ANDPtn[state.hwCursor.ptnCount-512]=data;
+					state.hwCursor.ANDPtn[state.hwCursor.ptnCount-512]=ptn;
 				}
 				++state.hwCursor.ptnCount;
 				state.hwCursor.ptnCount&=0x3FF;
@@ -1795,10 +1822,55 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 				if(P9100_CURSOR_REG_PATTERN==state.p9100CursorRegSel)
 				{
 					// Unpack pattern.
+					uint8_t packed[sizeof(state.hwCursor.ORPtn)+sizeof(state.hwCursor.ANDPtn)];
+					memcpy(packed,state.hwCursor.ORPtn,sizeof(state.hwCursor.ORPtn));
+					memcpy(packed+sizeof(state.hwCursor.ORPtn),state.hwCursor.ANDPtn,sizeof(state.hwCursor.ANDPtn));
+					for(int i=0; i<sizeof(packed); i+=2)
+					{
+						uint8_t ANDPtn=0,ORPtn=0;
+						uint16_t pk=(packed[i]<<8)|packed[i+1];
+						for(int j=0; j<8; ++j)
+						{
+							ANDPtn<<=1;
+							ORPtn<<=1;
+							if(pk&0x8000)
+							{
+								ANDPtn|=1;
+							}
+							if(pk&0x4000)
+							{
+								ORPtn|=1;
+							}
+							pk<<=2;
+						}
+						state.hwCursor.ORPtn[i/2]=ORPtn;
+						state.hwCursor.ANDPtn[i/2]=ANDPtn;
+					}
 				}
 			}
 			state.p9100CursorDataCount=0; // Array or not, reset the data counter.
 			state.hwCursor.ptnCount=0;  // Also reset the pattern count.
+		}
+		else if(P9100_PALETTE_COLOR_ADDR==masked) // 0x00200
+		{
+			state.writingPalette=(data>>16)&255;
+			state.writingPaletteRGBCount=0;
+		}
+		else if(P9100_PALETTE_COLOR_DATA==masked) // 0x00204
+		{
+			if(state.writingPaletteRGBCount<3)
+			{
+				state.writingPaletteRGB[state.writingPaletteRGBCount]=(data>>16)&255;
+				++state.writingPaletteRGBCount;
+				if(3==state.writingPaletteRGBCount)
+				{
+					state.plt.plt256[state.writingPalette].Set(
+					    state.writingPaletteRGB[0],
+					    state.writingPaletteRGB[1],
+					    state.writingPaletteRGB[2],
+					    255);
+				}
+			}
 		}
 	}
 
@@ -2147,7 +2219,8 @@ std::vector <std::string> FMT3631::GetStatusText(void) const
 
 	if(true==state.enabled)
 	{
-		text.push_back("FMT-3631 is enabled and ");
+		text.push_back(true==state.isFMT3632 ? "FMT-3632" : "FMT-3631");
+		text.back()+=(" is enabled and ");
 		text.back()+=std::string(true==IsEnabled() ? "active" : "inactive");
 
 		text.push_back(cpputil::Uitoa(state.bitsPerPixel)+" bits per pixel");
@@ -2224,7 +2297,7 @@ std::vector <std::string> FMT3631::GetStatusText(void) const
 	}
 	else
 	{
-		text.push_back("FMT-3631 is disabled.");
+		text.push_back("FMT-3631/3632 is disabled.");
 	}
 	return text;
 }
