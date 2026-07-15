@@ -171,7 +171,7 @@ UITXT
 +/profile/main/damperwireline ダンパーワイヤー線を表示してトリニトロン管を懐かしむ
 +/profile/main/loadstate 保存したステートから開始
 +/profile/main/cpufidelity_info MEDIUMレベルの再現性のCPUは、一部の例外処理を省略することで、CPUの実行速度を速くすることができます。\nMEDIUMレベルで大半のTowns OSアプリ (DOS6を含む)を実行することができますが、Windows 3.1, Windows 95,\nLinux等のOSを実行することはできません。\nHIGHレベルの再現性のCPUは、例外処理やページ処理などを厳格化することで、Windows 3.1, Windows 95,\nLinux, OSASK等のOSを実行することができますが、実行速度はやや遅くなります。
-+/profile/main/fmt3631 FMT-3631 Windowsアクセラレータカード有効
++/profile/main/fmt3631 Windowsアクセラレータカード
 
 
 +/profile/rs232c   RS232C

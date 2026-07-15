@@ -195,7 +195,11 @@ void ProfileDialog::Make(const UiText &ui)
 		scrnModeDrp->AddString("FULL SCREEN",YSFALSE);
 		scrnMaintainAspectBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/main/maintainaspect","Maintain Aspect Ratio"),YSFALSE);
 
-		fmt3631Btn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,ui("/profile/main/fmt3631","Enable FMT-3631 Windows Accelerator Card"),YSTRUE);
+		AddStaticText(0,FSKEY_NULL,ui("/profile/main/fmt3631","Windows Accelerator Card:"),YSTRUE);
+		fmt363xDrp=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSFALSE);
+		fmt363xDrp->AddString("None",YSTRUE);
+		fmt363xDrp->AddString("FMT-3631 (Power 9000)",YSFALSE);
+		fmt363xDrp->AddString("FMT-3632 (Power 9100)",YSFALSE);
 
 		AddStaticText(0,FSKEY_NULL,ui("/profile/main/model","Model:"),YSTRUE);
 
@@ -1502,6 +1506,23 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.enableLAN=(YSTRUE==enableLANBtn->GetCheck());
 
+	switch(fmt363xDrp->GetSelection())
+	{
+	case 0:
+	default:
+		profile.fmt3631=false;
+		profile.fmt3632=false;
+		break;
+	case 1:
+		profile.fmt3631=true;
+		profile.fmt3632=false;
+		break;
+	case 2:
+		profile.fmt3631=false;
+		profile.fmt3632=true;
+		break;
+	}
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -1547,7 +1568,18 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		maxButtonHoldTimeTxt[gameport][1]->SetInteger(profile.maxButtonHoldTime[gameport][1]/1000000);
 	}
 
-	fmt3631Btn->SetCheck(profile.fmt3631 ? YSTRUE : YSFALSE);
+	if(true==profile.fmt3631)
+	{
+		fmt363xDrp->Select(1);
+	}
+	else if(true==profile.fmt3632)
+	{
+		fmt363xDrp->Select(2);
+	}
+	else
+	{
+		fmt363xDrp->Select(0);
+	}
 
 	mouseIntegSpdSlider->SetPositionByScaledValue((double)profile.mouseIntegrationSpeed);
 	mouseIntegConsiderVRAMOffsetBtn->SetCheck(profile.considerVRAMOffsetInMouseIntegration ? YSTRUE : YSFALSE);
