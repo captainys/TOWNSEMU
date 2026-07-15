@@ -225,7 +225,14 @@ unsigned int FMT3631::BytesPerLine(void) const
 {
 	auto br=*GetControlWordPtr(HRZBR);
 	auto bf=*GetControlWordPtr(HRZBF);
-	return (bf-br)*4;
+	if(true!=state.isFMT3632)
+	{
+		return (bf-br)*4;
+	}
+	else
+	{
+		return (bf-br)*8;
+	}
 }
 
 unsigned int FMT3631::BytesPerPixel(void) const
@@ -427,13 +434,11 @@ bool FMT3631::IsReadableParameter(uint32_t &data,uint32_t physAddr) const
 			// DS:00000338 2C 0D 00 00 00 00 00 00 00 00 00 00 00 00 00 00|,
 
 			// 0: Thinking it's Power 9000.  Cannot select 24-bit color (Screen corrupts).
-			// 1: Even cannot select 16-bit color (Screen becomes half width)
-			// 2: Even cannot select 16-bit color (Screen becomes half width)
+			// 1: ?
+			// 2: ?
 			// 4: Crash
-			// 8: Even cannot select 16-bit color (Screen becomes half width)
-
-			// But, P9100 is pixel-size aware.  Maybe HRZF-HRZR gives the number of pixels in one line?
-			data=0;
+			// 8: Works.  But, bytesPerLine becomes (HRZBF-HRZBR)*8.  Maybe it is what it should be.
+			data=(8<<12);
 		}
 		else
 		{
@@ -1117,7 +1122,7 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 
 			if(clip[0].y()<=y)
 			{
-				uint32_t colorIndex=0;
+				uint32_t colorPtr=0;
 				for(auto x=x0; x<=x1; ++x)
 				{
 					if(clip[1].x()<x)
@@ -1139,7 +1144,7 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 							memset(ptr,0,bytesPerPixel);
 							break;
 						case 0xf0: // Copy
-							memcpy(ptr,color[0]+colorIndex,bytesPerPixel);
+							memcpy(ptr,color[0]+colorPtr,bytesPerPixel);
 							break;
 						case 0x5a: // Probably NOT  Low 4-bits do not make sense though.
 							// b7  0   Pattern* Source* Destination
@@ -1157,7 +1162,10 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 							break;
 						}
 					}
-					colorIndex=(colorIndex+bytesPerPixel)&3;
+					if(bytesPerPixel<3)
+					{
+						colorPtr=(colorPtr+bytesPerPixel)&3;
+					}
 					ptr+=bytesPerPixel;
 					patternBit>>=1;
 					if(0==patternBit)
@@ -1358,7 +1366,10 @@ void FMT3631::CmdPixel1LoopP9100(uint32_t physAddr,uint32_t data,bool byteSwap,b
 		}
 
 		++state.pixelCurrent.x();
-		colorPtr=(colorPtr+bytesPerPixel)&3;
+		if(bytesPerPixel<3)
+		{
+			colorPtr=(colorPtr+bytesPerPixel)&3;
+		}
 		if(state.pixelLeftUp.x()+state.pixelWid<=state.pixelCurrent.x())
 		{
 			state.pixelCurrent.x()=state.pixelLeftUp.x();
