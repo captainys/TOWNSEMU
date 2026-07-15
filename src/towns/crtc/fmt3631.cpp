@@ -1674,13 +1674,12 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 			if(state.hwCursor.ptnCount<512)
 			{
 				state.hwCursor.ORPtn[state.hwCursor.ptnCount]=data;
-				++state.hwCursor.ptnCount;
 			}
 			else if(state.hwCursor.ptnCount<1024)
 			{
 				state.hwCursor.ANDPtn[state.hwCursor.ptnCount-512]=data;
-				++state.hwCursor.ptnCount;
 			}
+			++state.hwCursor.ptnCount;
 			state.hwCursor.ptnCount&=0x3FF;
 			return true;
 		}
@@ -1736,6 +1735,70 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 		{
 			state.hwCursor.Y=(state.hwCursorXY_LowByte[1]&255)|(data<<8);
 			return true;
+		}
+	}
+	else
+	{
+		if(masked==P9100_CURSOR_REGSEL) // 210
+		{
+			state.p9100CursorRegSel=(data>>16)&0xFF;
+			return true;
+		}
+		else if(masked==P9100_CURSOR_DATA) // 218
+		{
+			if(P9100_CURSOR_REG_ON_OFF==state.p9100CursorRegSel)
+			{
+				state.hwCursor.defined=(0!=(data&0x00020000));
+				state.hwCursor.twoColorCursor=0;
+			}
+			else if(P9100_CURSOR_REG_POSITION==state.p9100CursorRegSel)
+			{
+				switch(state.p9100CursorDataCount)
+				{
+				case 0:
+					state.hwCursorXY_LowByte[0]=(data>>16)&0xFF;
+					break;
+				case 1:
+					state.hwCursor.X=((data>>8)&0xFF00)|state.hwCursorXY_LowByte[0];
+					break;
+				case 2:
+					state.hwCursorXY_LowByte[1]=(data>>16)&0xFF;
+					break;
+				case 3:
+					state.hwCursor.Y=((data>>8)&0xFF00)|state.hwCursorXY_LowByte[1];
+					break;
+				}
+				++state.p9100CursorDataCount;
+			}
+			else if(P9100_CURSOR_REG_PATTERN==state.p9100CursorRegSel)
+			{
+				if(state.hwCursor.ptnCount<512)
+				{
+					state.hwCursor.ORPtn[state.hwCursor.ptnCount]=data;
+				}
+				else if(state.hwCursor.ptnCount<1024)
+				{
+					state.hwCursor.ANDPtn[state.hwCursor.ptnCount-512]=data;
+				}
+				++state.hwCursor.ptnCount;
+				state.hwCursor.ptnCount&=0x3FF;
+			}
+			return true;
+		}
+		else if(masked==P9100_CURSOR_IS_ARRAYDATA) // 21C
+		{
+			if(0!=(data&0x010000)) // Next data is an array data.
+			{
+			}
+			else // Array data done.
+			{
+				if(P9100_CURSOR_REG_PATTERN==state.p9100CursorRegSel)
+				{
+					// Unpack pattern.
+				}
+			}
+			state.p9100CursorDataCount=0; // Array or not, reset the data counter.
+			state.hwCursor.ptnCount=0;  // Also reset the pattern count.
 		}
 	}
 
@@ -2200,6 +2263,8 @@ void FMT3631::SpecificSerialize(std::vector <unsigned char> &data,std::string st
 	PushUint32(data,state.color2_3[1]); // Version 2
 	PushUint32(data,state.byteWinMinMax[0]); // Version 2
 	PushUint32(data,state.byteWinMinMax[1]); // Version 2
+	PushUint32(data,state.p9100CursorRegSel); // Version 2
+	PushUint32(data,state.p9100CursorDataCount); // Version 2
 
 
 	PushInt32(data,state.nLoadedCoord);
@@ -2307,6 +2372,8 @@ bool FMT3631::SpecificDeserialize(const unsigned char *&data,std::string stateFN
 		state.color2_3[1]=ReadUint32(data);
 		state.byteWinMinMax[0]=ReadUint32(data);
 		state.byteWinMinMax[1]=ReadUint32(data);
+		state.p9100CursorRegSel=ReadUint32(data);
+		state.p9100CursorDataCount=ReadUint32(data);
 	}
 
 	state.nLoadedCoord=ReadInt32(data);

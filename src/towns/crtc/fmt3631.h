@@ -111,6 +111,14 @@ public:
 		ALT_READ_BANK   =0x00010,
 		ALT_WRITE_BANK  =0x00014,
 
+		P9100_CURSOR_REGSEL=      0x00210,
+			P9100_CURSOR_REG_ON_OFF=0x30,   // 0xFC:Off  0xFE:On  Prob b1 is the switch.
+			P9100_CURSOR_REG_PATTERN=0x00,
+			P9100_CURSOR_REG_POSITION=0x31,
+		P9100_CURSOR_UNKNOWN=     0x00214,
+		P9100_CURSOR_DATA=        0x00218,
+		P9100_CURSOR_IS_ARRAYDATA=0x0021C, // 1->Sequence of data  0->1-byte of data
+
 		// Parameter Engine Registers 4.4
 		// Device Coordinate
 		DEVICE_COORD    =0x81000, // See 4.4.1 for low 8 bits.
@@ -286,6 +294,9 @@ public:
 		uint32_t byteWinMinMax[2]; // P9100 only.
 
 		uint32_t btCommandReg[4];
+
+		uint32_t p9100CursorRegSel=0;
+		uint32_t p9100CursorDataCount=0;
 
 		AnalogPalette plt;
 		HardwareMouseCursor hwCursor;
