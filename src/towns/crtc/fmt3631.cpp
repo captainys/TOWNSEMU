@@ -1054,12 +1054,20 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 					// Apparently X coordinate is multiplied by bytes-per-pixel by the software.
 					switch(raster&0xFFFF)
 					{
+					// FG    1111111100000000
+					// BG    1111000011110000
+					// SRC   1100110011001100
+					// DST   1010101010101010
 					default:
 						if(true==breakOnUnsupported)
 						{
 							auto *towns=(FMTownsCommon *)vmPtr;
 							towns->debugger.ExternalBreak("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
 						}
+						break;
+					case 0xF0F0: // Used by Windows 3.1
+					    // Same as IGM_B_MASK of Linux P9000 driver, then bgColor?
+						*ptr=bgColor;
 						break;
 					case 0xff00: // Copy
 						*ptr=fgColor;
@@ -1068,6 +1076,16 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 						*ptr=~*ptr;
 						break;
 					case 0x55aa: // Xor
+						*ptr^=fgColor;
+						break;
+					case 0x569a: // Supposed to be Pixel1 XOR
+						// FG    1111111100000000
+						// BG    1111000011110000
+						// SRC   1100110011001100
+						// DST   1010101010101010
+						// ----------------------
+						// 569A  0101011010011010
+						// How come this becomes XOR?  
 						*ptr^=fgColor;
 						break;
 					case 0xFC30: // Pattern=0->BG,  1->FG.  If use_pattern==false, always FG (probably)
@@ -1240,6 +1258,38 @@ public:
 		else
 		{
 			dst=bgColor;
+		}
+	}
+};
+
+class Pixel1SrcANDDstOpaqueP9000
+{
+public:
+	static inline void DoLogicOp(uint8_t &dst,bool fg,uint32_t fgColor,uint32_t bgColor)
+	{
+		if(true==fg)
+		{
+			dst&=fgColor;
+		}
+		else
+		{
+			dst&=bgColor;
+		}
+	}
+};
+
+class Pixel1NotSrcOrDstP9000
+{
+public:
+	static inline void DoLogicOp(uint8_t &dst,bool fg,uint32_t fgColor,uint32_t bgColor)
+	{
+		if(true==fg)
+		{
+			dst=((~fgColor)|dst);
+		}
+		else
+		{
+			dst=((~bgColor)|dst);
 		}
 	}
 };
@@ -1435,6 +1485,14 @@ void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSw
 			}
 			std::cout << "Unsupported Raster type for Pixel1 ("+cpputil::Uitox(raster)+")\n";
 			CmdPixel1LoopP9000<Pixel1CopyTransparentP9000>(physAddr,data,byteSwap,bitSwap);
+			break;
+
+		case 0xa820: // Used by Windows 3.1   Supposed to be SRC and DST Opaque.
+			CmdPixel1LoopP9000<Pixel1SrcANDDstOpaqueP9000>(physAddr,data,byteSwap,bitSwap);
+			break;
+
+		case 0xABEF: // Used by Windows 3.1   0xABEF=~0x5410=~(src AND NOT dst)=NOT src OR dst
+			CmdPixel1LoopP9000<Pixel1NotSrcOrDstP9000>(physAddr,data,byteSwap,bitSwap);
 			break;
 
 		case 0xee22:
