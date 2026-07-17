@@ -251,9 +251,11 @@ public:
 		QUAD_CMD        =0x80008,
 		BLIT_CMD        =0x80004,
 		PIXEL1_CMD      =0x80080,
+		PIXEL1_WORD_SWAP_CMD= 0xC0080,
 		PIXEL1_BYTE_SWAP_CMD =0xE0080,
 		PIXEL1_BIT_REVERSE_CMD=0xF0080,
 		PIXEL8_CMD      =0x8000C,
+		PIXEL8_WORD_SWAP_CMD=0xC000C,
 		PIXEL8_BYTE_SWAP_CMD =0xE000C,
 		PIXEL8_BIT_REVERSE_CMD =0xF000C,
 
@@ -296,6 +298,7 @@ public:
 		uint32_t byteWinMinMax[2]; // P9100 only.
 
 		uint32_t btCommandReg[4];
+		uint8_t btWriteAddr_Low=0;
 
 		uint32_t p9100CursorRegSel=0;
 		uint32_t p9100CursorDataCount=0;
@@ -351,6 +354,15 @@ public:
 	static int U32toS32(uint32_t in);
 	static uint32_t S32toU32(int in);
 	static uint32_t ByteSwap32(uint32_t in);
+
+	uint16_t GetBtWriteAddr(void) const
+	{
+		uint16_t addr=0;
+		addr=state.btCommandReg[3]&3;
+		addr<<=8;
+		addr|=uint8_t(state.btWriteAddr_Low);
+		return addr;
+	}
 
 	inline uint32_t Translate3631to3632(uint32_t addr) const
 	{
@@ -438,13 +450,13 @@ public:
 
 	// Pixels Command
 	void CmdNextPixels(uint32_t physAddr,uint32_t data);
-	void CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap);
+	void CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap,bool wordSwap);
 	template <class Pixel1LogicOp>
 	void CmdPixel1LoopP9000(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap);
 	template <class Pixel1LogicOp>
 	void CmdPixel1LoopP9100(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap);
 
-	void CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap);
+	void CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap,bool wordSwap);
 
 	uint32_t CmdQuad(uint32_t physAddr);
 	uint32_t CmdBlit(uint32_t physAddr);

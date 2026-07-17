@@ -88,6 +88,7 @@ void FMT3631::PowerOn(void)
 void FMT3631::Reset(void)
 {
 	memset(state.btCommandReg,0,sizeof(state.btCommandReg));
+	state.btWriteAddr_Low=0;
 
 	state.masterSwitch=0;
 	state.sysconfig=0;
@@ -1464,11 +1465,16 @@ void FMT3631::CmdPixel1LoopP9100(uint32_t physAddr,uint32_t data,bool byteSwap,b
 	}
 }
 
-void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap)
+void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap,bool wordSwap)
 {
 	if(true==monitorCtrl)
 	{
 		std::cout << "Pixel1 " << state.pixelCurrent.x() << " " << state.pixelCurrent.y() << " " << state.pixelYIncrement << "\n";
+	}
+
+	if(true==wordSwap)
+	{
+		data=(data<<16)|((data>>16)&0xFFFF);
 	}
 
 	uint16_t raster=*GetControlWordPtr(RASTER);
@@ -1530,7 +1536,7 @@ void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSw
 	}
 }
 
-void FMT3631::CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap)
+void FMT3631::CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap,bool wordSwap)
 {
 	if(true==monitorCtrl)
 	{
@@ -1824,11 +1830,12 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 		}
 		else if(masked==BT_WRITE_ADDR)
 		{
-			if(BT_CURS_OR_PTN==data)
+			state.btWriteAddr_Low=uint8_t(data);
+			if(0==GetBtWriteAddr())
 			{
 				state.hwCursor.ptnCount=0;
 			}
-			if(BT_CURS_AND_PTN==data)
+			else // Can be in the middle, but it is unlikely to specify a random address.  It should be zero or else.
 			{
 				state.hwCursor.ptnCount=512;
 			}
@@ -2032,30 +2039,43 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 	}
 	else if((0xFFF80&physAddr)==PIXEL1_CMD)
 	{
-		CmdPixel1(physAddr,data,false,false);
+		CmdPixel1(physAddr,data,false,false,false);
 		return true;
 	}
 	else if((0xFFF80&physAddr)==PIXEL1_BYTE_SWAP_CMD)
 	{
-		CmdPixel1(physAddr,data,true,false);
+		CmdPixel1(physAddr,data,true,false,false);
+		return true;
+	}
+	else if((0xFFF80&physAddr)==PIXEL1_WORD_SWAP_CMD)
+	{
+		CmdPixel1(physAddr,data,false,false,true);
 		return true;
 	}
 	else if((0xFFF80&physAddr)==PIXEL1_BIT_REVERSE_CMD)
 	{
-		CmdPixel1(physAddr,data,true,true);
+		CmdPixel1(physAddr,data,true,true,false);
 		return true;
 	}
 	else if(masked==PIXEL8_CMD)
 	{
-		CmdPixel8(physAddr,data,false,false);
+		CmdPixel8(physAddr,data,false,false,false);
+		return true;
 	}
 	else if(masked==PIXEL8_BYTE_SWAP_CMD)
 	{
-		CmdPixel8(physAddr,data,true,true);
+		CmdPixel8(physAddr,data,true,true,false);
+		return true;
 	}
 	else if(masked==PIXEL8_BIT_REVERSE_CMD)
 	{
-		CmdPixel8(physAddr,data,true,false);
+		CmdPixel8(physAddr,data,true,false,false);
+		return true;
+	}
+	else if(masked==PIXEL8_WORD_SWAP_CMD)
+	{
+		CmdPixel8(physAddr,data,false,false,true);
+		return true;
 	}
 	else if(masked==QUAD_CMD)
 	{
@@ -2517,7 +2537,7 @@ void FMT3631::SpecificSerialize(std::vector <unsigned char> &data,std::string st
 	PushUint32(data,state.byteWinMinMax[1]); // Version 2
 	PushUint32(data,state.p9100CursorRegSel); // Version 2
 	PushUint32(data,state.p9100CursorDataCount); // Version 2
-
+	PushUint16(data,state.btWriteAddr_Low); //Version 2
 
 	PushInt32(data,state.nLoadedCoord);
 	PushInt32(data,state.lastLoadedCoord);
@@ -2626,6 +2646,7 @@ bool FMT3631::SpecificDeserialize(const unsigned char *&data,std::string stateFN
 		state.byteWinMinMax[1]=ReadUint32(data);
 		state.p9100CursorRegSel=ReadUint32(data);
 		state.p9100CursorDataCount=ReadUint32(data);
+		state.btWriteAddr_Low=ReadUint16(data);
 	}
 
 	state.nLoadedCoord=ReadInt32(data);
