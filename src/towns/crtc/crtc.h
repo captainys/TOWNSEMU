@@ -345,6 +345,7 @@ public:
 			}
 		}
 	}
+	void PreponeTownsNextFastDevicePollingTime(void) const;
 private:
 	void TurnOffVSYNCIRQ(void);
 	void TurnOnVSYNCIRQ(void);

@@ -726,6 +726,17 @@ public:
 		}
 	}
 
+	/* One application was confirmed to be updating CRTC in VSYNC INT handler.
+	   EGB function 02H does not CLI, so VSYNC INT could come in any time while EGB is updating CRTC.
+	   In the worst case, it could come in after EGB writing to I/O 440H (address latch) before writing to I/O 442H (CRTC data).
+	   But the application was running on the actual hardware because EGB function 02H busy-waits
+	   VSYNC then updated CRTC registers.
+	   To emulate this, VSYNC INT must come in exactly at the raising edge of VSYNC I/O bit.
+	   This function is called from CRTC when the application reads VSYNC I/O so that VSYNC INT will be synchronized with
+	   the I/O reading.
+	*/
+	void PreponeNextFastDevicePollingTime(int64_t timeInNanosec);
+
 	/*! Check Rendering Timer and render if townsTime catches up with the timer.
 	    It will increment rendering timer.
 	    Returns true if rendered.

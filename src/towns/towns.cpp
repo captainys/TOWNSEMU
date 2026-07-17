@@ -1366,6 +1366,11 @@ void FMTownsCommon::RunFastDevicePollingInternal(void)
 	state.nextFastDevicePollingTime=state.townsTime+FAST_DEVICE_POLLING_INTERVAL;
 }
 
+void FMTownsCommon::PreponeNextFastDevicePollingTime(int64_t timeInNanosec)
+{
+	state.nextFastDevicePollingTime=std::min(state.nextFastDevicePollingTime,timeInNanosec);
+}
+
 void FMTownsCommon::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 {
 	physMem.SetUpVRAMAccess(TownsTypeToCPUType(townsType),breakOnRead,breakOnWrite);

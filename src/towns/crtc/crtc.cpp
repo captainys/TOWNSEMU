@@ -180,6 +180,11 @@ bool TownsCRTC::AvoidFirst1msOfVerticalPeriod(const unsigned long long int towns
 	return  1000000<intoFrame && intoFrame<CRT_VERTICAL_DURATION;
 }
 
+void TownsCRTC::PreponeTownsNextFastDevicePollingTime(void) const
+{
+	townsPtr->PreponeNextFastDevicePollingTime(NextVSYNCRisingEdge(townsPtr->state.townsTime));
+}
+
 bool TownsCRTC::InSinglePageMode(void) const
 {
 	if(true==fmt3631->IsEnabled())
@@ -1353,6 +1358,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			     |(true==DSPTH1 ? 0x20 : 0)
 			     |(true==DSPTV0 ? 0x40 : 0)
 			     |(true==DSPTV1 ? 0x80 : 0);
+			PreponeTownsNextFastDevicePollingTime();
 		}
 		else
 		{
@@ -1392,6 +1398,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			break;
 		case HIGHRES_REG_VSYNC1:
 			// Based on TBIOS disassembly.
+			PreponeTownsNextFastDevicePollingTime();
 			if(true==InVSYNC(townsPtr->state.townsTime))
 			{
 				data=2;
@@ -1477,11 +1484,13 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		data=((state.highResCrtcReg[state.highResCrtcRegAddrLatch]>>24)&0xFF);
 		break;
 
-	case TOWNSIO_HSYNC_VSYNC:
+	case TOWNSIO_HSYNC_VSYNC: // 0xFDA0
+		PreponeTownsNextFastDevicePollingTime();
 		data= (true==InVSYNC(townsPtr->state.townsTime) ? 1 : 0)
 		     |(true==InHSYNC(townsPtr->state.townsTime) ? 2 : 0);
 		break;
 	case TOWNSIO_FMR_HSYNC_VSYNC: // 0xFF86
+		PreponeTownsNextFastDevicePollingTime();
 		data= (true==InVSYNC(townsPtr->state.townsTime) ? 0x04 : 0)
 		     |(true==InHSYNC(townsPtr->state.townsTime) ? 0x80 : 0)
 		     |0x10;
