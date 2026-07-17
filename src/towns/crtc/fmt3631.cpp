@@ -156,6 +156,19 @@ void FMT3631::Reset(void)
 	memset(state.fmt3632Regs,0,sizeof(state.fmt3632Regs));
 }
 
+void FMT3631::IsUnsupportedFeature(std::string msg) const
+{
+	if(true==breakOnUnsupported)
+	{
+		auto *towns=(FMTownsCommon *)vmPtr;
+		towns->debugger.ExternalBreak(msg);
+	}
+	else
+	{
+		std::cout << msg << "\n";
+	}
+}
+
 int FMT3631::U16toS16(uint32_t in)
 {
 	int x=in;
@@ -846,11 +859,7 @@ void FMT3631::DrawLine(Vec2i p0,Vec2i p1)
 		switch(raster&0xFFFF)
 		{
 		default:
-			if(true==breakOnUnsupported)
-			{
-				auto *towns=(FMTownsCommon *)vmPtr;
-				towns->debugger.ExternalBreak("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
-			}
+			IsUnsupportedFeature("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
 			break;
 		case 0xff00: // Copy
 			*ptr=fgColor;
@@ -1060,11 +1069,7 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 					// SRC   1100110011001100
 					// DST   1010101010101010
 					default:
-						if(true==breakOnUnsupported)
-						{
-							auto *towns=(FMTownsCommon *)vmPtr;
-							towns->debugger.ExternalBreak("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
-						}
+						IsUnsupportedFeature("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
 						break;
 					case 0xF0F0: // Used by Windows 3.1
 					    // Same as IGM_B_MASK of Linux P9000 driver, then bgColor?
@@ -1165,11 +1170,7 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 						switch(raster)
 						{
 						default:
-							if(true==breakOnUnsupported)
-							{
-								auto *towns=(FMTownsCommon *)vmPtr;
-								towns->debugger.ExternalBreak("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
-							}
+							IsUnsupportedFeature("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
 							break;
 						case 0:
 							memset(ptr,0,bytesPerPixel);
@@ -1484,12 +1485,7 @@ void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSw
 		switch(raster)
 		{
 		default:
-			if(true==breakOnUnsupported)
-			{
-				auto *towns=(FMTownsCommon *)vmPtr;
-				towns->debugger.ExternalBreak("Unsupported Raster type for Pixel1 ("+cpputil::Uitox(raster)+")");
-			}
-			std::cout << "Unsupported Raster type for Pixel1 ("+cpputil::Uitox(raster)+")\n";
+			IsUnsupportedFeature("Unsupported Raster type for Pixel1 "+cpputil::Uitox(raster));
 			CmdPixel1LoopP9000<Pixel1CopyTransparentP9000>(physAddr,data,byteSwap,bitSwap);
 			break;
 
@@ -1515,12 +1511,7 @@ void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSw
 		switch(raster)
 		{
 		default:
-			if(true==breakOnUnsupported)
-			{
-				auto *towns=(FMTownsCommon *)vmPtr;
-				towns->debugger.ExternalBreak("Unsupported Raster type for Pixel1 ("+cpputil::Uitox(raster)+")");
-			}
-			std::cout << "Unsupported Raster type for Pixel1 ("+cpputil::Uitox(raster)+")";
+			IsUnsupportedFeature("Unsupported Raster type for Pixel1 "+cpputil::Uitox(raster));
 			CmdPixel1LoopP9100<Pixel1CopyTransparentP9100BG>(physAddr,data,byteSwap,bitSwap);
 			break;
 
@@ -1574,11 +1565,7 @@ void FMT3631::CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSw
 					switch(raster)
 					{
 					default:
-						if(true==breakOnUnsupported)
-						{
-							auto *towns=(FMTownsCommon *)vmPtr;
-							towns->debugger.ExternalBreak("Unsupported Raster for Pixel8"+cpputil::Uitox(raster));
-						}
+						IsUnsupportedFeature("Unsupported Raster for Pixel8"+cpputil::Uitox(raster));
 						dst[i]=src[i];
 						break;
 					case 0x6666: // Presumably XOR.
@@ -1604,12 +1591,7 @@ void FMT3631::CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSw
 	}
 	else
 	{
-		if(true==breakOnUnsupported)
-		{
-			auto *towns=(FMTownsCommon *)vmPtr;
-			towns->debugger.ExternalBreak("Pixel8 not supported yet for FMT-3632.");
-		}
-		std::cout << "Pixel8 not supported yet for FMT-3632.\n";
+		IsUnsupportedFeature("Pixel8 not supported yet for FMT-3632.");
 	}
 }
 
@@ -1649,16 +1631,11 @@ uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fe
 		return 0;
 	}
 
-	std::cout << "General quad not implemented yet.  " << state.nLoadedCoord << " loaded coords\n";
+	IsUnsupportedFeature("General quad not implemented yet.  "+cpputil::Uitoa(state.nLoadedCoord)+" loaded coords");
 	std::cout << "(" << state.coord[0].x() << "," << state.coord[0].y() << ") " << cpputil::Ustox(state.metaCoordType[0]) << "\n";
 	std::cout << "(" << state.coord[1].x() << "," << state.coord[1].y() << ") " << cpputil::Ustox(state.metaCoordType[1]) << "\n";
 	std::cout << "(" << state.coord[2].x() << "," << state.coord[2].y() << ") " << cpputil::Ustox(state.metaCoordType[2]) << "\n";
 	std::cout << "(" << state.coord[3].x() << "," << state.coord[3].y() << ") " << cpputil::Ustox(state.metaCoordType[3]) << "\n";
-	if(true==breakOnUnsupported)
-	{
-		auto *towns=(FMTownsCommon *)vmPtr;
-		towns->debugger.ExternalBreak("General quad not implemented yet.\n");
-	}
 	state.nextLoadIndex=0;
 	return 0;
 }
@@ -1804,11 +1781,7 @@ uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 		}
 		else
 		{
-			if(true==breakOnUnsupported)
-			{
-				auto *towns=(FMTownsCommon *)vmPtr;
-				towns->debugger.ExternalBreak("Unsupported Raster for Blit "+cpputil::Uitox(raster));
-			}
+			IsUnsupportedFeature("Unsupported Raster for Blit "+cpputil::Uitox(raster));
 			CmdBlitLoop<BlitLogicOpCopy>(dstP0,dstP1,srcP0,srcP1);
 		}
 	}
@@ -1824,11 +1797,7 @@ uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 		}
 		else
 		{
-			if(true==breakOnUnsupported)
-			{
-				auto *towns=(FMTownsCommon *)vmPtr;
-				towns->debugger.ExternalBreak("Unsupported Raster for Blit "+cpputil::Uitox(raster));
-			}
+			IsUnsupportedFeature("Unsupported Raster for Blit "+cpputil::Uitox(raster));
 			CmdBlitLoop<BlitLogicOpCopy>(dstP0,dstP1,srcP0,srcP1);
 		}
 	}

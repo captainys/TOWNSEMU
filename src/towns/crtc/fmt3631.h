@@ -351,6 +351,8 @@ public:
 	void PowerOn(void) override;
 	void Reset(void) override;
 
+	void IsUnsupportedFeature(std::string msg) const;
+
 	static int U16toS16(uint32_t in);
 	static int U32toS32(uint32_t in);
 	static uint32_t S32toU32(int in);
