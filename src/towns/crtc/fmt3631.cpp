@@ -1663,6 +1663,97 @@ uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fe
 	return 0;
 }
 
+
+class FMT3631::BlitLogicOpCopy
+{
+public:
+	static inline void DoLogicForward(uint8_t *dst,uint8_t *src,size_t len)
+	{
+		memcpy(dst,src,len);
+	}
+	static inline void DoLogicBackward(uint8_t *dst,uint8_t *src,size_t len)
+	{
+		for(int x=len-1; 0<=x; --x)
+		{
+			dst[x]=src[x];
+		}
+	}
+};
+
+class FMT3631::BlitLogicOpXOR
+{
+public:
+	static inline void DoLogicForward(uint8_t *dst,uint8_t *src,size_t len)
+	{
+		for(int x=0; x<len; ++x)
+		{
+			dst[x]^=src[x];
+		}
+	}
+	static inline void DoLogicBackward(uint8_t *dst,uint8_t *src,size_t len)
+	{
+		for(int x=len-1; 0<=x; --x)
+		{
+			dst[x]^=src[x];
+		}
+	}
+};
+
+template <class BlitLogicOp>
+void FMT3631::CmdBlitLoop(Vec2i dstP0,Vec2i dstP1,Vec2i srcP0,Vec2i srcP1)
+{
+	if(dstP0.y()<srcP0.y())
+	{
+		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x();
+		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x();
+		auto wid=(1+srcP1.x()-srcP0.x());
+		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
+		{
+			BlitLogicOp::DoLogicForward(dstPtr,srcPtr,wid);
+			srcPtr+=BytesPerLine();
+			dstPtr+=BytesPerLine();
+		}
+	}
+	else if(dstP0.y()>srcP0.y())
+	{
+		auto srcPtr=state.vram.data()+srcP1.y()*BytesPerLine()+srcP0.x();
+		auto dstPtr=state.vram.data()+dstP1.y()*BytesPerLine()+dstP0.x();
+		auto wid=(1+srcP1.x()-srcP0.x());
+		for(int y=srcP1.y(); y>=srcP0.y(); --y)
+		{
+			BlitLogicOp::DoLogicForward(dstPtr,srcPtr,wid);
+			srcPtr-=BytesPerLine();
+			dstPtr-=BytesPerLine();
+		}
+	}
+	else if(dstP0.x()<srcP0.x())
+	{
+		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x();
+		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x();
+		auto wid=(1+srcP1.x()-srcP0.x());
+		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
+		{
+			BlitLogicOp::DoLogicForward(dstPtr,srcPtr,wid);
+			srcPtr+=BytesPerLine();
+			dstPtr+=BytesPerLine();
+		}
+	}
+	else
+	{
+		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x();
+		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x();
+		auto wid=(1+srcP1.x()-srcP0.x());
+		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
+		{
+			BlitLogicOp::DoLogicBackward(dstPtr,srcPtr,wid);
+			srcPtr+=BytesPerLine();
+			dstPtr+=BytesPerLine();
+		}
+	}
+}
+
+
+
 uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 {
 	auto srcP0=state.coord[0];
@@ -1700,55 +1791,45 @@ uint32_t FMT3631::CmdBlit(uint32_t physAddr)
 	}
 
 
-	if(dstP0.y()<srcP0.y())
+	auto raster=*GetControlWordPtr(RASTER);
+	if(true!=state.isFMT3632)
 	{
-		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x();
-		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x();
-		auto wid=(1+srcP1.x()-srcP0.x());
-		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
+		if(0x6666==(raster&0xFFFF)) // XOR.  Used by Windows 3.1 in 32-bit color mode.
 		{
-			memcpy(dstPtr,srcPtr,wid);
-			srcPtr+=BytesPerLine();
-			dstPtr+=BytesPerLine();
+			CmdBlitLoop<BlitLogicOpXOR>(dstP0,dstP1,srcP0,srcP1);
 		}
-	}
-	else if(dstP0.y()>srcP0.y())
-	{
-		auto srcPtr=state.vram.data()+srcP1.y()*BytesPerLine()+srcP0.x();
-		auto dstPtr=state.vram.data()+dstP1.y()*BytesPerLine()+dstP0.x();
-		auto wid=(1+srcP1.x()-srcP0.x());
-		for(int y=srcP1.y(); y>=srcP0.y(); --y)
+		else if(0xcccc==(raster&0xFFFF)) // Copy.
 		{
-			memcpy(dstPtr,srcPtr,wid);
-			srcPtr-=BytesPerLine();
-			dstPtr-=BytesPerLine();
+			CmdBlitLoop<BlitLogicOpCopy>(dstP0,dstP1,srcP0,srcP1);
 		}
-	}
-	else if(dstP0.x()<srcP0.x())
-	{
-		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x();
-		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x();
-		auto wid=(1+srcP1.x()-srcP0.x());
-		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
+		else
 		{
-			memcpy(dstPtr,srcPtr,wid);
-			srcPtr+=BytesPerLine();
-			dstPtr+=BytesPerLine();
+			if(true==breakOnUnsupported)
+			{
+				auto *towns=(FMTownsCommon *)vmPtr;
+				towns->debugger.ExternalBreak("Unsupported Raster for Blit "+cpputil::Uitox(raster));
+			}
+			CmdBlitLoop<BlitLogicOpCopy>(dstP0,dstP1,srcP0,srcP1);
 		}
 	}
 	else
 	{
-		auto srcPtr=state.vram.data()+srcP0.y()*BytesPerLine()+srcP0.x();
-		auto dstPtr=state.vram.data()+dstP0.y()*BytesPerLine()+dstP0.x();
-		auto wid=(1+srcP1.x()-srcP0.x());
-		for(int y=srcP0.y(); y<=srcP1.y(); ++y)
+		if(0x66==(raster&0xFFFF)) // Probably XOR.
 		{
-			for(int x=wid-1; 0<=x; --x)
+			CmdBlitLoop<BlitLogicOpXOR>(dstP0,dstP1,srcP0,srcP1);
+		}
+		else if(0xcc==(raster&0xFFFF)) // Copy.
+		{
+			CmdBlitLoop<BlitLogicOpCopy>(dstP0,dstP1,srcP0,srcP1);
+		}
+		else
+		{
+			if(true==breakOnUnsupported)
 			{
-				dstPtr[x]=srcPtr[x];
+				auto *towns=(FMTownsCommon *)vmPtr;
+				towns->debugger.ExternalBreak("Unsupported Raster for Blit "+cpputil::Uitox(raster));
 			}
-			srcPtr+=BytesPerLine();
-			dstPtr+=BytesPerLine();
+			CmdBlitLoop<BlitLogicOpCopy>(dstP0,dstP1,srcP0,srcP1);
 		}
 	}
 

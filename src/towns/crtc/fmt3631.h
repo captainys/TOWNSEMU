@@ -461,6 +461,11 @@ public:
 
 	uint32_t CmdQuad(uint32_t physAddr);
 	uint32_t CmdBlit(uint32_t physAddr);
+	class BlitLogicOpCopy;
+	class BlitLogicOpXOR;
+	template <class BlitLogicOpPerLine>
+	void CmdBlitLoop(Vec2i dstP0,Vec2i dstP1,Vec2i srcP0,Vec2i srcP1);
+
 
 	bool IsCommand(uint32_t physAddr,uint32_t data);
 
