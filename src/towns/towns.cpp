@@ -1368,7 +1368,7 @@ void FMTownsCommon::RunFastDevicePollingInternal(void)
 
 void FMTownsCommon::PreponeNextFastDevicePollingTime(int64_t timeInNanosec)
 {
-	state.nextFastDevicePollingTime=std::min(state.nextFastDevicePollingTime,timeInNanosec);
+	state.nextFastDevicePollingTime=std::min<int64_t>(state.nextFastDevicePollingTime,timeInNanosec);
 }
 
 void FMTownsCommon::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
