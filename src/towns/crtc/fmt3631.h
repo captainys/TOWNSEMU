@@ -456,6 +456,7 @@ public:
 	void SetControlDword(uint32_t physAddr,uint32_t data);
 
 	std::vector <std::string> GetStatusText(void) const;
+	std::vector <std::string> GetAdditionalStatusText(void) const;
 
 	unsigned int FetchByte(unsigned int physAddr) const override;
 	unsigned int FetchWord(unsigned int physAddr) const override;

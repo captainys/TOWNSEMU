@@ -321,6 +321,7 @@ public:
 		DUMP_LAN,
 		DUMP_IOLOG,
 		DUMP_FMT3631,
+		DUMP_FMT3631MORE,
 	};
 
 	enum

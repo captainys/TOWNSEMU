@@ -1532,10 +1532,93 @@ void FMT3631::CmdPixel1(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSw
 
 void FMT3631::CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSwap)
 {
-	if(true==breakOnUnsupported)
+	if(true==monitorCtrl)
 	{
-		auto *towns=(FMTownsCommon *)vmPtr;
-		towns->debugger.ExternalBreak("Pixel8 not supported yet.\n");
+		std::cout << "Pixel8 " << state.pixelCurrent.x() << " " << state.pixelCurrent.y() << " " << state.pixelYIncrement << "\n";
+	}
+
+	if(true==bitSwap && true==byteSwap)
+	{
+		auto dataRev=data;
+		data=0;
+		uint32_t tstBit=0x80000000,orBit=1;
+		while(0!=tstBit)
+		{
+			if(dataRev&tstBit)
+			{
+				data|=orBit;
+			}
+			tstBit>>=1;
+			orBit<<=1;
+		}
+	}
+	else if(true==byteSwap)
+	{
+		data=ByteSwap32(data);
+	}
+
+	auto bytesPerLine=BytesPerLine();
+	uint16_t raster=*GetControlWordPtr(RASTER);
+	raster&=~RASTER_OVERSIZED; // Doesn't matter for Pixel1
+
+	state.pixelYIncrement=state.coord[3].y();
+
+	auto winMin=GetWindowMin();
+	auto winMax=GetWindowMax();
+
+	if(true!=state.isFMT3632)
+	{
+		uint8_t src[4]=
+		{
+			uint8_t(data>>24),
+			uint8_t(data>>16),
+			uint8_t(data>>8),
+			uint8_t(data)
+		};
+		if(winMin.y()<=state.pixelCurrent.y() && state.pixelCurrent.y()<=winMax.y())
+		{
+			uint8_t *dst=state.vram.data()+bytesPerLine*state.pixelCurrent.y()+state.pixelCurrent.x();
+			for(int i=0; i<4; ++i)
+			{
+				if(winMin.x()<=state.pixelCurrent.x() && state.pixelCurrent.x()<=winMax.x())
+				{
+					raster&=0xFFFF;
+					switch(raster)
+					{
+					default:
+						if(true==breakOnUnsupported)
+						{
+							auto *towns=(FMTownsCommon *)vmPtr;
+							towns->debugger.ExternalBreak("Unsupported Raster for Pixel8"+cpputil::Uitox(raster));
+						}
+						dst[i]=src[i];
+						break;
+					case 0x6666: // Presumably XOR.
+						dst[i]^=src[i];
+						break;
+					}
+				}
+				++state.pixelCurrent.x();
+			}
+		}
+		else
+		{
+			state.pixelCurrent.x()+=4;
+		}
+		if(state.pixelLeftUp.x()+state.pixelWid<=state.pixelCurrent.x())
+		{
+			state.pixelCurrent.x()=state.pixelLeftUp.x();
+			state.pixelCurrent.y()+=state.pixelYIncrement;
+		}
+	}
+	else
+	{
+		if(true==breakOnUnsupported)
+		{
+			auto *towns=(FMTownsCommon *)vmPtr;
+			towns->debugger.ExternalBreak("Pixel8 not supported yet for FMT-3632.");
+		}
+		std::cout << "Pixel8 not supported yet for FMT-3632.\n";
 	}
 }
 
@@ -2304,6 +2387,19 @@ std::vector <std::string> FMT3631::GetStatusText(void) const
 		               +" PixelOpWidth="
 		               +cpputil::Uitoa(state.pixelWid));
 
+		text.push_back("Hardware Mouse Cursor is ");
+		text.back()+=std::string(true==state.hwCursor.defined ? "Enabled" : "Disabled");
+		text.back().push_back(' ');
+		text.back()+=cpputil::Uitoa(state.hwCursor.wid);
+		text.back().push_back('x');
+		text.back()+=cpputil::Uitoa(state.hwCursor.wid);
+		text.back()+=" pixels at (";
+		text.back()+=cpputil::Uitoa(state.hwCursor.X);
+		text.back().push_back(',');
+		text.back()+=cpputil::Uitoa(state.hwCursor.Y);
+		text.back().push_back(')');
+
+
 		text.push_back("SYSCONFIG        =0x"+cpputil::Uitox(state.sysconfig));
 		text.push_back("INTERRUPT        =0x"+cpputil::Uitox(state.interrupt));
 		text.push_back("INTERRUPT_EN     =0x"+cpputil::Uitox(state.interrupt_en));
@@ -2360,6 +2456,31 @@ std::vector <std::string> FMT3631::GetStatusText(void) const
 	return text;
 }
 
+std::vector <std::string> FMT3631::GetAdditionalStatusText(void) const
+{
+	std::vector <std::string> text;
+
+	text.push_back("Hardware Mouse Cusros OR Pattern");
+	for(int i=0; i<sizeof(state.hwCursor.ORPtn); ++i)
+	{
+		if(0==i%32)
+		{
+			text.push_back("");
+		}
+		text.back()+=cpputil::Ubtox(state.hwCursor.ORPtn[i]);
+	}
+	text.push_back("Hardware Mouse Cusros AND Pattern");
+	for(int i=0; i<sizeof(state.hwCursor.ANDPtn); ++i)
+	{
+		if(0==i%32)
+		{
+			text.push_back("");
+		}
+		text.back()+=cpputil::Ubtox(state.hwCursor.ANDPtn[i]);
+	}
+
+	return text;
+}
 
 /*! Version used for serialization.
 */

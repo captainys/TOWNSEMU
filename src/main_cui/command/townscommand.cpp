@@ -365,6 +365,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["FMT-3631"]=DUMP_FMT3631;
 	dumpableMap["FMT3632"]=DUMP_FMT3631;
 	dumpableMap["FMT-3632"]=DUMP_FMT3631;
+	dumpableMap["FMT3631MORE"]=DUMP_FMT3631MORE;
 
 
 	breakEventMap["ICW1"]=   BREAK_ON_PIC_IWC1;
@@ -948,6 +949,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "FMT3631\n";
 	std::cout << "FMT-3631\n";
 	std::cout << "  FMT-3631 status.\n";
+	std::cout << "FMT3631MORE\n";
+	std::cout << "  MOre info about FMT-3631/3632.\n";
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Event that can break >>" << std::endl;
@@ -3296,6 +3299,14 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 		case DUMP_FMT3631:
 			{
 				for(auto str : towns.fmt3631.GetStatusText())
+				{
+					std::cout << str << "\n";
+				}
+			}
+			break;
+		case DUMP_FMT3631MORE:
+			{
+				for(auto str : towns.fmt3631.GetAdditionalStatusText())
 				{
 					std::cout << str << "\n";
 				}
