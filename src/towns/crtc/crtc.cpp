@@ -773,6 +773,13 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 				state.highResCrtcReg4Bit0=false;
 				state.highResCrtcReg4Bit1=false;
 			}
+			else if(1==data)
+			{
+				// Windows 3.1 24-bpp driver writes 0x01 and expect 0x01 back.
+				// I have no idea what's the **** this register is for.
+				state.highResCrtcReg4Bit0=true;
+				state.highResCrtcReg4Bit1=false;
+			}
 			break;
 		case HIGHRES_REG_PALINDEX:
 			state.highResCrtcPalette.codeLatch=data;
@@ -968,6 +975,13 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			if(0!=(data&2))
 			{
 				state.highResCrtcReg4Bit0=false;
+				state.highResCrtcReg4Bit1=false;
+			}
+			else if(1==data)
+			{
+				// Windows 3.1 24-bpp driver writes 0x01 and expect 0x01 back.
+				// I have no idea what's the **** this register is for.
+				state.highResCrtcReg4Bit0=true;
 				state.highResCrtcReg4Bit1=false;
 			}
 			break;
