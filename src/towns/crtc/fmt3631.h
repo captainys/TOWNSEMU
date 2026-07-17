@@ -338,6 +338,7 @@ public:
 	FMT3631 *mutableThis;
 	bool monitorCtrl=false,monitorVRAM=false;
 	bool breakOnUnsupported=false;
+	int sneak=0;
 
 	const char *DeviceName(void) const override {return "FMT3631";}
 

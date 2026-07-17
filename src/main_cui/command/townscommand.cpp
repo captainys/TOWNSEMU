@@ -299,6 +299,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["IOLOG"]=ENABLE_IOLOG;
 	featureMap["FMT3631MON"]=ENABLE_FMT3631MON;
 	featureMap["FMT3632MON"]=ENABLE_FMT3631MON;
+	featureMap["FMT3631SNEAK"]=ENABLE_FMT3631SNEAK;
+	featureMap["FMT3632SNEAK"]=ENABLE_FMT3631SNEAK;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -845,7 +847,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "IOLOG\n";
 	std::cout << "  I/O access log.\n";
 	std::cout << "FMT3631MON\n";
-	std::cout << "  FMT-3631 monitor.\n";
+	std::cout << "FMT3632MON\n";
+	std::cout << "  FMT-3631/3632 monitor.\n";
+	std::cout << "FMT3631SNEAK\n";
+	std::cout << "FMT3632SNEAK\n";
+	std::cout << "  FMT-3631/3632 sneak mode (show extra lines below visible part of the VRAM).\n";
 
 
 	std::cout << "<< Information that can be printed >>" << std::endl;
@@ -2219,7 +2225,11 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd,O
 			break;
 		case ENABLE_FMT3631MON:
 			towns.fmt3631.monitorCtrl=true;
-			std::cout << "Enabled FMT-3631 monitor.\n";
+			std::cout << "Enabled FMT-3631/3632 monitor.\n";
+			break;
+		case ENABLE_FMT3631SNEAK:
+			towns.fmt3631.sneak=64;
+			std::cout << "Enabled FMT-3631/3632 sneak.\n";
 			break;
 		}
 	}
@@ -2372,6 +2382,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd,
 		case ENABLE_FMT3631MON:
 			towns.fmt3631.monitorCtrl=false;
 			std::cout << "Disabled FMT-3631 monitor.\n";
+			break;
+		case ENABLE_FMT3631SNEAK:
+			towns.fmt3631.sneak=0;
+			std::cout << "Disabled FMT-3631/3632 sneak.\n";
 			break;
 		}
 	}

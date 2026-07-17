@@ -221,7 +221,7 @@ unsigned int FMT3631::Height(void) const
 {
 	auto br=*GetControlWordPtr(VRTBR);
 	auto bf=*GetControlWordPtr(VRTBF);
-	return bf-br;
+	return bf-br+sneak;
 }
 
 unsigned int FMT3631::Width(void) const
@@ -1543,25 +1543,7 @@ void FMT3631::CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSw
 		std::cout << "Pixel8 " << state.pixelCurrent.x() << " " << state.pixelCurrent.y() << " " << state.pixelYIncrement << "\n";
 	}
 
-	if(true==bitSwap && true==byteSwap)
-	{
-		auto dataRev=data;
-		data=0;
-		uint32_t tstBit=0x80000000,orBit=1;
-		while(0!=tstBit)
-		{
-			if(dataRev&tstBit)
-			{
-				data|=orBit;
-			}
-			tstBit>>=1;
-			orBit<<=1;
-		}
-	}
-	else if(true==byteSwap)
-	{
-		data=ByteSwap32(data);
-	}
+	ProcessDwordReverse(physAddr,data);
 
 	auto bytesPerLine=BytesPerLine();
 	uint16_t raster=*GetControlWordPtr(RASTER);
@@ -1579,7 +1561,7 @@ void FMT3631::CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSw
 			uint8_t(data>>24),
 			uint8_t(data>>16),
 			uint8_t(data>>8),
-			uint8_t(data)
+			uint8_t(data),
 		};
 		if(winMin.y()<=state.pixelCurrent.y() && state.pixelCurrent.y()<=winMax.y())
 		{
@@ -1601,6 +1583,9 @@ void FMT3631::CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSw
 						break;
 					case 0x6666: // Presumably XOR.
 						dst[i]^=src[i];
+						break;
+					case 0xCCCC: // Supposed to be SRC.
+						dst[i]=src[i];
 						break;
 					}
 				}
@@ -2497,6 +2482,11 @@ std::vector <std::string> FMT3631::GetAdditionalStatusText(void) const
 			text.push_back("");
 		}
 		text.back()+=cpputil::Ubtox(state.hwCursor.ANDPtn[i]);
+	}
+	text.push_back("Pattern");
+	for(auto ptn : state.pattern)
+	{
+		text.push_back(cpputil::Uitox(ptn));
 	}
 
 	return text;
