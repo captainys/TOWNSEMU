@@ -353,6 +353,10 @@ public:
 
 	void IsUnsupportedFeature(std::string msg) const;
 
+	/*! Returns false if clip rect is outside of the screen.
+	*/
+	bool LimitClipRectToScreen(Vec2i &clipMin,Vec2i &clipMax) const;
+
 	static int U16toS16(uint32_t in);
 	static int U32toS32(uint32_t in);
 	static uint32_t S32toU32(int in);
@@ -425,7 +429,6 @@ public:
 	unsigned int IOReadByte(unsigned int ioport) override;
 	void IOWriteByte(unsigned int ioport,unsigned int data) override;
 
-
 	template <class returnType,class stateType>
 	inline static returnType GetControlWordPtrTemplate(uint32_t physAddr,stateType &state);
 	bool IsReadableParameter(uint32_t &data,uint32_t physAddr) const;
@@ -477,6 +480,7 @@ public:
 
 	std::vector <std::string> GetStatusText(void) const;
 	std::vector <std::string> GetAdditionalStatusText(void) const;
+	std::string GetClipRectText(void) const;
 
 	unsigned int FetchByte(unsigned int physAddr) const override;
 	unsigned int FetchWord(unsigned int physAddr) const override;

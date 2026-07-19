@@ -1106,6 +1106,8 @@ enum	// Commands written to I/O TOWNSIO_VM_HOST_IF_CMD_STATUS=0x2386
 
 	TOWNS_VMIF_CMD_GET_VMFLAGS    =0x0E, // Capture VM control flags in EAX.
 	TOWNS_VMIF_CMD_RELEASE_CONSOLE_CMD=0x0F,  // Send console command to auto-typing.
+
+	TOWNS_VMIF_CMD_GET_MOUSE_POSITION=0x10, // Get mouse position in the host's window coordinate.  ESI=x, EDI=y, AL=b5:lb b3:rb, AH=0xFF.  Clear AH before doing it to see if it is in action.
 };
 
 enum

@@ -1375,6 +1375,7 @@ void Outside_World::ProcessMouse(class FMTownsCommon &towns,int lb,int mb,int rb
 	else
 	{
 		towns.DontControlMouse();
+		towns.NotifyLastKnownHostMousePosition(mx,my); // At lesat notify where the pointer is.
 	}
 	lastMx=mx;
 	lastMy=my;

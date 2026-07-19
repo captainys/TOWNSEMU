@@ -169,6 +169,39 @@ void FMT3631::IsUnsupportedFeature(std::string msg) const
 	}
 }
 
+bool FMT3631::LimitClipRectToScreen(Vec2i &clipMin,Vec2i &clipMax) const
+{
+	int wid=Width();
+	int hei=Height();
+
+	if(true!=state.isFMT3632)
+	{
+		wid*=4; // Everything is byte-coord in FMT-3631
+	}
+
+	if((clipMin.x()<0 && clipMax.x()<0) ||
+	   (clipMin.y()<0 && clipMax.y()<0) ||
+	   (wid<=clipMin.x() && wid<=clipMax.x()) ||
+	   (hei<=clipMin.y() && hei<=clipMax.y()))
+	{
+		return false;
+	}
+
+	clipMin.x()=std::max(clipMin.x(),0);
+	clipMin.x()=std::min(clipMin.x(),wid-1);
+
+	clipMax.x()=std::max(clipMax.x(),0);
+	clipMax.x()=std::min(clipMax.x(),wid-1);
+
+	clipMin.y()=std::max(clipMin.y(),0);
+	clipMin.y()=std::min(clipMin.y(),hei-1);
+
+	clipMax.y()=std::max(clipMax.y(),0);
+	clipMax.y()=std::min(clipMax.y(),hei-1);
+
+	return true;
+}
+
 int FMT3631::U16toS16(uint32_t in)
 {
 	int x=in;
@@ -823,6 +856,11 @@ void FMT3631::DrawLine(Vec2i p0,Vec2i p1)
 		std::cout << "Line\n";
 	}
 
+	if(true!=LimitClipRectToScreen(clip[0],clip[1]))
+	{
+		return;
+	}
+
 	int dx=p1.x()-p0.x();
 	int dy=p1.y()-p0.y();
 	int vx=1,vy=1;
@@ -1013,6 +1051,11 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 		GetWindowMax(),
 	};
 
+	if(true!=LimitClipRectToScreen(clip[0],clip[1]))
+	{
+		return;
+	}
+
 	if(x1<clip[0].x() || clip[1].x()<x0 ||
 	   y1<clip[0].y() || clip[1].y()<y0)
 	{
@@ -1021,8 +1064,26 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 
 	if(true==monitorCtrl)
 	{
-		std::cout << "Rect\n";
+		std::cout << "Rect (";
+		std::cout << x0 << ',' << y0;
+		std::cout << ")-(";
+		std::cout << x1 << ',' << y1;
+		std::cout << ") ";
+		std::cout << GetClipRectText() << "\n";
 	}
+
+	y0=std::max(y0,clip[0].y());
+	y0=std::min(y0,clip[1].y());
+
+	y1=std::max(y1,clip[0].y());
+	y1=std::min(y1,clip[1].y());
+
+	x0=std::max(x0,clip[0].x());
+	x0=std::min(x0,clip[1].x());
+
+	x1=std::max(x1,clip[0].x());
+	x1=std::min(x1,clip[1].x());
+
 	auto fgColor=*GetControlWordPtr(FGCOLOR);
 	auto bgColor=*GetControlWordPtr(BGCOLOR);
 	uint32_t raster=*GetControlWordPtr(RASTER);
@@ -1330,6 +1391,11 @@ void FMT3631::CmdPixel1LoopP9000(uint32_t physAddr,uint32_t data,bool byteSwap,b
 	auto winMin=GetWindowMin();
 	auto winMax=GetWindowMax();
 
+	if(true!=LimitClipRectToScreen(winMin,winMax))
+	{
+		return;
+	}
+
 	uint8_t *lineTop=state.vram.data()+bytesPerLine*state.pixelCurrent.y();
 	while(0<count)
 	{
@@ -1428,6 +1494,11 @@ void FMT3631::CmdPixel1LoopP9100(uint32_t physAddr,uint32_t data,bool byteSwap,b
 
 	auto winMin=GetWindowMin();
 	auto winMax=GetWindowMax();
+
+	if(true!=LimitClipRectToScreen(winMin,winMax))
+	{
+		return;
+	}
 
 	uint8_t *lineTop=state.vram.data()+bytesPerLine*state.pixelCurrent.y();
 	int colorPtr=0;
@@ -1544,6 +1615,11 @@ void FMT3631::CmdPixel8(uint32_t physAddr,uint32_t data,bool byteSwap,bool bitSw
 
 	auto winMin=GetWindowMin();
 	auto winMax=GetWindowMax();
+
+	if(true!=LimitClipRectToScreen(winMin,winMax))
+	{
+		return;
+	}
 
 	if(true!=state.isFMT3632)
 	{
@@ -2407,6 +2483,23 @@ void FMT3631::StoreDword(unsigned int physAddr,unsigned int data)
 	{
 		std::cout << "Power9x00 DWORD Write  " << cpputil::Uitox(physAddr) << " " << cpputil::Uitox(data) <<  "\n";
 	}
+}
+
+std::string FMT3631::GetClipRectText(void) const
+{
+	std::string str;
+	auto winmin=GetWindowMin();
+	auto winmax=GetWindowMax();
+	str="Clip(";
+	str+=cpputil::Uitoa(winmin.x());
+	str.push_back(',');
+	str+=cpputil::Uitoa(winmin.y());
+	str+=")-(";
+	str+=cpputil::Uitoa(winmax.x());
+	str.push_back(',');
+	str+=cpputil::Uitoa(winmax.y());
+	str+=")\n";
+	return str;
 }
 
 std::vector <std::string> FMT3631::GetStatusText(void) const

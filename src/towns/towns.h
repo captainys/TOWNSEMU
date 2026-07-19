@@ -393,7 +393,10 @@ public:
 		i486DXCommon::FarPointer powerOffAt;
 
 
+		/*! Last known host mouse state.
+		*/
 		int lastKnownMouseX=0,lastKnownMouseY=0;
+		bool lastKnownMouseLBtn=false,lastKnownMouseRBtn=false;
 
 
 		/*! I think this flag is a dirty way of dealing with the state load, but TownsThread needs to know
@@ -617,6 +620,10 @@ public:
 	    This function is ignored if var.mouseIntegration=false;
 	*/
 	void SetMouseButtonState(bool lButton,bool rButton);
+
+	/*! Tell VM the last known host mouse position.  Separate from ControlMouse.
+	*/
+	void NotifyLastKnownHostMousePosition(int mx,int my);
 
 
 	/*! Set Game-Pad State.  Called from Outside_World.

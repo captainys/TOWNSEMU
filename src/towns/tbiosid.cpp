@@ -811,8 +811,21 @@ void FMTownsCommon::DontControlMouse(void)
 	}
 }
 
+void FMTownsCommon::NotifyLastKnownHostMousePosition(int mx,int my)
+{
+	mx=std::max(mx,var.mouseMinX);
+	my=std::max(my,var.mouseMinY);
+	mx=std::min(mx,var.mouseMaxX);
+	my=std::min(my,var.mouseMaxY);
+	var.lastKnownMouseX=mx;
+	var.lastKnownMouseY=my;
+}
+
 void FMTownsCommon::SetMouseButtonState(bool lButton,bool rButton)
 {
+	var.lastKnownMouseLBtn=lButton;
+	var.lastKnownMouseRBtn=rButton;
+
 	if(TOWNS_APPSPECIFIC_SUPERDAISEN==state.appSpecificSetting ||
 	   TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI==state.appSpecificSetting)
 	{

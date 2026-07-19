@@ -122,6 +122,14 @@ void FMTownsCommon::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int param
 			var.consoleCmd.erase(var.consoleCmd.begin());
 		}
 		break;
+	case TOWNS_VMIF_CMD_GET_MOUSE_POSITION:
+		cpu.state.ESI()=var.lastKnownMouseX;
+		cpu.state.EDI()=var.lastKnownMouseY;
+		cpu.state.EAX()&=0xFFFF0000;
+		cpu.state.EAX()|=0xFF00;
+		cpu.state.EAX()|=(var.lastKnownMouseLBtn ? 32 : 0);
+		cpu.state.EAX()|=(var.lastKnownMouseRBtn ?  8 : 0);
+		break;
 	}
 }
 void FMTownsCommon::VMHostFileTransfer(void)
