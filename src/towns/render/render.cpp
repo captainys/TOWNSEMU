@@ -240,23 +240,20 @@ void TownsRender::BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogP
 					uint32_t yOnScrn=hardwareMouse.Y+y-hardwareMouse.originY;
 					if(xOnScrn<wid && yOnScrn<hei)
 					{
+						auto pixelPtr=rgba.data()+4*(wid*yOnScrn+xOnScrn);
 						if(0==(*ANDPtn&bit))
 						{
-							auto pixelPtr=rgba.data()+4*(wid*yOnScrn+xOnScrn);
-							if(0==(*ORPtn&bit))
-							{
-								pixelPtr[0]=0;
-								pixelPtr[1]=0;
-								pixelPtr[2]=0;
-								pixelPtr[3]=255;
-							}
-							else
-							{
-								pixelPtr[0]=255;
-								pixelPtr[1]=255;
-								pixelPtr[2]=255;
-								pixelPtr[3]=255;
-							}
+							pixelPtr[0]=0;
+							pixelPtr[1]=0;
+							pixelPtr[2]=0;
+							pixelPtr[3]=255;
+						}
+						if(0!=(*ORPtn&bit))
+						{
+							pixelPtr[0]^=255;
+							pixelPtr[1]^=255;
+							pixelPtr[2]^=255;
+							// pixelPtr[3]=255;
 						}
 					}
 					bit>>=1;
