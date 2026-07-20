@@ -454,10 +454,10 @@ public:
 
 	void MEMIOWriteFMRVRAMDisplayMode(unsigned char data);	// [2] pp.158
 
-	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
-	virtual void IOWriteWord(unsigned int ioport,unsigned int data); // Default behavior calls IOWriteByte twice
-	virtual void IOWriteDword(unsigned int ioport,unsigned int data); // Default behavior calls IOWriteByte 4 times
-	virtual unsigned int IOReadByte(unsigned int ioport);
+	virtual void IOWriteByte(unsigned int ioport,unsigned int data) override;
+	virtual void IOWriteWord(unsigned int ioport,unsigned int data) override; // Default behavior calls IOWriteByte twice
+	virtual void IOWriteDword(unsigned int ioport,unsigned int data) override; // Default behavior calls IOWriteByte 4 times
+	virtual unsigned int IOReadByte(unsigned int ioport) override;
 
 	/* If high-reso crtc is enabled, bit15=0 enables High Res CRTC and disables conventional CRTC, or vise-versa.
 	*/

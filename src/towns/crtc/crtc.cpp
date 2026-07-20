@@ -799,19 +799,17 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			}
 			break;
 		case HIGHRES_REG_MOUSE_PATTERN:
-			if(true==state.highResCrtcMouse.defining)
+			if(state.highResCrtcMouse.ptnCount<512)
 			{
-				if(state.highResCrtcMouse.ptnCount<512)
-				{
-					state.highResCrtcMouse.ANDPtn[state.highResCrtcMouse.ptnCount]=data;
-					++state.highResCrtcMouse.ptnCount;
-				}
-				else if(state.highResCrtcMouse.ptnCount<1024)
-				{
-					state.highResCrtcMouse.ORPtn[state.highResCrtcMouse.ptnCount-512]=data;
-					++state.highResCrtcMouse.ptnCount;
-				}
+				state.highResCrtcMouse.ANDPtn[state.highResCrtcMouse.ptnCount]=data;
+				++state.highResCrtcMouse.ptnCount;
 			}
+			else if(state.highResCrtcMouse.ptnCount<1024)
+			{
+				state.highResCrtcMouse.ORPtn[state.highResCrtcMouse.ptnCount-512]=data;
+				++state.highResCrtcMouse.ptnCount;
+			}
+			state.highResCrtcMouse.ptnCount&=1023; // Just in case.
 			break;
 		}
 		break;
@@ -1024,7 +1022,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		case HIGHRES_REG_WD_MOUSE_DEFINE: //0x206
 			if(0==data)
 			{
-				state.highResCrtcMouse.defining=true;
+				state.highResCrtcMouse.defining=true;  // Apparently it is just on/off.  May not have to change ptnCount.
 				state.highResCrtcMouse.defined=false;
 				state.highResCrtcMouse.ptnCount=0;
 			}
@@ -1039,6 +1037,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			break;
 		case HIGHRES_REG_WD_MOUSE_UNKNOWN8: //0x208,
 			state.highResCrtcMouse.unknownValueReg8=data;
+			state.highResCrtcMouse.ptnCount=data; // Probably it is pattern count.
 			break;
 		case HIGHRES_REG_MOUSE_PATTERN:
 			if(true==monitorCRTC2)
@@ -1220,6 +1219,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			break;
 		case HIGHRES_REG_WD_MOUSE_UNKNOWN8: //0x208,
 			state.highResCrtcMouse.unknownValueReg8=data;
+			state.highResCrtcMouse.ptnCount=data; // Probably it is pattern count.
 			break;
 		}
 		break;
@@ -1438,6 +1438,24 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 				}
 			}
 			break;
+
+		case HIGHRES_REG_WD_MOUSEX: // 0x200,        // Hardware Mouse Cursor X
+		case HIGHRES_REG_WD_MOUSEY: //0x201,        // Hardware Mouse Cursor Y
+		case HIGHRES_REG_MOUSE_PATTERN: // 0x209,
+			return 0xFF;
+		case HIGHRES_REG_WD_MOUSE_ORIGINX: //0x202
+			data=state.highResCrtcMouse.originX&0xFF;
+			break;
+		case HIGHRES_REG_WD_MOUSE_ORIGINY: //0x203
+			data=state.highResCrtcMouse.originY&0xFF;
+			break;
+		case HIGHRES_REG_WD_MOUSE_DEFINE: //0x206
+			data=(state.highResCrtcMouse.defined ? 1 : 0);
+			break;
+		case HIGHRES_REG_WD_MOUSE_UNKNOWN8: //0x208,
+			data=state.highResCrtcMouse.ptnCount&0xFF; // Probably it is pattern count.
+			break;
+
 		default:
 			data=state.highResCrtcReg[state.highResCrtcRegAddrLatch];
 			break;
@@ -1465,6 +1483,24 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 				}
 			}
 			break;
+
+		case HIGHRES_REG_WD_MOUSEX: // 0x200,        // Hardware Mouse Cursor X
+		case HIGHRES_REG_WD_MOUSEY: //0x201,        // Hardware Mouse Cursor Y
+		case HIGHRES_REG_MOUSE_PATTERN: // 0x209,
+			return 0xFF;
+		case HIGHRES_REG_WD_MOUSE_ORIGINX: //0x202
+			data=(state.highResCrtcMouse.originX>>8)&0xFF;
+			break;
+		case HIGHRES_REG_WD_MOUSE_ORIGINY: //0x203
+			data=(state.highResCrtcMouse.originY>>8)&0xFF;
+			break;
+		case HIGHRES_REG_WD_MOUSE_DEFINE: //0x206
+			data=0;
+			break;
+		case HIGHRES_REG_WD_MOUSE_UNKNOWN8: //0x208,
+			data=(state.highResCrtcMouse.ptnCount>>8)&0xFF; // Probably it is pattern count.
+			break;
+
 		default:
 			data=((state.highResCrtcReg[state.highResCrtcRegAddrLatch]>>8)&0xFF);
 			break;
@@ -1489,13 +1525,39 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 				}
 			}
 			break;
+
+		case HIGHRES_REG_WD_MOUSEX: // 0x200,        // Hardware Mouse Cursor X
+		case HIGHRES_REG_WD_MOUSEY: //0x201,        // Hardware Mouse Cursor Y
+		case HIGHRES_REG_MOUSE_PATTERN: // 0x209,
+		case HIGHRES_REG_WD_MOUSE_ORIGINX: //0x202
+		case HIGHRES_REG_WD_MOUSE_ORIGINY: //0x203
+		case HIGHRES_REG_WD_MOUSE_DEFINE: //0x206
+		case HIGHRES_REG_WD_MOUSE_UNKNOWN8: //0x208,
+			data=0xFF;
+			break;
+
 		default:
 			data=((state.highResCrtcReg[state.highResCrtcRegAddrLatch]>>16)&0xFF);
 			break;
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D3://   0x477,
-		data=((state.highResCrtcReg[state.highResCrtcRegAddrLatch]>>24)&0xFF);
+		switch(state.highResCrtcRegAddrLatch)
+		{
+		case HIGHRES_REG_WD_MOUSEX: // 0x200,        // Hardware Mouse Cursor X
+		case HIGHRES_REG_WD_MOUSEY: //0x201,        // Hardware Mouse Cursor Y
+		case HIGHRES_REG_MOUSE_PATTERN: // 0x209,
+		case HIGHRES_REG_WD_MOUSE_ORIGINX: //0x202
+		case HIGHRES_REG_WD_MOUSE_ORIGINY: //0x203
+		case HIGHRES_REG_WD_MOUSE_DEFINE: //0x206
+		case HIGHRES_REG_WD_MOUSE_UNKNOWN8: //0x208,
+			data=0xFF;
+			break;
+
+		default:
+			data=((state.highResCrtcReg[state.highResCrtcRegAddrLatch]>>24)&0xFF);
+			break;
+		}
 		break;
 
 	case TOWNSIO_HSYNC_VSYNC: // 0xFDA0
@@ -1770,6 +1832,11 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	text.push_back("");
 	text.back()+="FMR VRAM Display Planes:"+cpputil::Ubtox(state.FMRGVRAMDisplayPlanes);
 
+	if(true==fmt3631->IsEnabled())
+	{
+		std::cout << "FMT-3631 (Power 9000) is enabled.\n";
+	}
+
 	return text;
 }
 
@@ -1954,6 +2021,33 @@ std::vector <std::string> TownsCRTC::GetHighResStatusText(void) const
 	{
 		text.push_back("Page 1");
 		text.insert(text.end(),page1Info.begin(),page1Info.end());
+	}
+
+	text.push_back("Hardware Mouse Cursor is ");
+	text.back()+=std::string(true==state.highResCrtcMouse.defined ? "Enabled" : "Disabled");
+	text.back()+="  Origin (";
+	text.back()+=cpputil::Uitoa(state.highResCrtcMouse.originX);
+	text.back()+=",";
+	text.back()+=cpputil::Uitoa(state.highResCrtcMouse.originY);
+	text.back()+=")";
+
+	text.push_back("Hardware Mouse Cusros XOR Pattern");
+	for(int i=0; i<sizeof(state.highResCrtcMouse.ORPtn); ++i)
+	{
+		if(0==i%32)
+		{
+			text.push_back("");
+		}
+		text.back()+=cpputil::Ubtox(state.highResCrtcMouse.ORPtn[i]);
+	}
+	text.push_back("Hardware Mouse Cusros AND Pattern");
+	for(int i=0; i<sizeof(state.highResCrtcMouse.ANDPtn); ++i)
+	{
+		if(0==i%32)
+		{
+			text.push_back("");
+		}
+		text.back()+=cpputil::Ubtox(state.highResCrtcMouse.ANDPtn[i]);
 	}
 
 	if(true==fmt3631->IsEnabled())
