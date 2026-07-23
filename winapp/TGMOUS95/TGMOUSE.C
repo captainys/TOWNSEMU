@@ -80,6 +80,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	HWND hwndHidden;
 	HMODULE hKernel;
 	pfnRegisterServiceProcess rsp;
+	unsigned int counter=0;
 
 	/* 1. Register and create a completely hidden 0x0 window to handle OS messages */
 	ZeroMemory(&wc,sizeof(wc));
@@ -111,21 +112,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	/* 4. Main Loop: Handles Windows messages AND I/O Port Monitoring */
 	while(g_bRunning)
 	{
-		/* Process any pending OS messages(Shutdown,System events,etc.) */
-		while(PeekMessage(&msg,NULL,0,0,PM_REMOVE))
+		if(0==(counter&0x3F))
 		{
-			if(WM_QUIT==msg.message)
+			/* Process any pending OS messages(Shutdown,System events,etc.) */
+			while(PeekMessage(&msg,NULL,0,0,PM_REMOVE))
 			{
-				g_bRunning=FALSE;
+				if(WM_QUIT==msg.message)
+				{
+					g_bRunning=FALSE;
+					break;
+				}
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+
+			if(!g_bRunning)
+			{
 				break;
 			}
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		if(!g_bRunning)
-		{
-			break;
 		}
 
 		/* Safely get mouse cursor position */
@@ -139,6 +143,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		/* Yield CPU for ~10ms(Actual OS scheduling gap gives ~15ms - 25ms) */
 		Sleep(20);
+		++counter;
 	}
 
 	/* Clean up window before exiting */
