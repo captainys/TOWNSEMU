@@ -1385,7 +1385,8 @@ void Outside_World::ProcessMouseDifferential(class FMTownsCommon &towns,int lb,i
 {
 	towns.SetMouseButtonState((0!=lb),(0!=rb));
 
-	if(dx<-1 || 1<dx || dy<-1 || 1<dy)
+	if(0!=dx || 0!=dy) // Removed Tolerance
+	// if(dx<-1 || 1<dx || dy<-1 || 1<dy)
 	{
 		// std::cout << "Mouse Integration Active" << std::endl;
 		mouseIntegrationActive=true;
@@ -1396,7 +1397,13 @@ void Outside_World::ProcessMouseDifferential(class FMTownsCommon &towns,int lb,i
 	{
 		towns.ControlMouseByDiffDirect(dx,dy);
 
-		if(-1<=dx && dx<=1 && -1<=dy && dy<=1) // Added tolerance.
+		if(0==dx && 0==dy) // Removed Tolerance
+		// (-1<=dx && dx<=1 && -1<=dy && dy<=1) // Added tolerance.
+		// 2026/07/23
+		// I do not remembery why I thought it was a good idea to have a tolerance here.
+		// But, the tolerance prevented mouse cursor from moving while the user is moving the mouse slowly.
+		// DX and DY are coming from the host mouse, which is unlikely to give noise.
+		// Probably not having tolerance is not an issue.
 		{
 			--mouseStationaryCount;
 			if(mouseStationaryCount<=0)
