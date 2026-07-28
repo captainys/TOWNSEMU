@@ -1146,7 +1146,8 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 						IsUnsupportedFeature("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
 						break;
 					case 0xFFFF: // Prob Copy (Used by the crash dialog of Windows 3.1)
-						*ptr=fgColor;
+						// *ptr=fgColor; // Windows 3.1 Installer seems to be expecting copy.
+						*ptr=0xFF; // However, Word Pad seems to expect all bits set.
 						break;
 					case 0x0000: // Prob zero (Used by WinG test)
 						*ptr=0;
