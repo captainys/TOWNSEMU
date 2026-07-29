@@ -2651,6 +2651,21 @@ std::vector <std::string> FMT3631::GetAdditionalStatusText(void) const
 	{
 		text.push_back(cpputil::Uitox(ptn));
 	}
+	text.push_back("Palette");
+	for(int i=0; i<256; ++i)
+	{
+		if(0==i%16)
+		{
+			text.push_back("");
+		}
+		else
+		{
+			text.back().push_back(' ');
+		}
+		text.back()+=cpputil::Ubtox(state.plt.plt256[i][0]);
+		text.back()+=cpputil::Ubtox(state.plt.plt256[i][1]);
+		text.back()+=cpputil::Ubtox(state.plt.plt256[i][2]);
+	}
 
 	return text;
 }
