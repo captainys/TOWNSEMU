@@ -216,6 +216,7 @@ void FMTownsCommon::LoadStatePostProcess(void)
 
 	cdrom.ResumeCDDAAfterRestore();
 	scsi.ResumeCDDAAfterRestore();
+	var.habitatMouse.Reset();
 
 	var.justLoadedState=true;
 }

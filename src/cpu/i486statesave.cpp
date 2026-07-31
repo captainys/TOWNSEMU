@@ -225,5 +225,8 @@ bool i486DXCommon::State::Deserialize(const unsigned char *&data,uint32_t versio
 	ClearPageTableCache();  // Need to clear on load state.
 	ClearDescriptorCache(); // Need to clear on load state.
 	callStack.clear();
+	mouseBIOSReturnPending=false;
+	mouseBIOSReturnCS=0;
+	mouseBIOSReturnEIP=0;
 	return state.Deserialize(data,version);
 }

@@ -16,6 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define GL_SILENCE_DEPRECATION
 
 #include <stdio.h>
+#include <algorithm>
 #ifdef _WIN32
 	#include <direct.h>
 	#define chdir _chdir
@@ -169,6 +170,9 @@ std::string FsSimpleWindowConnection::GetProgramResourceDirectory(void) const
 	// WindosInterface class is now in charge of updating device status.
 	// Before DevicePolling is called, TownsThread::VMMainLoop calls WindowInterface::Communicate
 	// to transfer cached events and device status to this->windowEvent.
+	const bool habitatMouseActive=
+	    (TOWNS_APPSPECIFIC_HABITAT==towns.state.appSpecificSetting &&
+	     true==towns.var.habitatMouse.IsActive());
 
 	bool ctrlKey=(0!=windowEvent.keyState[FSKEY_CTRL]);
 	bool shiftKey=(0!=windowEvent.keyState[FSKEY_SHIFT]);
@@ -1368,21 +1372,36 @@ std::string FsSimpleWindowConnection::GetProgramResourceDirectory(void) const
 			{
 				int wid=windowEvent.winWid;
 				int hei=windowEvent.winHei;
-				if(mx<0)
+				if(true!=differentialMouseIntegration && true==habitatMouseActive)
 				{
-					mx=0;
+					// Habitat's world conversion expects coordinates relative to the
+					// emulated image.  Clamp window padding and the status bar to the
+					// nearest image edge before applying the image scale.
+					int renderWid=std::max(1,wid-2*(int)dx);
+					int renderHei=std::max(1,hei-STATUS_HEI-2*(int)dy);
+					mx=std::clamp(mx-(int)dx,0,renderWid-1);
+					my=std::clamp(my-(int)dy,0,renderHei-1);
 				}
-				else if(wid<=mx)
+				else
 				{
-					mx=wid-1;
-				}
-				if(my<0)
-				{
-					my=0;
-				}
-				else if(hei<=my)
-				{
-					my=hei-1;
+					// Preserve Tsugaru's original window-coordinate behavior outside
+					// active Habitat absolute integration.
+					if(mx<0)
+					{
+						mx=0;
+					}
+					else if(wid<=mx)
+					{
+						mx=wid-1;
+					}
+					if(my<0)
+					{
+						my=0;
+					}
+					else if(hei<=my)
+					{
+						my=hei-1;
+					}
 				}
 				if(0!=scalingX && 0!=scalingY) // Just in case
 				{

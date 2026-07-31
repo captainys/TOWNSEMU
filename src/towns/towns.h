@@ -57,6 +57,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "eventlog.h"
 
 #include "outside_world.h"
+#include "habitatmouse.h"
 
 
 
@@ -404,6 +405,11 @@ public:
 		*/
 		bool justLoadedState=false;
 
+		/*! Runtime-only inference of Habitat's active mouse-coordinate plane.
+		    It is deliberately not included in machine-state serialization.
+		*/
+		HabitatMouseAdapter habitatMouse;
+
 
 
 		/*!
@@ -695,6 +701,8 @@ public:
 	    It is an opportunity for the virtual machine to identify the operating-system version.
 	*/
 	virtual void InterceptMouseBIOS(void);
+	virtual bool InterceptMouseBIOSReturnNeeded(void) const;
+	virtual void InterceptMouseBIOSReturn(void);
 
 	/*! This function will be called from the CPU in PushCallStack in response to INT 21H.
 	*/

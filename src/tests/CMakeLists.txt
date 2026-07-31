@@ -24,3 +24,11 @@ add_test(NAME relativePath COMMAND relpath)
 add_executable(expandfile expandfile.cpp)
 target_link_libraries(expandfile cpputil)
 add_test(NAME expandfile COMMAND expandfile)
+
+add_executable(mouse_stability
+    mouse_stability.cpp
+    ../towns/habitatmouse.cpp)
+target_include_directories(mouse_stability PRIVATE
+    ../towns)
+target_link_libraries(mouse_stability townsdef)
+add_test(NAME mouse_stability COMMAND mouse_stability)

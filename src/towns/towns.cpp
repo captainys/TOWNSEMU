@@ -619,6 +619,7 @@ void FMTownsCommon::Variable::Reset(void)
 	disassemblePointer.OFFSET=0;
 
 	nVM2HostParam=0;
+	habitatMouse.Reset();
 }
 
 std::string FMTownsCommon::Variable::ApplyAlias(std::string incoming) const
@@ -1296,6 +1297,20 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 	{
 		// std::cout << "Set Mouse Position:" << cpu.GetDX() << "," << cpu.GetBX() << std::endl;
 	}
+	else if(0x07==cpu.GetAH()) // Set horizontal extent
+	{
+		if(TOWNS_APPSPECIFIC_HABITAT==state.appSpecificSetting)
+		{
+			var.habitatMouse.ObserveExtentX(cpu.GetDX(),cpu.GetBX());
+		}
+	}
+	else if(0x08==cpu.GetAH()) // Set vertical extent
+	{
+		if(TOWNS_APPSPECIFIC_HABITAT==state.appSpecificSetting)
+		{
+			var.habitatMouse.ObserveExtentY(cpu.GetDX(),cpu.GetBX());
+		}
+	}
 	else if(0x0C==cpu.GetAH()) // Set Pulse per Pixel
 	{
 		// std::cout << "Set Pulse per Pixel:" << cpu.GetDH() << "," << cpu.GetDL() << std::endl;
@@ -1339,6 +1354,24 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 		std::cout << "Mouse BIOS stopped." << std::endl;
 		state.mouseBIOSActive=false;
 		state.tbiosVersion=TBIOS_UNKNOWN;
+	}
+}
+
+/* virtual */ bool FMTownsCommon::InterceptMouseBIOSReturnNeeded(void) const
+{
+	return (TOWNS_APPSPECIFIC_HABITAT==state.appSpecificSetting &&
+	        true==var.habitatMouse.IsActive());
+}
+
+/* virtual */ void FMTownsCommon::InterceptMouseBIOSReturn(void)
+{
+	if(TOWNS_APPSPECIFIC_HABITAT==state.appSpecificSetting &&
+	   true==var.habitatMouse.IsActive())
+	{
+		// AH=3 returns the position Habitat actually receives in DX and BX.
+		// Capture at the far-call return so this is independent of both the
+		// TBIOS work-buffer layout and the client's storage layout.
+		var.habitatMouse.ObservePointerPosition(CPU().GetDX(),CPU().GetBX());
 	}
 }
 

@@ -198,6 +198,7 @@ bool TestRecovery(void)
 	a.quickScrnShotDir="ScrnShot";
 	a.quickStateSaveFName="state.TState";
 	a.pauseResumeKeyLabel="F12";
+	a.appSpecificSetting=TOWNS_APPSPECIFIC_HABITAT;
 
 	if(true==Equal(a,b))
 	{

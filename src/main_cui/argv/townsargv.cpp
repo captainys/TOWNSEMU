@@ -379,6 +379,8 @@ void TownsARGV::PrintApplicationList(void) const
 	std::cout << "  Mouse integration." << std::endl;
 	std::cout << "ULTIMAUNDERWORLD" << std::endl;
 	std::cout << "  Mouse integration." << std::endl;
+	std::cout << "HABITAT or FUJITSUHABITAT" << std::endl;
+	std::cout << "  Mouse integration for Habitat's world and sidebar coordinate systems." << std::endl;
 }
 
 void TownsARGV::CopyFile(std::string src,std::string dst)

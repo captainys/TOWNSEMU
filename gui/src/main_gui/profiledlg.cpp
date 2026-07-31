@@ -877,6 +877,15 @@ void ProfileDialog::Make(const UiText &ui)
 				"if the mouse connected to game ports.\n"
 			);
 			break;
+		case TOWNS_APPSPECIFIC_HABITAT:
+			appSpecificExplanation->SetText(
+				"Habitat, Fujitsu/Lucasfilm Games\n"
+				"Mouse Integration.\n"
+				"Habitat switches between world and sidebar mouse\n"
+				"coordinate systems.  This option keeps host mouse\n"
+				"integration aligned after the in-world program starts.\n"
+			);
+			break;
 		}
 	}
 }

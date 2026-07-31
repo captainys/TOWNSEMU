@@ -5531,6 +5531,17 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						if(0x0110==segPtr->value && 0x0040==offset)
 						{
 							mouseBIOSInterceptorPtr->InterceptMouseBIOS();
+							if(0x03==GetAH() &&
+							   true==mouseBIOSInterceptorPtr->InterceptMouseBIOSReturnNeeded())
+							{
+								mouseBIOSReturnPending=true;
+								mouseBIOSReturnCS=state.CS().value;
+								mouseBIOSReturnEIP=state.EIP+inst.numBytes;
+								if(16==inst.operandSize)
+								{
+									mouseBIOSReturnEIP&=0xffff;
+								}
+							}
 						}
 					}
 
@@ -7970,6 +7981,13 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			{
 				state.EIP&=0xFFFF;
 			}
+			if(true==mouseBIOSReturnPending &&
+			   mouseBIOSReturnCS==state.CS().value &&
+			   mouseBIOSReturnEIP==state.EIP)
+			{
+				mouseBIOSReturnPending=false;
+				mouseBIOSInterceptorPtr->InterceptMouseBIOSReturn();
+			}
 		}
 		break;
 	case I486_RENUMBER_RET_I16://          0xC2,
@@ -8037,6 +8055,13 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			if(16==state.CS().addressSize)
 			{
 				state.EIP&=0xFFFF;
+			}
+			if(true==mouseBIOSReturnPending &&
+			   mouseBIOSReturnCS==state.CS().value &&
+			   mouseBIOSReturnEIP==state.EIP)
+			{
+				mouseBIOSReturnPending=false;
+				mouseBIOSInterceptorPtr->InterceptMouseBIOSReturn();
 			}
 		}
 		break;

@@ -1330,8 +1330,13 @@ public:
 	{
 	public:
 		virtual void InterceptMouseBIOS(void)=0;
+		virtual bool InterceptMouseBIOSReturnNeeded(void) const=0;
+		virtual void InterceptMouseBIOSReturn(void)=0;
 	};
 	FMTownsMouseBiosInterceptor *mouseBIOSInterceptorPtr=nullptr;
+	bool mouseBIOSReturnPending=false;
+	unsigned int mouseBIOSReturnCS=0;
+	unsigned int mouseBIOSReturnEIP=0;
 
 
 

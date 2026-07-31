@@ -585,11 +585,19 @@ bool FMTownsCommon::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMo
 		return true;
 	}
 
-	// Clamp by mouse range
-	hostMouseX=std::max(hostMouseX,var.mouseMinX);
-	hostMouseY=std::max(hostMouseY,var.mouseMinY);
-	hostMouseX=std::min(hostMouseX,var.mouseMaxX);
-	hostMouseY=std::min(hostMouseY,var.mouseMaxY);
+	const bool habitatMouseActive=
+	    (TOWNS_APPSPECIFIC_HABITAT==state.appSpecificSetting &&
+	     true==var.habitatMouse.IsActive());
+	if(true!=habitatMouseActive)
+	{
+		// Clamp by mouse range.  Habitat's active world is the exception: its
+		// TBIOS range is logical (260x158), while host input is still 640x480.
+		// It must be converted before it can be clamped to that range.
+		hostMouseX=std::max(hostMouseX,var.mouseMinX);
+		hostMouseY=std::max(hostMouseY,var.mouseMinY);
+		hostMouseX=std::min(hostMouseX,var.mouseMaxX);
+		hostMouseY=std::min(hostMouseY,var.mouseMaxY);
+	}
 
 	int mx,my;
 	int slowDownRange=0;
@@ -664,6 +672,19 @@ bool FMTownsCommon::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMo
 		case TOWNS_APPSPECIFIC_DRAKKEN:
 			considerVRAMOffset=false;
 			hostMouseY-=20;
+			break;
+		case TOWNS_APPSPECIFIC_HABITAT:
+			if(true==habitatMouseActive)
+			{
+				considerVRAMOffset=false;
+				if(true==var.habitatMouse.Apply(
+				       mx,hostMouseX,hostMouseY,hostMouseX,hostMouseY))
+				{
+					var.habitatMouse.NormalizeRawPosition(mx,my);
+				}
+				hostMouseX=std::clamp(hostMouseX,var.mouseMinX,var.mouseMaxX);
+				hostMouseY=std::clamp(hostMouseY,var.mouseMinY,var.mouseMaxY);
+			}
 			break;
 		case TOWNS_APPSPECIFIC_LEMMINGS2:
 			hostMouseY-=8;
@@ -974,6 +995,14 @@ bool FMTownsCommon::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) con
 	if(true==state.mouseBIOSActive &&
 	   TOWNS_APPSPECIFIC_ULTIMAUNDERWORLD!=state.appSpecificSetting)
 	{
+		if(TOWNS_APPSPECIFIC_HABITAT==state.appSpecificSetting &&
+		   true==var.habitatMouse.IsActive())
+		{
+			if(true==var.habitatMouse.GetPointerPosition(mx,my))
+			{
+				return true;
+			}
+		}
 		switch(tbiosid)
 		{
 		case TBIOS_V31L22A:

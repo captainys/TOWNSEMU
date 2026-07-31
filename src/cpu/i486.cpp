@@ -257,6 +257,10 @@ i486DXCommon::i486DXCommon(VMBase *vmPtr) : CPU(vmPtr)
 
 void i486DXCommon::Reset(void)
 {
+	mouseBIOSReturnPending=false;
+	mouseBIOSReturnCS=0;
+	mouseBIOSReturnEIP=0;
+
 	state.mode=MODE_REAL;
 
 	// page 10-1 [1]

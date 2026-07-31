@@ -343,6 +343,8 @@ FM TOWNS uses a MSX mouse, which sends a displacement infornation in X- and Y-di
 
 I did reverse engineering and found the mouse-cursor locations for TBIOSes that come with V1.1 L10/L20/L30, V2.1 L10B/L20/L31.  Will add other versions of TownsOS and VINGBIOS hopefully.  Most likely I will forget updating version numbers here, but probably I'll add comments in the commit log.
 
+Habitat uses separate mouse-coordinate systems for its 256x160 world view and its 640x480 sidebar.  Select `HABITAT` under the GUI's Application-Specific Augmentation setting, or start the CUI with `-APP HABITAT`, to keep normal mouse integration aligned while crossing between them.  `-APP FUJITSUHABITAT` is accepted as an alias.  The adaptation activates only when the in-world pointer extents are observed, leaving the launcher, configuration, dialler, differential mouse mode, and all other applications on Tsugaru's original mouse paths.
+
 
 FM TOWNSはMSXマウスを使用します。MSXマウスはマウスの移動量のXYをPCに送信します。だから、マウスカーソルがPC上のどこにあるのか、マウスは知りません。ホストPCとゲストVMでマウス位置を一致させるためには、エミュレータが、VMが今マウスがどこにあると思っているか検出しなくてはなりません。
 
