@@ -1292,6 +1292,32 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 			break;
 		}
 	}
+	else if(1==cpu.GetAH())
+	{
+		if(TownsEventLog::MODE_RECORDING==eventLog.mode || TownsEventLog::MODE_PLAYBACK==eventLog.mode)
+		{
+			eventLog.LogMouseEnd(state.townsTime);
+		}
+		std::cout << "Mouse BIOS stopped." << std::endl;
+		state.mouseBIOSActive=false;
+		state.tbiosVersion=TBIOS_UNKNOWN;
+	}
+	else if(0x02==cpu.GetAH()) // MOS_disp
+	{
+		if(TOWNS_APPSPECIFIC_HABITAT==state.appSpecificSetting)
+		{
+			// Fujitsu Habitat apparently is not using the Mouse BIOS to draw cursor on page 1.
+			// Instead, I can check if BIOS cursor is on or off to see on which page the cursor is.
+			if(cpu.GetAL()==1) // Show: Means cursor is on Page 0.
+			{
+				state.mouseDisplayPage=0;
+			}
+			else // Hide: Means the non-BIOS cursor is on Page 1.
+			{
+				state.mouseDisplayPage=1;
+			}
+		}
+	}
 	else if(0x04==cpu.GetAH()) // Set Position
 	{
 		// std::cout << "Set Mouse Position:" << cpu.GetDX() << "," << cpu.GetBX() << std::endl;
@@ -1329,16 +1355,6 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 		{
 			Daikoukai2_CaptureFlags();
 		}
-	}
-	else if(1==cpu.GetAH())
-	{
-		if(TownsEventLog::MODE_RECORDING==eventLog.mode || TownsEventLog::MODE_PLAYBACK==eventLog.mode)
-		{
-			eventLog.LogMouseEnd(state.townsTime);
-		}
-		std::cout << "Mouse BIOS stopped." << std::endl;
-		state.mouseBIOSActive=false;
-		state.tbiosVersion=TBIOS_UNKNOWN;
 	}
 }
 

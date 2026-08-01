@@ -649,6 +649,9 @@ bool FMTownsCommon::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMo
 		bool considerVRAMOffset=var.considerVRAMOffsetInMouseIntegration;
 		switch(state.appSpecificSetting)
 		{
+		case TOWNS_APPSPECIFIC_HABITAT:
+			considerVRAMOffset=true;
+			break;
 		case TOWNS_APPSPECIFIC_AMARANTH3:
 			considerVRAMOffset=false;
 			break;
