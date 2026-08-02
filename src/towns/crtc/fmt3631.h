@@ -53,6 +53,9 @@ public:
 		//
 		VRAM_SIZE_3631  =0x200000,
 		VRAM_SIZE_3632  =0x400000,
+
+		MAX_HEIGHT      =6554,   // In 8-bpp mode, FMT-3632, 4MB/640=6553.6
+
 		COORD_MAX       =4, // Quadrilateral max
 		COMMAND_MASK    =0x0FFFFF,
 
@@ -340,6 +343,34 @@ public:
 	bool breakOnUnsupported=false;
 	int sneak=0;
 
+	class PolygonBuffer
+	{
+	public:
+		unsigned n;
+		int x[4];
+		void Insert(int X)
+		{
+			if(0==n)
+			{
+				n=1;
+				x[0]=X;
+			}
+			else if(n<4)
+			{
+				int i;
+				for(i=0; i<n && x[i]<X; ++i)
+				{
+				}
+				for(i=i; i<n+1; ++i)
+				{
+					std::swap(x[i],X);
+				}
+				++n;
+			}
+		}
+	};
+	PolygonBuffer plg[MAX_HEIGHT];
+
 	const char *DeviceName(void) const override {return "FMT3631";}
 
 	FMT3631(class FMTownsCommon *ptr);
@@ -354,6 +385,7 @@ public:
 	void IsUnsupportedFeature(std::string msg) const;
 
 	/*! Returns false if clip rect is outside of the screen.
+	    It can extend beyond visible Y.
 	*/
 	bool LimitClipRectToScreen(Vec2i &clipMin,Vec2i &clipMax) const;
 
@@ -453,6 +485,7 @@ public:
 	void DrawTri(void);
 	void DrawQuad(void);
 	void DrawRect(Vec2i p0,Vec2i p1);
+	void MakePolygonBuffer(int yminmax[2]);
 
 	// Pixels Command
 	void CmdNextPixels(uint32_t physAddr,uint32_t data);

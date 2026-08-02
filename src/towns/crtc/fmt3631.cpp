@@ -172,7 +172,7 @@ void FMT3631::IsUnsupportedFeature(std::string msg) const
 bool FMT3631::LimitClipRectToScreen(Vec2i &clipMin,Vec2i &clipMax) const
 {
 	int wid=Width();
-	int hei=Height();
+	int hei=state.vram.size()/BytesPerLine(); // Height() will return visible rect.  Virtual screen may extend beyond that.
 
 	if(true!=state.isFMT3632)
 	{
@@ -1036,7 +1036,28 @@ void FMT3631::DrawTri(void)
 
 void FMT3631::DrawQuad(void)
 {
-	std::cout << "DrawQuad not supported yet.\n";
+	int yminmax[2];
+	MakePolygonBuffer(yminmax);
+	if(true!=state.isFMT3632)
+	{
+		Vec2i clip[2]=
+		{
+			GetWindowMin(),
+			GetWindowMax(),
+		};
+		if(true!=LimitClipRectToScreen(clip[0],clip[1]))
+		{
+			return;
+		}
+	}
+	else
+	{
+		IsUnsupportedFeature("General quad not implemented yet.  "+cpputil::Uitoa(state.nLoadedCoord)+" loaded coords");
+		std::cout << "(" << state.coord[0].x() << "," << state.coord[0].y() << ") " << cpputil::Ustox(state.metaCoordType[0]) << "\n";
+		std::cout << "(" << state.coord[1].x() << "," << state.coord[1].y() << ") " << cpputil::Ustox(state.metaCoordType[1]) << "\n";
+		std::cout << "(" << state.coord[2].x() << "," << state.coord[2].y() << ") " << cpputil::Ustox(state.metaCoordType[2]) << "\n";
+		std::cout << "(" << state.coord[3].x() << "," << state.coord[3].y() << ") " << cpputil::Ustox(state.metaCoordType[3]) << "\n";
+	}
 }
 void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 {
@@ -1303,6 +1324,165 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 			}
 			lineTop+=bytesPerLine;
 		}
+	}
+}
+
+void FMT3631::MakePolygonBuffer(int yminmax[2])
+{
+	int n=4;
+	if(LOAD_COORD_PRIMTYPE_TRI==state.metaCoordType[0] &&
+	   LOAD_COORD_PRIMTYPE_TRI==state.metaCoordType[1] &&
+	   LOAD_COORD_PRIMTYPE_TRI==state.metaCoordType[2])
+	{
+		n=3;
+	}
+	if(LOAD_COORD_PRIMTYPE_POINT==state.metaCoordType[0] ||
+	   LOAD_COORD_PRIMTYPE_LINE==state.metaCoordType[0] ||
+	   LOAD_COORD_PRIMTYPE_RECT==state.metaCoordType[0])
+	{
+		IsUnsupportedFeature("Unknown combination of the meta-coord type for Quad.");
+		return;
+	}
+
+	auto winMin=GetWindowMin();
+	auto winMax=GetWindowMax();
+	if(true!=LimitClipRectToScreen(winMin,winMax))
+	{
+		return;
+	}
+
+	yminmax[0]=MAX_HEIGHT-1;
+	yminmax[1]=0;
+	for(auto c : state.coord)
+	{
+		yminmax[0]=std::min(yminmax[0],c.y());
+		yminmax[1]=std::max(yminmax[1],c.y());
+	}
+
+	if(MAX_HEIGHT==yminmax[0] || 0==yminmax[1])
+	{
+		return; // Entirely out of the screen.
+	}
+
+	for(int y=yminmax[0]; y<=yminmax[1]; ++y)
+	{
+		plg[y].n=0;
+	}
+
+	int lastVY=0;
+	for(int i=0; i<n; ++i)
+	{
+		int vy=state.coord[(i+1)%n].y()-state.coord[i].y();
+		if(0!=vy)
+		{
+			lastVY=vy;
+		}
+	}
+
+	for(int i=0; i<n; ++i)
+	{
+		int vy=state.coord[(i+1)%n].y()-state.coord[i].y();
+		int vx=state.coord[(i+1)%n].x()-state.coord[i].x();
+		int dx,dy;
+
+		if(0==vx)
+		{
+			dx=0;
+		}
+		else if(vx<0)
+		{
+			dx=-vx;
+			vx=-1;
+		}
+		else // if(0<vx)
+		{
+			dx=vx;
+			vx=1;
+		}
+
+		if(0==vy)
+		{
+			continue;
+		}
+		else if(vy<0)
+		{
+			dy=-vy;
+			vy=-1;
+		}
+		else // if(0<vy)
+		{
+			dy=vy;
+			vy=1;
+		}
+
+		int x=state.coord[i].x();
+		int y=state.coord[i].y();
+		int x1=state.coord[(i+1)%n].x();
+		int y1=state.coord[(i+1)%n].y();
+
+		if(lastVY*vy<0)
+		{
+			if(0<=y && y<MAX_HEIGHT)
+			{
+				plg[y].Insert(x);
+			}
+		}
+
+		if(0==dx)
+		{
+			while(y!=y1)
+			{
+				y+=vy;
+				if(0<=y && y<MAX_HEIGHT)
+				{
+					plg[y].Insert(x);
+				}
+			}
+		}
+		else if(dx<dy)
+		{
+			int balance=0;
+			while(y!=y1)
+			{
+				if(0<=balance)
+				{
+					y+=vy;
+					balance-=dx;
+					if(0<=y && y<MAX_HEIGHT)
+					{
+						plg[y].Insert(x);
+					}
+				}
+				else
+				{
+					x+=vx;
+					balance+=dy;
+				}
+			}
+		}
+		else // if(dy<dx)
+		{
+			int balance=0;
+			while(y!=y1)
+			{
+				if(0<=balance)
+				{
+					x+=vx;
+					balance-=dy;
+				}
+				else
+				{
+					y+=vy;
+					balance+=dx;
+					if(0<=y && y<MAX_HEIGHT)
+					{
+						plg[y].Insert(x);
+					}
+				}
+			}
+		}
+
+		lastVY=vy;
 	}
 }
 
@@ -1727,11 +1907,7 @@ uint32_t FMT3631::CmdQuad(uint32_t physAddr) // Apparently, it is executed by Fe
 		return 0;
 	}
 
-	IsUnsupportedFeature("General quad not implemented yet.  "+cpputil::Uitoa(state.nLoadedCoord)+" loaded coords");
-	std::cout << "(" << state.coord[0].x() << "," << state.coord[0].y() << ") " << cpputil::Ustox(state.metaCoordType[0]) << "\n";
-	std::cout << "(" << state.coord[1].x() << "," << state.coord[1].y() << ") " << cpputil::Ustox(state.metaCoordType[1]) << "\n";
-	std::cout << "(" << state.coord[2].x() << "," << state.coord[2].y() << ") " << cpputil::Ustox(state.metaCoordType[2]) << "\n";
-	std::cout << "(" << state.coord[3].x() << "," << state.coord[3].y() << ") " << cpputil::Ustox(state.metaCoordType[3]) << "\n";
+	DrawQuad();
 	state.nextLoadIndex=0;
 	return 0;
 }
