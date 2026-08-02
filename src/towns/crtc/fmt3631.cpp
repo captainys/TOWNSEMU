@@ -835,6 +835,89 @@ void FMT3631::LoadCoord(uint32_t physAddr,uint32_t data)
 	}
 }
 
+class FMT3631::FMT3631QuadLogicOpAllBitsSet
+{
+public:
+	inline static void DoLogicOp(uint8_t *ptr,uint32_t fgColor,uint32_t bgColor,bool usePattern,uint32_t patternBit,uint32_t pattern)
+	{
+		*ptr=0xFF; // However, Word Pad and crash dialog seems to expect all bits set.
+	}
+};
+
+class FMT3631::FMT3631QuadLogicOpAllBitsClear
+{
+public:
+	inline static void DoLogicOp(uint8_t *ptr,uint32_t fgColor,uint32_t bgColor,bool usePattern,uint32_t patternBit,uint32_t pattern)
+	{
+		*ptr=0;  // Prob zero (Used by WinG test)
+	}
+};
+class FMT3631::FMT3631QuadLogicOpFGColor
+{
+public:
+	inline static void DoLogicOp(uint8_t *ptr,uint32_t fgColor,uint32_t bgColor,bool usePattern,uint32_t patternBit,uint32_t pattern)
+	{
+		*ptr=fgColor;
+	}
+};
+class FMT3631::FMT3631QuadLogicOpBGColor
+{
+public:
+	inline static void DoLogicOp(uint8_t *ptr,uint32_t fgColor,uint32_t bgColor,bool usePattern,uint32_t patternBit,uint32_t pattern)
+	{
+	    // Same as IGM_B_MASK of Linux P9000 driver, then bgColor?
+		*ptr=bgColor;
+	}
+};
+class FMT3631::FMT3631QuadLogicOpNotDst
+{
+public:
+	inline static void DoLogicOp(uint8_t *ptr,uint32_t fgColor,uint32_t bgColor,bool usePattern,uint32_t patternBit,uint32_t pattern)
+	{
+		*ptr=~*ptr;
+	}
+};
+class FMT3631::FMT3631QuadLogicOpXor
+{
+public:
+	inline static void DoLogicOp(uint8_t *ptr,uint32_t fgColor,uint32_t bgColor,bool usePattern,uint32_t patternBit,uint32_t pattern)
+	{
+		*ptr^=fgColor;
+	}
+};
+class FMT3631::FMT3631QuadLogicOpProbablyXor
+{
+public:
+	inline static void DoLogicOp(uint8_t *ptr,uint32_t fgColor,uint32_t bgColor,bool usePattern,uint32_t patternBit,uint32_t pattern)
+	{
+		// Supposed to be Pixel1 XOR
+		// FG    1111111100000000
+		// BG    1111000011110000
+		// SRC   1100110011001100
+		// DST   1010101010101010
+		// ----------------------
+		// 569A  0101011010011010
+		// How come this becomes XOR?  
+		*ptr^=fgColor;
+	}
+};
+class FMT3631::FMT3631QuadLogicOpPatternFGBG
+{
+public:
+	inline static void DoLogicOp(uint8_t *ptr,uint32_t fgColor,uint32_t bgColor,bool usePattern,uint32_t patternBit,uint32_t pattern)
+	{
+		// Pattern=0->BG,  1->FG.  If use_pattern==false, always FG (probably)
+		if(true!=usePattern || 0!=(patternBit&pattern))
+		{
+			*ptr=fgColor;
+		}
+		else
+		{
+			*ptr=bgColor;
+		}
+	}
+};
+
 void FMT3631::DrawPoint(void)
 {
 	std::cout << "DrawPoint not supported yet.\n";
@@ -1029,25 +1112,108 @@ void FMT3631::DrawLine(Vec2i p0,Vec2i p1)
 	}
 }
 
-void FMT3631::DrawTri(void)
+template <class FMT3631QuadLogicOp>
+void FMT3631::DrawQuadForRasterFMT3631(void)
 {
-	std::cout << "DrawTri not supported yet.\n";
+	Vec2i clip[2]=
+	{
+		GetWindowMin(),
+		GetWindowMax(),
+	};
+	if(true!=LimitClipRectToScreen(clip[0],clip[1]))
+	{
+		return;
+	}
+
+	auto fgColor=*GetControlWordPtr(FGCOLOR);
+	auto bgColor=*GetControlWordPtr(BGCOLOR);
+	uint32_t raster=*GetControlWordPtr(RASTER);
+
+	auto bytesPerLine=BytesPerLine();
+	auto bitsPerPixel=BitsPerPixel();
+	auto bytesPerPixel=BytesPerPixel();
+	bool usePattern=(0!=(raster&RASTER_USEPATTERN));
+
+	int yminmax[2];
+	MakePolygonBuffer(yminmax);
+
+	uint8_t *lineTop=state.vram.data()+bytesPerLine*yminmax[0];
+	for(int y=yminmax[0]; y<=yminmax[1]; ++y)
+	{
+		uint32_t pattern=state.pattern[y%PATTERN_LEN];
+		auto &p=plg[y];
+		for(int i=0; i+1<p.n; i+=2)
+		{
+			auto ptr=lineTop+p.x[i];
+			uint32_t patternBit=(0x80000000>>(p.x[i]&31));
+			for(int x=p.x[i]; x<=p.x[i+1]; ++x)
+			{
+				if(clip[1].x()<x)
+				{
+					break;
+				}
+				if(clip[0].x()<=x)
+				{
+					// Apparently X coordinate is multiplied by bytes-per-pixel by the software.
+					FMT3631QuadLogicOp::DoLogicOp(ptr,fgColor,bgColor,usePattern,patternBit,pattern);
+				}
+				++ptr;
+				patternBit>>=1;
+				if(0==patternBit)
+				{
+					patternBit=0x80000000;
+				}
+			}
+		}
+		lineTop+=bytesPerLine;
+	}
 }
 
 void FMT3631::DrawQuad(void)
 {
-	int yminmax[2];
-	MakePolygonBuffer(yminmax);
 	if(true!=state.isFMT3632)
 	{
-		Vec2i clip[2]=
+		// FMT-3631
+		uint32_t raster=*GetControlWordPtr(RASTER);
+		switch(raster&0xFFFF)
 		{
-			GetWindowMin(),
-			GetWindowMax(),
-		};
-		if(true!=LimitClipRectToScreen(clip[0],clip[1]))
-		{
-			return;
+		default:
+			IsUnsupportedFeature("Unsupported Raster type for Rect ("+cpputil::Uitox(raster)+")");
+			break;
+		case 0xFFFF: // Prob Copy (Used by the crash dialog of Windows 3.1)
+			// Windows 3.1 Installer seems to be expecting copy.
+			// However, Word Pad and crash dialog seems to expect all bits set.
+			DrawQuadForRasterFMT3631<FMT3631QuadLogicOpAllBitsSet>();
+			break;
+		case 0x0000: // Prob zero (Used by WinG test)
+			DrawQuadForRasterFMT3631<FMT3631QuadLogicOpAllBitsClear>();
+			break;
+		case 0xff00: // Copy
+			DrawQuadForRasterFMT3631<FMT3631QuadLogicOpFGColor>();
+			break;
+		case 0xF0F0: // Used by Windows 3.1
+		    // Same as IGM_B_MASK of Linux P9000 driver, then bgColor?
+			DrawQuadForRasterFMT3631<FMT3631QuadLogicOpBGColor>();
+			break;
+		case 0x5555: // Not dst
+			DrawQuadForRasterFMT3631<FMT3631QuadLogicOpNotDst>();
+			break;
+		case 0x55aa: // Xor
+			DrawQuadForRasterFMT3631<FMT3631QuadLogicOpXor>();
+			break;
+		case 0x569a: // Supposed to be Pixel1 XOR
+			// FG    1111111100000000
+			// BG    1111000011110000
+			// SRC   1100110011001100
+			// DST   1010101010101010
+			// ----------------------
+			// 569A  0101011010011010
+			// How come this becomes XOR?  
+			DrawQuadForRasterFMT3631<FMT3631QuadLogicOpProbablyXor>();
+			break;
+		case 0xFC30: // Pattern=0->BG,  1->FG.  If use_pattern==false, always FG (probably)
+			DrawQuadForRasterFMT3631<FMT3631QuadLogicOpPatternFGBG>();
+			break;
 		}
 	}
 	else
@@ -1059,12 +1225,65 @@ void FMT3631::DrawQuad(void)
 		std::cout << "(" << state.coord[3].x() << "," << state.coord[3].y() << ") " << cpputil::Ustox(state.metaCoordType[3]) << "\n";
 	}
 }
-void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
+
+template <class FMT3631LogicOp>
+void FMT3631::DrawRectForRasterFMT3631(const Vec2i clip[2],int x0,int y0,int x1,int y1)
 {
+	auto fgColor=*GetControlWordPtr(FGCOLOR);
+	auto bgColor=*GetControlWordPtr(BGCOLOR);
+	uint32_t raster=*GetControlWordPtr(RASTER);
+
 	auto bytesPerLine=BytesPerLine();
 	auto bitsPerPixel=BitsPerPixel();
 	auto bytesPerPixel=BytesPerPixel();
 
+	uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+x0;
+	bool usePattern=(0!=(raster&RASTER_USEPATTERN));
+	uint32_t patternBit=0x80000000;
+	for(auto y=y0; y<=y1; ++y)
+	{
+		if(clip[1].y()<y)
+		{
+			break;
+		}
+
+		uint32_t pattern=state.pattern[y%PATTERN_LEN];
+
+		// Shockingly, Power 9000's Quad command fills the bytes within the region with the same byte.
+		// If it is 24-bit color mode, it can only draw gray scale.
+		// Linux Power 9000 driver draws a quad twice with a pattern and logic ops to fill component by component.
+		// Windows driver apparently did not push it that much.
+		auto ptr=lineTop;
+
+		if(y<clip[0].y())
+		{
+			goto NEXTY;
+		}
+		for(auto x=x0; x<=x1; ++x)
+		{
+			if(clip[1].x()<x)
+			{
+				break;
+			}
+			if(clip[0].x()<=x)
+			{
+				// Apparently X coordinate is multiplied by bytes-per-pixel by the software.
+				FMT3631LogicOp::DoLogicOp(ptr,fgColor,bgColor,usePattern,patternBit,pattern);
+			}
+			++ptr;
+			patternBit>>=1;
+			if(0==patternBit)
+			{
+				patternBit=0x80000000;
+			}
+		}
+	NEXTY:
+		lineTop+=bytesPerLine;
+	}
+};
+
+void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
+{
 	int x0=p0.x();
 	int y0=p0.y();
 	int x1=p1.x();
@@ -1118,110 +1337,62 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 	x1=std::max(x1,clip[0].x());
 	x1=std::min(x1,clip[1].x());
 
-	auto fgColor=*GetControlWordPtr(FGCOLOR);
-	auto bgColor=*GetControlWordPtr(BGCOLOR);
-	uint32_t raster=*GetControlWordPtr(RASTER);
-
 	if(true!=state.isFMT3632)
 	{
 		// FMT-3631
-		uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+x0;
-		bool usePattern=(0!=(raster&RASTER_USEPATTERN));
-		uint32_t patternBit=0x80000000;
-		for(auto y=y0; y<=y1; ++y)
+		uint32_t raster=*GetControlWordPtr(RASTER);
+		switch(raster&0xFFFF)
 		{
-			if(clip[1].y()<y)
-			{
-				break;
-			}
-
-			uint32_t pattern=state.pattern[y%PATTERN_LEN];
-
-			// Shockingly, Power 9000's Quad command fills the bytes within the region with the same byte.
-			// If it is 24-bit color mode, it can only draw gray scale.
-			// Linux Power 9000 driver draws a quad twice with a pattern and logic ops to fill component by component.
-			// Windows driver apparently did not push it that much.
-			auto ptr=lineTop;
-
-			if(y<clip[0].y())
-			{
-				goto NEXTY;
-			}
-
-			for(auto x=x0; x<=x1; ++x)
-			{
-				if(clip[1].x()<x)
-				{
-					break;
-				}
-				if(clip[0].x()<=x)
-				{
-					// Apparently X coordinate is multiplied by bytes-per-pixel by the software.
-					switch(raster&0xFFFF)
-					{
-					// FG    1111111100000000
-					// BG    1111000011110000
-					// SRC   1100110011001100
-					// DST   1010101010101010
-					default:
-						IsUnsupportedFeature("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
-						break;
-					case 0xFFFF: // Prob Copy (Used by the crash dialog of Windows 3.1)
-						// *ptr=fgColor; // Windows 3.1 Installer seems to be expecting copy.
-						*ptr=0xFF; // However, Word Pad seems to expect all bits set.
-						break;
-					case 0x0000: // Prob zero (Used by WinG test)
-						*ptr=0;
-						break;
-					case 0xF0F0: // Used by Windows 3.1
-					    // Same as IGM_B_MASK of Linux P9000 driver, then bgColor?
-						*ptr=bgColor;
-						break;
-					case 0xff00: // Copy
-						*ptr=fgColor;
-						break;
-					case 0x5555: // Not dst
-						*ptr=~*ptr;
-						break;
-					case 0x55aa: // Xor
-						*ptr^=fgColor;
-						break;
-					case 0x569a: // Supposed to be Pixel1 XOR
-						// FG    1111111100000000
-						// BG    1111000011110000
-						// SRC   1100110011001100
-						// DST   1010101010101010
-						// ----------------------
-						// 569A  0101011010011010
-						// How come this becomes XOR?  
-						*ptr^=fgColor;
-						break;
-					case 0xFC30: // Pattern=0->BG,  1->FG.  If use_pattern==false, always FG (probably)
-						if(true!=usePattern || 0!=(patternBit&pattern))
-						{
-							*ptr=fgColor;
-						}
-						else
-						{
-							*ptr=bgColor;
-						}
-						break;
-					}
-				}
-				++ptr;
-				patternBit>>=1;
-				if(0==patternBit)
-				{
-					patternBit=0x80000000;
-				}
-			}
-		NEXTY:
-			lineTop+=bytesPerLine;
+		default:
+			IsUnsupportedFeature("Unsupported Raster type for Rect ("+cpputil::Uitox(raster)+")");
+			break;
+		case 0xFFFF: // Prob Copy (Used by the crash dialog of Windows 3.1)
+			// Windows 3.1 Installer seems to be expecting copy.
+			// However, Word Pad and crash dialog seems to expect all bits set.
+			DrawRectForRasterFMT3631<FMT3631QuadLogicOpAllBitsSet>(clip,x0,y0,x1,y1);
+			break;
+		case 0x0000: // Prob zero (Used by WinG test)
+			DrawRectForRasterFMT3631<FMT3631QuadLogicOpAllBitsClear>(clip,x0,y0,x1,y1);
+			break;
+		case 0xff00: // Copy
+			DrawRectForRasterFMT3631<FMT3631QuadLogicOpFGColor>(clip,x0,y0,x1,y1);
+			break;
+		case 0xF0F0: // Used by Windows 3.1
+		    // Same as IGM_B_MASK of Linux P9000 driver, then bgColor?
+			DrawRectForRasterFMT3631<FMT3631QuadLogicOpBGColor>(clip,x0,y0,x1,y1);
+			break;
+		case 0x5555: // Not dst
+			DrawRectForRasterFMT3631<FMT3631QuadLogicOpNotDst>(clip,x0,y0,x1,y1);
+			break;
+		case 0x55aa: // Xor
+			DrawRectForRasterFMT3631<FMT3631QuadLogicOpXor>(clip,x0,y0,x1,y1);
+			break;
+		case 0x569a: // Supposed to be Pixel1 XOR
+			// FG    1111111100000000
+			// BG    1111000011110000
+			// SRC   1100110011001100
+			// DST   1010101010101010
+			// ----------------------
+			// 569A  0101011010011010
+			// How come this becomes XOR?  
+			DrawRectForRasterFMT3631<FMT3631QuadLogicOpProbablyXor>(clip,x0,y0,x1,y1);
+			break;
+		case 0xFC30: // Pattern=0->BG,  1->FG.  If use_pattern==false, always FG (probably)
+			DrawRectForRasterFMT3631<FMT3631QuadLogicOpPatternFGBG>(clip,x0,y0,x1,y1);
+			break;
 		}
 	}
 	else
 	{
 		// FMT-3632
+		auto fgColor=*GetControlWordPtr(FGCOLOR);
+		auto bgColor=*GetControlWordPtr(BGCOLOR);
+		uint32_t raster=*GetControlWordPtr(RASTER);
+
+		auto bytesPerLine=BytesPerLine();
+		auto bitsPerPixel=BitsPerPixel();
+		auto bytesPerPixel=BytesPerPixel();
+
 		uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+bytesPerPixel*x0;
 		bool usePattern=(0!=(raster&RASTER_P9100_PATTERN_ENABLE));
 		uint32_t patternBit=0x80000000;
@@ -1441,7 +1612,7 @@ void FMT3631::MakePolygonBuffer(int yminmax[2])
 		}
 		else if(dx<dy)
 		{
-			int balance=0;
+			int balance=dy/2;
 			while(y!=y1)
 			{
 				if(0<=balance)
@@ -1462,7 +1633,7 @@ void FMT3631::MakePolygonBuffer(int yminmax[2])
 		}
 		else // if(dy<dx)
 		{
-			int balance=0;
+			int balance=dx/2;
 			while(y!=y1)
 			{
 				if(0<=balance)

@@ -480,10 +480,26 @@ public:
 	void LoadCoord(uint32_t physAddr,uint32_t data);
 	int DeviceCoordOrLoadCoord(Vec2i &coord,Vec2i absRef,Vec2i relRef,uint32_t physAddr,uint32_t data);
 	void ClearLoadedFlags(void);
+
+	class FMT3631QuadLogicOpAllBitsSet;
+	class FMT3631QuadLogicOpAllBitsClear;
+	class FMT3631QuadLogicOpFGColor;
+	class FMT3631QuadLogicOpBGColor;
+	class FMT3631QuadLogicOpNotDst;
+	class FMT3631QuadLogicOpXor;
+	class FMT3631QuadLogicOpProbablyXor;
+	class FMT3631QuadLogicOpPatternFGBG;
+
 	void DrawPoint(void);
+
 	void DrawLine(Vec2i p0,Vec2i p1);
-	void DrawTri(void);
+
+	template <class FMT3631QuadLogicOp>
+	void DrawQuadForRasterFMT3631(void);
 	void DrawQuad(void);
+
+	template <class FMT3631QuadLogicOp>
+	void DrawRectForRasterFMT3631(const Vec2i clip[2],int x0,int y0,int x1,int y1);
 	void DrawRect(Vec2i p0,Vec2i p1);
 	void MakePolygonBuffer(int yminmax[2]);
 
