@@ -885,134 +885,147 @@ void FMT3631::DrawLine(Vec2i p0,Vec2i p1)
 		vy=-1;
 	}
 
-	uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+x0;
-	auto fgColor=*GetControlWordPtr(FGCOLOR);
-	auto bgColor=*GetControlWordPtr(BGCOLOR);
-	uint32_t raster=*GetControlWordPtr(RASTER);
-	bool usePattern=(0!=(raster&RASTER_USEPATTERN));
-	uint32_t patternBit=0x80000000;
-
-	auto pset=[=](uint8_t *ptr,bool usePattern,uint32_t pattern,uint32_t patternBit)
+	if(true!=state.isFMT3632)
 	{
-		switch(raster&0xFFFF)
+		uint8_t *lineTop=state.vram.data()+bytesPerLine*y0+x0;
+		auto fgColor=*GetControlWordPtr(FGCOLOR);
+		auto bgColor=*GetControlWordPtr(BGCOLOR);
+		uint32_t raster=*GetControlWordPtr(RASTER);
+		bool usePattern=(0!=(raster&RASTER_USEPATTERN));
+		uint32_t patternBit=0x80000000;
+
+		auto pset=[=](uint8_t *ptr,bool usePattern,uint32_t pattern,uint32_t patternBit)
 		{
-		default:
-			IsUnsupportedFeature("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
-			break;
-		case 0xff00: // Copy
-			*ptr=fgColor;
-			break;
-		case 0x5555: // Not dst
-			*ptr=~*ptr;
-			break;
-		case 0x55aa: // Xor
-			*ptr^=fgColor;
-			break;
-		case 0xFC30: // Pattern=0->BG,  1->FG.  If use_pattern==false, always FG (probably)
-			if(true!=usePattern || 0!=(patternBit&pattern))
+			switch(raster&0xFFFF)
 			{
+			default:
+				IsUnsupportedFeature("Unsupported Raster type for Line "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
+				break;
+			case 0xFFFF: // Prob Copy (Used by the crash dialog of Windows 3.1)
 				*ptr=fgColor;
+				break;
+			case 0x0000: // Prob zero (Used by WinG test)
+				*ptr=0;
+				break;
+			case 0xff00: // Copy
+				*ptr=fgColor;
+				break;
+			case 0x5555: // Not dst
+				*ptr=~*ptr;
+				break;
+			case 0x55aa: // Xor
+				*ptr^=fgColor;
+				break;
+			case 0xFC30: // Pattern=0->BG,  1->FG.  If use_pattern==false, always FG (probably)
+				if(true!=usePattern || 0!=(patternBit&pattern))
+				{
+					*ptr=fgColor;
+				}
+				else
+				{
+					*ptr=bgColor;
+				}
+				break;
 			}
-			else
-			{
-				*ptr=bgColor;
-			}
-			break;
-		}
-	};
+		};
 
-	if(0==dx)
-	{
-		auto *ptr=lineTop;
-		int vPtr=bytesPerLine;
-		vPtr*=vy;
-
-		unsigned int patternBit=(0x80000000>>(x0%31));
-
-		bool last=false;
-		for(auto y=y0; true!=last; y+=vy)
+		if(0==dx)
 		{
-			if(y==y1)
-			{
-				last=true;
-			}
+			auto *ptr=lineTop;
+			int vPtr=bytesPerLine;
+			vPtr*=vy;
 
-			if(y<clip[0].y() || clip[1].y()<y)
-			{
-				continue;
-			}
+			unsigned int patternBit=(0x80000000>>(x0%31));
 
-			pset(ptr,usePattern,state.pattern[y%PATTERN_LEN],patternBit);
-			ptr+=vPtr;
+			bool last=false;
+			for(auto y=y0; true!=last; y+=vy)
+			{
+				if(y==y1)
+				{
+					last=true;
+				}
+
+				if(y<clip[0].y() || clip[1].y()<y)
+				{
+					continue;
+				}
+
+				pset(ptr,usePattern,state.pattern[y%PATTERN_LEN],patternBit);
+				ptr+=vPtr;
+			}
 		}
-	}
-	else if(0==dy)
-	{
-		auto *ptr=lineTop;
-		int vPtr=vx;
-
-		bool last=false;
-		for(auto x=x0; true!=last; x+=vx)
+		else if(0==dy)
 		{
-			if(x==x1)
-			{
-				last=true;
-			}
+			auto *ptr=lineTop;
+			int vPtr=vx;
 
-			if(x<clip[0].x() || clip[1].x()<x)
+			bool last=false;
+			for(auto x=x0; true!=last; x+=vx)
 			{
-				continue;
-			}
+				if(x==x1)
+				{
+					last=true;
+				}
 
-			uint32_t patternBit=(0x80000000>>(x%31));
-			pset(ptr,usePattern,state.pattern[y0%PATTERN_LEN],patternBit);
-			ptr+=vPtr;
+				if(x<clip[0].x() || clip[1].x()<x)
+				{
+					continue;
+				}
+
+				uint32_t patternBit=(0x80000000>>(x%31));
+				pset(ptr,usePattern,state.pattern[y0%PATTERN_LEN],patternBit);
+				ptr+=vPtr;
+			}
+		}
+		else
+		{
+			auto *ptr=lineTop;
+
+			int balance=0;
+			int x=x0,y=y0;
+			int vyPtr=bytesPerLine;
+			vyPtr*=vy;
+			int vxPtr=vx;
+
+			bool last=false;
+			while(true!=last)
+			{
+				if(x==x1 && y==y1)
+				{
+					last=true;
+				}
+
+				uint32_t patternBit=(0x80000000>>(x%31));
+				pset(ptr,usePattern,state.pattern[y%PATTERN_LEN],patternBit);
+
+				if(0==balance)
+				{
+					y+=vy;
+					ptr+=vyPtr;
+					balance-=dx;
+
+					x+=vx;
+					ptr+=vxPtr;
+					balance+=dy;
+				}
+				else if(0<balance)
+				{
+					y+=vy;
+					ptr+=vyPtr;
+					balance-=dx;
+				}
+				else
+				{
+					x+=vx;
+					ptr+=vxPtr;
+					balance+=dy;
+				}
+			}
 		}
 	}
 	else
 	{
-		auto *ptr=lineTop;
-
-		int balance=0;
-		int x=x0,y=y0;
-		int vyPtr=bytesPerLine;
-		vyPtr*=vy;
-		int vxPtr=vx;
-
-		bool last=false;
-		while(true!=last)
-		{
-			if(x==x1 && y==y1)
-			{
-				last=true;
-			}
-
-			uint32_t patternBit=(0x80000000>>(x%31));
-			pset(ptr,usePattern,state.pattern[y%PATTERN_LEN],patternBit);
-
-			if(0==balance)
-			{
-				y+=vy;
-				ptr+=vyPtr;
-				balance-=dx;
-
-				x+=vx;
-				ptr+=vxPtr;
-				balance+=dy;
-			}
-			else if(0<balance)
-			{
-				y+=vy;
-				ptr+=vyPtr;
-				balance-=dx;
-			}
-			else
-			{
-				x+=vx;
-				ptr+=vxPtr;
-				balance+=dy;
-			}
-		}
+		IsUnsupportedFeature("Line is not supported yet for FMT-3632.");
 	}
 }
 
@@ -1131,6 +1144,13 @@ void FMT3631::DrawRect(Vec2i p0,Vec2i p1)
 					// DST   1010101010101010
 					default:
 						IsUnsupportedFeature("Unsupported Raster type for Rect "+cpputil::Itoa(bitsPerPixel)+" bpp ("+cpputil::Uitox(raster)+")");
+						break;
+					case 0xFFFF: // Prob Copy (Used by the crash dialog of Windows 3.1)
+						// *ptr=fgColor; // Windows 3.1 Installer seems to be expecting copy.
+						*ptr=0xFF; // However, Word Pad seems to expect all bits set.
+						break;
+					case 0x0000: // Prob zero (Used by WinG test)
+						*ptr=0;
 						break;
 					case 0xF0F0: // Used by Windows 3.1
 					    // Same as IGM_B_MASK of Linux P9000 driver, then bgColor?
@@ -2630,6 +2650,21 @@ std::vector <std::string> FMT3631::GetAdditionalStatusText(void) const
 	for(auto ptn : state.pattern)
 	{
 		text.push_back(cpputil::Uitox(ptn));
+	}
+	text.push_back("Palette");
+	for(int i=0; i<256; ++i)
+	{
+		if(0==i%16)
+		{
+			text.push_back("");
+		}
+		else
+		{
+			text.back().push_back(' ');
+		}
+		text.back()+=cpputil::Ubtox(state.plt.plt256[i][0]);
+		text.back()+=cpputil::Ubtox(state.plt.plt256[i][1]);
+		text.back()+=cpputil::Ubtox(state.plt.plt256[i][2]);
 	}
 
 	return text;
