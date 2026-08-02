@@ -2541,7 +2541,31 @@ std::vector <std::string> FMT3631::GetStatusText(void) const
 		for(int i=0; i<COORD_MAX; ++i)
 		{
 			auto c=state.coord[i];
-			text.push_back("Coord["+cpputil::Uitoa(i)+"]=("+cpputil::Uitoa(c.x())+","+cpputil::Uitoa(c.y())+")");
+			text.push_back("Coord["+cpputil::Uitoa(i)+"]=("+cpputil::Uitoa(c.x())+","+cpputil::Uitoa(c.y())+") ");
+			switch(state.metaCoordType[i])
+			{
+			case LOAD_COORD_PRIMTYPE_POINT://0,
+				text.back()+="as POINT";
+				break;
+			case LOAD_COORD_PRIMTYPE_LINE://0x40,
+				text.back()+="as LINE";
+				break;
+			case LOAD_COORD_PRIMTYPE_TRI://0x80,
+				text.back()+="as TRI";
+				break;
+			case LOAD_COORD_PRIMTYPE_QUAD://0xC0,
+				text.back()+="as QUAD";
+				break;
+			case LOAD_COORD_PRIMTYPE_RECT://0x100
+				text.back()+="as RECT";
+				break;
+			case LOAD_COORD_PRIMTYPE_NOT_LOADED://0xFF,
+				text.back()+="Not Loaded";
+				break;
+			case LOAD_COORD_PRIMTYPE_NOT_TYPED://0xFE,
+				text.back()+="Not Typed";
+				break;
+			}
 		}
 		for(int i=0; i<4; ++i)
 		{
