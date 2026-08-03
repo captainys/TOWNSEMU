@@ -938,6 +938,48 @@ void FMTownsCommon::SetCAPCOMCPSFState(int port,bool left,bool right,bool up,boo
 	p.SetCAPCOMCPSFState(left,right,up,down,A,B,X,Y,L,R,start,select,state.townsTime);
 }
 
+uint32_t FMTownsCommon::GetMouseXYOffsetInMOSWork(unsigned int tbiosid) const
+{
+	switch(tbiosid)
+	{
+	case TBIOS_V31L22A:
+		// 0110:0000FA88 8A6F44                    MOV     CH,[EDI+44H]
+		// 0110:0000FA8B 8B5752                    MOV     EDX,[EDI+52H]
+		// 0110:0000FA8E 0FA4D310                  SHLD    EBX,EDX,10H
+		// 0110:0000FA92 886D1D                    MOV     [EBP+1DH],CH
+		// 0110:0000FA95 66895518                  MOV     [EBP+18H],DX
+		// 0110:0000FA99 66895D14                  MOV     [EBP+14H],BX
+		// 0110:0000FA9D C3                        RET
+		return 0x52;
+	case TBIOS_V31L23A:
+		// 0110:000103B8 8A6F44                    MOV     CH,[EDI+44H]
+		// 0110:000103BB 8B5756                    MOV     EDX,[EDI+56H]
+		// 0110:000103BE 0FA4D310                  SHLD    EBX,EDX,10H
+		// 0110:000103C2 886D1D                    MOV     [EBP+1DH],CH
+		// 0110:000103C5 66895518                  MOV     [EBP+18H],DX
+		// 0110:000103C9 66895D14                  MOV     [EBP+14H],BX
+		// 0110:000103CD C3                        RET
+		return 0x56;
+	case TBIOS_V31L31_90:
+		// 0110:000103B8 8A6F44                    MOV     CH,[EDI+44H]
+		// 0110:000103BB 8B5756                    MOV     EDX,[EDI+56H]
+		// 0110:000103BE 0FA4D310                  SHLD    EBX,EDX,10H
+		// 0110:000103C2 886D1D                    MOV     [EBP+1DH],CH
+		// 0110:000103C5 66895518                  MOV     [EBP+18H],DX
+		// 0110:000103C9 66895D14                  MOV     [EBP+14H],BX
+		// 0110:000103CD C3                        RET
+		return 0x56;
+
+	// These versions store in TBIOS segment.
+	case TBIOS_V31L31_91:
+	case TBIOS_V31L31_92:
+	case TBIOS_V31L31_93:
+	case TBIOS_V31L35:
+		break;
+	}
+	return 0;
+}
+
 bool FMTownsCommon::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 {
 	// Windows 3.1 >>

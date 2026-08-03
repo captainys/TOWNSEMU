@@ -197,6 +197,8 @@ public:
 		unsigned int TBIOS_mouseInfoOffset=0;
 		unsigned int MOS_work_linearAddr=0;
 		unsigned int MOS_work_physicalAddr=0;
+		// This offset is only for XY coord.  Don't use it for other purposes.
+		// This is required for Fujitsu Habitat, which places MOS_work close to the page boundary.
 		unsigned int MOS_pulsePerPixelH=8,MOS_pulsePerPixelV=8;
 		int mouseIntegrationSpeed=256;
 
@@ -655,6 +657,10 @@ public:
 	    Returns false if it could not get the coordinate.
 	*/
 	bool GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const;
+
+	/*!
+	*/
+	uint32_t GetMouseXYOffsetInMOSWork(unsigned int tbiosid) const;
 
 
 	/*! After constructing FMTownsCommon class, call this function to specify where to look

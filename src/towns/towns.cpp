@@ -1271,7 +1271,6 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 
 		unsigned int excType,excCode;
 		state.MOS_work_linearAddr=cpu.state.GS().baseLinearAddr+cpu.GetEDI();
-		state.MOS_work_physicalAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,state.MOS_work_linearAddr,mem);
 
 		i486DXCommon::SegmentRegister CS;
 		cpu.DebugLoadSegmentRegister(CS,0x110,mem,i486DXCommon::MODE_NATIVE);
@@ -1283,6 +1282,19 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 		state.mouseDisplayPage=0;
 
 		std::cout << "Identified TBIOS as: " << TBIOSIDENTtoString(state.tbiosVersion) << std::endl;
+
+		// Need TBIOS Version to get offset of mouse XY.
+		{
+			auto XYOffset=GetMouseXYOffsetInMOSWork(state.tbiosVersion);
+			uint32_t linear=state.MOS_work_linearAddr+XYOffset;
+			state.MOS_work_physicalAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,linear,mem);
+			state.MOS_work_physicalAddr-=XYOffset;
+			// Make it base for getting mouse XY coordinates.
+			// Why not storing MOS_work_XY_address instead of MOS_work_physicalAddr?
+			// If I do so, some state-save data becomes unusable.
+			// I can store both MOS_work_physicalAddr and MOS_work_XY_address, but well essentially it is exclusively used for
+			// getting mouse coordinate.
+		}
 
 		// It's a good time for some patches.
 		switch(state.appSpecificSetting)
