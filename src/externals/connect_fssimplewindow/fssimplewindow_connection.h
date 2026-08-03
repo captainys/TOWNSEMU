@@ -132,6 +132,8 @@ public:
 	virtual void RegisterPauseResume(std::string hostKeyLabel) override;
 
 	virtual void ToggleMouseCursor(void) override;
+	virtual void ShowMouseCursor(bool show) override;
+
 
 	void PauseKeyPressed(void);
 

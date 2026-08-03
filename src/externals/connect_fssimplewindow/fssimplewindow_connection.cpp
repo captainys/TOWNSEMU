@@ -1582,6 +1582,11 @@ void FsSimpleWindowConnection::PauseKeyPressed(void)
 	showMouseCursor=(showMouseCursor!=true);
 }
 
+void FsSimpleWindowConnection::ShowMouseCursor(bool show)
+{
+	showMouseCursor=show;
+}
+
 ////////////////////////////////////////////////////////////////
 
 void FsSimpleWindowConnection::WindowConnection::Start(void)
@@ -1786,10 +1791,9 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 	{
 		std::lock_guard <std::mutex> lock(deviceStateLock);
 
-		bool mouseCursorVisible=(true!=shared.differentialMouseIntegration && true==shared.showMouseCursor);
-		if(mouseCursorVisible!=(FsIsMouseCursorVisible()!=0))
+		if(shared.showMouseCursor!=(FsIsMouseCursorVisible()!=0))
 		{
-			if(true==mouseCursorVisible)
+			if(true==shared.showMouseCursor)
 			{
 				FsShowMouseCursor(1);
 			}

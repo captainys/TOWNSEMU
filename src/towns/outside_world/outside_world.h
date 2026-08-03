@@ -228,6 +228,8 @@ public:
 	/*! Call this function to toggle host mouse cursor. */
 	virtual void ToggleMouseCursor(void){};
 
+	virtual void ShowMouseCursor(bool show){};
+
 
 	/*! Host-Key Label is implementation dependent.
 	*/
