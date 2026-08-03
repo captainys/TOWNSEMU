@@ -2207,6 +2207,7 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd,O
 			break;
 		case ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION:
 			outside_world->differentialMouseIntegration=true;
+			outside_world->ShowMouseCursor(false);
 			std::cout << "Enabled differential mouse integration\n";
 			break;
 		case ENABLE_DIRECT_TYPE_MODE:
@@ -2366,6 +2367,7 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd,
 			break;
 		case ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION:
 			outside_world->differentialMouseIntegration=false;
+			outside_world->ShowMouseCursor(true);
 			std::cout << "Disabled differential mouse integration\n";
 			break;
 		case ENABLE_DIRECT_TYPE_MODE:
@@ -2637,6 +2639,7 @@ void TownsCommandInterpreter::Execute_Toggle(FMTownsCommon &towns,Command &cmd,c
 			break;
 		case ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION:
 			cpputil::Toggle(outside_world->differentialMouseIntegration);
+			outside_world->ShowMouseCursor(false==outside_world->differentialMouseIntegration);
 			std::cout << "Differential mouse integration is";
 			std::cout << cpputil::BoolToOnOffStr(outside_world->differentialMouseIntegration) << ".\n";
 			break;
