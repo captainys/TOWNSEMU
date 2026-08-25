@@ -554,11 +554,19 @@ unsigned int TownsCRTC::GetPriorityPage(void) const
 }
 unsigned int TownsCRTC::GetPageBytesPerLine(unsigned char page) const
 {
-	auto LOx=state.crtcReg[REG_LO0+page*4];
-	auto numBytes=LOx*4;   // Why did I think it was (LOx-FOx)*4?
-	if(true==LowResCrtcIsInSinglePageMode())
+	unsigned int numBytes;
+	if(true!=state.highResCRTCEnabled)
 	{
-		numBytes*=2;
+		auto LOx=state.crtcReg[REG_LO0+page*4];
+		numBytes=LOx*4;   // Why did I think it was (LOx-FOx)*4?
+		if(true==LowResCrtcIsInSinglePageMode())
+		{
+			numBytes*=2;
+		}
+	}
+	else
+	{
+		numBytes=GetHighResVRAMWidthInPixels(page)*GetHighResVRAMBitsPerPixel(page)/8;
 	}
 	return numBytes;
 }
@@ -1926,30 +1934,37 @@ std::vector <std::string> TownsCRTC::GetLowResPaletteText(const AnalogPalette &p
 	return text;
 }
 
-void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
+unsigned int TownsCRTC::GetHighResVRAMWidthInPixels(int page) const
+{
+	return state.highResCrtcReg[HIGHRES_REG_P0_VRAM_WID+0x10*page];
+}
+
+unsigned int TownsCRTC::GetHighResVRAMBitsPerPixel(int page) const
 {
 	switch(state.highResCrtcReg[HIGHRES_REG_P0_PALETTE+0x10*page]&0xFFFF)
 	{
 	default:
 	case 0x0F:
-		layer.bitsPerPixel=4;
-		break;
+		return 4;
 	case 0xFF:
-		layer.bitsPerPixel=8;
-		break;
+		return 8;
 	case 0x8000:
-		layer.bitsPerPixel=16;
-		break;
+		return 16;
 	case 0xFFFF:
-		layer.bitsPerPixel=24;
-		break;
+		return 24;
 	}
+}
+
+void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
+{
+	layer.bitsPerPixel=GetHighResVRAMBitsPerPixel(page);
+
 	layer.highResRGBSwap=state.highResCrtcReg[HIGHRES_REG_RGB_BGR_BRG_OR_ELSE]; // Hopefully meaningful only in the 24-bit color mode.  Figured 2025/07/02
 	layer.VRAMAddr=0x80000*page;
 
 	unsigned int dx=state.highResCrtcReg[HIGHRES_REG_P0_VRAM_OFFSET_X+0x10*page];
 	unsigned int dy=state.highResCrtcReg[HIGHRES_REG_P0_VRAM_OFFSET_Y+0x10*page];
-	unsigned int vramWidInPix=state.highResCrtcReg[HIGHRES_REG_P0_VRAM_WID+0x10*page];
+	unsigned int vramWidInPix=GetHighResVRAMWidthInPixels(page);
 
 	layer.VRAMOffset=(dy*vramWidInPix+dx)*layer.bitsPerPixel/8;
 	layer.FlipVRAMOffset =0;        // Probably FM-R/Sprite page is not applicable to CRTC2.

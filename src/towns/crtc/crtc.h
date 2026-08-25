@@ -491,6 +491,9 @@ public:
 	std::vector <std::string> GetLowResPaletteText(const AnalogPalette &palette) const;
 
 
+	unsigned int GetHighResVRAMWidthInPixels(int page) const;
+	unsigned int GetHighResVRAMBitsPerPixel(int page) const;
+
 	/*! Make High-Res mode Layer Info.
 	*/
 	void MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const;
