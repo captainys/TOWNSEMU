@@ -528,16 +528,27 @@ unsigned int TownsCRTC::GetPageBitsPerPixel(unsigned char page) const
 }
 unsigned int TownsCRTC::GetPageVRAMAddressOffset(unsigned char page) const
 {
-	// [2] pp. 145
-	auto FA0=state.crtcReg[REG_FA0+page*4];
-	switch(GetPageBitsPerPixel(page))
+	if(true==fmt3631->IsEnabled())
 	{
-	case 4:
-		return FA0*4;  // 8 pixels for 1 count.
-	case 8:
-		return FA0*8;  // 8 pixels for 1 count.
-	case 16:
-		return (LowResCrtcIsInSinglePageMode() ? FA0*8 : FA0*4); // 4 pixels or 2 pixels depending on the single-page or 2-page mode.
+		return 0; // Apparently there's no offset.
+	}
+	else if(true!=state.highResCRTCEnabled)
+	{
+		// [2] pp. 145
+		auto FA0=state.crtcReg[REG_FA0+page*4];
+		switch(GetPageBitsPerPixel(page))
+		{
+		case 4:
+			return FA0*4;  // 8 pixels for 1 count.
+		case 8:
+			return FA0*8;  // 8 pixels for 1 count.
+		case 16:
+			return (LowResCrtcIsInSinglePageMode() ? FA0*8 : FA0*4); // 4 pixels or 2 pixels depending on the single-page or 2-page mode.
+		}
+	}
+	else
+	{
+		return GetHighResPageVRAMAddressOffset(page);
 	}
 	return 0;
 }
@@ -1955,6 +1966,16 @@ unsigned int TownsCRTC::GetHighResVRAMBitsPerPixel(int page) const
 	}
 }
 
+unsigned int TownsCRTC::GetHighResPageVRAMAddressOffset(int page) const
+{
+	auto bitsPerPixel=GetHighResVRAMBitsPerPixel(page);
+	unsigned int dx=state.highResCrtcReg[HIGHRES_REG_P0_VRAM_OFFSET_X+0x10*page];
+	unsigned int dy=state.highResCrtcReg[HIGHRES_REG_P0_VRAM_OFFSET_Y+0x10*page];
+	unsigned int vramWidInPix=GetHighResVRAMWidthInPixels(page);
+
+	return (dy*vramWidInPix+dx)*bitsPerPixel/8;
+}
+
 void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 {
 	layer.bitsPerPixel=GetHighResVRAMBitsPerPixel(page);
@@ -1962,11 +1983,9 @@ void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 	layer.highResRGBSwap=state.highResCrtcReg[HIGHRES_REG_RGB_BGR_BRG_OR_ELSE]; // Hopefully meaningful only in the 24-bit color mode.  Figured 2025/07/02
 	layer.VRAMAddr=0x80000*page;
 
-	unsigned int dx=state.highResCrtcReg[HIGHRES_REG_P0_VRAM_OFFSET_X+0x10*page];
-	unsigned int dy=state.highResCrtcReg[HIGHRES_REG_P0_VRAM_OFFSET_Y+0x10*page];
 	unsigned int vramWidInPix=GetHighResVRAMWidthInPixels(page);
 
-	layer.VRAMOffset=(dy*vramWidInPix+dx)*layer.bitsPerPixel/8;
+	layer.VRAMOffset=GetHighResPageVRAMAddressOffset(page);
 	layer.FlipVRAMOffset =0;        // Probably FM-R/Sprite page is not applicable to CRTC2.
 	layer.FMRGVRAMMask=0x0F;        // Probably mask is not applicable to CRTC2.
 	layer.originOnMonitor=GetHighResPageOriginOnMonitor(page);

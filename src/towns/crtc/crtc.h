@@ -493,6 +493,7 @@ public:
 
 	unsigned int GetHighResVRAMWidthInPixels(int page) const;
 	unsigned int GetHighResVRAMBitsPerPixel(int page) const;
+	unsigned int GetHighResPageVRAMAddressOffset(int page) const;
 
 	/*! Make High-Res mode Layer Info.
 	*/
