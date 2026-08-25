@@ -260,7 +260,11 @@ unsigned int TownsCRTC::GetBaseClockScaler(void) const
 }
 Vec2i TownsCRTC::GetPageZoom2X(unsigned char page) const
 {
-	if(true!=state.highResCRTCEnabled)
+	if(true==fmt3631->IsEnabled())
+	{
+		return Vec2i::Make(2,2);
+	}
+	else if(true!=state.highResCRTCEnabled)
 	{
 		return GetLowResPageZoom2X(page);
 	}
@@ -322,7 +326,11 @@ Vec2i TownsCRTC::GetLowResPageZoom2X(unsigned char page) const
 }
 Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 {
-	if(true!=state.highResCRTCEnabled)
+	if(true==fmt3631->IsEnabled())
+	{
+		return Vec2i::Make(0,0);
+	}
+	else if(true!=state.highResCRTCEnabled)
 	{
 		return GetLowResPageOriginOnMonitor(page);
 	}
