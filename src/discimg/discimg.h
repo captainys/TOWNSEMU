@@ -19,10 +19,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <memory>
+#include <fstream>
 
 // MDS/MDF implementation is based on:
 //   https://problemkaputt.de/psx-spx.htm#cdromdiskimagesmdsmdfalcohol120
 
+class CHDImage;
 
 class DiscImage
 {
@@ -51,6 +54,8 @@ public:
 		ERROR_MDS_FILE_SIZE_DOES_NOT_MAKE_SENSE,
 		ERROR_MDS_UNEXPECTED_NUMBER,
 		ERROR_MDS_BINARY_TOO_SHORT,
+		ERROR_CHD_NOT_A_CD,
+		ERROR_CHD_INVALID_METADATA,
 	};
 	enum
 	{
@@ -69,6 +74,7 @@ public:
 		FILETYPE_CUE,
 		FILETYPE_MDS,
 		FILETYPE_CCD,
+		FILETYPE_CHD,
 	};
 	enum
 	{
@@ -303,6 +309,31 @@ public:
 	std::vector <DiscLayout> layout;
 	std::vector <unsigned char> binaryCache;
 
+	/*! Set for a .CHD image.  A .CHD keeps the disc compressed, and it has no binary file
+	    to seek in.  Binary decodes the .CHD into the flat binary that the rest of the class
+	    reads through.  Shared, so that a copy of DiscImage shares the decoder.
+	*/
+	std::shared_ptr <CHDImage> chd;
+
+	/*! Sequential reader for one of the binaries of the image.
+	    It reads the binary file, or, for a .CHD image, the flattened image that CHDImage
+	    decodes on the fly.  Reading past the end of the binary leaves the buffer as it was.
+	*/
+	class BinaryReader
+	{
+	public:
+		bool Open(const DiscImage &disc,unsigned int binIdx);
+		bool IsOpen(void) const;
+		void Seek(uint64_t offset);
+		void Read(char *dst,uint64_t len);
+		void Skip(uint64_t len);
+
+	private:
+		std::ifstream ifp;
+		std::shared_ptr <const CHDImage> chd;
+		uint64_t pos=0;
+	};
+
 	class TrackTime
 	{
 	public:
@@ -332,6 +363,10 @@ public:
 
 public:
 	unsigned int OpenCCD(const std::string &fName);
+
+
+public:
+	unsigned int OpenCHD(const std::string &fName);
 
 	/*! Cache binary file.  It may take large memory.
 	    If it is the multi-binary image, it only reads the first binary.

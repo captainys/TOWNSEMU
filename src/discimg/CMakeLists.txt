@@ -1,5 +1,5 @@
-add_library(discimg discimg.h discimg.cpp)
-target_link_libraries(discimg cpputil)
+add_library(discimg discimg.h discimg.cpp chdimg.h chdimg.cpp)
+target_link_libraries(discimg cpputil chdr)
 target_include_directories(discimg PUBLIC .)
 
 add_executable(testmsf testmsf.cpp)
@@ -14,6 +14,12 @@ target_link_libraries(testcue discimg)
 
 add_executable(testmds testmds.cpp)
 target_link_libraries(testmds discimg)
+
+add_executable(testchd testchd.cpp)
+target_link_libraries(testchd discimg)
+add_test(NAME DISCIMG_CHD COMMAND testchd
+	${CMAKE_CURRENT_SOURCE_DIR}/../../testdata/CHDIMG/fake2048.chd
+	${CMAKE_CURRENT_SOURCE_DIR}/../../testdata/CHDIMG/fakemixed.chd)
 
 add_executable(test_cdimage test.cpp)
 target_link_libraries(test_cdimage discimg)

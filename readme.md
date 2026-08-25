@@ -42,7 +42,9 @@ http://ysflight.com/FM/towns/FreeTOWNS/j.html
 # CD Image Consideration
 # CDイメージファイルについて
 
-Tsugaru supports .ISO, .CUE and .MDS file format for a CD image.  If the CD has an audio track, __.MDS is highly recommended.__  I do not recommend .CUE file since it is absolutely inappropriate from the preservation point of view.
+Tsugaru supports .ISO, .CUE, .MDS, .CCD, and .CHD file format for a CD image.  If the CD has an audio track, __.MDS or .CHD is highly recommended.__  I do not recommend .CUE file since it is absolutely inappropriate from the preservation point of view.
+
+.CHD (MAME's Compressed Hunks of Data) is read with libchdr, and all of its CD compression types work, which includes CDZS (Zstandard), CDLZ (LZMA), CDZL (Deflate), and CDFL (FLAC).  A .CHD stores the pre-gaps and the track layout of the disc without the ambiguity of a .CUE file, and it is compressed, typically to less than half of a .BIN file.  Make one from a disc image with MAME's chdman, for example ```chdman createcd -i game.cue -o game.chd```.
 
 My .CUE interpreter is based on Alcohol 52%, which seems to agree with CD Manipulator, but there is no guarantee .CUE file made by other programs can run correctly with Tsugaru.
 
@@ -92,7 +94,7 @@ After some survey, looks like ImgBurn is better align with CDRWIN?  Also CD Mani
 
 
 
-津軽は、CDイメージフォーマットとして、.ISO, .CUE, .MDSフォーマットをサポートしますが、オーディオトラックがある場合、__.MDSフォーマットを推奨します。__.CUEフォーマットは、PREGAPの解釈が曖昧なため、保存という観点でまったくお勧めできません。ゲームの保存が目的ならば、今すぐ使用を停止するべきで、.MDSに置き換えるべきです。
+津軽は、CDイメージフォーマットとして、.ISO, .CUE, .MDS, .CCD, .CHDフォーマットをサポートしますが、オーディオトラックがある場合、__.MDSまたは.CHDフォーマットを推奨します。__.CHD (MAMEのCompressed Hunks of Data)はlibchdrで読み込み、CDZS (Zstandard)、CDLZ (LZMA)、CDZL (Deflate)、CDFL (FLAC)すべての圧縮形式に対応します。.CHDはPREGAPの解釈が曖昧にならず、しかも圧縮されています。MAMEのchdmanで```chdman createcd -i game.cue -o game.chd```のように作成できます。.CUEフォーマットは、PREGAPの解釈が曖昧なため、保存という観点でまったくお勧めできません。ゲームの保存が目的ならば、今すぐ使用を停止するべきで、.MDSに置き換えるべきです。
 
 津軽の.CUEインタープリタはAlcohol 52%が生成する.CUEファイルを前提としています。どうもCD Manipulatorが出力する.CUEファイルも一致するようです。ですが、他のプログラムを使って生成した.CUEファイルでは津軽で正常に使用できない可能性があります。
 
