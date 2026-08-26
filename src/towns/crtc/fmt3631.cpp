@@ -2452,7 +2452,7 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 				// According to https://github.com/whatisaphone/tower-pc/blob/master/docs/video/vgadoc4b/RAMDAC.TXT
 				// REG06 index 0Ch (R/W):  16bpp
 				// bit    1  Set for 16bpp (5:6:5), clear for 15bpp (5:5:5)
-				state.highColor565=(0!=(data&2));
+				state.highColor565=(0!=((data>>16)&2));
 			}
 
 			return true;
