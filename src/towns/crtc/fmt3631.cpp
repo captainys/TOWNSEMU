@@ -2391,19 +2391,23 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 	}
 	else
 	{
-		if(masked==P9100_CURSOR_REGSEL) // 210
+		auto masked00=(masked&~3);
+
+		if(masked00==P9100_RAMDAC_REGSEL) // 210 // Windows 95 driver accesses through 212.
 		{
+			data=(0==(masked&3) ? data : (data<<16));
 			state.p9100CursorRegSel=(data>>16)&0xFF;
 			return true;
 		}
-		else if(masked==P9100_CURSOR_DATA) // 218
+		else if(masked00==P9100_RAMDAC_DATA) // 218 // Windows 95 driver accesses through 21A.
 		{
-			if(P9100_CURSOR_REG_ON_OFF==state.p9100CursorRegSel)
+			data=(0==(masked&3) ? data : (data<<16));
+			if(P9100_RAMDAC_REG_ON_OFF==state.p9100CursorRegSel)
 			{
 				state.hwCursor.defined=(0!=(data&0x00020000));
 				state.hwCursor.twoColorCursor=0;
 			}
-			else if(P9100_CURSOR_REG_POSITION==state.p9100CursorRegSel)
+			else if(P9100_RAMDAC_REG_POSITION==state.p9100CursorRegSel)
 			{
 				switch(state.p9100CursorDataCount)
 				{
@@ -2422,7 +2426,7 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 				}
 				++state.p9100CursorDataCount;
 			}
-			else if(P9100_CURSOR_REG_PATTERN==state.p9100CursorRegSel)
+			else if(P9100_RAMDAC_REG_PATTERN==state.p9100CursorRegSel)
 			{
 				auto ptn=((data>>16)&0xFF);
 				if(state.hwCursor.ptnCount<512)
@@ -2436,16 +2440,32 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 				++state.hwCursor.ptnCount;
 				state.hwCursor.ptnCount&=0x3FF;
 			}
+			else if(P9100_RAMDAC_REG_PIXEL_FORMAT==state.p9100CursorRegSel) // =0x0A
+			{
+				// According to https://github.com/whatisaphone/tower-pc/blob/master/docs/video/vgadoc4b/RAMDAC.TXT
+				// REG06 index 0Ah (R/W):  Pixel Format
+				// bit  0-2  Pixel format. 3: 8bpp, 4: 15/16bpp, 6: 32bpp
+				// But, number of colors is specified in SYSCONFIG.
+			}
+			else if(P9100_RAMDAC_REG_HIGHCOLOR_555_OR_565==state.p9100CursorRegSel) // =0x0C
+			{
+				// According to https://github.com/whatisaphone/tower-pc/blob/master/docs/video/vgadoc4b/RAMDAC.TXT
+				// REG06 index 0Ch (R/W):  16bpp
+				// bit    1  Set for 16bpp (5:6:5), clear for 15bpp (5:5:5)
+				state.highColor565=(0!=(data&2));
+			}
+
 			return true;
 		}
-		else if(masked==P9100_CURSOR_IS_ARRAYDATA) // 21C
+		else if(masked00==P9100_RAMDAC_IS_ARRAYDATA) // 21C // Windows 95 driver may access through 21E.
 		{
+			data=(0==(masked&3) ? data : (data<<16));
 			if(0!=(data&0x010000)) // Next data is an array data.
 			{
 			}
 			else // Array data done.
 			{
-				if(P9100_CURSOR_REG_PATTERN==state.p9100CursorRegSel)
+				if(P9100_RAMDAC_REG_PATTERN==state.p9100CursorRegSel)
 				{
 					// Unpack pattern.
 					uint8_t packed[sizeof(state.hwCursor.ORPtn)+sizeof(state.hwCursor.ANDPtn)];
@@ -2477,13 +2497,15 @@ bool FMT3631::IsCommand(uint32_t physAddr,uint32_t data)
 			state.p9100CursorDataCount=0; // Array or not, reset the data counter.
 			state.hwCursor.ptnCount=0;  // Also reset the pattern count.
 		}
-		else if(P9100_PALETTE_COLOR_ADDR==masked) // 0x00200
+		else if(masked00==P9100_PALETTE_COLOR_ADDR) // 0x00200 // Windows 95 driver may access through 202.
 		{
+			data=(0==(masked&3) ? data : (data<<16));
 			state.writingPalette=(data>>16)&255;
 			state.writingPaletteRGBCount=0;
 		}
-		else if(P9100_PALETTE_COLOR_DATA==masked) // 0x00204
+		else if(masked00==P9100_PALETTE_COLOR_DATA) // 0x00204 // Windows 95 driver may access through 206.
 		{
+			data=(0==(masked&3) ? data : (data<<16));
 			if(state.writingPaletteRGBCount<3)
 			{
 				state.writingPaletteRGB[state.writingPaletteRGBCount]=(data>>16)&255;
@@ -2578,7 +2600,7 @@ void FMT3631::SysConfigToBpp3632(void)
 	else if(3==bpp)
 	{
 		state.bitsPerPixel=16;
-		state.highColor565=true;
+		// state.highColor565=true;  Controlled by RAMDAC Reg 0Ch
 	}
 	else if(7==bpp)
 	{
