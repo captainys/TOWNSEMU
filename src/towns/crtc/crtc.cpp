@@ -627,6 +627,7 @@ void TownsCRTC::MakeLowResPageLayerInfo(Layer &layer,unsigned char page) const
 	page&=1;
 	layer.bitsPerPixel=GetPageBitsPerPixel(page);
 	layer.highColor565=false;
+	layer.highColorGRB=true; // Should be integrated with highResRGBSwap
 	layer.highResRGBSwap=0; // Not used by the low-res screen modes.
 	layer.originOnMonitor=GetLowResPageOriginOnMonitor(page);
 	layer.sizeOnMonitor=GetPageSizeOnMonitor(page);
@@ -1989,6 +1990,7 @@ void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 {
 	layer.bitsPerPixel=GetHighResVRAMBitsPerPixel(page);
 	layer.highColor565=false;
+	layer.highColorGRB=true; // Should be integrated with highResRGBSwap
 
 	layer.highResRGBSwap=state.highResCrtcReg[HIGHRES_REG_RGB_BGR_BRG_OR_ELSE]; // Hopefully meaningful only in the 24-bit color mode.  Figured 2025/07/02
 	layer.VRAMAddr=0x80000*page;
