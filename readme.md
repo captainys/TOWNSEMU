@@ -13,12 +13,16 @@ https://github.com/captainys/TOWNSEMU/releases/latest
 
 
 # Introduction
-It is an emulator of legendary Fujitsu FM TOWNS computer including Marty.  The goal is to emulate model II MX, which was the last computer I pledged allegiance.  Also I am trying to find and document undocumented features of FM TOWNS system as much as possible while writing the emulator.
+It is an emulator of legendary Fujitsu FM TOWNS computer including Marty.  The goal is to emulate model II MX, which was the last computer I pledged allegiance.  I think I can say this initial goal has very well been achieved.
 
-Have been tested on Windows 10 and macOS.  I think it runs on Linux, but I have a report that audio doesn't work on the natively-running Linux.  I can hear audio on my developing environment on Virtual Box.  I haven't been able to confirm the report on my side yet.
+Also I am trying to find and document undocumented features of FM TOWNS system as much as possible while writing the emulator.
+
+Have been tested primarily on Windows 10 and macOS.  I think it runs on Linux ok based on the user reports.  (Thank you for the reports!)
 
 
-伝説の名機富士通FM TOWNS/Martyのエミュレータです。目標はモデルII MXを再現することです。FM TOWNS II MXは僕が最後に忠誠を誓った機種でした。また、開発と並行してFM TOWNSのシステムで未公開の機能を見つけて記録に残すことも目標にしています。
+伝説の名機富士通FM TOWNS/Martyのエミュレータです。目標はモデルII MXを再現することです。この目標は、ほぼ達成できたと思っています。FM TOWNS II MXは僕が最後に忠誠を誓った機種でした。
+
+また、開発と並行してFM TOWNSのシステムで未公開の機能を見つけて記録に残すことも目標にしています。
 
 とりあえず、Windows 10とmacOSXで動きます。Linuxも対応したと思うんですが、Virtual Box上の開発環境だと普通に音が鳴るのですが、直接起動しているLinuxで音が出ないという報告があるのですが、まだ確認できてません。
 
@@ -42,7 +46,7 @@ http://ysflight.com/FM/towns/FreeTOWNS/j.html
 # CD Image Consideration
 # CDイメージファイルについて
 
-Tsugaru supports .ISO, .CUE and .MDS file format for a CD image.  If the CD has an audio track, __.MDS is highly recommended.__  I do not recommend .CUE file since it is absolutely inappropriate from the preservation point of view.
+Tsugaru supports .ISO, .CUE and .MDS file format for a CD image.  If the CD has an audio track, __.MDS or .CCD is highly recommended.__  I do not recommend .CUE file since it is absolutely inappropriate from the preservation point of view.
 
 My .CUE interpreter is based on Alcohol 52%, which seems to agree with CD Manipulator, but there is no guarantee .CUE file made by other programs can run correctly with Tsugaru.
 
@@ -92,7 +96,7 @@ After some survey, looks like ImgBurn is better align with CDRWIN?  Also CD Mani
 
 
 
-津軽は、CDイメージフォーマットとして、.ISO, .CUE, .MDSフォーマットをサポートしますが、オーディオトラックがある場合、__.MDSフォーマットを推奨します。__.CUEフォーマットは、PREGAPの解釈が曖昧なため、保存という観点でまったくお勧めできません。ゲームの保存が目的ならば、今すぐ使用を停止するべきで、.MDSに置き換えるべきです。
+津軽は、CDイメージフォーマットとして、.ISO, .CUE, .MDSフォーマットをサポートしますが、オーディオトラックがある場合、__.MDSまたは.CCDフォーマットを推奨します。__.CUEフォーマットは、PREGAPの解釈が曖昧なため、保存という観点でまったくお勧めできません。ゲームの保存が目的ならば、今すぐ使用を停止するべきで、.MDSに置き換えるべきです。
 
 津軽の.CUEインタープリタはAlcohol 52%が生成する.CUEファイルを前提としています。どうもCD Manipulatorが出力する.CUEファイルも一致するようです。ですが、他のプログラムを使って生成した.CUEファイルでは津軽で正常に使用できない可能性があります。
 
@@ -142,24 +146,21 @@ Alcohol 52%の解釈では、PREGAPはそれが存在するトラックにのみ
 
 
 # LIMITATIONS
-The emulation is getting better.  Thanks to the great help from the users around the world, with conservative estimate Tsugaru can run more than 97% of the FM TOWNS commercial application titles.  Emulation state is in the Wiki (https://wiki3.jp/fmtowns/page/10).  Wiki is set up by WINDY.  (Thanks!)  Overall, I think it is safe to say more than 97% of FM TOWNS apps works.
+The emulation is getting better.  Thanks to the great help from the users and contributors around the world, with conservative estimate Tsugaru can run more than 97% of the FM TOWNS commercial application titles.  Emulation state is in the Wiki (https://wiki3.jp/fmtowns/page/10).  Wiki is set up by WINDY.  (Thanks!)  Overall, I think it is safe to say more than 97% of FM TOWNS apps works.
 
 80486 emulation is, getting faster, but there is a room for improvement.  Will be improved down the road.
 
-Not-all instructions of Intel 80486 processor have been implemented yet.  Towns OS didn't use task registers.  I have no plan on adding support for those registers.  Since the emulator works as a debugger, debug registers won't be supported, either.
-
-If you compile in High-Fidelity Mode (cmake from srchf instead of src), it is able to start Windows 3.1, but only limited functionalities are supported.
+Not-all instructions of Intel 80486 processor have been implemented yet.  Since the emulator has its own debugger, no plan to support debug registers.  Nonetheless, the CPU core does pass TEST386 enhanced tests now.  The emulation quality is reasonably high.  If you want to run Windows 3.1, Windows 95, or early-day Linux on Tsugaru, make sure to enable the High-Fidelity mode.  Since Towns OS apps do not use many exception handlings and task registers, these CPU features are turned off by default.
 
 
 
 
-エミュレーションはかなりよくなってきて、世界中のユーザの皆さまのご協力により、少なく見積もってFM TOWNS用に発売されたソフトの97%以上が動作可能と推定しています。また、ユーザによる動作確認もWikiに上がってきています。(https://wiki3.jp/fmtowns/page/10) WikiはWINDYさんがセットアップしてくださいました。ありがとうございます。現状で、少なく見積もって97%以上のFM TOWNSアプリケーションを実行できると言えるようです。
+エミュレーションはかなりよくなってきて、世界中のユーザとコントリビュターの皆さまのご協力により、少なく見積もってFM TOWNS用に発売されたソフトの97%以上が動作可能と推定しています。また、ユーザによる動作確認もWikiに上がってきています。(https://wiki3.jp/fmtowns/page/10) WikiはWINDYさんがセットアップしてくださいました。ありがとうございます。現状で、少なく見積もって97%以上のFM TOWNSアプリケーションを実行できると言えるようです。
 
 80486エミュレーションは速くなってきましたが、まだ改善の余地があります。少しずつスピードアップしていきます。
 
-80486のすべてのインストラクションをエミュレートできてません。なお、Towns OSはタスク機能は使ってなかったと思われるので多分サポートしません。また、エミュレータがデバッガとして機能するのでデバッグ機能もサポートしない予定です。
+80486のすべてのインストラクションをエミュレートできてませんが、TEST386の拡張テストまで通過するレベルになりました。ただし、津軽自体にデバッガがあるのでCPUのデバッグ機能のサポートの予定はありません。もしも、FM TOWNS用Windows 3.1, 95または古代のLinuxを津軽で実行したい場合は、High-Fidelityモードを有効にしてください。Towns OSのアプリケーションは、ハードウェアタスクスイッチング、例外処理などのCPU機能を使っていないので、デフォルト設定では、それらの機能はオフになっていて、その分処理速度を上げています。
 
-High-Fidelity Modeでコンパイルすると(srcでなくsrchfにcmakeをかける)、Windows 3.1が起動できるようになりましたが、まだかなり機能限定です。
 
 
 
@@ -343,11 +344,22 @@ FM TOWNS uses a MSX mouse, which sends a displacement infornation in X- and Y-di
 
 I did reverse engineering and found the mouse-cursor locations for TBIOSes that come with V1.1 L10/L20/L30, V2.1 L10B/L20/L31.  Will add other versions of TownsOS and VINGBIOS hopefully.  Most likely I will forget updating version numbers here, but probably I'll add comments in the commit log.
 
+This mouse integration is smooth and recommended.  But, some Towns applications reads mouse without using TBIOS.  I've added special handlings to some of such applications.  Please see the list of application-specific settings.
+
+In Windows 3.1 and 95 guests, I have developed drivers for integrating mouse smoothly.  Please see winapp sub-directory.
+
+Or, in the worst case, press the mouse middle button, which will enable differential mouse integration, which should work in any situation.
+
 
 FM TOWNSはMSXマウスを使用します。MSXマウスはマウスの移動量のXYをPCに送信します。だから、マウスカーソルがPC上のどこにあるのか、マウスは知りません。ホストPCとゲストVMでマウス位置を一致させるためには、エミュレータが、VMが今マウスがどこにあると思っているか検出しなくてはなりません。
 
 このエミュレータでは、Towns OS V1.1 L10/L20/L30, V2.1 L10B/L20/L31付属のTBIOSについて解析して、対応しました。他のバージョンやVINGBIOSにも順に対応しますが、多分ここのREADMEには書くのを忘れるでしょう。が、GITのコミットコメントには多分書くと思うのでそっちを見てください。
 
+この方法はスムーズなので推奨しますが、いくつかのFM TOWNS用アプリケーションは、TBIOSを使わずにマウスを読んでいます。そのようなアプリケーションの中には、特別な対応でスムーズなマウスインテグレーションを実現したものもあります。特定アプリケーション用セッティングのリストを参照してください。
+
+Windows 3.1/95を津軽上で実行する場合、それぞれでスムーズなマウスインテグレーションを実現するドライバを開発しました。winappサブディレクトリを見てください。
+
+何をやってもダメな場合は、マウスの中ボタンを押してみてください。そうすると、差分マウスインテグレーション機能が有効になり、アプリケーションに限らずマウスが使えるはずです。
 
 
 
@@ -468,6 +480,23 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 # Revisions
 Please see commit comments after this!
+
+### 2026/08/26
+- Improvement in hardware task-switching emulation and VM86 mode in the high-fidelity mode.  CPU passes the enhanced TEST386 tests.
+- Fixed REX-3586 signature.  1999 Debian Linux (Kernel 2.0.33 Hamm) for FM TOWNS can use REX-3586.
+- Support FMT-3631/3632 Windows Accelerator cards.  Windows 3.1/95 can use up to 1280x1024 resolution with FMT-3631/3632.  FM TOWNS Windows 3.1 comes with FMT-3631 driver.  FM TOWNS Windows 95 comes with FMT-3631 and FMT-3632 drivers.
+- Fixed mouse integration for Fujitsu Habitat.
+- Linux version does not get slow if RS232C to TCP/IP tunnel is enabled.
+- Improved differential mouse integration for diligent mouse movement.
+
+### 2026/05/22
+- Support LAN Card (REX3586) and Network Address Translation.  Port forwarding is currently only available from the CUI.
+- Differential Mouse Integration for the apps that is not reading mouse by known TBIOS version, enabled/disabled by mouse middle button.
+- Headless mode, CUI only.
+- Support COM1 to COM4.
+- Improved CPU fidelity in the High-Fidelity mode.  Can run Revival Xanadu on Windows 95 (requires manual rollback of the joystick-driver).
+- Improved SCSI CDDA emulation.
+
 
 ### 2023/03/25
 - Can start Windows 3.1 if compiled in the High-Fidelity Mode!
