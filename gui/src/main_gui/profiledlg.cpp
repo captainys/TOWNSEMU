@@ -879,6 +879,14 @@ void ProfileDialog::Make(const UiText &ui)
 			break;
 		}
 	}
+	else if(fmt363xDrp==drp)
+	{
+		if(0!=fmt363xDrp->GetSelection())
+		{
+			mouseMaxXTxt->SetText("1280");
+			mouseMaxYTxt->SetText("1024");
+		}
+	}
 }
 
 void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &prevPos,const double &prevValue)
