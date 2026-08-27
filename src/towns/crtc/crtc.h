@@ -291,12 +291,12 @@ public:
 
 	enum
 	{
-		// VSYNC_CYCLE is 1670000, but it is close enough to 0x1000000(16777216)
-		VSYNC_CYCLE=         0x1000000,
+		// VSYNC_CYCLE is 16683350ns
+		VSYNC_CYCLE=          16683350,
 		// Measurement taken from actual FM TOWNS II MX hardware tells VSYNC lasts for 60us.
-		CRT_VERTICAL_DURATION=0x1000000-60000, // Time CRTC spends for drawing.  VSYNC_CYCLE-CRT_VERTICAL_DURATION gives duration of VSYNC.
+		CRT_VERTICAL_DURATION=VSYNC_CYCLE-60000, // Time CRTC spends for drawing.  VSYNC_CYCLE-CRT_VERTICAL_DURATION gives duration of VSYNC.
 		// HSYNC_CYCLE should be 32000, but it is close enough to 0x8000(32768)
-		HSYNC_CYCLE=            0x8000, // Not accurate.  Fixed at 31K
+		HSYNC_CYCLE=             31468, // Not accurate.  Fixed at 31K
 		CRT_HORIZONTAL_DURATION= 30000,
 	};
 
