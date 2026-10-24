@@ -16,7 +16,6 @@ inline unsigned int i486DXCommon::FetchOperandRMandDecode(
 	NUM_BYTES_TO_REGISTER_OPERAND_TYPE
 
 	const auto MODR_M=operandPtr[0];
-	const auto MOD=((MODR_M>>6)&3);
 	// const auto REG_OPCODE=((MODR_M>>3)&7);
 	#define R_M (MODR_M&7)
 
@@ -138,6 +137,8 @@ inline unsigned int i486DXCommon::FetchOperandRMandDecode(
 			REG_ESI,
 			REG_EDI,
 		};
+
+		const auto MOD=((MODR_M>>6)&3);
 
 		if(MOD == 3)
 		{
