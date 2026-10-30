@@ -12,6 +12,13 @@ if(UNIX)
 	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -Wno-unused-variable)
 endif()
 
+# cpputil::GetDword/PutDword etc. read and write through casted pointers (unsigned char * -> unsigned int *).
+# GCC and clang assume strict aliasing at -O2 and above and mis-optimize it
+# (Towns OS V2.1 L51 stopped at "System loading" waiting on SCSI port 0C32h).
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+	add_compile_options(-fno-strict-aliasing)
+endif()
+
 
 if(APPLE)
     set(DISC_IMAGE_DIR "$ENV{HOME}/TOWNSISO")
