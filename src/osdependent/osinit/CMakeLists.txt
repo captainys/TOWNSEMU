@@ -1,6 +1,6 @@
 set(TARGET_NAME osinit)
 
-if(MSVC)
+if(MSVC OR WIN32)
 	set(SRCS osinit_win.cpp)
 elseif(APPLE)
 	set(SRCS osinit_unix.cpp)

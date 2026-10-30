@@ -15,7 +15,7 @@ endif()
 
 if(APPLE)
     set(DISC_IMAGE_DIR "$ENV{HOME}/TOWNSISO")
-elseif(MSVC)
+elseif(MSVC OR WIN32)
     set(DISC_IMAGE_DIR "C:/D/TownsISO")
 else()
     set(DISC_IMAGE_DIR "$ENV{HOME}/TownsISO")

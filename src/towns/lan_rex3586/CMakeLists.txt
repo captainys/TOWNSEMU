@@ -6,3 +6,7 @@ target_include_directories(network PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(rex3586 rex3586.h rex3586.cpp)
 target_link_libraries(rex3586 device cpputil towns townsdef outside_world miscutil network)
 target_include_directories(rex3586 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(MINGW)
+	target_link_libraries(network ws2_32 wsock32 iphlpapi)
+endif()

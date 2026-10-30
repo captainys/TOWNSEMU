@@ -23,7 +23,7 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
 	set(platform_SRCS
 		android/fsandroidwrapper.cpp
 	)
-elseif(MSVC)
+elseif(MSVC OR WIN32)
 	set(platform_SRCS
 		windows/fswin32keymap.cpp
 		windows/fswin32winmain.cpp
@@ -65,3 +65,7 @@ set_property(TARGET fssimplenowindow PROPERTY FOLDER ${SUB_FOLDER})
 add_subdirectory(tests)
 
 set(YS_ALL_BATCH_TEST ${YS_ALL_BATCH_TEST} PARENT_SCOPE)
+
+if(MINGW)
+	target_link_libraries(${TARGET_NAME} opengl32 glu32 gdi32 user32 imm32)
+endif()

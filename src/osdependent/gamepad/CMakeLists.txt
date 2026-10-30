@@ -5,7 +5,7 @@ set(DEPEND_LIB )
 
 
 
-if(MSVC)
+if(MSVC OR WIN32)
 	list(APPEND SRCS windows/ysgamepad_windows.c)
 elseif(APPLE)
 	find_library(GAMECONTROLLER_LIB GameController)
@@ -25,3 +25,7 @@ target_link_libraries(${TARGET_NAME} ${DEPEND_LIB})
 target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(test)
+
+if(MINGW)
+	target_link_libraries(${TARGET_NAME} winmm)
+endif()

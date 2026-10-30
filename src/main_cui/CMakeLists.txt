@@ -22,7 +22,7 @@ target_link_libraries(${TARGET_NAME}
 	fssimplewindow_connection
 )
 
-if(UNIX)
+if(UNIX OR MINGW)
 	# Not supposed to be needed.
 	# Is g++ broken again?
 	target_link_libraries(${TARGET_NAME} pthread)

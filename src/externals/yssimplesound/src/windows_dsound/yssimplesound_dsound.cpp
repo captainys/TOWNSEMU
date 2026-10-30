@@ -1,6 +1,8 @@
 #include <algorithm>
 
 #include <stdio.h>
+#include <stdint.h>
+#include <math.h>
 
 #define _WINSOCKAPI_
 #include <windows.h>
@@ -117,7 +119,7 @@ void YsSoundPlayer::APISpecificData::MainWindowFinder::SearchTopLevelWindow(HWND
 	{
 		char str[256];
 		GetWindowTextA(hWnd,str,255);
-		printf("hWnd=%08x Title=%s\n",(int)hWnd,str);
+		printf("hWnd=%08x Title=%s\n",(int)(intptr_t)hWnd,str);
 		printf("IsVisible=%d\n",IsWindowVisible(hWnd));
 
 		RECT rc;
