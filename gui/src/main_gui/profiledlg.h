@@ -150,6 +150,7 @@ public:
 	YsString GetDefaultStateFileName(void) const;
 	YsString GetDefaultFDImageFileName(int i) const;
 	YsString GetDefaultHDImageFileName(int i) const;
+	YsString GetDefaultKeyMappingFile(void) const;
 	YsString MakeUpAnyImageFileName(YsString filePart) const;
 
 	FsGuiTextBox *nowBrowsingTxt=nullptr;

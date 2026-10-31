@@ -1046,7 +1046,7 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 	if(selectKeyMapFileBtn==btn)
 	{
 		std::vector <const wchar_t *> extList={L".txt"};
-		BrowseSaveAs(L"Select A Key-Mapping File",keyMapFileTxt,extList);
+		Browse(L"Select A Key-Mapping File",keyMapFileTxt,GetDefaultKeyMappingFile(),extList);
 	}
 	if(YSTRUE==scrnAutoScaleBtn->GetCheck())
 	{
@@ -1065,6 +1065,15 @@ YsString ProfileDialog::GetDefaultCDImageFileName(void)  const
 	if(0==str.Strcmp(""))
 	{
 		str=MakeUpAnyImageFileName("default.MDS");
+	}
+	return str;
+}
+YsString ProfileDialog::GetDefaultKeyMappingFile(void)  const
+{
+	YsString str=keyMapFileTxt->GetString();
+	if(0==str.Strcmp(""))
+	{
+		str=MakeUpAnyImageFileName("townskeymap.txt");
 	}
 	return str;
 }
