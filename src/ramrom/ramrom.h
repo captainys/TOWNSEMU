@@ -160,18 +160,11 @@ public:
 		*/
 		inline ConstPointer GetReadAccessPointer(unsigned int addr) const
 		{
-			ConstPointer ptr;
-			if(nullptr!=this->ptr)
-			{
-				ptr.ptr=this->ptr+(addr&0xfff);
-				ptr.length=MEMORY_WINDOW_SIZE-(addr&0xfff);
-			}
-			else
-			{
-				ptr.length=0;
-				ptr.ptr=nullptr;
-			}
-			return ptr;
+			const unsigned int offset = addr & 0xfff;
+
+			return (nullptr != this->ptr ?
+				ConstPointer{ MEMORY_WINDOW_SIZE - offset, ptr + offset } :
+				ConstPointer{ 0, nullptr });
 		}
 	};
 
