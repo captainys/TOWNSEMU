@@ -2,7 +2,7 @@ set(TARGET_NAME vgmplayer)
 add_executable(${TARGET_NAME} main.cpp vgm.cpp vgm.h)
 target_link_libraries(${TARGET_NAME} ym2612 fssimplewindow yssimplesound)
 
-if(MSVC)
+if(MSVC OR WIN32)
 	target_link_libraries(${TARGET_NAME} yssimplesound_dsound)
 elseif(APPLE)
 	find_library(COCOA_LIB Cocoa)

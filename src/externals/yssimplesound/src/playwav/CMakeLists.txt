@@ -1,4 +1,4 @@
-if(MSVC)
+if(MSVC OR WIN32)
 	set(LIBS yssimplesound_dsound)
 elseif(APPLE)
 	find_library(COCOA_LIB Cocoa)

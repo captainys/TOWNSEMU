@@ -454,7 +454,7 @@ inline std::string BoolToOnOffStr(bool flag){return (flag ? "ON" : "OFF");}
 };
 
 
-#ifdef _WIN32
+#if defined(_MSC_VER)
 	#define std_unreachable __assume(0)
 #elif defined(__clang__) || defined(__GNUC__)
 	#define std_unreachable __builtin_unreachable()

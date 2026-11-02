@@ -2,7 +2,7 @@ set(TARGET_NAME maketonewav)
 add_executable(${TARGET_NAME} main.cpp)
 target_link_libraries(${TARGET_NAME} fssimplewindow ym2612 yssimplesound cpputil)
 
-if(MSVC)
+if(MSVC OR WIN32)
 	target_link_libraries(${TARGET_NAME} yssimplesound_dsound)
 elseif(APPLE)
 	find_library(COCOA_LIB Cocoa)

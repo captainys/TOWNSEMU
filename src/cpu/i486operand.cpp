@@ -502,7 +502,7 @@ unsigned int i486DXCommon::Operand::Decode(int addressSize,int dataSize,const un
 			break;
 		default:
 			#ifdef _WIN32
-				__assume(0);
+				std_unreachable;
 			#elif defined(__clang__) || defined(__GNUC__)
 				__builtin_unreachable();
 			#else

@@ -49,7 +49,7 @@ set(REALLY_NEED_CPP11 1)    # Setting 1 will enable use of C++11 libraries, but 
 
 
 
-if(MSVC)
+if(MSVC OR WIN32)
 	if(NOT WIN_SUBSYSTEM)
 		set(WIN_SUBSYSTEM CONSOLE)
 	endif()
@@ -87,7 +87,7 @@ endif()
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(MSVC)
+if(MSVC OR WIN32)
 	# 2016/07/22
 	#  /MT flags should be set outside the public repository.  It is moved to the higher-level CMakeLists.txt
 elseif(APPLE)
@@ -145,7 +145,7 @@ endif()
 
 
 
-if(MSVC)
+if(MSVC OR WIN32)
 	set(platform_SRCS "")
 	set(platform_HEADERS "")
 elseif(APPLE)
@@ -286,7 +286,7 @@ if(DATA_FILE_LOCATION)
 						set(DATA_DESTINATION "$<TARGET_FILE_DIR:${ONE_TARGET}>/../Resources")
 					elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
 						set(DATA_DESTINATION "$<TARGET_FILE_DIR:${ONE_TARGET}>/Assets")
-					elseif(MSVC)
+					elseif(MSVC OR WIN32)
 						set(DATA_DESTINATION "$<TARGET_FILE_DIR:${ONE_TARGET}>")
 					else()
 						set(DATA_DESTINATION "$<TARGET_FILE_DIR:${ONE_TARGET}>")

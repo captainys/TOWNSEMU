@@ -21,7 +21,7 @@ target_link_libraries(test_cdimage discimg)
 
 add_executable(bincue2wav bincue2wav.cpp)
 target_link_libraries(bincue2wav discimg yssimplesound cpputil)
-if(MSVC)
+if(MSVC OR WIN32)
 	target_link_libraries(bincue2wav yssimplesound_dsound)
 elseif(APPLE)
 	find_library(COCOA_LIB Cocoa)

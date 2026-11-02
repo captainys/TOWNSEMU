@@ -514,7 +514,7 @@ void i486DXFidelityLayer <FIDELITY>::StoreOperandValue(
 		break;
 	default:
 		#ifdef _WIN32
-			__assume(0);
+			std_unreachable;
 		#elif defined(__clang__) || defined(__GNUC__)
 			__builtin_unreachable();
 		#else
@@ -1083,7 +1083,7 @@ i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperand(
 		break;
 	default:
 		#ifdef _WIN32
-			__assume(0);
+			std_unreachable;
 		#elif defined(__clang__) || defined(__GNUC__)
 			__builtin_unreachable();
 		#else

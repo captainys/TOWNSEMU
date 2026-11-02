@@ -4,7 +4,7 @@ add_library(${TARGET_NAME} fssimplewindow_connection.h fssimplewindow_connection
 target_link_libraries(${TARGET_NAME} outside_world fssimplewindow yssimplesound cpputil ysgamepad)
 target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-if(MSVC)
+if(MSVC OR WIN32)
 	target_link_libraries(${TARGET_NAME} yssimplesound_dsound)
 elseif(APPLE)
 	find_library(COCOA_LIB Cocoa)

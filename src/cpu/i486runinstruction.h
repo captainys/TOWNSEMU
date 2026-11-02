@@ -1213,7 +1213,7 @@ void i486DXCommon::FetchOperandLoop(CPUCLASS &cpu,InstructionAndOperand &instOp,
 
 		default:
 #if defined(_MSC_VER)
-			__assume(0);
+			std_unreachable;
 #elif defined(__clang__) || defined(__GNUC__)
 			__builtin_unreachable();
 #else
@@ -9338,7 +9338,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 	default:
 #if defined(_MSC_VER)
-		__assume(0);
+		std_unreachable;
 #elif defined(__clang__) || defined(__GNUC__)
 		__builtin_unreachable();
 #endif

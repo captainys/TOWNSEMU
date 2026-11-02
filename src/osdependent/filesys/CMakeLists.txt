@@ -1,6 +1,6 @@
 set(TARGET_NAME filesys)
 
-if(MSVC)
+if(MSVC OR WIN32)
 	set(SRCS filesys_win.cpp)
 elseif(APPLE)
 	set(SRCS filesys_unix.cpp)
@@ -19,7 +19,7 @@ target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_executable(filesys_test main.cpp)
 target_link_libraries(filesys_test filesys)
 
-if(MSVC)
+if(MSVC OR WIN32)
 	add_test(
 	 	NAME FILESYS_TEST COMMAND filesys_test "${CMAKE_CURRENT_SOURCE_DIR}" "."
 	)

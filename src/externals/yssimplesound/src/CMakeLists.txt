@@ -2,7 +2,7 @@
 
 
 
-if(MSVC)
+if(MSVC OR WIN32)
 	set(DUMMY_LIBRARY_NAME yssimplesound_dsound)
 	set(SUBDIR windows_dsound)
 	set(SRCS ${SUBDIR}/yssimplesound_dsound.cpp)
@@ -57,3 +57,7 @@ set(YS_ALL_BATCH_TEST ${YS_ALL_BATCH_TEST} PARENT_SCOPE)
 
 # For legacy build.
 add_library(${DUMMY_LIBRARY_NAME} empty.cpp)
+
+if(MINGW)
+	target_link_libraries(${TARGET_NAME} dsound dxguid winmm user32)
+endif()

@@ -10,7 +10,7 @@ add_executable(${TARGET_NAME}
 )
 target_link_libraries(${TARGET_NAME} yssimplesound fssimplewindow ysbitmapfont)
 
-if(MSVC)
+if(MSVC OR WIN32)
 	target_link_libraries(${TARGET_NAME} yssimplesound_dsound)
 elseif(APPLE)
 	target_link_libraries(${TARGET_NAME} yssimplesound_macosx)
