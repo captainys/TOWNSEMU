@@ -33,6 +33,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #import <Cocoa/Cocoa.h>
 #include <OpenGL/OpenGL.h>
+#include <dlfcn.h>
 
 #include "fssimplewindow.h"
 
@@ -114,12 +115,12 @@ static int FsNormalKeyCode[256]=
 	FSKEY_3,           // 35
 	FSKEY_4,           // 36
 	FSKEY_5,           // 37
-	FSKEY_6,           // 38
-	FSKEY_7,           // 39
-	FSKEY_9,           // 40
-	FSKEY_0,           // 41
-	FSKEY_8,           // 42
-	FSKEY_PLUS,        // 43
+	FSKEY_6,           // 38 &   JIS Shift+6
+	FSKEY_7,           // 39 '   JIS Shift+7
+	FSKEY_8,           // 40 (   JIS Shift+8
+	FSKEY_9,           // 41 )   JIS Shift+9
+	FSKEY_COLON,       // 42 *   JIS Shift+:
+	FSKEY_SEMICOLON,   // 43 +   JIS Shift+;
 	FSKEY_COMMA,       // 44
 	FSKEY_MINUS,       // 45
 	FSKEY_DOT,         // 46
@@ -130,7 +131,7 @@ static int FsNormalKeyCode[256]=
 	FSKEY_3,           // 51
 	FSKEY_4,           // 52
 	FSKEY_5,           // 53
-	FSKEY_TILDA,       // 54 .
+	FSKEY_6,           // 54 '6'
 	FSKEY_7,           // 55
 	FSKEY_8,           // 56 .
 	FSKEY_9,           // 57
@@ -170,8 +171,8 @@ static int FsNormalKeyCode[256]=
 	FSKEY_LBRACKET,    // 91
 	FSKEY_BACKSLASH,   // 92
 	FSKEY_RBRACKET,    // 93
-	FSKEY_6,           // 94 ^
-	FSKEY_MINUS,       // 95
+	FSKEY_PLUS,        // 94 ^   JIS hat key
+	FSKEY_RO,          // 95 _   JIS ろ key
 	FSKEY_TILDA,       // 96
 	FSKEY_A,           // 97
 	FSKEY_B,           // 98
@@ -202,7 +203,7 @@ static int FsNormalKeyCode[256]=
 	FSKEY_LBRACKET,    // 123
 	FSKEY_BACKSLASH,   // 124 |
 	FSKEY_RBRACKET,    // 125
-	FSKEY_TILDA,       // 126
+	FSKEY_PLUS,        // 126 ~   JIS Shift+^
 	FSKEY_BS,          // 127
 	0,                 // 128
 	0,                 // 129
@@ -607,6 +608,123 @@ static int YsMacUnicodeToFsKeyCode(int uni)
 	return 0;
 }
 
+/* Mac virtual key codes identify the physical key. Names below are the US labels of
+   that position; JIS uses the same codes. charactersIgnoringModifiers does not ignore
+   Shift, so a shifted symbol must not select a different key. Symbol keys whose JIS
+   legend differs from the US name are mapped to the FM-7 key in that position. */
+static int YsMacKeyCodeToFsKeyCode(unsigned short macKeyCode)
+{
+	switch(macKeyCode)
+	{
+	case 0x00: return FSKEY_A;
+	case 0x01: return FSKEY_S;
+	case 0x02: return FSKEY_D;
+	case 0x03: return FSKEY_F;
+	case 0x04: return FSKEY_H;
+	case 0x05: return FSKEY_G;
+	case 0x06: return FSKEY_Z;
+	case 0x07: return FSKEY_X;
+	case 0x08: return FSKEY_C;
+	case 0x09: return FSKEY_V;
+	case 0x0B: return FSKEY_B;
+	case 0x0C: return FSKEY_Q;
+	case 0x0D: return FSKEY_W;
+	case 0x0E: return FSKEY_E;
+	case 0x0F: return FSKEY_R;
+	case 0x10: return FSKEY_Y;
+	case 0x11: return FSKEY_T;
+	case 0x12: return FSKEY_1;
+	case 0x13: return FSKEY_2;
+	case 0x14: return FSKEY_3;
+	case 0x15: return FSKEY_4;
+	case 0x16: return FSKEY_6;
+	case 0x17: return FSKEY_5;
+	case 0x18: return FSKEY_PLUS;       /* US =, JIS ^ */
+	case 0x19: return FSKEY_9;
+	case 0x1A: return FSKEY_7;
+	case 0x1B: return FSKEY_MINUS;
+	case 0x1C: return FSKEY_8;
+	case 0x1D: return FSKEY_0;
+	case 0x1E: return FSKEY_LBRACKET;   /* US ], JIS [ */
+	case 0x1F: return FSKEY_O;
+	case 0x20: return FSKEY_U;
+	case 0x21: return FSKEY_AT;         /* US [, JIS @ */
+	case 0x22: return FSKEY_I;
+	case 0x23: return FSKEY_P;
+	case 0x24: return FSKEY_ENTER;
+	case 0x25: return FSKEY_L;
+	case 0x26: return FSKEY_J;
+	case 0x27: return FSKEY_COLON;      /* US ', JIS : */
+	case 0x28: return FSKEY_K;
+	case 0x29: return FSKEY_SEMICOLON;
+	case 0x2A: return FSKEY_RBRACKET;   /* US \, JIS ] */
+	case 0x2B: return FSKEY_COMMA;
+	case 0x2C: return FSKEY_SLASH;
+	case 0x2D: return FSKEY_N;
+	case 0x2E: return FSKEY_M;
+	case 0x2F: return FSKEY_DOT;
+	case 0x30: return FSKEY_TAB;
+	case 0x31: return FSKEY_SPACE;
+	case 0x32: return FSKEY_TILDA;      /* US ` */
+	case 0x33: return FSKEY_BS;
+	case 0x35: return FSKEY_ESC;
+	case 0x39: return FSKEY_CAPSLOCK;
+	case 0x41: return FSKEY_TENDOT;
+	case 0x43: return FSKEY_TENSTAR;
+	case 0x45: return FSKEY_TENPLUS;
+	case 0x47: return FSKEY_NUMLOCK;
+	case 0x4B: return FSKEY_TENSLASH;
+	case 0x4C: return FSKEY_TENENTER;
+	case 0x4E: return FSKEY_TENMINUS;
+	case 0x52: return FSKEY_TEN0;
+	case 0x53: return FSKEY_TEN1;
+	case 0x54: return FSKEY_TEN2;
+	case 0x55: return FSKEY_TEN3;
+	case 0x56: return FSKEY_TEN4;
+	case 0x57: return FSKEY_TEN5;
+	case 0x58: return FSKEY_TEN6;
+	case 0x59: return FSKEY_TEN7;
+	case 0x5B: return FSKEY_TEN8;
+	case 0x5C: return FSKEY_TEN9;
+	case 0x5D: return FSKEY_BACKSLASH;  /* JIS yen */
+	case 0x5E: return FSKEY_RO;         /* JIS ろ */
+	case 0x5F: return FSKEY_COMMA;      /* JIS keypad comma */
+	case 0x60: return FSKEY_F5;
+	case 0x61: return FSKEY_F6;
+	case 0x62: return FSKEY_F7;
+	case 0x63: return FSKEY_F3;
+	case 0x64: return FSKEY_F8;
+	case 0x65: return FSKEY_F9;
+	case 0x67: return FSKEY_F11;
+	case 0x68: return FSKEY_KANA;
+	case 0x6D: return FSKEY_F10;
+	case 0x6F: return FSKEY_F12;
+	case 0x73: return FSKEY_HOME;
+	case 0x74: return FSKEY_PAGEUP;
+	case 0x75: return FSKEY_DEL;
+	case 0x76: return FSKEY_F4;
+	case 0x77: return FSKEY_END;
+	case 0x78: return FSKEY_F2;
+	case 0x79: return FSKEY_PAGEDOWN;
+	case 0x7A: return FSKEY_F1;
+	case 0x7B: return FSKEY_LEFT;
+	case 0x7C: return FSKEY_RIGHT;
+	case 0x7D: return FSKEY_DOWN;
+	case 0x7E: return FSKEY_UP;
+	}
+	return 0;
+}
+
+static int YsMacResolveFsKeyCode(int uni,unsigned short macKeyCode)
+{
+	int fskey=YsMacKeyCodeToFsKeyCode(macKeyCode);
+	if(0!=fskey)
+	{
+		return fskey;
+	}
+	return YsMacUnicodeToFsKeyCode(uni);
+}
+
 
 struct FsMouseEventLog
 {
@@ -668,9 +786,34 @@ static YsMacDelegate *ysDelegate=nil;
 
 
 
+typedef void *YsCGSConnectionID;
+typedef YsCGSConnectionID (*YsCGSMainConnectionIDFunc)(void);
+typedef int (*YsCGSSetGlobalHotKeyOperatingModeFunc)(YsCGSConnectionID,int);
+
+/* macOS uses F12 for Show Desktop and never delivers that key to the app.
+   While this process is frontmost, turn system hotkeys off so F12 can
+   break into the CUI debugger. Restore them when the app is no longer active. */
+static void YsSetMacSystemHotKeysEnabled(bool enabled)
+{
+	static YsCGSMainConnectionIDFunc mainConnection=NULL;
+	static YsCGSSetGlobalHotKeyOperatingModeFunc setMode=NULL;
+	static bool lookedUp=false;
+	if(true!=lookedUp)
+	{
+		lookedUp=true;
+		mainConnection=(YsCGSMainConnectionIDFunc)dlsym(RTLD_DEFAULT,"CGSMainConnectionID");
+		setMode=(YsCGSSetGlobalHotKeyOperatingModeFunc)dlsym(RTLD_DEFAULT,"CGSSetGlobalHotKeyOperatingMode");
+	}
+	if(NULL!=mainConnection && NULL!=setMode)
+	{
+		setMode(mainConnection(),enabled ? 0 : 1);
+	}
+}
+
 @implementation YsMacDelegate
 - (BOOL) applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication
 {
+	YsSetMacSystemHotKeysEnabled(true);
 	return YES;
 }
 
@@ -682,11 +825,13 @@ static YsMacDelegate *ysDelegate=nil;
 - (void) applicationDidBecomeActive: (NSNotification *)notification
 {
     printf("Did become active\n");
+	YsSetMacSystemHotKeysEnabled(false);
 }
 
 - (void) applicationWillResignActive: (NSNotification *)notification
 {
     printf("Will resign active\n");
+	YsSetMacSystemHotKeysEnabled(true);
 }
 
 - (void) applicationDidResignActive: (NSNotification *)notification
@@ -752,6 +897,7 @@ static YsMacDelegate *ysDelegate=nil;
 
 - (void) windowWillClose: (NSNotification *)notification
 {
+	YsSetMacSystemHotKeysEnabled(true);
 	if(0!=FsOnCloseButton())
 	{
 		[NSApp terminate:nil];	// This can also be exit(0);
@@ -957,12 +1103,15 @@ static YsMacDelegate *ysDelegate=nil;
 		}
 	}
 
+	int unicode=0;
 	chrsNoMod=[theEvent charactersIgnoringModifiers];
 	if([chrsNoMod length]>0)
 	{
-		int unicode,fskey;
 		unicode=[chrsNoMod characterAtIndex:0];
-		fskey=YsMacUnicodeToFsKeyCode(unicode);
+	}
+	{
+		int fskey;
+		fskey=YsMacResolveFsKeyCode(unicode,[theEvent keyCode]);
 
 		if(fskey!=0)
 		{
@@ -994,12 +1143,15 @@ static YsMacDelegate *ysDelegate=nil;
 		unicode=[chrs characterAtIndex:0];
 	}
 
+	int unicode=0;
 	chrsNoMod=[theEvent charactersIgnoringModifiers];
 	if([chrsNoMod length]>0)
 	{
-	  int unicode,fskey;
 		unicode=[chrsNoMod characterAtIndex:0];
-		fskey=YsMacUnicodeToFsKeyCode(unicode);
+	}
+	{
+	  int fskey;
+		fskey=YsMacResolveFsKeyCode(unicode,[theEvent keyCode]);
 
 		if(fskey!=0)
 		{
@@ -1206,7 +1358,7 @@ printf("%s %d\n",__FUNCTION__,__LINE__);
 		{
 			int unicode;
 			unicode=[chrsNoMod characterAtIndex:0];
-			fskey=YsMacUnicodeToFsKeyCode(unicode);
+			fskey=YsMacResolveFsKeyCode(unicode,[theEvent keyCode]);
 		}
 
 		bool keyShouldBeSentToYsView=false;
@@ -1499,6 +1651,7 @@ void FsOpenWindowC(int x0,int y0,int wid,int hei,int useDoubleBuffer,int useMult
 
 	[ysWnd makeKeyAndOrderFront:nil];
 	[ysWnd makeMainWindow];
+	YsSetMacSystemHotKeysEnabled(false);
 
 	[ysWnd resizeSubViewFromMasterView];
 
