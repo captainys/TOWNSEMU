@@ -101,6 +101,7 @@ public:
 
 		ENVELOPE_PRECISION_SHIFT=5,  // 2^ENVELOPE_PRECISION_SHIFT=ENVELOPE_PRECISION
 		ENVELOPE_PRECISION=32,       // 1/32 milliseconds
+		ENVELOPE_HOLD=0x50000000,    // Duration of a phase with rate 0 (envelope does not move).  3 of them still fit in 32 bits.
 
 		MODE_NONE=0,
 		MODE_CSM=2,
