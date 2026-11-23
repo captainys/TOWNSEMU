@@ -745,14 +745,25 @@ inline int YM2612::Slot::InterpolateEnvelope(unsigned int envTime) const
 			envTime-=env[0];
 			if(envTime<env[2])
 			{
-				return env[1]-(env[1]-env[3])*envTime/env[2];
+				// DR=0: the envelope does not move (stays at the peak).
+				if(ENVELOPE_HOLD==env[2])
+				{
+					return env[1];
+				}
+				// 64-bit multiply.  (env[1]-env[3])*envTime overflowed 32 bits after about 14 seconds.
+				return env[1]-MulDivU(env[1]-env[3],envTime,env[2]);
 			}
 			else
 			{
 				envTime-=env[2];
 				if(envTime<env[4])
 				{
-					return env[3]-env[3]*envTime/env[4];
+					// SR=0: the envelope stays at the sustain level.
+					if(ENVELOPE_HOLD==env[4])
+					{
+						return env[3];
+					}
+					return env[3]-MulDivU(env[3],envTime,env[4]);
 				}
 			}
 		}
@@ -1514,9 +1525,13 @@ bool YM2612::CalculateEnvelope(unsigned int env[12],unsigned int KC,const Slot &
 	std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
 #endif
 
-	unsigned int AR=slot.AR*2+(KC>>(3-slot.KS));
-	unsigned int DR=slot.DR*2+(KC>>(3-slot.KS));
-	unsigned int SR=slot.SR*2+(KC>>(3-slot.KS));
+	// The real chip does not add the key-scale to a rate of 0.  AR, DR, or SR=0 means the envelope
+	// does not move in that phase, regardless of KS and the key code.
+	// (Adding the key-scale made sustained tones with SR=0 and KS=3 fade out by several dB per second.)
+	const unsigned int keyScale=(KC>>(3-slot.KS));
+	unsigned int AR=(0==slot.AR ? 0 : slot.AR*2+keyScale);
+	unsigned int DR=(0==slot.DR ? 0 : slot.DR*2+keyScale);
+	unsigned int SR=(0==slot.SR ? 0 : slot.SR*2+keyScale);
 	AR=std::min(AR,63U);
 	DR=std::min(DR,63U);
 	SR=std::min(SR,63U);
@@ -1548,7 +1563,10 @@ bool YM2612::CalculateEnvelope(unsigned int env[12],unsigned int KC,const Slot &
 
 	// Ealier I was linearly interpolating the amplitude, but maybe it is linear in dB scale.
 	env[1]=TLinv;
-	env[3]=(SLdB100<TLinv ? TLinv-SLdB100 : 0);
+	// The envelope attenuation goes 0 -> SL in the decay phase, and the output level is TL plus the envelope.
+	// If TL+SL is deeper than 96dB, the output reaches the bottom before the envelope reaches SL.
+	const unsigned int decayDropDB100=std::min(SLdB100,TLinv);
+	env[3]=TLinv-decayDropDB100;
 	env[5]=0;
 
 
@@ -1560,14 +1578,32 @@ bool YM2612::CalculateEnvelope(unsigned int env[12],unsigned int KC,const Slot &
 	// generation once I get a good enough approximation.
 	unsigned long long int mul;
 	env[0]=(attackTime0to96dB[AR]*10)>>(10-ENVELOPE_PRECISION_SHIFT);  // *10 to make it microsec, and then divide by 1024.
-	mul=SLdB100;
-	mul*=sustainDecayReleaseTime0to96dB[DR];
-	mul/=((9600*1024/10)/ENVELOPE_PRECISION);
-	env[2]=(unsigned int)mul;
-	mul=9600-SLdB100;
-	mul*=sustainDecayReleaseTime0to96dB[SR];
-	mul/=((9600*1024/10)/ENVELOPE_PRECISION);
-	env[4]=(unsigned int)mul;
+	// The envelope changes at the same dB-per-second for a given rate.  The duration of a segment must be
+	// proportional to how much the output level actually drops in that segment (env[1]-env[3] for decay,
+	// env[3] for sustain).  It used to be SL and 96dB-SL, which made the slope too shallow when TL>0
+	// (for example, TL=27 SL=15 DR=6 decayed 18% slower than the chip).
+	if(0==DR)
+	{
+		env[2]=ENVELOPE_HOLD;
+	}
+	else
+	{
+		mul=decayDropDB100;
+		mul*=sustainDecayReleaseTime0to96dB[DR];
+		mul/=((9600*1024/10)/ENVELOPE_PRECISION);
+		env[2]=(unsigned int)mul;
+	}
+	if(0==SR && 0<env[3])
+	{
+		env[4]=ENVELOPE_HOLD;
+	}
+	else
+	{
+		mul=env[3];
+		mul*=sustainDecayReleaseTime0to96dB[SR];
+		mul/=((9600*1024/10)/ENVELOPE_PRECISION);
+		env[4]=(unsigned int)mul;
+	}
 
 	env[6]=0;
 	env[7]=0;
